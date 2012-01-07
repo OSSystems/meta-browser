@@ -1,0 +1,42 @@
+From 599b26141d493ff19633796ce5e19b00315d3821 Mon Sep 17 00:00:00 2001
+From: Eduardo Valentin <eduardo.valentin@openpossa.org>
+Date: Fri, 25 Jul 2008 11:20:02 -0400
+Subject: [PATCH 1/1] Fix security cross compile cpu detection error
+
+Fix security cross compile cpu detection error.
+Reference to bug 376279.
+
+Signed-off-by: Eduardo Valentin <eduardo.valentin@openpossa.org>
+---
+ security/coreconf/arch.mk    |    2 ++
+ security/manager/Makefile.in |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/security/coreconf/arch.mk b/security/coreconf/arch.mk
+index fba38ff..28da32e 100644
+--- a/security/coreconf/arch.mk
++++ b/security/coreconf/arch.mk
+@@ -66,7 +66,9 @@ OS_ARCH := $(subst /,_,$(shell uname -s))
+ # Attempt to differentiate between sparc and x86 Solaris
+ #
+
++ifndef OE_TEST
+ OS_TEST := $(shell uname -m)
++endif
+ ifeq ($(OS_TEST),i86pc)
+     OS_RELEASE := $(shell uname -r)_$(OS_TEST)
+ else
+diff --git a/security/manager/Makefile.in b/security/manager/Makefile.in
+index 86119f7..86c09ca 100644
+--- a/security/manager/Makefile.in
++++ b/security/manager/Makefile.in
+@@ -240,6 +240,7 @@ DEFAULT_GMAKE_FLAGS += \
+	RC="$(RC) $(RCFLAGS)" \
+	OS_ARCH="$(OS_ARCH)" \
+	CPU_ARCH="$(TARGET_CPU)" \
++	OS_TEST="$(TARGET_CPU)" \
+	$(NULL)
+ SKIP_CHK=1
+ endif
+--
+1.5.4.3

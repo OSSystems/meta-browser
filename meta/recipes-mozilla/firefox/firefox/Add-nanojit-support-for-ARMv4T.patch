@@ -1,0 +1,463 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 1 Sep 2010 21:07:45 +0200
+Subject: Add nanojit support for ARMv4T
+
+Thanks Albin Tonnerre for the initial patch.
+https://bugzilla.mozilla.org/show_bug.cgi?id=586224
+https://bugzilla.mozilla.org/show_bug.cgi?id=586625
+https://bugzilla.mozilla.org/show_bug.cgi?id=586262
+https://bugzilla.mozilla.org/show_bug.cgi?id=585604
+https://bugzilla.mozilla.org/show_bug.cgi?id=552624
+---
+ js/src/nanojit/NativeARM.cpp |  156 ++++++++++++++++++++++--------------------
+ js/src/nanojit/NativeARM.h   |    3 +-
+ js/src/nanojit/avmplus.cpp   |    7 --
+ js/src/nanojit/avmplus.h     |   11 +++-
+ js/src/nanojit/njcpudetect.h |  110 +++++++++++++++++++++++++++++
+ 5 files changed, 202 insertions(+), 85 deletions(-)
+ create mode 100644 js/src/nanojit/njcpudetect.h
+
+diff --git a/js/src/nanojit/NativeARM.cpp b/js/src/nanojit/NativeARM.cpp
+index 9387191..2333960 100644
+--- a/js/src/nanojit/NativeARM.cpp
++++ b/js/src/nanojit/NativeARM.cpp
+@@ -42,7 +42,6 @@
+ 
+ #ifdef UNDER_CE
+ #include <cmnintrin.h>
+-extern "C" bool blx_lr_broken();
+ #endif
+ 
+ #if defined(AVMPLUS_LINUX)
+@@ -109,44 +108,14 @@ Assembler::decOp2Imm(uint32_t enc)
+ #endif
+ 
+ // Calculate the number of leading zeroes in data.
+-inline uint32_t
+-Assembler::CountLeadingZeroes(uint32_t data)
++static inline uint32_t
++CountLeadingZeroesSlow(uint32_t data)
+ {
+-    uint32_t    leading_zeroes;
+-
+-    // We can't do CLZ on anything earlier than ARMv5. Architectures as early
+-    // as that aren't supported, but assert that we aren't running on one
+-    // anyway.
+-    // If ARMv4 support is required in the future for some reason, we can do a
+-    // run-time check on config.arch and fall back to the C routine, but for
+-    // now we can avoid the cost of the check as we don't intend to support
+-    // ARMv4 anyway.
+-    NanoAssert(ARM_ARCH >= 5);
+-
+-#if defined(__ARMCC__)
+-    // ARMCC can do this with an intrinsic.
+-    leading_zeroes = __clz(data);
+-
+-// current Android GCC compiler incorrectly refuses to compile 'clz' for armv5
+-// (even though this is a legal instruction there). Since we currently only compile for ARMv5
+-// for emulation, we don't care too much (but we DO care for ARMv6+ since those are "real"
+-// devices).
+-#elif defined(__GNUC__) && !(defined(ANDROID) && __ARM_ARCH__ <= 5) 
+-    // GCC can use inline assembler to insert a CLZ instruction.
+-    __asm (
+-        "   clz     %0, %1  \n"
+-        :   "=r"    (leading_zeroes)
+-        :   "r"     (data)
+-    );
+-#elif defined(WINCE)
+-    // WinCE can do this with an intrinsic.
+-    leading_zeroes = _CountLeadingZeros(data);
+-#else
+     // Other platforms must fall back to a C routine. This won't be as
+     // efficient as the CLZ instruction, but it is functional.
+     uint32_t    try_shift;
+ 
+-    leading_zeroes = 0;
++    uint32_t    leading_zeroes = 0;
+ 
+     // This loop does a bisection search rather than the obvious rotation loop.
+     // This should be faster, though it will still be no match for CLZ.
+@@ -156,6 +125,43 @@ Assembler::CountLeadingZeroes(uint32_t data)
+             leading_zeroes = shift;
+         }
+     }
++
++    return leading_zeroes;
++}
++
++inline uint32_t
++Assembler::CountLeadingZeroes(uint32_t data)
++{
++    uint32_t    leading_zeroes;
++
++#if defined(__ARMCC__)
++    // ARMCC can do this with an intrinsic.
++    leading_zeroes = __clz(data);
++#elif defined(__GNUC__)
++    // GCC can use inline assembler to insert a CLZ instruction.
++    if (ARM_ARCH_AT_LEAST(5)) {
++        __asm (
++#if defined(ANDROID) && (NJ_COMPILER_ARM_ARCH < 7)
++        // On Android gcc compiler, the clz instruction is not supported with a
++        // target smaller than armv7, despite it being legal for armv5+.
++            "   .arch armv7-a\n"
++#elif (NJ_COMPILER_ARM_ARCH < 5)
++        // Targetting armv5t allows a toolchain with armv4t target to still build
++        // with clz, and clz to be used when appropriate at runtime.
++            "   .arch armv5t\n"
++#endif
++            "   clz     %0, %1  \n"
++            :   "=r"    (leading_zeroes)
++            :   "r"     (data)
++        );
++    } else {
++        leading_zeroes = CountLeadingZeroesSlow(data);
++    }
++#elif defined(UNDER_CE)
++    // WinCE can do this with an intrinsic.
++    leading_zeroes = _CountLeadingZeros(data);
++#else
++    leading_zeroes = CountLeadingZeroesSlow(data);
+ #endif
+ 
+     // Assert that the operation worked!
+@@ -462,11 +468,6 @@ Assembler::asm_eor_imm(Register rd, Register rn, int32_t imm, int stat /* =0 */)
+ void
+ Assembler::nInit(AvmCore*)
+ {
+-#ifdef UNDER_CE
+-    blx_lr_bug = blx_lr_broken();
+-#else
+-    blx_lr_bug = 0;
+-#endif
+ }
+ 
+ void Assembler::nBeginAssembly()
+@@ -554,12 +555,18 @@ Assembler::nFragExit(LInsp guard)
+ NIns*
+ Assembler::genEpilogue()
+ {
+-    // On ARMv5+, loading directly to PC correctly handles interworking.
+-    // Note that we don't support anything older than ARMv5.
+-    NanoAssert(ARM_ARCH >= 5);
++    RegisterMask savingMask;
+ 
+-    RegisterMask savingMask = rmask(FP) | rmask(PC);
++    if (ARM_ARCH_AT_LEAST(5)) {
++        // On ARMv5+, loading directly to PC correctly handles interworking.
++        savingMask = rmask(FP) | rmask(PC);
+ 
++    } else {
++        // On ARMv4T, interworking is not handled properly, therefore, we pop
++        // lr and use bx lr to avoid that.
++        savingMask = rmask(FP) | rmask(LR);
++        BX(LR);
++    }
+     POP_mask(savingMask); // regs
+ 
+     return _nIns;
+@@ -867,25 +874,23 @@ Assembler::asm_call(LInsp ins)
+             outputf("        %p:", _nIns);
+         )
+ 
+-        // Direct call: on v5 and above (where the calling sequence doesn't
+-        // corrupt LR until the actual branch instruction), we can avoid an
+-        // interlock in the "long" branch sequence by manually loading the
+-        // target address into LR ourselves before setting up the parameters
+-        // in other registers.
+         BranchWithLink((NIns*)call->_address);
+     } else {
+-        // Indirect call: we assign the address arg to LR since it's not
+-        // used for regular arguments, and is otherwise scratch since it's
+-        // clobberred by the call. On v4/v4T, where we have to manually do
+-        // the equivalent of a BLX, move LR into IP before corrupting LR
+-        // with the return address.
+-        if (blx_lr_bug) {
++        // Indirect call: we assign the address arg to LR
++        if (ARM_ARCH_AT_LEAST(5)) {
++#ifndef UNDER_CE
+             // workaround for msft device emulator bug (blx lr emulated as no-op)
+             underrunProtect(8);
+             BLX(IP);
+-            MOV(IP,LR);
+-        } else {
++            MOV(IP, LR);
++#else
+             BLX(LR);
++#endif
++        } else {
++            underrunProtect(12);
++            BX(IP);
++            MOV(LR, PC);
++            MOV(IP, LR);
+         }
+         asm_regarg(ARGSIZE_LO, ins->arg(--argc), LR);
+     }
+@@ -1494,7 +1499,7 @@ Assembler::BranchWithLink(NIns* addr)
+     // reserve enough space for the LDR sequence. This should give us a slight
+     // net gain over reserving the exact amount required for shorter branches.
+     // This _must_ be called before PC_OFFSET_FROM as it can move _nIns!
+-    underrunProtect(4+LD32_size);
++    underrunProtect(8+LD32_size);
+ 
+     // Calculate the offset from the instruction that is about to be
+     // written (at _nIns-1) to the target.
+@@ -1513,29 +1518,30 @@ Assembler::BranchWithLink(NIns* addr)
+             // BL target
+             *(--_nIns) = (NIns)( (COND_AL) | (0xB<<24) | (offs2) );
+             asm_output("bl %p", (void*)addr);
+-        } else {
+-            // The target is Thumb, so emit a BLX.
+-
+-            // We need to emit an ARMv5+ instruction, so assert that we have a
+-            // suitable processor. Note that we don't support ARMv4(T), but
+-            // this serves as a useful sanity check.
+-            NanoAssert(ARM_ARCH >= 5);
+-
++            return;
++        } else if (ARM_ARCH_AT_LEAST(5)) {
++            // The target is Thumb, so emit a BLX (ARMv5+)
+             // The (pre-shifted) value of the "H" bit in the BLX encoding.
+             uint32_t    H = (offs & 0x2) << 23;
+ 
+             // BLX addr
+             *(--_nIns) = (NIns)( (0xF << 28) | (0x5<<25) | (H) | (offs2) );
+             asm_output("blx %p", (void*)addr);
++            return;
+         }
+-    } else {
++        /* If we get here, it means we are on ARMv4T, and the target is Thumb,
++           in which case we want to emit a branch with a register */
++    }
++    if (ARM_ARCH_AT_LEAST(5)) {
+         // Load the target address into IP and branch to that. We've already
+         // done underrunProtect, so we can skip that here.
+         BLX(IP, false);
+-
+-        // LDR IP, =addr
+-        asm_ld_imm(IP, (int32_t)addr, false);
++    } else {
++        BX(IP);
++        MOV(LR, PC);
+     }
++    // LDR IP, =addr
++    asm_ld_imm(IP, (int32_t)addr, false);
+ }
+ 
+ // This is identical to BranchWithLink(NIns*) but emits a branch to an address
+@@ -1546,20 +1552,22 @@ Assembler::BLX(Register addr, bool chk /* = true */)
+     // We need to emit an ARMv5+ instruction, so assert that we have a suitable
+     // processor. Note that we don't support ARMv4(T), but this serves as a
+     // useful sanity check.
+-    NanoAssert(ARM_ARCH >= 5);
++    NanoAssert(ARM_ARCH_AT_LEAST(5));
+ 
+     NanoAssert(IsGpReg(addr));
++#ifdef UNDER_CE
+     // There is a bug in the WinCE device emulator which stops "BLX LR" from
+     // working as expected. Assert that we never do that!
+-    if (blx_lr_bug) { NanoAssert(addr != LR); }
++    NanoAssert(addr != LR);
++#endif
+ 
+     if (chk) {
+         underrunProtect(4);
+     }
+ 
+-    // BLX IP
++    // BLX reg
+     *(--_nIns) = (NIns)( (COND_AL) | (0x12<<20) | (0xFFF<<8) | (0x3<<4) | (addr) );
+-    asm_output("blx ip");
++    asm_output("blx %s", gpn(addr));
+ }
+ 
+ // Emit the code required to load a memory address into a register as follows:
+@@ -2177,7 +2185,7 @@ Assembler::asm_arith(LInsp ins)
+             // common for (rr == ra) and is thus likely to be the most
+             // efficient case; if ra is no longer used after this LIR
+             // instruction, it is re-used for the result register (rr).
+-            if ((ARM_ARCH > 5) || (rr != rb)) {
++            if ((ARM_ARCH_AT_LEAST(6)) || (rr != rb)) {
+                 // Newer cores place no restrictions on the registers used in a
+                 // MUL instruction (compared to other arithmetic instructions).
+                 MUL(rr, rb, ra);
+diff --git a/js/src/nanojit/NativeARM.h b/js/src/nanojit/NativeARM.h
+index 55b2e8e..a0b0b87 100644
+--- a/js/src/nanojit/NativeARM.h
++++ b/js/src/nanojit/NativeARM.h
+@@ -229,7 +229,6 @@ verbose_only( extern const char* shiftNames[]; )
+     int *       _nSlot;                                                         \
+     int *       _startingSlot;                                                  \
+     int *       _nExitSlot;                                                     \
+-    bool        blx_lr_bug;                                                     \
+     int         max_out_args; /* bytes */                                      
+ 
+ //nj_dprintf("jmp_l_n count=%d, nins=%X, %X = %X\n", (_c), nins, _nIns, ((intptr_t)(nins+(_c))-(intptr_t)_nIns - 4) );
+@@ -461,7 +460,7 @@ enum {
+ // _d = _l * _r
+ #define MUL(_d,_l,_r)  do {                                  \
+         underrunProtect(4);                                                 \
+-        NanoAssert((ARM_ARCH >= 6) || ((_d) != (_l)));                      \
++        NanoAssert((ARM_ARCH_AT_LEAST(6)) || ((_d) != (_l)));                      \
+         NanoAssert(IsGpReg(_d) && IsGpReg(_l) && IsGpReg(_r));              \
+         NanoAssert(((_d) != PC) && ((_l) != PC) && ((_r) != PC));           \
+         *(--_nIns) = (NIns)( COND_AL | (_d)<<16 | (_r)<<8 | 0x90 | (_l) );  \
+diff --git a/js/src/nanojit/avmplus.cpp b/js/src/nanojit/avmplus.cpp
+index ab84abd..f436c1e 100644
+--- a/js/src/nanojit/avmplus.cpp
++++ b/js/src/nanojit/avmplus.cpp
+@@ -45,13 +45,6 @@
+     typedef void *maddr_ptr;
+ #endif
+ 
+-#if defined(AVMPLUS_ARM) && defined(UNDER_CE)
+-extern "C" bool
+-blx_lr_broken() {
+-    return false;
+-}
+-#endif
+-
+ using namespace avmplus;
+ 
+ Config AvmCore::config;
+diff --git a/js/src/nanojit/avmplus.h b/js/src/nanojit/avmplus.h
+index ffc0873..76370f5 100644
+--- a/js/src/nanojit/avmplus.h
++++ b/js/src/nanojit/avmplus.h
+@@ -50,11 +50,18 @@
+ #include "jstypes.h"
+ #include "jsstdint.h"
+ 
++#include "njcpudetect.h"
++
+ #ifdef AVMPLUS_ARM
+-#define ARM_ARCH   config.arch
++#ifdef DEBUG
++#define ARM_ARCH_AT_LEAST(wanted) (config.arch >= (wanted))
+ #define ARM_VFP    config.vfp
++#else
++#define ARM_ARCH_AT_LEAST(wanted) \
++    ((NJ_COMPILER_ARM_ARCH >= (wanted)) || (config.arch >= (wanted)))
++#define ARM_VFP ((NJ_COMPILER_ARM_ARCH >= 7) || (config.vfp))
++#endif
+ #define ARM_THUMB2 config.thumb2
+-
+ #endif
+ 
+ #if !defined(AVMPLUS_LITTLE_ENDIAN) && !defined(AVMPLUS_BIG_ENDIAN)
+diff --git a/js/src/nanojit/njcpudetect.h b/js/src/nanojit/njcpudetect.h
+new file mode 100644
+index 0000000..1143005
+--- /dev/null
++++ b/js/src/nanojit/njcpudetect.h
+@@ -0,0 +1,110 @@
++/* -*- Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil; tab-width: 4 -*- */
++/* vi: set ts=4 sw=4 expandtab: (add to ~/.vimrc: set modeline modelines=5) */
++/* ***** BEGIN LICENSE BLOCK *****
++ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
++ *
++ * The contents of this file are subject to the Mozilla Public License Version
++ * 1.1 (the "License"); you may not use this file except in compliance with
++ * the License. You may obtain a copy of the License at
++ * http://www.mozilla.org/MPL/
++ *
++ * Software distributed under the License is distributed on an "AS IS" basis,
++ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
++ * for the specific language governing rights and limitations under the
++ * License.
++ *
++ * The Original Code is [Open Source Virtual Machine].
++ *
++ * The Initial Developer of the Original Code is
++ * Adobe System Incorporated.
++ * Portions created by the Initial Developer are Copyright (C) 2004-2007
++ * the Initial Developer. All Rights Reserved.
++ *
++ * Contributor(s):
++ *   Adobe AS3 Team
++ *
++ * Alternatively, the contents of this file may be used under the terms of
++ * either the GNU General Public License Version 2 or later (the "GPL"), or
++ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
++ * in which case the provisions of the GPL or the LGPL are applicable instead
++ * of those above. If you wish to allow use of your version of this file only
++ * under the terms of either the GPL or the LGPL, and not to allow others to
++ * use your version of this file under the terms of the MPL, indicate your
++ * decision by deleting the provisions above and replace them with the notice
++ * and other provisions required by the GPL or the LGPL. If you do not delete
++ * the provisions above, a recipient may use your version of this file under
++ * the terms of any one of the MPL, the GPL or the LGPL.
++ *
++ * ***** END LICENSE BLOCK ***** */
++
++#ifndef __njcpudetect__
++#define __njcpudetect__
++
++/***
++ * Note: this file should not include *any* other files, nor should it wrap
++ * itself in ifdef FEATURE_NANOJIT, nor should it do anything other than
++ * define preprocessor symbols.
++ */
++
++/***
++ * NJ_COMPILER_ARM_ARCH attempts to specify the minimum ARM architecture
++ * that the C++ compiler has specified. Note that although Config::arm_arch
++ * is initialized to this value by default, there is no requirement that they
++ * be in sync.
++ *
++ * Note, this is done via #define so that downstream preprocessor usage can
++ * examine it, but please don't attempt to redefine it.
++ *
++ * Note, this is deliberately not encased in "ifdef NANOJIT_ARM", as this file
++ * may be included before that is defined. On non-ARM platforms we will hit the
++ * "Unable to determine" case.
++ */
++
++// GCC and RealView usually define __ARM_ARCH__
++#if defined(__ARM_ARCH__)
++
++    #define NJ_COMPILER_ARM_ARCH __ARM_ARCH__
++
++// ok, try well-known GCC flags ( see http://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html )
++#elif     defined(__ARM_ARCH_7__) || \
++        defined(__ARM_ARCH_7A__) || \
++        defined(__ARM_ARCH_7M__) || \
++        defined(__ARM_ARCH_7R__) || \
++        defined(_ARM_ARCH_7)
++
++    #define NJ_COMPILER_ARM_ARCH 7
++
++#elif   defined(__ARM_ARCH_6__) || \
++        defined(__ARM_ARCH_6J__) || \
++        defined(__ARM_ARCH_6T2__) || \
++        defined(__ARM_ARCH_6Z__) || \
++        defined(__ARM_ARCH_6ZK__) || \
++        defined(__ARM_ARCH_6M__) || \
++        defined(_ARM_ARCH_6)
++
++    #define NJ_COMPILER_ARM_ARCH 6
++
++#elif   defined(__ARM_ARCH_5__) || \
++        defined(__ARM_ARCH_5T__) || \
++        defined(__ARM_ARCH_5E__) || \
++        defined(__ARM_ARCH_5TE__)
++
++    #define NJ_COMPILER_ARM_ARCH 5
++
++#elif   defined(__ARM_ARCH_4T__)
++
++    #define NJ_COMPILER_ARM_ARCH 4
++
++// Visual C has its own mojo
++#elif defined(_MSC_VER) && defined(_M_ARM)
++
++    #define NJ_COMPILER_ARM_ARCH _M_ARM
++
++#else
++
++    // non-numeric value
++    #define NJ_COMPILER_ARM_ARCH "Unable to determine valid NJ_COMPILER_ARM_ARCH (nanojit only supports ARMv4T or later)"
++
++#endif
++
++#endif // __njcpudetect__

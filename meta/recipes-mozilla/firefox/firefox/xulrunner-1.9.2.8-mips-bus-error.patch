@@ -1,0 +1,26 @@
+From:
+http://gentoo-overlays.zugaina.org/loongson/portage/net-libs/xulrunner/files/xulrunner-1.9.2.8-mips-bus-error.patch
+--- ./xpcom/glue/nsTArray.h.orig	2009-04-26 01:21:58.000000000 +0800
++++ ./xpcom/glue/nsTArray.h	2009-04-26 01:21:33.000000000 +0800
+@@ -168,6 +168,7 @@
+ 
+     // The array's elements (prefixed with a Header).  This pointer is never
+     // null.  If the array is empty, then this will point to sEmptyHdr.
++    void   *padding;
+     Header *mHdr;
+ };
+
+diff --git a/layout/svg/base/src/nsSVGGlyphFrame.cpp b/layout/svg/base/src/nsSVGGlyphFrame.cpp
+index 6d452d0..3ce4193 100644
+--- a/layout/svg/base/src/nsSVGGlyphFrame.cpp
++++ b/layout/svg/base/src/nsSVGGlyphFrame.cpp
+@@ -169,8 +169,8 @@ private:
+   PRBool SetupForDirectTextRun(gfxContext *aContext, float aScale);
+   void SetupFor(gfxContext *aContext, float aScale);
+ 
+-  nsSVGGlyphFrame *mSource;
+   nsAutoTArray<CharacterPosition,80> mPositions;
++  nsSVGGlyphFrame *mSource;
+   gfxMatrix mInitialMatrix;
+   // Textrun advance width from start to mCurrentChar, in appunits
+   gfxFloat mCurrentAdvance;

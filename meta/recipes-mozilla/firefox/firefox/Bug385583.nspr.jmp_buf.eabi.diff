@@ -1,0 +1,33 @@
+diff -up mozilla/nsprpub/pr/include/md/_linux.h.orig mozilla/nsprpub/pr/include/md/_linux.h
+--- mozilla/nsprpub/pr/include/md/_linux.h.orig	2007-11-28 14:16:03.000000000 -0500
++++ mozilla/nsprpub/pr/include/md/_linux.h	2007-11-28 14:12:09.000000000 -0500
+@@ -346,8 +346,8 @@ extern void _MD_CleanupBeforeExit(void);
+ #error "Linux/MIPS pre-glibc2 not supported yet"
+ #endif /* defined(__GLIBC__) && __GLIBC__ >= 2 */
+ 
+-#elif defined(__arm__)
+-/* ARM/Linux */
++#elif defined(__arm__) && !defined(__ARM_EABI__)
++/* ARM/Linux (old-ABI) */
+ #if defined(__GLIBC__) && __GLIBC__ >= 2
+ #define _MD_GET_SP(_t) (_t)->md.context[0].__jmpbuf[20]
+ #define _MD_SET_FP(_t, val) ((_t)->md.context[0].__jmpbuf[19] = (val))
+@@ -358,6 +358,18 @@ extern void _MD_CleanupBeforeExit(void);
+ #error "ARM/Linux pre-glibc2 not supported yet"
+ #endif /* defined(__GLIBC__) && __GLIBC__ >= 2 */
+ 
++#elif defined(__arm__) && defined(__ARM_EABI__)
++/* ARM/Linux (EABI) */
++#if defined(__GLIBC__) && __GLIBC__ >= 2
++#define _MD_GET_SP(_t) (_t)->md.context[0].__jmpbuf[8]
++#define _MD_SET_FP(_t, val) ((_t)->md.context[0].__jmpbuf[7] = (val))
++#define _MD_GET_SP_PTR(_t) &(_MD_GET_SP(_t))
++#define _MD_GET_FP_PTR(_t) (&(_t)->md.context[0].__jmpbuf[7])
++#define _MD_SP_TYPE __ptr_t
++#else
++#error "ARM/Linux pre-glibc2 not supported yet"
++#endif /* defined(__GLIBC__) && __GLIBC__ >= 2 */
++
+ #else
+ 
+ #error "Unknown CPU architecture"

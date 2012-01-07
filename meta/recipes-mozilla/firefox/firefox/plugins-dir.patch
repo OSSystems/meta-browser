@@ -1,0 +1,16 @@
+Index: mozilla-1.9.1/build/unix/mozilla.in
+===================================================================
+--- mozilla-1.9.1.orig/build/unix/mozilla.in
++++ mozilla-1.9.1/build/unix/mozilla.in
+@@ -52,6 +52,11 @@
+ 
+ moz_libdir=%MOZAPPDIR%
+ 
++if test -d /usr/lib/mozilla/plugins; then
++       MOZ_PLUGIN_PATH="${MOZ_PLUGIN_PATH:+"$MOZ_PLUGIN_PATH:"}/usr/lib/mozilla/plugins"
++       export MOZ_PLUGIN_PATH
++fi
++
+ # Use run-mozilla.sh in the current dir if it exists
+ # If not, then start resolving symlinks until we find run-mozilla.sh
+ found=0

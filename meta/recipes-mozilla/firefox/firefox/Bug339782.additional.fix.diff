@@ -1,0 +1,39 @@
+# XPTC_InvokeByIndex crashes
+# Bug 339782  [ARM] XPTC_InvokeByIndex crashes when cross-compiled under GCC 3.4.x with EABI (CodeSourcery)
+Index: mozilla/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_arm.cpp
+===================================================================
+--- mozilla.orig/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_arm.cpp
++++ mozilla/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_arm.cpp
+@@ -51,22 +51,32 @@
+ #ifdef __ARM_EABI__
+ #define DOUBLEWORD_ALIGN(p) ((PRUint32 *)((((PRUint32)(p)) + 7) & 0xfffffff8))
+ #define VAR_STACK_SIZE_64 3
+ #else
+ #define DOUBLEWORD_ALIGN(p) (p)
+ #define VAR_STACK_SIZE_64 2
+ #endif
+ 
++#ifdef __ARM_EABI__
++#define DOUBLEWORD_ALIGN(p) ((PRUint32 *)((((PRUint32)(p)) + 7) & 0xfffffff8))
++#else
++#define DOUBLEWORD_ALIGN(p) (p)
++#endif
++
+ // Remember that these 'words' are 32bit DWORDS
+ 
+ static PRUint32
+ invoke_count_words(PRUint32 paramCount, nsXPTCVariant* s)
+ {
+     PRUint32 result = 0;
++
++    /* Note that we give a "worst case" estimate of how much stack _might_ be
++     * needed, rather than the real count - this should be safe */
++
+     for(PRUint32 i = 0; i < paramCount; i++, s++)
+     {
+         if(s->IsPtrData())
+         {
+             result++;
+             continue;
+         }
+         switch(s->type)

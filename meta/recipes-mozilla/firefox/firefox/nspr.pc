@@ -1,0 +1,10 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=/usr/include/firefox-3.6.8
+
+Name: NSPR
+Description: The Netscape Portable Runtime
+Version: 4.8
+Libs: -L${libdir} -lplds4 -lplc4 -lnspr4 -lpthread -ldl  -Wl,-R${libdir}
+Cflags: -I${includedir}

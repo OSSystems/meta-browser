@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=/usr/include
+mozdir=${includedir}/firefox-3.6.8
+idldir=${includedir}/firefox-3.6.8
+
+Name: XPCOM
+Description: The Mozilla Cross Platform Component Library
+Version: 3.6.8
+Requires: nspr >= 4.8
+Libs: -L${libdir} -lxpcom -Wl,-R${libdir}
+Cflags: -I${mozdir} -I${mozdir}/xpcom -I${mozdir}/string

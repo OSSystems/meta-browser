@@ -1,0 +1,28 @@
+--- /tmp/jemalloc.c	2008-06-23 10:57:36.000000000 +0200
++++ mozilla/memory/jemalloc/jemalloc.c	2008-06-23 11:20:13.000000000 +0200
+@@ -386,7 +386,7 @@
+ #else
+ #  define NO_TLS
+ #endif
+-#if 0
++
+ #ifdef __i386__
+ #  define QUANTUM_2POW_MIN	4
+ #  define SIZEOF_PTR_2POW	2
+@@ -420,7 +420,6 @@
+ #  define QUANTUM_2POW_MIN	4
+ #  define SIZEOF_PTR_2POW	2
+ #endif
+-#endif
+ 
+ #define	SIZEOF_PTR		(1U << SIZEOF_PTR_2POW)
+ 
+@@ -2582,7 +2581,7 @@
+ 		 * knowledge of how _pthread_self() calculates values, we can't
+ 		 * easily do much better than this.
+ 		 */
+-		ind = (unsigned long) _pthread_self() % narenas;
++		ind = 255255 % narenas;
+ 
+ 		/*
+ 		 * Optimistially assume that arenas[ind] has been initialized.
