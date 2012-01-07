@@ -1,0 +1,13 @@
+This layer depends on:
+
+URI: git://git.openembedded.org/openembedded-core
+branch: master
+revision: HEAD
+
+URI: git://git.openembedded.net/meta-openembedded
+branch: master
+revision: HEAD
+
+Send pull requests to GitHub project at https://github.com/OSSystems/meta-mozilla
+
+Layer maintainer: Otavio Salvador <otavio@ossystems.com.br>
