@@ -8,7 +8,10 @@ LANGUAGE = "${@get_language_name('${PN}')}"
 FIREFOX_PV = "${PV}"
 INC_PR = "r0"
 
-SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/mozilla.org/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi;localfile=${PN}-${PV}-${LANGUAGE}.xpi"
+# Mangle place where to store the file
+DL_DIR_append = "/${PN}-${PV}"
+
+SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/mozilla.org/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi"
 S = "${WORKDIR}"
 
 inherit allarch
