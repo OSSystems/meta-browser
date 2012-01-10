@@ -1,0 +1,113 @@
+From: Mike Hommey <glandium@debian.org>
+Date: Sat, 21 Jun 2008 02:48:46 +0200
+Subject: Allow .js preference files to set locked prefs with lockPref()
+
+---
+ modules/libpref/src/prefapi.cpp  |    5 ++++-
+ modules/libpref/src/prefapi.h    |    3 ++-
+ modules/libpref/src/prefread.cpp |   11 ++++++++---
+ modules/libpref/src/prefread.h   |    4 +++-
+ 4 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/modules/libpref/src/prefapi.cpp b/modules/libpref/src/prefapi.cpp
+index 713cc4b..7c2d6c1 100644
+--- a/modules/libpref/src/prefapi.cpp
++++ b/modules/libpref/src/prefapi.cpp
+@@ -976,7 +976,10 @@ void PREF_ReaderCallback(void       *closure,
+                          const char *pref,
+                          PrefValue   value,
+                          PrefType    type,
+-                         PRBool      isDefault)
++                         PRBool      isDefault,
++                         PRBool      isLocked)
+ {
+     pref_HashPref(pref, value, type, isDefault);
++    if (isLocked)
++        PREF_LockPref(pref, PR_TRUE);
+ }
+diff --git a/modules/libpref/src/prefapi.h b/modules/libpref/src/prefapi.h
+index b26da25..791dacc 100644
+--- a/modules/libpref/src/prefapi.h
++++ b/modules/libpref/src/prefapi.h
+@@ -208,7 +208,8 @@ void PREF_ReaderCallback( void *closure,
+                           const char *pref,
+                           PrefValue   value,
+                           PrefType    type,
+-                          PRBool      isDefault);
++                          PRBool      isDefault,
++                          PRBool      isLocked);
+ 
+ PR_END_EXTERN_C
+ #endif
+diff --git a/modules/libpref/src/prefread.cpp b/modules/libpref/src/prefread.cpp
+index c2a4f7e..b80da67 100644
+--- a/modules/libpref/src/prefread.cpp
++++ b/modules/libpref/src/prefread.cpp
+@@ -75,6 +75,7 @@ enum {
+ #define BITS_PER_HEX_DIGIT      4
+ 
+ static const char kUserPref[] = "user_pref";
++static const char kLockPref[] = "lockPref";
+ static const char kPref[] = "pref";
+ static const char kTrue[] = "true";
+ static const char kFalse[] = "false";
+@@ -161,7 +162,7 @@ pref_DoCallback(PrefParseState *ps)
+     default:
+         break;
+     }
+-    (*ps->reader)(ps->closure, ps->lb, value, ps->vtype, ps->fdefault);
++    (*ps->reader)(ps->closure, ps->lb, value, ps->vtype, ps->fdefault, ps->flock);
+     return PR_TRUE;
+ }
+ 
+@@ -220,6 +221,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+                 ps->vb    = NULL;
+                 ps->vtype = PREF_INVALID;
+                 ps->fdefault = PR_FALSE;
++                ps->flock = PR_FALSE;
+             }
+             switch (c) {
+             case '/':       /* begin comment block or line? */
+@@ -230,7 +232,9 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+                 break;
+             case 'u':       /* indicating user_pref */
+             case 'p':       /* indicating pref */
+-                ps->smatch = (c == 'u' ? kUserPref : kPref);
++            case 'l':       /* indicating lockPref */
++                ps->smatch = (c == 'u' ? kUserPref :
++                                         (c == 'p' ? kPref : kLockPref));
+                 ps->sindex = 1;
+                 ps->nextstate = PREF_PARSE_UNTIL_OPEN_PAREN;
+                 state = PREF_PARSE_MATCH_STRING;
+@@ -274,7 +278,8 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+         /* name parsing */
+         case PREF_PARSE_UNTIL_NAME:
+             if (c == '\"' || c == '\'') {
+-                ps->fdefault = (ps->smatch == kPref);
++                ps->fdefault = (ps->smatch != kUserPref);
++                ps->flock = (ps->smatch == kLockPref);
+                 ps->quotechar = c;
+                 ps->nextstate = PREF_PARSE_UNTIL_COMMA; /* return here when done */
+                 state = PREF_PARSE_QUOTED_STRING;
+diff --git a/modules/libpref/src/prefread.h b/modules/libpref/src/prefread.h
+index 1dc374b..a2d93ca 100644
+--- a/modules/libpref/src/prefread.h
++++ b/modules/libpref/src/prefread.h
+@@ -62,7 +62,8 @@ typedef void (*PrefReader)(void       *closure,
+                            const char *pref,
+                            PrefValue   val,
+                            PrefType    type,
+-                           PRBool      defPref);
++                           PRBool      defPref,
++                           PRBool      lockPref);
+ 
+ /* structure fields are private */
+ typedef struct PrefParseState {
+@@ -83,6 +84,7 @@ typedef struct PrefParseState {
+     char       *vb;         /* value buffer (ptr into lb)    */
+     PrefType    vtype;      /* PREF_STRING,INT,BOOL          */
+     PRBool      fdefault;   /* PR_TRUE if (default) pref     */
++    PRBool      flock;      /* PR_TRUE if pref to be locked  */
+ } PrefParseState;
+ 
+ /**

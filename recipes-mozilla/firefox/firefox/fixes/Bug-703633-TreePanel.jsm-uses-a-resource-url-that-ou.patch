@@ -1,0 +1,22 @@
+From: Mike Hommey <mh+mozilla@glandium.org>
+Date: Fri, 18 Nov 2011 18:36:16 +0100
+Subject: Bug 703633 - TreePanel.jsm uses a resource:/// url that ought to be
+ resource://gre/; r=rcampbell
+
+---
+ browser/devtools/highlighter/TreePanel.jsm |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/browser/devtools/highlighter/TreePanel.jsm b/browser/devtools/highlighter/TreePanel.jsm
+index 3c1ad94..c3a3bdf 100644
+--- a/browser/devtools/highlighter/TreePanel.jsm
++++ b/browser/devtools/highlighter/TreePanel.jsm
+@@ -45,7 +45,7 @@ const Cu = Components.utils;
+ 
+ Cu.import("resource:///modules/domplate.jsm");
+ Cu.import("resource:///modules/InsideOutBox.jsm");
+-Cu.import("resource:///modules/Services.jsm");
++Cu.import("resource://gre/modules/Services.jsm");
+ 
+ var EXPORTED_SYMBOLS = ["TreePanel"];
+ 

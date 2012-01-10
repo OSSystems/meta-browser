@@ -1,73 +1,60 @@
 . $topsrcdir/browser/config/mozconfig
 
-# use GTK+-2 widget set with XFT font rendering
-#ac_add_options --enable-default-toolkit=gtk2
-ac_add_options --enable-xft
-ac_add_options --disable-freetype2
-
-# enable minimal profile support
-ac_add_options --disable-profilesharing
-ac_add_options --disable-profilelocking
-ac_add_options --enable-single-profile
-
-ac_add_options --with-system-zlib
-ac_add_options --with-system-jpeg
-ac_add_options --with-system-bz2
-#ac_add_options --with-system-png
-
-ac_add_options --disable-accessibility
-ac_add_options --disable-composer
-#ac_add_options --enable-plaintext-editor-only
-ac_add_options --disable-mailnews
-ac_add_options --disable-ldap
-#ac_add_options --disable-postscript
-ac_add_options --disable-mathml
-ac_add_options --disable-jsd
-ac_add_options --disable-installer
-ac_add_options --disable-xprint
-ac_add_options --enable-necko-disk-cache
-ac_add_options --disable-necko-wifi
-ac_add_options --disable-updater
-
-# configure necko to allocate smaller network buffers
-ac_add_options --enable-necko-small-buffers
-
-# disable debug logging and tests
-#ac_add_options --disable-dtd-debug
-ac_add_options --disable-logging
-ac_add_options --disable-gtktest
-ac_add_options --disable-tests
-ac_add_options --disable-printing
+# From xulrunner.mozconfig
+ac_add_options --prefix=/usr
+ac_add_options --enable-default-toolkit=cairo-gtk2
+ac_add_options --enable-pango
+ac_add_options --enable-system-cairo # MOZ_TREE_CAIRO=
+ac_add_options --with-system-jpeg # MOZ_NATIVE_JPEG=1
+ac_add_options --with-system-zlib # MOZ_NATIVE_ZLIB=1
+ac_add_options --with-system-bz2 # MOZ_NATIVE_BZ2=1
+#ac_add_options --with-system-nspr # MOZ_NATIVE_NSPR=1
+#ac_add_options --with-system-nss # MOZ_NATIVE_NSS=1
+ac_add_options --enable-svg
+ac_add_options --enable-mathml
+ac_add_options --disable-pedantic
+ac_add_options --disable-long-long-warning
 ac_add_options --disable-gnomevfs
+ac_add_options --disable-gconf
+#ac_add_options --enable-gio
+ac_add_options --disable-gio
+#ac_add_options --enable-gnomeui
 ac_add_options --disable-gnomeui
-ac_add_options --enable-debugger-info-modules
-
-# build crypto module (PSM + NSS)
-ac_add_options --enable-crypto
-
-# build minimal set of protocol handlers
-ac_add_options --enable-necko-protocols=http,file,res,ftp,about,viewsource
-
-# build minimal set of image decoders
-#ac_add_options --enable-image-decoders=png,gif,jpeg
-
-#ac_add_options --enable-reorder
-#ac_add_options --enable-elf-dynstr-gc
-
-# enable static build
-#ac_add_options --disable-shared
-#ac_add_options --enable-static
-ac_add_options --enable-optimize=-O2
-
-# Use cairo from system
-ac_add_options --enable-system-cairo
-
-# Disable jemalloc
-ac_add_options --disable-jemalloc
-
-# enable libxul
-ac_add_options --enable-libxul
-
-# Disable striping
+ac_add_options --disable-mochitest
+ac_add_options --disable-debug
+ac_add_options --enable-canvas
+ac_add_options --enable-readline
+ac_add_options --disable-installer
+ac_add_options --disable-javaxpcom
+ac_add_options --disable-elf-dynstr-gc
+#ac_add_options --enable-system-hunspell # MOZ_NATIVE_HUNSPELL=1
+ac_add_options --disable-system-hunspell # MOZ_NATIVE_HUNSPELL=1
+ac_add_options --disable-crashreporter
+#ac_add_options --enable-system-sqlite # MOZ_NATIVE_SQLITE=1
 ac_add_options --disable-strip
 ac_add_options --disable-install-strip
+ac_add_options --enable-url-classifier
+ac_add_options --enable-startup-notification
+ac_add_options --enable-system-ffi # MOZ_NATIVE_FFI=1
+#ac_add_options --with-system-libevent # MOZ_NATIVE_LIBEVENT=1
+ac_add_options --with-system-libvpx # MOZ_NATIVE_LIBVPX=1
+#ac_add_options --enable-shared-js
+
+# From iceweasel.mozconfig
+#ac_add_options --with-user-appdir=.mozilla
+ac_add_options --disable-installer
+ac_add_options --disable-strip
+ac_add_options --disable-install-strip
+ac_add_options --disable-tests
+#ac_add_options --enable-extensions=default
+ac_add_options --enable-single-profile
+ac_add_options --disable-profilesharing
+ac_add_options --disable-updater
+ac_add_options --disable-elf-dynstr-gc
+#ac_add_options --with-branding=debian/branding
+ac_add_options --enable-official-branding
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-crashreporter
+ac_add_options --disable-webm
+ac_add_options --enable-chrome-format=jar
+ac_add_options --disable-libjpeg-turbo

@@ -1,0 +1,34 @@
+From: Mike Hommey <glandium@debian.org>
+Date: Sat, 21 Jun 2008 03:09:21 +0200
+Subject: Add another preferences directory for applications:
+ preferences/syspref
+
+It was existing in previous versions of iceweasel as a symlink to
+/etc/iceweasel/pref.
+
+This has the side effect to make these preferences there work again, and
+to disable the "set as default browser" dialog.
+---
+ toolkit/xre/nsXREDirProvider.cpp |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+index fd0b794..0c0c5c6 100644
+--- a/toolkit/xre/nsXREDirProvider.cpp
++++ b/toolkit/xre/nsXREDirProvider.cpp
+@@ -591,6 +591,7 @@ nsXREDirProvider::LoadAppBundleDirs()
+ }
+ 
+ static const char *const kAppendPrefDir[] = { "defaults", "preferences", nsnull };
++static const char *const kAppendSysPrefDir[] = { "defaults", "syspref", nsnull };
+ 
+ #ifdef DEBUG_bsmedberg
+ static void
+@@ -632,6 +633,7 @@ nsXREDirProvider::GetFilesInternal(const char* aProperty,
+     LoadAppDirIntoArray(mXULAppDir, kAppendPrefDir, directories);
+     LoadDirsIntoArray(mAppBundleDirectories,
+                       kAppendPrefDir, directories);
++    LoadAppDirIntoArray(mXULAppDir, kAppendSysPrefDir, directories);
+ 
+     rv = NS_NewArrayEnumerator(aResult, directories);
+   }

@@ -1,0 +1,20 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Fri, 18 Nov 2011 11:55:49 +0100
+Subject: Bug 703534 - Fix build failure on platforms without YARR JIT
+
+---
+ js/src/jscompartment.cpp |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/js/src/jscompartment.cpp b/js/src/jscompartment.cpp
+index be8451a..6a0164e 100644
+--- a/js/src/jscompartment.cpp
++++ b/js/src/jscompartment.cpp
+@@ -50,7 +50,6 @@
+ #include "jswatchpoint.h"
+ #include "jswrapper.h"
+ #include "assembler/wtf/Platform.h"
+-#include "assembler/jit/ExecutableAllocator.h"
+ #include "yarr/BumpPointerAllocator.h"
+ #include "methodjit/MethodJIT.h"
+ #include "methodjit/PolyIC.h"
