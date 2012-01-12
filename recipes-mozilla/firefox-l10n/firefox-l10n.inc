@@ -1,12 +1,11 @@
-# Copyright (C) 2009, 2011, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "unzip-native"
 RDEPENDS = "firefox"
 LICENSE = "CLOSED"
 LANGUAGE = "${@get_language_name('${PN}')}"
-FIREFOX_PV = "${PV}"
-INC_PR = "r0"
+INC_PR = "r1"
 
 # Mangle place where to store the file
 DL_DIR_append = "/${PN}-${PV}"
@@ -35,16 +34,16 @@ do_install() {
 	# Get extension UUID
 	EXTENSION=`cat install.rdf | sed --posix '/em:id[=>]/!d;s/[[:space:]]*<*em:id[=>]"*//;s/["<].*//' | head -n 1`
 
-	mkdir -p ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}/chrome
-	mkdir -p ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}/uninstall
-	cp -R chrome ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}/
-	install -m 644 install.rdf ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}
-	install -m 644 chrome.manifest ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}
+	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/chrome
+	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall
+	cp -R chrome ${D}/usr/lib/firefox/extensions/${EXTENSION}/
+	install -m 644 install.rdf ${D}/usr/lib/firefox/extensions/${EXTENSION}
+	install -m 644 chrome.manifest ${D}/usr/lib/firefox/extensions/${EXTENSION}
 
 	cat install.rdf \
 	   | sed --posix '/<em:locale>/!d' \
 	   | sed --posix "s/.*/register      global  locale  ${LANGUAGE}/" \
-	   > ${D}/usr/lib/firefox-${FIREFOX_PV}/extensions/${EXTENSION}/uninstall/Uninstall
+	   > ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall/Uninstall
 }
 
-FILES_${PN} += "/usr/lib/firefox-${FIREFOX_PV}"
+FILES_${PN} += "/usr/lib/firefox"
