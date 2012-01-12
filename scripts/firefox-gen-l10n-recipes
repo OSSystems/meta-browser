@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+	echo "Missing argument. Use: $0 <version>"
+	exit 1
+fi
+
+TMPDIR=/tmp/tmp.H6tP2LTNY5/ #$(mktemp -d)
+
+OLDCWD=$PWD
+
+cd $TMPDIR
+echo "Downloading XPI files..."
+wget -c ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$1/linux-i686/xpi/*.xpi
+
+cd $OLDCWD
+
+for f in $TMPDIR/*.xpi; do
+	md5=$(md5sum $f | awk '{ print $1 }')
+	sha256=$(sha256sum $f | awk '{ print $1 }')
+	lang_code=$(echo $f | sed "s,$TMPDIR/\([^\.]*\).xpi,\1,g" | tr '[A-Z]' '[a-z]')
+	echo $lang_code
+
+cat > firefox-l10n-${lang_code}_$1.bb <<EOF
+# Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
+# Released under the MIT license (see packages/COPYING)
+
+require firefox-l10n.inc
+
+PR = "\${INC_PR}.1"
+
+SRC_URI[md5sum] = "$md5"
+SRC_URI[sha256sum] = "$sha256"
+EOF
+done
+
+rm -rf $TMPDIR
+
