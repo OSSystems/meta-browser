@@ -1,4 +1,4 @@
-# Copyright (C) 2009, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "unzip-native"
@@ -10,13 +10,12 @@ LICENSE = "MPL-1.1"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
 
 S = "${WORKDIR}"
-FIREFOX_VERSION = "3.6.8"
 
 do_configure() {
 	unzip -o -q -d xpi *.xpi
 }
 
-INC_PR = "r0"
+INC_PR = "r1"
 
 inherit allarch
 
@@ -28,13 +27,13 @@ do_install() {
 	   exit 1
 	fi
 
-	mkdir -p ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}/chrome
-	mkdir -p ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}/uninstall
-	install -m 644 chrome/*.jar ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}/chrome
-	install -m 644 install.rdf ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}
-	install -m 644 chrome.manifest ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}
+	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/chrome
+	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall
+	install -m 644 chrome/*.jar ${D}/usr/lib/firefox/extensions/${EXTENSION}/chrome
+	install -m 644 install.rdf ${D}/usr/lib/firefox/extensions/${EXTENSION}
+	install -m 644 chrome.manifest ${D}/usr/lib/firefox/extensions/${EXTENSION}
 
-	cat install.rdf > ${D}/usr/lib/firefox-${FIREFOX_VERSION}/extensions/${EXTENSION}/uninstall/Uninstall
+	cat install.rdf > ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall/Uninstall
 }
 
-FILES_${PN} += "/usr/lib/firefox-${FIREFOX_VERSION}"
+FILES_${PN} += "/usr/lib/firefox"
