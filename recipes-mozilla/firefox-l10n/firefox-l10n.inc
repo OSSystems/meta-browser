@@ -1,7 +1,7 @@
 # Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
-DEPENDS = "unzip-native"
+DEPENDS = "mozilla-devscripts-native"
 RDEPENDS = "firefox"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
@@ -10,7 +10,7 @@ LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
 
 LANGUAGE = "${@get_language_name('${PN}')}"
-INC_PR = "r1"
+INC_PR = "r2"
 
 # Mangle place where to store the file
 DL_DIR_append = "/${PN}-${PV}"
@@ -30,25 +30,16 @@ def get_language_name(package):
     return lang
 
 do_configure() {
-	unzip -o -q -d ${LANGUAGE} *.xpi
+    xpi-unpack ${LANGUAGE}.xpi ${LANGUAGE}
 }
 
 do_install() {
-	cd ${S}/${LANGUAGE}
+    EXTENSION=`sed --posix '/em:id=/!d;s/[ ]*em:id="//;s/".*//' ${LANGUAGE}/install.rdf`
 
-	# Get extension UUID
-	EXTENSION=`cat install.rdf | sed --posix '/em:id[=>]/!d;s/[[:space:]]*<*em:id[=>]"*//;s/["<].*//' | head -n 1`
+    xpi-pack ${LANGUAGE} ${EXTENSION}.xpi
 
-	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/chrome
-	mkdir -p ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall
-	cp -R chrome ${D}/usr/lib/firefox/extensions/${EXTENSION}/
-	install -m 644 install.rdf ${D}/usr/lib/firefox/extensions/${EXTENSION}
-	install -m 644 chrome.manifest ${D}/usr/lib/firefox/extensions/${EXTENSION}
-
-	cat install.rdf \
-	   | sed --posix '/<em:locale>/!d' \
-	   | sed --posix "s/.*/register      global  locale  ${LANGUAGE}/" \
-	   > ${D}/usr/lib/firefox/extensions/${EXTENSION}/uninstall/Uninstall
+    mkdir -p ${D}${libdir}/firefox/extensions/
+    install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/extensions/${EXTENSION}.xpi
 }
 
-FILES_${PN} += "/usr/lib/firefox"
+FILES_${PN} += "${libdir}/firefox"
