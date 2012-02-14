@@ -1,7 +1,7 @@
 DESCRIPTION ?= "Browser made by mozilla"
 DEPENDS += "alsa-lib curl startup-notification libevent cairo sqlite3 libnotify"
 
-PR = "r1"
+PR = "r2"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=f918bd029113092723060a9aefffa7c5"
