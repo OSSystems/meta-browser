@@ -8,12 +8,12 @@ Replaces the previous patch in a much simpler way.
  1 files changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp b/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp
-index b781255..f61f90b 100644
+index 5d7f758..81b8efb 100644
 --- a/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp
 +++ b/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp
 @@ -99,6 +99,12 @@ nsMIMEInfoUnix::LoadUriInternal(nsIURI * aURI)
  NS_IMETHODIMP
- nsMIMEInfoUnix::GetHasDefaultHandler(PRBool *_retval)
+ nsMIMEInfoUnix::GetHasDefaultHandler(bool *_retval)
  {
 +  // if mDefaultApplication is set, it means the application has been set from
 +  // either /etc/mailcap or ${HOME}/.mailcap, in which case we don't want to
@@ -21,10 +21,10 @@ index b781255..f61f90b 100644
 +  if (mDefaultApplication)
 +    return nsMIMEInfoImpl::GetHasDefaultHandler(_retval);
 +
-   *_retval = PR_FALSE;
+   *_retval = false;
    nsRefPtr<nsMIMEInfoBase> mimeInfo = nsGNOMERegistry::GetFromType(mSchemeOrType);
    if (!mimeInfo) {
-@@ -132,13 +138,18 @@ nsMIMEInfoUnix::GetHasDefaultHandler(PRBool *_retval)
+@@ -132,13 +138,18 @@ nsMIMEInfoUnix::GetHasDefaultHandler(bool *_retval)
    }
  #endif
  

@@ -7,10 +7,10 @@ Subject: Bug 698923 - Don't require 16 bytes alignment for VMFrame on sparc
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/js/src/methodjit/MethodJIT.cpp b/js/src/methodjit/MethodJIT.cpp
-index 00d2ba2..6c0600d 100644
+index 4f7f5db..c3d01cb 100644
 --- a/js/src/methodjit/MethodJIT.cpp
 +++ b/js/src/methodjit/MethodJIT.cpp
-@@ -183,7 +183,7 @@ JS_STATIC_ASSERT(offsetof(FrameRegs, sp) == 0);
+@@ -257,7 +257,7 @@ JS_STATIC_ASSERT(offsetof(FrameRegs, sp) == 0);
  #if defined(__GNUC__) && !defined(_WIN64)
  
  /* If this assert fails, you need to realign VMFrame to 16 bytes. */

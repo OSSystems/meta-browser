@@ -7,7 +7,7 @@ Subject: Use a variable for xulrunner base version in various places
  1 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/config/autoconf.mk.in b/config/autoconf.mk.in
-index efc1d72..1a9f7af 100644
+index a168406..8592a08 100644
 --- a/config/autoconf.mk.in
 +++ b/config/autoconf.mk.in
 @@ -54,6 +54,7 @@ MOZ_APP_VENDOR = @MOZ_APP_VENDOR@
@@ -16,9 +16,9 @@ index efc1d72..1a9f7af 100644
  MOZ_APP_VERSION = @MOZ_APP_VERSION@
 +MOZ_APP_BASE_VERSION = $(firstword $(subst ., ,$(MOZ_APP_VERSION))).$(word 2,$(subst ., ,$(MOZ_APP_VERSION)))
  MOZ_UA_BUILDID = @MOZ_UA_BUILDID@
+ MOZ_MACBUNDLE_NAME = @MOZ_MACBUNDLE_NAME@
  
- MOZ_PKG_SPECIAL = @MOZ_PKG_SPECIAL@
-@@ -61,14 +62,14 @@ MOZ_PKG_SPECIAL = @MOZ_PKG_SPECIAL@
+@@ -62,14 +63,14 @@ MOZ_PKG_SPECIAL = @MOZ_PKG_SPECIAL@
  prefix		= @prefix@
  exec_prefix	= @exec_prefix@
  bindir		= @bindir@

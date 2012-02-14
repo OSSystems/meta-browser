@@ -21,10 +21,10 @@ index b30a715..9f7befb 100644
  # build non-default locales to non-default dist/ locations. Be aware!
  
 diff --git a/browser/locales/en-US/chrome/overrides/appstrings.properties b/browser/locales/en-US/chrome/overrides/appstrings.properties
-index b87d1be..44579dc 100644
+index 87e9538..ac979f9 100644
 --- a/browser/locales/en-US/chrome/overrides/appstrings.properties
 +++ b/browser/locales/en-US/chrome/overrides/appstrings.properties
-@@ -35,23 +35,23 @@
+@@ -35,24 +35,24 @@
  # ***** END LICENSE BLOCK *****
  
  malformedURI=The URL is not valid and cannot be loaded.
@@ -46,6 +46,7 @@ index b87d1be..44579dc 100644
 -unknownSocketType=Firefox doesn't know how to communicate with the server.
 +#expand unknownSocketType=__MOZ_APP_DISPLAYNAME__ doesn't know how to communicate with the server.
  netReset=The connection to the server was reset while the page was loading.
+ notCached=This document is no longer available.
 -netOffline=Firefox is currently in offline mode and can't browse the Web.
 +#expand netOffline=__MOZ_APP_DISPLAYNAME__ is currently in offline mode and can't browse the Web.
  isprinting=The document cannot change while Printing or in Print Preview.

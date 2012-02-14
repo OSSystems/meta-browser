@@ -13,10 +13,10 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/src/md/unix/Makefile.in b/xpcom/reflect/xptcall/src/md/unix/Makefile.in
-index ccaeae7..60a3d4d 100644
+index 6c50821..44d6ab1 100644
 --- a/xpcom/reflect/xptcall/src/md/unix/Makefile.in
 +++ b/xpcom/reflect/xptcall/src/md/unix/Makefile.in
-@@ -441,6 +441,17 @@ CPPSRCS		:= xptcinvoke_linux_s390x.cpp xptcstubs_linux_s390x.cpp
+@@ -430,6 +430,17 @@ CPPSRCS		:= xptcinvoke_linux_s390x.cpp xptcstubs_linux_s390x.cpp
  CXXFLAGS	+= -fno-strict-aliasing -fno-inline -fomit-frame-pointer -mbackchain
  endif
  

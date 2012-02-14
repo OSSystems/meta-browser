@@ -8,10 +8,10 @@ Subject: Install js shell when running make install from js/src
  2 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/js/src/Makefile.in b/js/src/Makefile.in
-index 810b85a..24ad8ac 100644
+index a5e33d3..f26694b 100644
 --- a/js/src/Makefile.in
 +++ b/js/src/Makefile.in
-@@ -975,6 +975,7 @@ endif
+@@ -945,6 +945,7 @@ endif
  ifneq (,$(IMPORT_LIBRARY))
  	$(SYSINSTALL) $(IMPORT_LIBRARY) $(DESTDIR)$(libdir)
  endif

@@ -1,30 +1,24 @@
 DESCRIPTION ?= "Browser made by mozilla"
-DEPENDS += "alsa-lib curl startup-notification libevent cairo sqlite3 libnotify"
-
-PR = "r2"
+DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
-LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=f918bd029113092723060a9aefffa7c5"
+LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
 
-SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
+SRC_URI = "http://archive.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
            file://mozilla-${PN}.png \
            file://mozilla-${PN}.desktop \
            file://fixes/Allow-.js-preference-files-to-set-locked-prefs-with-.patch \
            file://fixes/Avoid-spurious-Run-items-in-application-handlers-con.patch \
            file://fixes/Properly-launch-applications-set-in-HOME-.mailcap.patch \
            file://fixes/Fix-some-tests-using-CurProcD-where-GreD-should-be-u.patch \
-           file://fixes/Bug-690682-Disable-dead-symbol-removal-when-failing-.patch \
            file://fixes/Bug-703633-TreePanel.jsm-uses-a-resource-url-that-ou.patch \
+           file://fixes/Bug-691898-Use-YARR-interpreter-instead-of-PCRE-on-p.patch \
+           file://fixes/Bug-722127-Bump-required-libvpx-version-to-1.0.0.-r-.patch \
            file://iceweasel-branding/Use-MOZ_APP_DISPLAYNAME-to-fill-appstrings.propertie.patch \
            file://iceweasel-branding/Determine-which-phishing-shavar-to-use-depending-on-.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
-           file://porting/Add-mips-hppa-ia64-s390-and-sparc-defines-in-ipc-chr.patch \
            file://porting/Allow-ipc-code-to-build-on-GNU-kfreebsd.patch \
            file://porting/Allow-ipc-code-to-build-on-GNU-Hurd.patch \
-           file://porting/Bug-680917-Use-a-pool-size-of-16kB-on-ia64-for-bump-.patch \
-           file://porting/Revert-bz-164580.patch \
-           file://porting/Bug-694533-LDRH-STRH-LDRSB-STRSB-are-supported-on-AR.patch \
-           file://porting/Bug-696393-Reimplement-NS_InvokeByIndex-in-C-on-S390.patch \
            file://porting/Bug-698923-Don-t-require-16-bytes-alignment-for-VMFr.patch \
            file://porting/Fix-GNU-non-Linux-failure-to-build-because-of-ipc-ch.patch \
            file://porting/Bug-703531-Fix-ARMAssembler-getOp2RegScale-on-ARMv5.patch \
@@ -54,10 +48,11 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/pkg-config-files-don-t-need-to-require-the-version-o.patch \
            file://debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch \
            file://debian-hacks/Fix-tracejit-to-build-against-nanojit-headers-in-dis.patch \
-           file://configure.patch"
+           file://configure.patch \
+           file://vendor.js"
 
-SRC_URI[archive.md5sum] = "7cf2bd379792a9b232267c6a79680566"
-SRC_URI[archive.sha256sum] = "f852011c28b00b26803b4618b52de79c705204b2f4eadba08092a379f94babae"
+SRC_URI[archive.md5sum] = "265c53120fd923c742164b0002ebbf6c"
+SRC_URI[archive.sha256sum] = "d06dc35607e354d4c1524ca3344cd316a6d7a38c8c0578a52caee6a3adb054f5"
 
 S = "${WORKDIR}/mozilla-release"
 
@@ -73,6 +68,7 @@ do_install() {
 	install -d ${D}${datadir}/pixmaps
 	install -m 0644 ${WORKDIR}/mozilla-${PN}.desktop ${D}${datadir}/applications/
 	install -m 0644 ${WORKDIR}/mozilla-${PN}.png ${D}${datadir}/pixmaps/
+	install -m 0644 ${WORKDIR}/vendor.js ${D}${libdir}/${PN}/defaults/pref/
 	rm -f ${D}${libdir}/${PN}/TestGtkEmbed
 	rm -f ${D}${libdir}/${PN}/defaults/pref/firefox-l10n.js
 
@@ -100,6 +96,7 @@ FILES_${PN} = "${bindir}/${PN} \
                ${libdir}/${PN}/.autoreg \
                ${bindir}/defaults"
 FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
+FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
 FILES_${PN}-dbg += "${libdir}/${PN}/.debug \
                     ${libdir}/${PN}/*/.debug \
                     ${libdir}/${PN}/*/*/.debug \	

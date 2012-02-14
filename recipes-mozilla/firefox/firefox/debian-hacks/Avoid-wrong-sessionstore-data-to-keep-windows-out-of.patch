@@ -12,10 +12,10 @@ Closes: #552426, #553453
  1 files changed, 1 insertions(+), 3 deletions(-)
 
 diff --git a/browser/components/sessionstore/src/nsSessionStore.js b/browser/components/sessionstore/src/nsSessionStore.js
-index 03dba25..1bfe9a2 100644
+index a62821b..0878209 100644
 --- a/browser/components/sessionstore/src/nsSessionStore.js
 +++ b/browser/components/sessionstore/src/nsSessionStore.js
-@@ -3431,7 +3431,7 @@ SessionStoreService.prototype = {
+@@ -3460,7 +3460,7 @@ SessionStoreService.prototype = {
        aWindow.resizeTo(aWidth, aHeight);
      }
      if (!isNaN(aLeft) && !isNaN(aTop) && (aLeft != win_("screenX") || aTop != win_("screenY"))) {
@@ -24,7 +24,7 @@ index 03dba25..1bfe9a2 100644
      }
      if (aSizeMode && win_("sizemode") != aSizeMode)
      {
-@@ -3441,8 +3441,6 @@ SessionStoreService.prototype = {
+@@ -3470,8 +3470,6 @@ SessionStoreService.prototype = {
          aWindow.maximize();
          break;
        case "minimized":

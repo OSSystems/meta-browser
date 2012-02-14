@@ -6,41 +6,41 @@ Subject: Allow .js preference files to set locked prefs with lockPref()
  modules/libpref/src/prefapi.cpp  |    5 ++++-
  modules/libpref/src/prefapi.h    |    3 ++-
  modules/libpref/src/prefread.cpp |   11 ++++++++---
- modules/libpref/src/prefread.h   |    4 +++-
- 4 files changed, 17 insertions(+), 6 deletions(-)
+ modules/libpref/src/prefread.h   |    6 ++++--
+ 4 files changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/src/prefapi.cpp b/modules/libpref/src/prefapi.cpp
-index 713cc4b..7c2d6c1 100644
+index 5ecc914..885bdf4 100644
 --- a/modules/libpref/src/prefapi.cpp
 +++ b/modules/libpref/src/prefapi.cpp
 @@ -976,7 +976,10 @@ void PREF_ReaderCallback(void       *closure,
                           const char *pref,
                           PrefValue   value,
                           PrefType    type,
--                         PRBool      isDefault)
-+                         PRBool      isDefault,
-+                         PRBool      isLocked)
+-                         bool        isDefault)
++                         bool        isDefault,
++                         bool        isLocked)
  {
      pref_HashPref(pref, value, type, isDefault);
 +    if (isLocked)
-+        PREF_LockPref(pref, PR_TRUE);
++        PREF_LockPref(pref, true);
  }
 diff --git a/modules/libpref/src/prefapi.h b/modules/libpref/src/prefapi.h
-index b26da25..791dacc 100644
+index 22a88d3..2b20c4e 100644
 --- a/modules/libpref/src/prefapi.h
 +++ b/modules/libpref/src/prefapi.h
 @@ -208,7 +208,8 @@ void PREF_ReaderCallback( void *closure,
                            const char *pref,
                            PrefValue   value,
                            PrefType    type,
--                          PRBool      isDefault);
-+                          PRBool      isDefault,
-+                          PRBool      isLocked);
+-                          bool        isDefault);
++                          bool        isDefault,
++                          bool        isLocked);
  
  PR_END_EXTERN_C
  #endif
 diff --git a/modules/libpref/src/prefread.cpp b/modules/libpref/src/prefread.cpp
-index c2a4f7e..b80da67 100644
+index 893d256..d4ef51a 100644
 --- a/modules/libpref/src/prefread.cpp
 +++ b/modules/libpref/src/prefread.cpp
 @@ -75,6 +75,7 @@ enum {
@@ -57,14 +57,14 @@ index c2a4f7e..b80da67 100644
      }
 -    (*ps->reader)(ps->closure, ps->lb, value, ps->vtype, ps->fdefault);
 +    (*ps->reader)(ps->closure, ps->lb, value, ps->vtype, ps->fdefault, ps->flock);
-     return PR_TRUE;
+     return true;
  }
  
 @@ -220,6 +221,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
                  ps->vb    = NULL;
                  ps->vtype = PREF_INVALID;
-                 ps->fdefault = PR_FALSE;
-+                ps->flock = PR_FALSE;
+                 ps->fdefault = false;
++                ps->flock = false;
              }
              switch (c) {
              case '/':       /* begin comment block or line? */
@@ -90,24 +90,26 @@ index c2a4f7e..b80da67 100644
                  ps->nextstate = PREF_PARSE_UNTIL_COMMA; /* return here when done */
                  state = PREF_PARSE_QUOTED_STRING;
 diff --git a/modules/libpref/src/prefread.h b/modules/libpref/src/prefread.h
-index 1dc374b..a2d93ca 100644
+index 50f4d54..93a1702 100644
 --- a/modules/libpref/src/prefread.h
 +++ b/modules/libpref/src/prefread.h
 @@ -62,7 +62,8 @@ typedef void (*PrefReader)(void       *closure,
                             const char *pref,
                             PrefValue   val,
                             PrefType    type,
--                           PRBool      defPref);
-+                           PRBool      defPref,
-+                           PRBool      lockPref);
+-                           bool        defPref);
++                           bool        defPref,
++                           bool        lockPref);
  
  /* structure fields are private */
  typedef struct PrefParseState {
-@@ -83,6 +84,7 @@ typedef struct PrefParseState {
+@@ -82,7 +83,8 @@ typedef struct PrefParseState {
+     char       *lbend;      /* line buffer end               */
      char       *vb;         /* value buffer (ptr into lb)    */
      PrefType    vtype;      /* PREF_STRING,INT,BOOL          */
-     PRBool      fdefault;   /* PR_TRUE if (default) pref     */
-+    PRBool      flock;      /* PR_TRUE if pref to be locked  */
+-    bool        fdefault;   /* true if (default) pref     */
++    bool        fdefault;   /* true if (default) pref        */
++    bool        flock;      /* true if pref to be locked     */
  } PrefParseState;
  
  /**

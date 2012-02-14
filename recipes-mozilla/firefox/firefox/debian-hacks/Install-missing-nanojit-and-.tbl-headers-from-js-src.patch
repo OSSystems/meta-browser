@@ -8,10 +8,10 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=542789
  1 files changed, 27 insertions(+), 17 deletions(-)
 
 diff --git a/js/src/Makefile.in b/js/src/Makefile.in
-index 54aa13c..810b85a 100644
+index 7a8f9c1..a5e33d3 100644
 --- a/js/src/Makefile.in
 +++ b/js/src/Makefile.in
-@@ -234,6 +234,7 @@ INSTALLED_HEADERS = \
+@@ -230,6 +230,7 @@ INSTALLED_HEADERS = \
  		jsxdrapi.h \
  		jsval.h \
  		prmjtime.h \
@@ -19,7 +19,7 @@ index 54aa13c..810b85a 100644
  		$(NULL)
  
  ######################################################
-@@ -279,21 +280,21 @@ VPATH		+= \
+@@ -296,21 +297,21 @@ VPATH		+= \
  
  INSTALLED_HEADERS += \
  		jsbuiltins.h    \
@@ -56,8 +56,8 @@ index 54aa13c..810b85a 100644
  		VMPI.h		\
  		Writer.h	\
  		$(NULL)
-@@ -532,7 +533,11 @@ ifeq ($(OS_ARCH),WINNT)
- INSTALLED_HEADERS += jscpucfg.h
+@@ -550,7 +551,11 @@ else
+ CPPSRCS += pm_stub.cpp
  endif
  
 -EXPORTS = $(INSTALLED_HEADERS)
@@ -69,7 +69,7 @@ index 54aa13c..810b85a 100644
  
  DASH_R		= -r
  
-@@ -946,7 +951,12 @@ js-config: js-config.in Makefile $(DEPTH)/config/autoconf.mk $(topsrcdir)/config
+@@ -916,7 +921,12 @@ js-config: js-config.in Makefile $(DEPTH)/config/autoconf.mk $(topsrcdir)/config
  SCRIPTS = js-config
  SDK_BINARY = js-config
  

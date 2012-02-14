@@ -7,7 +7,7 @@ Subject: Bug 703531 - Fix ARMAssembler::getOp2RegScale on < ARMv5
  1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/js/src/assembler/assembler/ARMAssembler.cpp b/js/src/assembler/assembler/ARMAssembler.cpp
-index f67b6f9..8196611 100644
+index 78b8a7d..0458446 100644
 --- a/js/src/assembler/assembler/ARMAssembler.cpp
 +++ b/js/src/assembler/assembler/ARMAssembler.cpp
 @@ -112,10 +112,10 @@ ARMWord ARMAssembler::getOp2RegScale(RegisterID reg, ARMWord scale)

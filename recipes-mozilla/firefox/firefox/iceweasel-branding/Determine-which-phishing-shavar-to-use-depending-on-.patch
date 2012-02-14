@@ -11,7 +11,7 @@ Subject: Determine which phishing shavar to use depending on
  4 files changed, 16 insertions(+), 0 deletions(-)
 
 diff --git a/browser/app/Makefile.in b/browser/app/Makefile.in
-index e40172f..8acee11 100644
+index 95055cb..a6066f7 100644
 --- a/browser/app/Makefile.in
 +++ b/browser/app/Makefile.in
 @@ -191,6 +191,10 @@ ifdef MOZILLA_OFFICIAL
@@ -26,10 +26,10 @@ index e40172f..8acee11 100644
  libs::
  	$(INSTALL) $(IFLAGS1) $(DIST)/branding/mozicon128.png $(DIST)/bin/icons
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 250eb75..d059151 100644
+index 42365ee..475a2e6 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -726,7 +726,11 @@ pref("urlclassifier.alternate_error_page", "blocked");
+@@ -742,7 +742,11 @@ pref("urlclassifier.alternate_error_page", "blocked");
  pref("urlclassifier.gethashnoise", 4);
  
  // The list of tables that use the gethash request to confirm partial results.
@@ -42,10 +42,10 @@ index 250eb75..d059151 100644
  // If an urlclassifier table has not been updated in this number of seconds,
  // a gethash request will be forced to check that the result is still in
 diff --git a/browser/components/safebrowsing/Makefile.in b/browser/components/safebrowsing/Makefile.in
-index 9592aa3..fd3bedb 100644
+index 2d526c2..3b6ca17 100644
 --- a/browser/components/safebrowsing/Makefile.in
 +++ b/browser/components/safebrowsing/Makefile.in
-@@ -53,6 +53,10 @@ ifdef MOZILLA_OFFICIAL
+@@ -51,6 +51,10 @@ ifdef MOZILLA_OFFICIAL
  DEFINES += -DOFFICIAL_BUILD=1
  endif
  
