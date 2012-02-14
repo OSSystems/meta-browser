@@ -3,7 +3,12 @@
 
 DEPENDS = "unzip-native"
 RDEPENDS = "firefox"
-LICENSE = "CLOSED"
+
+LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
+
+# Ugly hack for now; we need to check license per recipe later
+LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3b58"
+
 LANGUAGE = "${@get_language_name('${PN}')}"
 INC_PR = "r1"
 
