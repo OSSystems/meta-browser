@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-TMPDIR=/tmp/tmp.H6tP2LTNY5/ #$(mktemp -d)
+TMPDIR=$(mktemp -d)
 
 OLDCWD=$PWD
 
