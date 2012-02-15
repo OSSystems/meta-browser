@@ -52,6 +52,11 @@ mozilla_do_configure() {
 		oe_runmake -f client.mk ${MOZ_OBJDIR}/Makefile \
 					${MOZ_OBJDIR}/config.status
 	fi
+
+	sed -i -e 's,@prefix@,${prefix},g' \
+	       -e 's,@STAGING_INCDIR@,${STAGING_INCDIR},g' \
+	       -e 's,@STAGING_DIR_TARGET@,${STAGING_DIR_TARGET},g' \
+	       ${MOZCONFIG}
 }
 
 mozilla_do_compile() {
