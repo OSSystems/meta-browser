@@ -19,7 +19,6 @@ for f in $TMPDIR/*.xpi; do
 	md5=$(md5sum $f | awk '{ print $1 }')
 	sha256=$(sha256sum $f | awk '{ print $1 }')
 	lang_code=$(echo $f | sed "s,$TMPDIR/\([^\.]*\).xpi,\1,g" | tr '[A-Z]' '[a-z]')
-	echo $lang_code
 
 cat > firefox-l10n-${lang_code}_$1.bb <<EOF
 # Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
