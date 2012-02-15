@@ -11,21 +11,28 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3
 
 S = "${WORKDIR}"
 
-INC_PR = "r2"
+INC_PR = "r3"
 
 inherit allarch
 
 do_configure() {
-    xpi-unpack *.xpi xpi
+    i=0
+    for e in `find -iname '*.xpi'`; do
+        xpi-unpack $e xpi$i
+        i=`expr $i + 1`
+    done
 }
 
 do_install() {
-    EXTENSION=`sed --posix '/em:id=/!d;s/[ ]*em:id="//;s/".*//' xpi/install.rdf`
+    for e in `ls -d xpi[0-9]`; do
+        EXTENSION=`sed --posix '/em:id=/!d;s/[ ]*em:id="//;s/".*//' $e/install.rdf`
+        [ -z "$EXTENSION" ] && exit 1
 
-    xpi-pack xpi ${EXTENSION}.xpi
+        xpi-pack $e ${EXTENSION}.xpi
 
-    mkdir -p ${D}${libdir}/firefox/extensions/
-    install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/extensions/${EXTENSION}.xpi
+        mkdir -p ${D}${libdir}/firefox/extensions/
+        install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/extensions/${EXTENSION}.xpi
+    done
 }
 
 FILES_${PN} += "${libdir}/firefox"
