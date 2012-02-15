@@ -5,11 +5,11 @@ require firefox-addon.inc
 
 PR = "${INC_PR}.0"
 
-PV = "20120215"
+PV = "20120215.1"
 
 S = "${WORKDIR}/git"
 
-SRCREV = "80879d1448a18122ef681bae8988c90329814ba3"
+SRCREV = "49fa6bfbb955b5a9106d6430efed857c4ea08c4d"
 SRC_URI = "git://github.com/Webconverger/iceweasel-webconverger.git;protocol=git"
 
 do_configure_prepend() {
