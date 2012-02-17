@@ -3,15 +3,14 @@
 
 require firefox-addon.inc
 
-PR = "${INC_PR}.1"
+PR = "${INC_PR}.2"
 
 PV = "20120215.1"
 
 S = "${WORKDIR}/git"
 
 SRCREV = "49fa6bfbb955b5a9106d6430efed857c4ea08c4d"
-SRC_URI = "git://github.com/Webconverger/iceweasel-webconverger.git;protocol=git \
-           file://0001-Set-fullscreen-on-start.patch"
+SRC_URI = "git://github.com/Webconverger/iceweasel-webconverger.git;protocol=git"
 
 do_configure_prepend() {
     oe_runmake webconverger
