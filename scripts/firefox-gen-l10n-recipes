@@ -26,7 +26,7 @@ cat > firefox-l10n-${lang_code}_$1.bb <<EOF
 
 require firefox-l10n.inc
 
-PR = "\${INC_PR}.1"
+PR = "\${INC_PR}"
 
 SRC_URI[md5sum] = "$md5"
 SRC_URI[sha256sum] = "$sha256"
