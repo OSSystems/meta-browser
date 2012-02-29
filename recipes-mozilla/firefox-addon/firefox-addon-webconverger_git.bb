@@ -3,17 +3,21 @@
 
 require firefox-addon.inc
 
-PR = "${INC_PR}.4"
+PR = "${INC_PR}.0"
 
-PV = "20120215.1"
+PV = "20120228"
 
 S = "${WORKDIR}/git"
 
-SRCREV = "49fa6bfbb955b5a9106d6430efed857c4ea08c4d"
+SRCREV = "0706c0cf5693e137e1fe64ce3f635d311cb8b063"
 SRC_URI = "git://github.com/Webconverger/iceweasel-webconverger.git;protocol=git \
            file://unbind-f10-quit.patch \
-           file://disable-browse-with-caret.patch"
+           file://disable-C-l.patch"
 
 do_configure_prepend() {
     oe_runmake webconverger
+}
+
+do_compile() {
+    :
 }
