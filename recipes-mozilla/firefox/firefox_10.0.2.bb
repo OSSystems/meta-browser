@@ -4,6 +4,8 @@ DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx v
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
 
+PR = "r1"
+
 SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
            file://mozilla-${PN}.png \
            file://mozilla-${PN}.desktop \
@@ -49,6 +51,7 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch \
            file://debian-hacks/Fix-tracejit-to-build-against-nanojit-headers-in-dis.patch \
            file://configure.patch \
+	   file://powerpc_va_list.patch \
            file://vendor.js"
 
 SRC_URI[archive.md5sum] = "5ce038d591964f72c534fa33b75a62f5"
