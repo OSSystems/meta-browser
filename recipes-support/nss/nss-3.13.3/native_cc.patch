@@ -1,0 +1,36 @@
+Index: mozilla/security/coreconf/mkdepend/Makefile
+===================================================================
+--- mozilla.orig/security/coreconf/mkdepend/Makefile	2012-02-20 18:18:35.237845874 +0100
++++ mozilla/security/coreconf/mkdepend/Makefile	2012-02-20 18:19:15.977844984 +0100
+@@ -64,11 +64,11 @@
+ endif
+ 
+ ifdef NATIVE_CC
+-CC=$(NATIVE_CC)
++override CC=$(NATIVE_CC)
+ endif
+ 
+ ifdef NATIVE_FLAGS
+-OS_CFLAGS=$(NATIVE_FLAGS)
++override OS_CFLAGS=$(NATIVE_FLAGS)
+ endif
+ 
+ include $(DEPTH)/coreconf/rules.mk
+Index: mozilla/security/coreconf/nsinstall/Makefile
+===================================================================
+--- mozilla.orig/security/coreconf/nsinstall/Makefile	2012-02-20 18:18:28.693846017 +0100
++++ mozilla/security/coreconf/nsinstall/Makefile	2012-02-20 18:19:40.881844444 +0100
+@@ -58,11 +58,11 @@
+ endif
+ 
+ ifdef NATIVE_CC
+-CC=$(NATIVE_CC)
++override CC=$(NATIVE_CC)
+ endif
+ 
+ ifdef NATIVE_FLAGS
+-OS_CFLAGS=$(NATIVE_FLAGS)
++override OS_CFLAGS=$(NATIVE_FLAGS)
+ endif
+ 
+ include $(DEPTH)/coreconf/rules.mk

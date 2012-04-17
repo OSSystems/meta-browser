@@ -1,0 +1,19 @@
+--- a/tools/gyp/pylib/gyp/__init__.py	2009-12-10 22:36:18.000000000 +0800
++++ b/tools/gyp/pylib/gyp/__init__.py	2009-12-10 22:39:23.000000000 +0800
+@@ -376,10 +376,12 @@
+ 
+   # If ~/.gyp/include.gypi exists, it'll be forcibly included into every
+   # .gyp file that's loaded, before anything else is included.
+-  if home_dot_gyp != None:
+-    default_include = os.path.join(home_dot_gyp, 'include.gypi')
+-    if os.path.exists(default_include):
+-      includes.append(default_include)
++  #if home_dot_gyp != None:
++  #  default_include = os.path.join(home_dot_gyp, 'include.gypi')
++  #  if os.path.exists(default_include):
++  #    includes.append(default_include)
++
++  includes.append(__PATH__TO_BE_REPLACED__)
+ 
+   # Command-line --include files come after the default include.
+   if options.includes:

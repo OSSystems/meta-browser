@@ -1,0 +1,11 @@
+prefix=OEPREFIX
+exec_prefix=OEEXECPREFIX
+libdir=OELIBDIR
+includedir=OEINCDIR
+
+Name: NSS
+Description: Mozilla Network Security Services
+Version: @VERSION@
+Requires: nspr
+Libs: -L${libdir} -lnss3 -lnssutil3 -lsmime3 -lssl3 
+Cflags: -I${includedir}

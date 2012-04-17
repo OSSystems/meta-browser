@@ -1,0 +1,24 @@
+OpenEmbedded/Yocto BSP layer for Chromium
+=========================================
+
+This layer provides Chromium browser recipes for use with
+OpenEmbedded and/or Yocto.
+
+This layer depends on:
+
+URI: git://git.openembedded.org/openembedded-core
+branch: master
+revision: HEAD
+
+URI: git://git.openembedded.net/meta-openembedded
+branch: master
+revision: HEAD
+
+Contributing
+------------
+
+To contribute to this layer you should the patches for review to the
+OpenEmbedded mailing list.
+
+Maintainers: Eric Bénard <eric@eukrea.com>
+             Denis Carikli <denis@eukrea.com>
