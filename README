@@ -18,7 +18,14 @@ Contributing
 ------------
 
 To contribute to this layer you should the patches for review to the
-OpenEmbedded mailing list.
+OpenEmbedded dev mailing list openembedded-devel@lists.openembedded.org
+and please cc the maintainers.
 
 Maintainers: Eric Bénard <eric@eukrea.com>
              Denis Carikli <denis@eukrea.com>
+
+TODO
+----
+- enable WebGL with OpenGL ES support
+- support other platforms than armv7
+- merge with meta-mozilla to create a meta-browser layer
