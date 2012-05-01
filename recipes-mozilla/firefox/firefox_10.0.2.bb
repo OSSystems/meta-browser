@@ -51,7 +51,7 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch \
            file://debian-hacks/Fix-tracejit-to-build-against-nanojit-headers-in-dis.patch \
            file://configure.patch \
-	   file://powerpc_va_list.patch \
+           file://powerpc_va_list.patch \
            file://vendor.js"
 
 SRC_URI[archive.md5sum] = "5ce038d591964f72c534fa33b75a62f5"
@@ -102,10 +102,10 @@ FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-
 FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
 FILES_${PN}-dbg += "${libdir}/${PN}/.debug \
                     ${libdir}/${PN}/*/.debug \
-                    ${libdir}/${PN}/*/*/.debug \	
+                    ${libdir}/${PN}/*/*/.debug \
                     ${libdir}/${PN}/*/*/*/.debug \
                     ${libdir}/${PN}-devel-*/*/.debug \
-                    ${libdir}/${PN}-devel-*/*/*/.debug \	
+                    ${libdir}/${PN}-devel-*/*/*/.debug \
                     ${libdir}/${PN}-devel-*/*/*/*/.debug \
                     ${bindir}/.debug"
 
