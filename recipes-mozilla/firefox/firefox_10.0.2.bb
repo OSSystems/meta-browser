@@ -4,7 +4,7 @@ DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx v
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
 
-PR = "r1"
+PR = "r2"
 
 SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
            file://mozilla-${PN}.png \
@@ -52,7 +52,8 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/Fix-tracejit-to-build-against-nanojit-headers-in-dis.patch \
            file://configure.patch \
            file://powerpc_va_list.patch \
-           file://vendor.js"
+           file://vendor.js \
+           file://firefox.gcc-4.7.patch"
 
 SRC_URI[archive.md5sum] = "5ce038d591964f72c534fa33b75a62f5"
 SRC_URI[archive.sha256sum] = "6ec5feba56f180a6fbf437a68cf0c77146ade28b936e5187573e3d95f13a0449"
