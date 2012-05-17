@@ -1,13 +1,31 @@
+OpenEmbedded/Yocto BSP layer for Web Browsers
+=============================================
+
+This layer provides web browser recipes for use with OpenEmbedded
+and/or Yocto.
+
 This layer depends on:
 
 URI: git://git.openembedded.org/openembedded-core
 branch: master
 revision: HEAD
 
-URI: git://git.openembedded.net/meta-openembedded
+URI: git://git.openembedded.org/meta-openembedded
 branch: master
 revision: HEAD
 
-Send pull requests to GitHub project at https://github.com/OSSystems/meta-mozilla
+Contributing
+------------
 
-Layer maintainer: Otavio Salvador <otavio@ossystems.com.br>
+To contribute to this layer you should the patches for review to the
+OpenEmbedded dev mailing list openembedded-devel@lists.openembedded.org
+and please cc the maintainers.
+
+Maintainers: Eric Bénard <eric@eukrea.com>
+             Denis Carikli <denis@eukrea.com>
+             Otavio Salvador <otavio@ossystems.com.br>
+
+TODO
+----
+- enable Chromium WebGL with OpenGL ES support
+- fix Chromium support other platforms than armv7

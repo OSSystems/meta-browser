@@ -1,0 +1,18 @@
+# HG changeset patch
+# User Ted Mielczarek <ted.mielczarek@gmail.com>
+# Date 1314190279 14400
+# Node ID a993dd883a502a15d0a8acebb7bf31fdbd0fd18f
+# Parent  5a4a2b65e7b4950aa7cadc03aac43489ee314ba7
+[mq]: skip-shlibsigh
+
+diff --git a/security/nss/cmd/shlibsign/Makefile b/security/nss/cmd/shlibsign/Makefile
+--- a/security/nss/cmd/shlibsign/Makefile
++++ b/security/nss/cmd/shlibsign/Makefile
+@@ -120,5 +120,6 @@
+ 	$(call core_abspath,$(NSPR_LIB_DIR)) $(call core_abspath,$<)
+ endif
+ 
++ifndef SKIP_SHLIBSIGN
+ libs install :: $(CHECKLOC)
+-
++endif
