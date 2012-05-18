@@ -7,6 +7,7 @@ SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P
 	file://include.gypi \
 	file://unistd.patch \
 	file://memset.patch \
+	file://softfloat-fix.patch \
 "
 
 PR = "r1"
@@ -33,6 +34,11 @@ EXTRA_OEGYP =	" \
 	\
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0', d)} \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
+"
+
+EXTRA_OEGYP_append_armv6 = " \
+	-Darmv7=0 \
+	-Darm_neon=0 \
 "
 
 EXTRA_OEGYP_append_armv7a = " \
