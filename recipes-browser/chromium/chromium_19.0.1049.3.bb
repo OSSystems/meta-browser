@@ -1,7 +1,7 @@
 DESCRIPTION = "Chromium browser"
 LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=3cb55cc4ec38bb01d2ceaaa66b5436c2"
-DEPENDS = "xextproto cairo nss gtk+-native zlib-native libav libxi libgnome-keyring libxss cups"
+DEPENDS = "xextproto cairo nss gtk+-native zlib-native libxi libgnome-keyring libxss cups"
 
 SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.bz2 \
 	file://include.gypi \
