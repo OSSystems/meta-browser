@@ -5,7 +5,11 @@ DEPENDS = "xextproto cairo nss gtk+-native zlib-native libav libxi libgnome-keyr
 
 SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.bz2 \
 	file://include.gypi \
+	file://unistd.patch \
+	file://memset.patch \
 "
+
+PR = "r1"
 
 SRC_URI[md5sum] = "0cdd94b2be21180af93f719e9a9a2883"
 SRC_URI[sha256sum] = "3bdce0bd8381cd699014e7ec72ab02c7d8444ba511c27afff76bf015361c4021"
@@ -53,7 +57,7 @@ EXTRA_OEMAKE = "-r ${PARALLEL_MAKE} LDFLAGS.host=-L${STAGING_LIBDIR_NATIVE} V=1 
 TARGET_CFLAGS += "-I${STAGING_INCDIR}/mozilla/nss -I${STAGING_INCDIR}/dst"
 TARGET_CXXFLAGS += "-I${STAGING_INCDIR}/mozilla/nss -I${STAGING_INCDIR}/dst"
 
-TARGET_CC_ARCH += " -Wno-error=deprecated-declarations"
+TARGET_CC_ARCH += " -Wno-error=deprecated-declarations -Wno-error=narrowing -Wno-error=c++0x-compat"
 
 do_compile_prepend() {
 	export CROSSTOOL=${TARGET_PREFIX}
