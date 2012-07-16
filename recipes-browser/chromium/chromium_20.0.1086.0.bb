@@ -7,6 +7,11 @@ SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P
 	file://include.gypi \
 "
 
+# include.gypi exists only for armv6 and armv7a and there isn't something like COMPATIBLE_ARCH afaik
+COMPATIBLE_MACHINE = "(-)"
+COMPATIBLE_MACHINE_armv6 = "(.*)"
+COMPATIBLE_MACHINE_armv7a = "(.*)"
+
 DEFAULT_PREFERENCE = "-1"
 
 SRC_URI[md5sum] = "86535af2d00d157b358e8fd6fb6ad38c"
