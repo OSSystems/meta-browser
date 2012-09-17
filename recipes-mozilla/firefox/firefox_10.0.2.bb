@@ -4,7 +4,7 @@ DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx v
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
 
-PR = "r3"
+PR = "r4"
 
 SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
            file://mozilla-${PN}.png \
