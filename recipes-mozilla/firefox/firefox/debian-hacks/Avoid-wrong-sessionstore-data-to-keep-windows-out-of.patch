@@ -8,8 +8,8 @@ and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
 ---
- .../components/sessionstore/src/nsSessionStore.js  |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ browser/components/sessionstore/src/nsSessionStore.js |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/browser/components/sessionstore/src/nsSessionStore.js b/browser/components/sessionstore/src/nsSessionStore.js
 index a62821b..0878209 100644

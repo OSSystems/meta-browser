@@ -4,10 +4,10 @@ Subject: Bug 703534 - Fix build failure on platforms without YARR JIT
 
 ---
  js/src/jscompartment.cpp |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ 1 file changed, 1 deletion(-)
 
 diff --git a/js/src/jscompartment.cpp b/js/src/jscompartment.cpp
-index 3db31a5..c3eada7 100644
+index 721c38e..af5a96e 100644
 --- a/js/src/jscompartment.cpp
 +++ b/js/src/jscompartment.cpp
 @@ -50,7 +50,6 @@

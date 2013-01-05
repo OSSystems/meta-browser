@@ -5,7 +5,7 @@ Subject: Bug 711353 - Add support for GNU/kFreeBSD and GNU/Hurd to
 
 ---
  gfx/angle/src/compiler/osinclude.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/gfx/angle/src/compiler/osinclude.h b/gfx/angle/src/compiler/osinclude.h
 index dacdc22..6e84774 100644

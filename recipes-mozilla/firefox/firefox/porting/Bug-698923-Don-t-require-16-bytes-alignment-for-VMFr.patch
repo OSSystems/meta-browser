@@ -4,7 +4,7 @@ Subject: Bug 698923 - Don't require 16 bytes alignment for VMFrame on sparc
 
 ---
  js/src/methodjit/MethodJIT.cpp |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/js/src/methodjit/MethodJIT.cpp b/js/src/methodjit/MethodJIT.cpp
 index 4f7f5db..c3d01cb 100644

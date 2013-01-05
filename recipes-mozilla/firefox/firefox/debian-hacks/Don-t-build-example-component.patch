@@ -4,7 +4,7 @@ Subject: Don't build example component
 
 ---
  xulrunner/Makefile.in |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ 1 file changed, 1 deletion(-)
 
 diff --git a/xulrunner/Makefile.in b/xulrunner/Makefile.in
 index 0af55ea..176ace0 100644

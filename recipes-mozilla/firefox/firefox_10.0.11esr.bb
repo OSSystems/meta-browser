@@ -1,10 +1,11 @@
+# Copyright (C) 2009-2013, O.S. Systems Software Ltda. All Rights Reserved
+# Released under the MIT license (see packages/COPYING)
+
 DESCRIPTION ?= "Browser made by mozilla"
 DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx virtual/libgl"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
-
-PR = "r4"
 
 SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
            file://mozilla-${PN}.png \
@@ -13,9 +14,23 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://fixes/Avoid-spurious-Run-items-in-application-handlers-con.patch \
            file://fixes/Properly-launch-applications-set-in-HOME-.mailcap.patch \
            file://fixes/Fix-some-tests-using-CurProcD-where-GreD-should-be-u.patch \
-           file://fixes/Bug-703633-TreePanel.jsm-uses-a-resource-url-that-ou.patch \
            file://fixes/Bug-691898-Use-YARR-interpreter-instead-of-PCRE-on-p.patch \
            file://fixes/Bug-722127-Bump-required-libvpx-version-to-1.0.0.-r-.patch \
+           file://fixes/Bug-728229-Allow-to-build-with-system-python-ply-lib.patch \
+           file://fixes/Bug-720682-Don-t-crash-an-app-using-libxul-because-o.patch \
+           file://fixes/Bug-696636-Block-OpenGL-1-drivers-explicitly-to-stee.patch \
+           file://fixes/Load-dependent-libraries-with-their-real-path-to-avo.patch \
+           file://fixes/Bug-515232-Try-getting-general.useragent.locale-as-a.patch \
+           file://fixes/Bug-729817-Block-the-Nouveau-3D-driver-as-it-s-insta.patch \
+           file://fixes/Bug-729817-Allow-the-Nouveau-driver-with-Mesa-8.0.1-.patch \
+           file://fixes/Bug-747322-Fix-jemalloc-mmap-wrapper-for-s390x.patch \
+           file://fixes/Bug-725655-gcc-4.7-build-failures-missing-headers-.-.patch \
+           file://fixes/Bug-734490-fix-build-failures-with-Clang-and-GCC-4.7.patch \
+           file://fixes/Bug-706724-Fix-for-error-ftruncate-was-not-declared-.patch \
+           file://fixes/Bug-709259-Try-creating-a-named-cursor-before-a-bitm.patch \
+           file://fixes/Bug-761082-Only-export-TabMessageUtils.h-in-mozilla-.patch \
+           file://fixes/bug-693343-a11y-disabled-in-Gnome-3-when-GNOME_ACCES.patch \
+           file://fixes/Allow-webGL-with-mesa-assuming-users-will-have-updat.patch \
            file://iceweasel-branding/Use-MOZ_APP_DISPLAYNAME-to-fill-appstrings.propertie.patch \
            file://iceweasel-branding/Determine-which-phishing-shavar-to-use-depending-on-.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
@@ -28,10 +43,13 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://porting/Bug-703842-Avoid-R_SPARC_WDISP22-relocation-in-Tramp.patch \
            file://porting/Bug-703833-Avoid-invalid-conversion-from-const-size_.patch \
            file://porting/Bug-711353-Add-support-for-GNU-kFreeBSD-and-GNU-Hurd.patch \
+           file://porting/Bug-747870-Properly-align-XPCLazyCallContext-mData.-.patch \
+           file://porting/Bug-706787-Crash-on-s390x-nsXPCComponents-AttachNewC.patch \
            file://prefs/Remove-general.useragent.locale-prefs-from-firefox-..patch \
            file://prefs/Enable-intl.locale.matchOS-and-report-the-locale-cor.patch \
            file://prefs/Set-javascript.options.showInConsole.patch \
            file://prefs/Set-DPI-to-system-settings.patch \
+           file://prefs/Don-t-auto-disable-extensions-in-system-directories.patch \
            file://debian-hacks/Check-less-things-during-configure-when-using-libxul.patch \
            file://debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch \
            file://debian-hacks/Avoid-libxpcom-being-excluded-from-linked-libraries-.patch \
@@ -50,15 +68,17 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/pkg-config-files-don-t-need-to-require-the-version-o.patch \
            file://debian-hacks/Add-a-2-minutes-timeout-on-xpcshell-tests.patch \
            file://debian-hacks/Fix-tracejit-to-build-against-nanojit-headers-in-dis.patch \
+           file://debian-hacks/Load-distribution-search-plugins-from-etc-appname-se.patch \
+           file://debian-hacks/Handle-transition-to-etc-appname-searchplugins-more-.patch \
+           file://debian-hacks/Bug-508942-Use-Preprocessor.py-filters-in-defines-an.patch \
            file://configure.patch \
            file://powerpc_va_list.patch \
-           file://vendor.js \
-           file://firefox.gcc-4.7.patch"
+           file://vendor.js"
 
-SRC_URI[archive.md5sum] = "5ce038d591964f72c534fa33b75a62f5"
-SRC_URI[archive.sha256sum] = "6ec5feba56f180a6fbf437a68cf0c77146ade28b936e5187573e3d95f13a0449"
+SRC_URI[archive.md5sum] = "2f0e3a1dd7480e03f374c0121b4155e2"
+SRC_URI[archive.sha256sum] = "94b4d5a339d97dc56fd349f93407c3af4f408a4a8409a64e3680d564d37594f8"
 
-S = "${WORKDIR}/mozilla-release"
+S = "${WORKDIR}/mozilla-esr10"
 
 inherit mozilla
 
