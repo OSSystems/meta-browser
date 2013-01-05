@@ -5,10 +5,10 @@ Subject: Bug 703833 - Avoid invalid conversion from 'const size_t*' to 'const
 
 ---
  js/src/jsgc.cpp |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/js/src/jsgc.cpp b/js/src/jsgc.cpp
-index e64f3f5..5df2bdd 100644
+index e8818d1..f25f0a5 100644
 --- a/js/src/jsgc.cpp
 +++ b/js/src/jsgc.cpp
 @@ -1052,8 +1052,8 @@ MarkStackRangeConservatively(JSTracer *trc, Value *beginv, Value *endv)

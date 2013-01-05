@@ -7,10 +7,10 @@ internal version, which makes system library not used even though
 --with-system-* argument is given to configure.
 ---
  configure.in |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/configure.in b/configure.in
-index 88557f7..554f469 100644
+index 18872c4..5c20d46 100644
 --- a/configure.in
 +++ b/configure.in
 @@ -4357,7 +4357,7 @@ else

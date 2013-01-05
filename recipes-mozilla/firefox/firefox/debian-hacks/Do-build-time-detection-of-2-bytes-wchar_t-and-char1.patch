@@ -8,7 +8,7 @@ Closes: #577677
  xpcom/base/nscore.h                   |   22 ++++++++++++++++++++++
  xpcom/glue/nsStringAPI.h              |    1 +
  xpcom/string/public/nsLiteralString.h |    1 +
- 3 files changed, 24 insertions(+), 0 deletions(-)
+ 3 files changed, 24 insertions(+)
 
 diff --git a/xpcom/base/nscore.h b/xpcom/base/nscore.h
 index 9cde77d..40d3aaa 100644

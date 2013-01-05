@@ -8,7 +8,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  xpcom/reflect/xptcall/src/md/unix/Makefile.in      |   11 +
  .../xptcall/src/md/unix/xptcinvoke_linux_sh.cpp    |  203 +++++++++++++++
  .../xptcall/src/md/unix/xptcstubs_linux_sh.cpp     |  271 ++++++++++++++++++++
- 3 files changed, 485 insertions(+), 0 deletions(-)
+ 3 files changed, 485 insertions(+)
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
