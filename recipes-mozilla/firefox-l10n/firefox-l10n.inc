@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2013, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native"
