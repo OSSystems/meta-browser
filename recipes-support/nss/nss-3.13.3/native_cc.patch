@@ -1,7 +1,12 @@
+we need to override ARCHFLAG as well since this is set to either -m32 or -m64
+and LDFLAGS add it explicitly which means when NATIVE_CC is defined then we build
+the objects as 64bit but link them to be 32bit binary which may not fly
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Index: mozilla/security/coreconf/mkdepend/Makefile
 ===================================================================
---- mozilla.orig/security/coreconf/mkdepend/Makefile	2012-02-20 18:18:35.237845874 +0100
-+++ mozilla/security/coreconf/mkdepend/Makefile	2012-02-20 18:19:15.977844984 +0100
+--- mozilla.orig/security/coreconf/mkdepend/Makefile	2013-01-09 13:23:51.747694602 -0800
++++ mozilla/security/coreconf/mkdepend/Makefile	2013-01-09 13:56:27.003734720 -0800
 @@ -64,11 +64,11 @@
  endif
  
@@ -18,8 +23,8 @@ Index: mozilla/security/coreconf/mkdepend/Makefile
  include $(DEPTH)/coreconf/rules.mk
 Index: mozilla/security/coreconf/nsinstall/Makefile
 ===================================================================
---- mozilla.orig/security/coreconf/nsinstall/Makefile	2012-02-20 18:18:28.693846017 +0100
-+++ mozilla/security/coreconf/nsinstall/Makefile	2012-02-20 18:19:40.881844444 +0100
+--- mozilla.orig/security/coreconf/nsinstall/Makefile	2013-01-09 13:23:51.747694602 -0800
++++ mozilla/security/coreconf/nsinstall/Makefile	2013-01-09 13:56:11.775734407 -0800
 @@ -58,11 +58,11 @@
  endif
  
@@ -34,3 +39,17 @@ Index: mozilla/security/coreconf/nsinstall/Makefile
  endif
  
  include $(DEPTH)/coreconf/rules.mk
+Index: mozilla/security/coreconf/Linux.mk
+===================================================================
+--- mozilla.orig/security/coreconf/Linux.mk	2013-01-09 13:50:01.427726808 -0800
++++ mozilla/security/coreconf/Linux.mk	2013-01-09 13:55:58.815734141 -0800
+@@ -98,6 +98,9 @@
+ endif
+ endif
+ 
++ifdef NATIVE_FLAGS
++    override ARCHFLAG=
++endif
+ 
+ LIBC_TAG		= _glibc
+ 

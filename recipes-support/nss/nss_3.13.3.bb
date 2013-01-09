@@ -1,7 +1,7 @@
 DESCRIPTION = "Mozilla's SSL and TLS implementation"
 HOMEPAGE = "http://www.mozilla.org/projects/security/pki/nss/"
 
-PR = "r1"
+PR = "r2"
 
 LICENSE = "MPL1.1 GPL LGPL"
 LIC_FILES_CHKSUM = "file://security/nss/manifest.mn;md5=d71978748f23eae3156c38ac2a691924"
@@ -23,6 +23,9 @@ SRC_URI[sha256sum] = "efa10f2c70da4bddabf1a6081964969bb23359b93d6eadbf4739274a77
 TD = "${S}/tentative-dist"
 
 PARALLEL_MAKE = ""
+
+USE64BIT_x86-64 = "USE_64=1"
+USE64BIT ?= ""
 
 do_compile() {
 #	sed -e 's:SOURCE_PREFIX = $(CORE_DEPTH)/\.\./dist:SOURCE_PREFIX = $(CORE_DEPTH)/dist:' -i ${S}/security/coreconf/source.mk
@@ -49,7 +52,8 @@ do_compile() {
 		CXX="${CXX}" \
 		RANLIB="${RANLIB}" \
 		NATIVE_CC="${BUILD_CC}" \
-		NATIVE_FLAGS="${BUILD_CFLAGS}"
+		NATIVE_FLAGS="${BUILD_CFLAGS}" \
+		${USE64BIT}
 }
 
 do_install() {
@@ -67,7 +71,8 @@ do_install() {
 		NSS_USE_SYSTEM_SQLITE=1 \
 		NSS_ENABLE_ECC=1 \
 		SOURCE_LIB_DIR="${TD}/${libdir}" \
-		SOURCE_BIN_DIR="${TD}/${bindir}"
+		SOURCE_BIN_DIR="${TD}/${bindir}" \
+		${USE64BIT}
 
 	install -d ${D}/${libdir}
 
