@@ -1,7 +1,8 @@
 DESCRIPTION = "Chromium browser"
 LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=3cb55cc4ec38bb01d2ceaaa66b5436c2"
-DEPENDS = "xextproto cairo nss gtk+-native zlib-native libxi libgnome-keyring libxss cups"
+DEPENDS = "xextproto cairo nss gtk+ gtk+-native zlib-native libxi gconf udev \
+	libgnome-keyring libxss cups cairo-native libxi-native alsa-lib"
 
 SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.bz2 \
 	file://include.gypi \
@@ -16,7 +17,7 @@ COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_armv6 = "(.*)"
 COMPATIBLE_MACHINE_armv7a = "(.*)"
 
-PR = "r2"
+PR = "r3"
 
 SRC_URI[md5sum] = "0cdd94b2be21180af93f719e9a9a2883"
 SRC_URI[sha256sum] = "3bdce0bd8381cd699014e7ec72ab02c7d8444ba511c27afff76bf015361c4021"
