@@ -1,7 +1,7 @@
 DESCRIPTION = "Mozilla's SSL and TLS implementation"
 HOMEPAGE = "http://www.mozilla.org/projects/security/pki/nss/"
 
-PR = "r2"
+PR = "r3"
 
 LICENSE = "MPL1.1 GPL LGPL"
 LIC_FILES_CHKSUM = "file://security/nss/manifest.mn;md5=d71978748f23eae3156c38ac2a691924"
@@ -70,6 +70,8 @@ do_install() {
 		NS_USE_GCC=1 \
 		NSS_USE_SYSTEM_SQLITE=1 \
 		NSS_ENABLE_ECC=1 \
+		FREEBL_CHILD_BUILD=1 \
+		CC="${CC}" \
 		SOURCE_LIB_DIR="${TD}/${libdir}" \
 		SOURCE_BIN_DIR="${TD}/${bindir}" \
 		${USE64BIT}
