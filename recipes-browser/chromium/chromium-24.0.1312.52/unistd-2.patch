@@ -1,0 +1,27 @@
+diff --git a/chrome/browser/memory_details_linux.cc b/chrome/browser/memory_details_linux.cc
+index bee24ce..299f237 100644
+--- a/chrome/browser/memory_details_linux.cc
++++ b/chrome/browser/memory_details_linux.cc
+@@ -7,6 +7,10 @@
+ #include <map>
+ #include <set>
+ 
++#if defined(OS_POSIX)
++#include <unistd.h>
++#endif
++
+ #include "base/bind.h"
+ #include "base/process_util.h"
+ #include "base/string_util.h"
+diff --git a/ipc/ipc_channel.h b/ipc/ipc_channel.h
+index 14c375b..345f9eb 100644
+--- a/ipc/ipc_channel.h
++++ b/ipc/ipc_channel.h
+@@ -10,6 +10,7 @@
+ 
+ #if defined(OS_POSIX)
+ #include <sys/types.h>
++#include <unistd.h>
+ #endif
+ 
+ #include "base/compiler_specific.h"
