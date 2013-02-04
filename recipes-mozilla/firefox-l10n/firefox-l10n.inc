@@ -2,7 +2,7 @@
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native"
-RDEPENDS = "firefox"
+RDEPENDS_${PN} = "firefox"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 
