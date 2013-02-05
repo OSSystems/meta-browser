@@ -5,7 +5,7 @@ Subject: Properly launch applications set in $HOME/.mailcap
 Replaces the previous patch in a much simpler way.
 ---
  uriloader/exthandler/unix/nsMIMEInfoUnix.cpp |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp b/uriloader/exthandler/unix/nsMIMEInfoUnix.cpp
 index 5d7f758..81b8efb 100644

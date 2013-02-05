@@ -5,7 +5,7 @@ Subject: Enable intl.locale.matchOS, and report the locale correctly
 https://bugzilla.mozilla.org/show_bug.cgi?id=331779
 ---
  xulrunner/app/xulrunner.js |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/xulrunner/app/xulrunner.js b/xulrunner/app/xulrunner.js
 index 880593c..0a0f5a9 100644

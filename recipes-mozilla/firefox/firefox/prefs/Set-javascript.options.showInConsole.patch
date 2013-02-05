@@ -4,13 +4,13 @@ Subject: Set javascript.options.showInConsole
 
 ---
  modules/libpref/src/init/all.js |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ 1 file changed, 1 insertion(+)
 
 diff --git a/modules/libpref/src/init/all.js b/modules/libpref/src/init/all.js
-index e7670c7..5dc3608 100644
+index e8160c2..3c0a70c 100644
 --- a/modules/libpref/src/init/all.js
 +++ b/modules/libpref/src/init/all.js
-@@ -625,6 +625,7 @@ pref("javascript.options.strict",           false);
+@@ -627,6 +627,7 @@ pref("javascript.options.strict",           false);
  pref("javascript.options.strict.debug",     true);
  #endif
  pref("javascript.options.relimit",          true);

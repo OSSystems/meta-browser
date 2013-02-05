@@ -3,9 +3,9 @@ Date: Thu, 14 Jul 2011 17:18:56 +0200
 Subject: Fix some tests using CurProcD where GreD should be used
 
 ---
- dom/plugins/test/unit/head_plugins.js              |    2 +-
- netwerk/test/unit/test_socks.js                    |    2 +-
- .../extensions/test/xpcshell/test_plugins.js       |    2 +-
+ dom/plugins/test/unit/head_plugins.js                    |    2 +-
+ netwerk/test/unit/test_socks.js                          |    2 +-
+ toolkit/mozapps/extensions/test/xpcshell/test_plugins.js |    2 +-
  3 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/dom/plugins/test/unit/head_plugins.js b/dom/plugins/test/unit/head_plugins.js
@@ -22,7 +22,7 @@ index ddb78f5..ca32106 100644
    do_check_true(plugins.exists());
    var plugin = plugins.clone();
 diff --git a/netwerk/test/unit/test_socks.js b/netwerk/test/unit/test_socks.js
-index 74dd7d2..f21037e 100644
+index bbaeffa..f692d97 100644
 --- a/netwerk/test/unit/test_socks.js
 +++ b/netwerk/test/unit/test_socks.js
 @@ -36,7 +36,7 @@ function runScriptSubprocess(script, args)

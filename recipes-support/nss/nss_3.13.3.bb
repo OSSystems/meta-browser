@@ -24,6 +24,9 @@ TD = "${S}/tentative-dist"
 
 PARALLEL_MAKE = ""
 
+USE64BIT_x86-64 = "USE_64=1"
+USE64BIT ?= ""
+
 do_compile() {
 #	sed -e 's:SOURCE_PREFIX = $(CORE_DEPTH)/\.\./dist:SOURCE_PREFIX = $(CORE_DEPTH)/dist:' -i ${S}/security/coreconf/source.mk
 	make -C security/nss \
@@ -49,7 +52,8 @@ do_compile() {
 		CXX="${CXX}" \
 		RANLIB="${RANLIB}" \
 		NATIVE_CC="${BUILD_CC}" \
-		NATIVE_FLAGS="${BUILD_CFLAGS}"
+		NATIVE_FLAGS="${BUILD_CFLAGS}" \
+		${USE64BIT}
 }
 
 do_install() {
@@ -67,7 +71,8 @@ do_install() {
 		NSS_USE_SYSTEM_SQLITE=1 \
 		NSS_ENABLE_ECC=1 \
 		SOURCE_LIB_DIR="${TD}/${libdir}" \
-		SOURCE_BIN_DIR="${TD}/${bindir}"
+		SOURCE_BIN_DIR="${TD}/${bindir}" \
+		${USE64BIT}
 
 	install -d ${D}/${libdir}
 

@@ -6,7 +6,7 @@ Subject: Don't error-out when run-time libsqlite is older than build-time
 In Debian, we have shlibs to handle this.
 ---
  storage/src/mozStorageService.cpp |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/storage/src/mozStorageService.cpp b/storage/src/mozStorageService.cpp
 index 7c0a7a0..0121765 100644

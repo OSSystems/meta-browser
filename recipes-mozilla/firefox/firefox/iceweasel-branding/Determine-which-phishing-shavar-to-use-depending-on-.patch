@@ -4,11 +4,11 @@ Subject: Determine which phishing shavar to use depending on
  MOZ_OFFICIAL_BRANDING
 
 ---
- browser/app/Makefile.in                            |    4 ++++
- browser/app/profile/firefox.js                     |    4 ++++
- browser/components/safebrowsing/Makefile.in        |    4 ++++
- .../components/safebrowsing/content/application.js |    4 ++++
- 4 files changed, 16 insertions(+), 0 deletions(-)
+ browser/app/Makefile.in                                |    4 ++++
+ browser/app/profile/firefox.js                         |    4 ++++
+ browser/components/safebrowsing/Makefile.in            |    4 ++++
+ browser/components/safebrowsing/content/application.js |    4 ++++
+ 4 files changed, 16 insertions(+)
 
 diff --git a/browser/app/Makefile.in b/browser/app/Makefile.in
 index 95055cb..a6066f7 100644
@@ -26,7 +26,7 @@ index 95055cb..a6066f7 100644
  libs::
  	$(INSTALL) $(IFLAGS1) $(DIST)/branding/mozicon128.png $(DIST)/bin/icons
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 42365ee..475a2e6 100644
+index 4f3aac3..7ba75fa 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
 @@ -742,7 +742,11 @@ pref("urlclassifier.alternate_error_page", "blocked");

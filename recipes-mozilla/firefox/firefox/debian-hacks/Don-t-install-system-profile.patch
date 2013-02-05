@@ -4,7 +4,7 @@ Subject: Don't install system profile
 
 ---
  xulrunner/app/Makefile.in |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ 1 file changed, 2 deletions(-)
 
 diff --git a/xulrunner/app/Makefile.in b/xulrunner/app/Makefile.in
 index eae02da..2d5b8f4 100644

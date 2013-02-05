@@ -80,7 +80,7 @@ index d1b969b..c64b4d5 100644
  $(SHARED_LIBRARY): $(OBJS) $(LOBJS) $(DEF_FILE) $(RESFILE) $(SHARED_LIBRARY_LIBS_DEPS) $(LIBRARY) $(EXTRA_DEPS) $(DSO_LDOPTS_DEPS) $(GLOBAL_DEPS)
  ifndef INCREMENTAL_LINKER
 diff --git a/js/src/Makefile.in b/js/src/Makefile.in
-index 49f0bdc..7a8f9c1 100644
+index fc48cbd..1200ae6 100644
 --- a/js/src/Makefile.in
 +++ b/js/src/Makefile.in
 @@ -74,6 +74,7 @@ MODULE		    = js
@@ -91,7 +91,7 @@ index 49f0bdc..7a8f9c1 100644
  
  LIBS		= $(NSPR_LIBS) 
  
-@@ -927,6 +928,9 @@ ifneq (,$(LIBRARY))
+@@ -922,6 +923,9 @@ ifneq (,$(LIBRARY))
  endif
  ifneq (,$(SHARED_LIBRARY))
  	$(SYSINSTALL) $(SHARED_LIBRARY) $(DESTDIR)$(libdir)

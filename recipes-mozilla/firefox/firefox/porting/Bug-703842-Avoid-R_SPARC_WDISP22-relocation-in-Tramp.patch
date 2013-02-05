@@ -4,7 +4,7 @@ Subject: Bug 703842 - Avoid R_SPARC_WDISP22 relocation in TrampolineSparc.s
 
 ---
  js/src/methodjit/TrampolineSparc.s |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/js/src/methodjit/TrampolineSparc.s b/js/src/methodjit/TrampolineSparc.s
 index 0fa9cfd..1b15369 100644

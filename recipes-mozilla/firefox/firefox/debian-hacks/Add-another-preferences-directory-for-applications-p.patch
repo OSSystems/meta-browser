@@ -10,7 +10,7 @@ This has the side effect to make these preferences there work again, and
 to disable the "set as default browser" dialog.
 ---
  toolkit/xre/nsXREDirProvider.cpp |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
 index 45bdfb1..da71bdd 100644

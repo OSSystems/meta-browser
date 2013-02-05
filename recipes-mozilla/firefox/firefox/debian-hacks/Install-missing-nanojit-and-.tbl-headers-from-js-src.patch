@@ -5,10 +5,10 @@ Subject: Install missing nanojit and .tbl headers from js/src
 https://bugzilla.mozilla.org/show_bug.cgi?id=542789
 ---
  js/src/Makefile.in |   44 +++++++++++++++++++++++++++-----------------
- 1 files changed, 27 insertions(+), 17 deletions(-)
+ 1 file changed, 27 insertions(+), 17 deletions(-)
 
 diff --git a/js/src/Makefile.in b/js/src/Makefile.in
-index 7a8f9c1..a5e33d3 100644
+index 1200ae6..0f83fd6 100644
 --- a/js/src/Makefile.in
 +++ b/js/src/Makefile.in
 @@ -230,6 +230,7 @@ INSTALLED_HEADERS = \
@@ -56,7 +56,7 @@ index 7a8f9c1..a5e33d3 100644
  		VMPI.h		\
  		Writer.h	\
  		$(NULL)
-@@ -550,7 +551,11 @@ else
+@@ -545,7 +546,11 @@ else
  CPPSRCS += pm_stub.cpp
  endif
  
@@ -69,7 +69,7 @@ index 7a8f9c1..a5e33d3 100644
  
  DASH_R		= -r
  
-@@ -916,7 +921,12 @@ js-config: js-config.in Makefile $(DEPTH)/config/autoconf.mk $(topsrcdir)/config
+@@ -911,7 +916,12 @@ js-config: js-config.in Makefile $(DEPTH)/config/autoconf.mk $(topsrcdir)/config
  SCRIPTS = js-config
  SDK_BINARY = js-config
  

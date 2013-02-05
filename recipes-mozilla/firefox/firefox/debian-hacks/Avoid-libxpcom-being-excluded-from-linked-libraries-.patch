@@ -7,7 +7,7 @@ Force libxpcom to be linked to xulrunner-bin and xpcshell so that it is
 loaded in most cases.
 ---
  xulrunner/app/Makefile.in |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ 1 file changed, 2 insertions(+)
 
 diff --git a/xulrunner/app/Makefile.in b/xulrunner/app/Makefile.in
 index d6efcbb..eae02da 100644
