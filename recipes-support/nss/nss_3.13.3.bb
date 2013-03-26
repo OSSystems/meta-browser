@@ -105,7 +105,10 @@ do_install() {
 	sed -i s:OELIBDIR:${libdir}:g ${D}${libdir}/pkgconfig/nss.pc
 	sed -i s:OEINCDIR:${includedir}:g ${D}${libdir}/pkgconfig/nss.pc
 	sed -i s:OEEXECPREFIX:${exec_prefix}:g ${D}${libdir}/pkgconfig/nss.pc
+
+	sed -i s:/usr/local/bin/perl:${bindir}/perl:g ${D}${bindir}/smime
 }
 
 FILES_SOLIBSDEV := ""
 FILES_${PN} += "${base_libdir}/lib*${SOLIBSDEV} ${libdir}/lib*${SOLIBSDEV}"
+RDEPENDS_${PN} += "perl"
