@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "${USER}" = "root" ] ; then 
+	/usr/bin/chrome/chrome --user-data-dir=${HOME}/.chromium/ $@
+else
+	/usr/bin/chrome/chrome $@
+fi

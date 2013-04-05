@@ -9,6 +9,8 @@ SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P
         file://unistd-2.patch \
         file://glib-2.16-use-siginfo_t.patch \
         file://ui-gl-no-narrowing.patch \
+        file://google-chrome \
+        file://google-chrome.desktop \
 "
 
 # include.gypi exists only for armv6 and armv7a and there isn't something like COMPATIBLE_ARCH afaik
@@ -49,6 +51,11 @@ do_compile() {
 
 do_install() {
 	install -d ${D}${bindir}
+	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/
+
+	install -d ${D}${datadir}/applications
+	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/
+
 	install -d ${D}${bindir}/chrome/
 	install -m 0755 ${S}/out/Release/chrome ${D}${bindir}/chrome/chrome
 	install -m 0644 ${S}/out/Release/chrome.pak ${D}${bindir}/chrome/
@@ -61,5 +68,5 @@ do_install() {
 	install -m 0644 ${S}/out/Release/locales/en-US.pak ${D}${bindir}/chrome/locales
 }
 
-FILES_${PN} = "${bindir}/chrome/"
+FILES_${PN} = "${bindir}/chrome/ ${bindir}/google-chrome ${datadir}/applications"
 FILES_${PN}-dbg = "${bindir}/chrome/.debug/"
