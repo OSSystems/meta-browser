@@ -13,6 +13,8 @@ SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P
         file://google-chrome.desktop \
 "
 
+PR = "r1"
+
 # include.gypi exists only for armv6 and armv7a and there isn't something like COMPATIBLE_ARCH afaik
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_i586 = "(.*)"
