@@ -11,9 +11,10 @@ SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P
         file://ui-gl-no-narrowing.patch \
         file://google-chrome \
         file://google-chrome.desktop \
+        file://0001-browser_main_loop.cc-fix-build-with-glib-2.35.patch \
 "
 
-PR = "r1"
+PR = "r2"
 
 # include.gypi exists only for armv6 and armv7a and there isn't something like COMPATIBLE_ARCH afaik
 COMPATIBLE_MACHINE = "(-)"
