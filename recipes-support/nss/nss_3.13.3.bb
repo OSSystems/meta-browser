@@ -25,6 +25,8 @@ TD = "${S}/tentative-dist"
 PARALLEL_MAKE = ""
 
 USE64BIT_x86-64 = "USE_64=1"
+USE64BIT_mips64 = "USE_64=1"
+USE64BIT_mips64el = "USE_64=1"
 USE64BIT ?= ""
 
 do_compile() {
