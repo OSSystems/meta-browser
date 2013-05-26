@@ -1,7 +1,7 @@
 DESCRIPTION = "Chromium browser"
 LICENSE = "BSD"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=0750f191c9bbf46869b70508e7eb455b"
-DEPENDS = "xextproto cairo nss gtk+ zlib-native libav libxi libgnome-keyring libxss cups ninja-native"
+DEPENDS = "xextproto cairo nss gtk+ zlib-native libav libxi libgnome-keyring libxss cups ninja-native gconf"
 
 SRC_URI = "http://commondatastorage.googleapis.com/chromium-browser-official/${P}.tar.bz2 \
         file://include.gypi \
@@ -35,7 +35,8 @@ EXTRA_OEGYP =	" \
 	-I ${WORKDIR}/include.gypi \
 	-f ninja \
 "
-
+ARMFPABI_arm = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
+export GYP_DEFINES="${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs'"
 do_configure() {
 	cd ${S}
 	# replace LD with CXX, to workaround a possible gyp issue?
