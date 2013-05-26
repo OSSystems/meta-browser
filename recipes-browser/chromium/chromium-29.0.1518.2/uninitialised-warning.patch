@@ -1,0 +1,90 @@
+Make gcc 4.8 happy. It complains about uninitialized symbols
+
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual uint64 webkit_glue::WebClipboardImpl::sequenceNumber(WebKit::WebClipboard::Buffer)':
+| ../../webkit/glue/webclipboard_impl.cc:80:48: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|    return client_->GetSequenceNumber(buffer_type);
+|                                                 ^
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual WebKit::WebVector<WebKit::WebString> webkit_glue::WebClipboardImpl::readAvailableTypes(WebKit::WebClipboard::Buffer, bool*)':
+| ../../webkit/glue/webclipboard_impl.cc:118:73: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|      client_->ReadAvailableTypes(buffer_type, &types, contains_filenames);
+|                                                                          ^
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual WebKit::WebData webkit_glue::WebClipboardImpl::readImage(WebKit::WebClipboard::Buffer)':
+| ../../webkit/glue/webclipboard_impl.cc:169:45: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|    client_->ReadImage(buffer_type, &png_data);
+|                                              ^
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual WebKit::WebString webkit_glue::WebClipboardImpl::readCustomData(WebKit::WebClipboard::Buffer, const WebKit::WebString&)':
+| ../../webkit/glue/webclipboard_impl.cc:180:52: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|    client_->ReadCustomData(buffer_type, type, &data);
+|                                                     ^
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual WebKit::WebString webkit_glue::WebClipboardImpl::readHTML(WebKit::WebClipboard::Buffer, WebKit::WebURL*, unsigned int*, unsigned int*)':
+| ../../webkit/glue/webclipboard_impl.cc:158:56: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|                      static_cast<uint32*>(fragment_end));
+|                                                         ^
+| ../../webkit/glue/webclipboard_impl.cc: In member function 'virtual WebKit::WebString webkit_glue::WebClipboardImpl::readPlainText(WebKit::WebClipboard::Buffer)':
+| ../../webkit/glue/webclipboard_impl.cc:136:3: error: 'buffer_type' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+|    if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+|    ^
+| cc1plus: all warnings being treated as errors
+
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+Upstream-Status: Unknown
+Index: chromium-29.0.1518.2/webkit/glue/webclipboard_impl.cc
+===================================================================
+--- chromium-29.0.1518.2.orig/webkit/glue/webclipboard_impl.cc
++++ chromium-29.0.1518.2/webkit/glue/webclipboard_impl.cc
+@@ -73,7 +73,7 @@ uint64 WebClipboardImpl::getSequenceNumb
+ }
+ 
+ uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   if (!ConvertBufferType(buffer, &buffer_type))
+     return 0;
+ 
+@@ -112,7 +112,7 @@ bool WebClipboardImpl::isFormatAvailable
+ 
+ WebVector<WebString> WebClipboardImpl::readAvailableTypes(
+     Buffer buffer, bool* contains_filenames) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   std::vector<base::string16> types;
+   if (ConvertBufferType(buffer, &buffer_type)) {
+     client_->ReadAvailableTypes(buffer_type, &types, contains_filenames);
+@@ -121,7 +121,7 @@ WebVector<WebString> WebClipboardImpl::r
+ }
+ 
+ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   if (!ConvertBufferType(buffer, &buffer_type))
+     return WebString();
+ 
+@@ -147,7 +147,7 @@ WebString WebClipboardImpl::readPlainTex
+ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
+                                      unsigned* fragment_start,
+                                      unsigned* fragment_end) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   if (!ConvertBufferType(buffer, &buffer_type))
+     return WebString();
+ 
+@@ -161,7 +161,7 @@ WebString WebClipboardImpl::readHTML(Buf
+ }
+ 
+ WebData WebClipboardImpl::readImage(Buffer buffer) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   if (!ConvertBufferType(buffer, &buffer_type))
+     return WebData();
+ 
+@@ -172,7 +172,7 @@ WebData WebClipboardImpl::readImage(Buff
+ 
+ WebString WebClipboardImpl::readCustomData(Buffer buffer,
+                                            const WebString& type) {
+-  ui::Clipboard::Buffer buffer_type;
++  ui::Clipboard::Buffer buffer_type = ui::Clipboard::BUFFER_STANDARD;
+   if (!ConvertBufferType(buffer, &buffer_type))
+     return WebString();
+ 
