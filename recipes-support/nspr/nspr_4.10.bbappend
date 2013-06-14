@@ -1,5 +1,3 @@
-PRINC := "${@int(PRINC) + 1}"
-
 # nspr-native is needed by nss
 BBCLASSEXTEND = "native"
 
