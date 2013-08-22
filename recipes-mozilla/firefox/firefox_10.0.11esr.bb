@@ -2,7 +2,7 @@
 # Released under the MIT license (see packages/COPYING)
 
 DESCRIPTION ?= "Browser made by mozilla"
-DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx virtual/libgl"
+DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx virtual/libgl nss nspr"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
@@ -138,3 +138,15 @@ PRIVATE_LIBS = "libmozjs.so \
                 libmozalloc.so \
                 libplc4.so \
                 libplds4.so"
+
+# mark libraries also provided by nss as private too
+PRIVATE_LIBS += " \
+    libfreebl3.so \
+    libnss3.so \
+    libnssckbi.so \
+    libsmime3.so \
+    libnssutil3.so \
+    libnssdbm3.so \
+    libssl3.so \
+    libsoftokn3.so \
+"
