@@ -1,0 +1,17 @@
+--- a/content/browser/accessibility/browser_accessibility_manager_gtk.cc	2013-05-26 00:43:54.000000000 +0200
++++ b/content/browser/accessibility/browser_accessibility_manager_gtk.cc	2013-12-14 15:45:44.251138663 +0100
+@@ -55,11 +55,9 @@
+       RecursivelySendChildrenChanged(GetRoot()->ToBrowserAccessibilityGtk());
+       break;
+     case AccessibilityNotificationFocusChanged:
+-      // Note: atk_focus_tracker_notify may be deprecated in the future;
+-      // follow this bug for the replacement:
+-      // https://bugzilla.gnome.org/show_bug.cgi?id=649575#c4
+-      g_signal_emit_by_name(atk_object, "focus-event", true);
+-      atk_focus_tracker_notify(atk_object);
++      // Note: the focus-event was deprecated in ATK 2.9.4
++      // See https://bugzilla.gnome.org/show_bug.cgi?id=649575#c8  
++      g_signal_emit_by_name(atk_object, "focus-event", true); 
+       break;
+     default:
+       break;

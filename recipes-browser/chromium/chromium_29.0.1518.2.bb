@@ -10,6 +10,7 @@ SRC_URI = "\
         file://google-chrome \
         file://google-chrome.desktop \
         file://uninitialised-warning.patch \
+	file://001-atk_focus_tracker_notify_deprecated_since_ATK_2_9_4.patch \
 "
 SRC_URI[md5sum] = "2480c3fd109ef000575629acb8a906ca"
 SRC_URI[sha256sum] = "7f08624f7d9bd120de0043da7ee09985ae6b6990d22d8c1b1f7c66fd4ed681a1"
