@@ -30,10 +30,10 @@ Make gcc 4.8 happy. It complains about uninitialized symbols
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 Upstream-Status: Unknown
-Index: chromium-29.0.1518.2/webkit/glue/webclipboard_impl.cc
+Index: chromium-29.0.1518.2/content/renderer/webclipboard_impl.cc
 ===================================================================
---- chromium-29.0.1518.2.orig/webkit/glue/webclipboard_impl.cc
-+++ chromium-29.0.1518.2/webkit/glue/webclipboard_impl.cc
+--- chromium-29.0.1518.2.orig/content/renderer/webclipboard_impl.cc
++++ chromium-29.0.1518.2/content/renderer/webclipboard_impl.cc
 @@ -73,7 +73,7 @@ uint64 WebClipboardImpl::getSequenceNumb
  }
  
