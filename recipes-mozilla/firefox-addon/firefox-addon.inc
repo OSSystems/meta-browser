@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2012, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2014, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native"
@@ -11,7 +11,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d
 
 S = "${WORKDIR}"
 
-INC_PR = "r4"
+PR = "r5"
 
 inherit allarch
 

@@ -1,9 +1,7 @@
-# Copyright (C) 2009, 2012, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009, 2012, 2014, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 require firefox-addon.inc
-
-PR = "${INC_PR}.0"
 
 PV = "20120228"
 
