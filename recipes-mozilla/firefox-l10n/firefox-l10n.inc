@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2013, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2014, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native"
@@ -10,7 +10,7 @@ LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d690"
 
 LANGUAGE = "${@get_language_name('${PN}')}"
-INC_PR = "r2"
+PR = "r3"
 
 # Mangle place where to store the file
 DL_DIR_append = "/${PN}-${PV}"
