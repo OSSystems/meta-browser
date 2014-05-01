@@ -23,6 +23,10 @@ COMPATIBLE_MACHINE_armv7a = "(.*)"
 
 inherit gettext
 
+# this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
+# automatically and silently fall back to GLX
+PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
+
 EXTRA_OEGYP =	" \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0', d)} \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
@@ -33,7 +37,9 @@ EXTRA_OEGYP =	" \
 "
 ARMFPABI_armv7a = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
 
-CHROMIUM_EXTRA_ARGS ?= ""
+CHROMIUM_EXTRA_ARGS ?= " \
+	${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
+"
 
 export GYP_DEFINES="${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 do_configure() {
