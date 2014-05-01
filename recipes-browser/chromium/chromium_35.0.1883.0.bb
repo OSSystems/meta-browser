@@ -33,6 +33,8 @@ EXTRA_OEGYP =	" \
 "
 ARMFPABI_armv7a = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
 
+CHROMIUM_EXTRA_ARGS ?= ""
+
 export GYP_DEFINES="${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 do_configure() {
 	cd ${S}
@@ -53,6 +55,10 @@ do_compile() {
 do_install() {
 	install -d ${D}${bindir}
 	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/
+
+	# Add extra command line arguments to google-chrome script by modifying
+	# the dummy "CHROME_EXTRA_ARGS" line
+	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${bindir}/google-chrome
 
 	install -d ${D}${datadir}/applications
 	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/
