@@ -6,6 +6,7 @@ SRC_URI = "\
         http://gsdview.appspot.com/chromium-browser-official/${P}.tar.xz \
         file://include.gypi \
         file://oe-defaults.gypi \
+        ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         file://unistd-2.patch \
         file://google-chrome \
         file://google-chrome.desktop \
@@ -27,6 +28,7 @@ EXTRA_OEGYP =	" \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \
+	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-I ${WORKDIR}/component-build.gypi', '', d)} \
 	-f ninja \
 "
 ARMFPABI_armv7a = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
@@ -65,6 +67,13 @@ do_install() {
 	install -m 0644 ${S}/out/Release/product_logo_48.png ${D}${bindir}/chrome/
 	install -m 0755 ${S}/out/Release/libffmpegsumo.so ${D}${bindir}/chrome/
 
+	# Always adding this libdir (not just with component builds), because the
+	# LD_LIBRARY_PATH line in the google-chromium script refers to it
+	install -d ${D}${libdir}/chrome/
+	if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
+		install -m 0755 ${S}/out/Release/lib/*.so ${D}${libdir}/chrome/
+	fi
+
 	install -d ${D}${sbindir}
 	install -m 4755 ${S}/out/Release/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
 
@@ -72,8 +81,8 @@ do_install() {
 	install -m 0644 ${S}/out/Release/locales/en-US.pak ${D}${bindir}/chrome/locales
 }
 
-FILES_${PN} = "${bindir}/chrome/ ${bindir}/google-chrome ${datadir}/applications ${sbindir}/"
-FILES_${PN}-dbg += "${bindir}/chrome/.debug/"
+FILES_${PN} = "${bindir}/chrome/ ${bindir}/google-chrome ${datadir}/applications ${sbindir}/ ${libdir}/chrome/"
+FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/chrome/.debug/"
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 

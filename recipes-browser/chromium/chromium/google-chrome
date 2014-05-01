@@ -1,6 +1,8 @@
 #!/bin/sh
 
 export CHROME_DEVEL_SANDBOX=/usr/sbin/chrome-devel-sandbox
+export LD_LIBRARY_PATH=/usr/lib/chrome
+
 if [ "${USER}" = "root" ] ; then 
 	/usr/bin/chrome/chrome --user-data-dir=${HOME}/.chromium/ $@
 else
