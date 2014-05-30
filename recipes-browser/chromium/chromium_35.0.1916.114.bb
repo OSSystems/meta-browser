@@ -9,11 +9,12 @@ SRC_URI = "\
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://remove-linux-accel-canvas-from-blacklist.patch', '', d)} \
         file://unistd-2.patch \
+        file://fix-glib-deprecated-warning.patch \
         file://google-chrome \
         file://google-chrome.desktop \
 "
-SRC_URI[md5sum] = "c0659bc3c6b540e106e043fd27f54358"
-SRC_URI[sha256sum] = "666d5948c6508072f9f5d6acff82290fa5939e1da1b94b042a1e05daf3357b61"
+SRC_URI[md5sum] = "52a42d4ae36d0104f414cb7b814526d1"
+SRC_URI[sha256sum] = "566fcdc05d53c551d142ac9742ef69ba7c6d5a450d8ec41c0efd4fc8249f77af"
 
 # include.gypi exists only for armv6 and armv7a and there isn't something like COMPATIBLE_ARCH afaik
 COMPATIBLE_MACHINE = "(-)"

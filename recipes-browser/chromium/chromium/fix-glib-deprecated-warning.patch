@@ -1,0 +1,32 @@
+Stolen the applicable part of https://chromium.googlesource.com/chromium/src.git/+/27f62d43929d33f178e89a832fde0b091a452fdd
+to fix the -Werror problem from a deprecated warning in this file:
+
+| In file included from ../../net/proxy/proxy_config_service_linux.cc:41:0:
+| gen/library_loaders/libgio.h:29:13: error:
+|   'const gchar* const* g_settings_list_schemas()' is deprecated
+|   (declared at .../tmp/sysroots/imx6qsabresd/usr/include/glib-2.0/gio/gsettings.h:74):
+|   Use 'g_settings_schema_source_list_schemas' instead [-Werror=deprecated-declarations]
+|    typeof(&::g_settings_list_schemas) g_settings_list_schemas;
+|              ^
+| cc1plus: all warnings being treated as errors
+
+Upstream-Status: Backport [27f62d43929d33f178e89a832fde0b091a452fdd]
+
+--- chromium-35.0.1883.0/net/proxy/proxy_config_service_linux.cc.old	2014-05-24 11:21:46.456263672 +0200
++++ chromium-35.0.1883.0/net/proxy/proxy_config_service_linux.cc	2014-05-24 11:26:52.041519475 +0200
+@@ -4,6 +4,15 @@
+ 
+ #include "net/proxy/proxy_config_service_linux.h"
+ 
++// glib >=2.40 deprecate g_settings_list_schemas in favor of
++// g_settings_schema_source_list_schemas. This function is not available on
++// earlier versions that we still need to support (specifically, 2.32), so
++// disable the warning.
++// TODO(mgiuca): Remove this suppression when we drop support for Ubuntu 13.10
++// (saucy) and earlier. Update the code to use
++// g_settings_schema_source_list_schemas instead.
++#define GLIB_DISABLE_DEPRECATION_WARNINGS
++
+ #include <errno.h>
+ #include <fcntl.h>
+ #if defined(USE_GCONF)
