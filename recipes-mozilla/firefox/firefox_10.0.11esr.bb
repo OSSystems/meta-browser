@@ -85,6 +85,7 @@ inherit mozilla
 EXTRA_OEMAKE = "installdir=${libdir}/${PN}"
 
 ARM_INSTRUCTION_SET = "arm"
+TARGET_CC_ARCH += " -I${STAGING_INCDIR}/freetype2"
 
 do_install() {
 	oe_runmake DESTDIR="${D}" destdir="${D}" install
