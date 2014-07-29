@@ -1,0 +1,71 @@
+From 6ee39ace731dabdbe5e169ac5bc52b713afb1275 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Tue, 29 Jul 2014 12:08:25 +0200
+Subject: [PATCH] Disable ANGLE commit ID generation
+
+As part of the build process, ANGLE generates an ID out of the SRCREV
+of the git repo's HEAD. Since these recipes do not use a git repository,
+but a tarball release of Chromium, there is no HEAD, and building ANGLE
+fails.
+
+This patch replaces the git-based commit ID generation with a dummy ID.
+
+Upstream-Status: Pending
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ third_party/angle/src/angle.gypi   |  2 +-
+ third_party/angle/src/commit_id.py | 22 +++++++++++++---------
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/third_party/angle/src/angle.gypi b/third_party/angle/src/angle.gypi
+index 5339369..c7ef8c1 100644
+--- a/third_party/angle/src/angle.gypi
++++ b/third_party/angle/src/angle.gypi
+@@ -56,7 +56,7 @@
+                         {
+                             'action_name': 'Generate Commit ID Header',
+                             'message': 'Generating commit ID header...',
+-                            'inputs': [ '<(SHARED_INTERMEDIATE_DIR)/commit_id.py', '<(angle_path)/.git/index' ],
++                            'inputs': [ '<(SHARED_INTERMEDIATE_DIR)/commit_id.py' ],
+                             'outputs': [ '<(SHARED_INTERMEDIATE_DIR)/commit.h' ],
+                             'action': [ 'python', '<(SHARED_INTERMEDIATE_DIR)/commit_id.py', '<(SHARED_INTERMEDIATE_DIR)/commit.h' ],
+                         },
+diff --git a/third_party/angle/src/commit_id.py b/third_party/angle/src/commit_id.py
+index 6339cca..1a3c0a3 100644
+--- a/third_party/angle/src/commit_id.py
++++ b/third_party/angle/src/commit_id.py
+@@ -1,17 +1,21 @@
+ import subprocess as sp
+ import sys
+ 
+-def grab_output(*command):
+-    return sp.Popen(command, stdout=sp.PIPE).communicate()[0].strip()
++#def grab_output(*command):
++#    return sp.Popen(command, stdout=sp.PIPE).communicate()[0].strip()
++#
++#commit_id_size = 12
++#
++#try:
++#    commit_id = grab_output('git', 'rev-parse', '--short=%d' % commit_id_size, 'HEAD')
++#    commit_date = grab_output('git', 'show', '-s', '--format=%ci', 'HEAD')
++#except:
++#    commit_id = 'invalid-hash'
++#    commit_date = 'invalid-date'
+ 
++commit_id = "0123456789ab"
+ commit_id_size = 12
+-
+-try:
+-    commit_id = grab_output('git', 'rev-parse', '--short=%d' % commit_id_size, 'HEAD')
+-    commit_date = grab_output('git', 'show', '-s', '--format=%ci', 'HEAD')
+-except:
+-    commit_id = 'invalid-hash'
+-    commit_date = 'invalid-date'
++commit_date = "2014-06-11 17:45:12 +0200"
+ 
+ hfile = open(sys.argv[1], 'w')
+ 
+-- 
+1.8.3.2
+
