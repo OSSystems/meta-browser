@@ -30,9 +30,17 @@ inherit gettext
 # automatically and silently fall back to GLX
 PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 
+# when building with gold for qemux86-64 it fails with:
+# FAILED: x86_64-oe-linux-gcc  -m64 -march=core2 -mtune=core2 -msse3 -mfpmath=sse --sysroot=/home/jenkins/oe/world/shr-core/tmp-eglibc/sysroots/qemux86-64 -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,-z,now -Wl,-z,relro -Wl,--fatal-warnings -pthread -Wl,-z,noexecstack -fPIC -B/home/jenkins/oe/world/shr-core/tmp-eglibc/work/core2-64-oe-linux/chromium/35.0.1916.114-r0/chromium-35.0.1916.114/third_party/gold -m64 -Wl,--icf=none -Wl,--gc-sections -o chrome_sandbox -Wl,--start-group obj/sandbox/linux/suid/chrome_sandbox.linux_util.o obj/sandbox/linux/suid/chrome_sandbox.process_util_linux.o obj/sandbox/linux/suid/chrome_sandbox.sandbox.o  -Wl,--end-group
+# chromium/35.0.1916.114-r0/chromium-35.0.1916.114/third_party/gold/gold64: -plugin: unknown option
+# chromium/35.0.1916.114-r0/chromium-35.0.1916.114/third_party/gold/gold64: use the --help option for usage information
+# collect2: error: ld returned 1 exit status
+# ninja: build stopped: subcommand failed.
+EXTRA_OEGYP_GOLD_x86-64 = "-Dlinux_use_gold_binary=0 -Dlinux_use_gold_flags=0"
+EXTRA_OEGYP_GOLD = "${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0 -Dlinux_use_gold_flags=0', d)}"
+
 EXTRA_OEGYP =	" \
-	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0', d)} \
-	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
+	${EXTRA_OEGYP_GOLD} \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \
 	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-I ${WORKDIR}/component-build.gypi', '', d)} \
