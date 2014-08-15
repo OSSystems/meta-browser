@@ -73,7 +73,8 @@ SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/${PV}/source/f
            file://debian-hacks/Bug-508942-Use-Preprocessor.py-filters-in-defines-an.patch \
            file://configure.patch \
            file://powerpc_va_list.patch \
-	   file://freetype-2.5.patch \
+           file://freetype-2.5.patch \
+           file://x86_64-fix.patch \
            file://vendor.js"
 
 SRC_URI[archive.md5sum] = "2f0e3a1dd7480e03f374c0121b4155e2"
