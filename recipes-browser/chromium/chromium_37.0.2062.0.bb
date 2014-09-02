@@ -81,6 +81,7 @@ PACKAGECONFIG ??= "use-egl"
 PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 
 EXTRA_OEGYP =	" \
+	-Ddisable_fatal_linker_warnings=1 \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0', d)} \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
 	-I ${WORKDIR}/oe-defaults.gypi \
