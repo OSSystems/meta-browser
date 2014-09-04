@@ -11,16 +11,11 @@ SRC_URI = "\
         ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', 'file://disable-rasterization-whitelist-unlocking-impl-side-painting.patch', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://0002-Disable-API-keys-info-bar.patch', '', d)} \
         file://unistd-2.patch \
-        file://0001-Disable-ANGLE-commit-ID-generation.patch \
         file://google-chrome \
         file://google-chrome.desktop \
 "
-SRC_URI[md5sum] = "327e528a919239f18db581a8a6d1adea"
-SRC_URI[sha256sum] = "6b9ce84df2b6f9d20b209aab16034079cea981b00b8d20660571555f53c815cb"
-
-# Chromium 37 is currently in beta status
-DEFAULT_PREFERENCE = "-1"
-
+SRC_URI[md5sum] = "49bcf221a2e2e5406ae2e69964d01093"
+SRC_URI[sha256sum] = "d27c19580b74cbe143131f0bc097557b3b2fb3d2be966e688d8af51a779ce533"
 
 # conditionally add ozone-wayland and its patches to the Chromium sources
 
@@ -38,7 +33,10 @@ OZONE_WAYLAND_EXTRA_PATCHES = " \
         file://0001-Remove-X-libraries-from-GYP-files.patch \
 "
 
-SRC_URI += "${@base_conditional('ENABLE_WAYLAND', '1', 'git://github.com/01org/ozone-wayland.git;destsuffix=ozone-wayland-git;branch=Milestone-Summer;rev=a68f96aa1668de6f2a922a37b48d713d5d809ee0', '', d)}"
+OZONE_WAYLAND_GIT_DESTSUFFIX = "ozone-wayland-git"
+OZONE_WAYLAND_GIT_BRANCH = "Milestone-Summer"
+OZONE_WAYLAND_GIT_SRCREV = "8346e3cecb5c1331a25ba235f29b72f3f049966a"
+SRC_URI += "${@base_conditional('ENABLE_WAYLAND', '1', 'git://github.com/01org/ozone-wayland.git;destsuffix=${OZONE_WAYLAND_GIT_DESTSUFFIX};branch=${OZONE_WAYLAND_GIT_BRANCH};rev=${OZONE_WAYLAND_GIT_SRCREV}', '', d)}"
 
 do_unpack[postfuncs] += "${@base_conditional('ENABLE_WAYLAND', '1', 'copy_ozone_wayland_files', '', d)}"
 do_patch[prefuncs] += "${@base_conditional('ENABLE_WAYLAND', '1', 'add_ozone_wayland_patches', '', d)}"
@@ -81,6 +79,7 @@ PACKAGECONFIG ??= "use-egl"
 PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 
 EXTRA_OEGYP =	" \
+	-Dangle_use_commit_id=0 \
 	-Ddisable_fatal_linker_warnings=1 \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_binary=0', d)} \
 	${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '', '-Dlinux_use_gold_flags=0', d)} \
