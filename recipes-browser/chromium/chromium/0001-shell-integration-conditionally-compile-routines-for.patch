@@ -1,0 +1,41 @@
+From 40659667549d1eec5c9ed29c6120584f6628d761 Mon Sep 17 00:00:00 2001
+From: Eric Nelson <eric.nelson@boundarydevices.com>
+Date: Mon, 6 Oct 2014 18:11:29 -0700
+Subject: [PATCH] shell integration: conditionally compile routines for use
+ with GLIB
+
+The routine QuoteArgForDesktopFileExec is only called when GLIB is
+used, and compilation will fail with the following error message
+if it is compiled.
+
+	"defined but not used [-Werror=unused-function]"
+
+Signed-off-by: Eric Nelson <eric.nelson@boundarydevices.com>
+---
+ chrome/browser/shell_integration_linux.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/chrome/browser/shell_integration_linux.cc b/chrome/browser/shell_integration_linux.cc
+index 24a1c55..bd82db4 100644
+--- a/chrome/browser/shell_integration_linux.cc
++++ b/chrome/browser/shell_integration_linux.cc
+@@ -260,6 +260,7 @@ void DeleteShortcutInApplicationsMenu(
+   LaunchXdgUtility(argv, &exit_code);
+ }
+ 
++#if defined(USE_GLIB)
+ // Quote a string such that it appears as one verbatim argument for the Exec
+ // key in a desktop file.
+ std::string QuoteArgForDesktopFileExec(const std::string& arg) {
+@@ -307,6 +308,8 @@ std::string QuoteCommandLineForDesktopFileExec(
+   return quoted_path;
+ }
+ 
++#endif
++
+ const char kDesktopEntry[] = "Desktop Entry";
+ 
+ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
+-- 
+1.9.1
+

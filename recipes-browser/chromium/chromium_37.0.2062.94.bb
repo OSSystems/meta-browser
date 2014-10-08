@@ -13,6 +13,7 @@ SRC_URI = "\
         file://unistd-2.patch \
         file://google-chrome \
         file://google-chrome.desktop \
+        file://0001-shell-integration-conditionally-compile-routines-for.patch \
 "
 SRC_URI[md5sum] = "49bcf221a2e2e5406ae2e69964d01093"
 SRC_URI[sha256sum] = "d27c19580b74cbe143131f0bc097557b3b2fb3d2be966e688d8af51a779ce533"
