@@ -1,4 +1,4 @@
-From 7166cba808d1922f4604d6771c21b90513bf9c2b Mon Sep 17 00:00:00 2001
+From 821d9fde2302f68f7cb7f0b211f4f78220c97180 Mon Sep 17 00:00:00 2001
 From: Carlos Rafael Giani <dv@pseudoterminal.org>
 Date: Sun, 12 Oct 2014 17:54:18 +0200
 Subject: [PATCH] Remove accelerated Canvas support from blacklist
@@ -18,7 +18,7 @@ Upstream-Status: Inappropiate [see link above]
  1 file changed, 10 deletions(-)
 
 diff --git a/gpu/config/software_rendering_list_json.cc b/gpu/config/software_rendering_list_json.cc
-index 4e8e56a..f6dd7e5 100644
+index b9f5e3a..ccf1460 100644
 --- a/gpu/config/software_rendering_list_json.cc
 +++ b/gpu/config/software_rendering_list_json.cc
 @@ -240,16 +240,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(

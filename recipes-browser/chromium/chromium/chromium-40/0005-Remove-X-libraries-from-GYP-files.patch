@@ -1,4 +1,4 @@
-From 715277bbb81a32c7225416eaef77521b2a4f63ac Mon Sep 17 00:00:00 2001
+From 23e33854a1c5cddc56acd9abdbda14757b809c7d Mon Sep 17 00:00:00 2001
 From: Carlos Rafael Giani <dv@pseudoterminal.org>
 Date: Sun, 12 Oct 2014 18:08:37 +0200
 Subject: [PATCH] Remove X libraries from GYP files
@@ -17,10 +17,10 @@ Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
  4 files changed, 1 insertion(+), 11 deletions(-)
 
 diff --git a/third_party/libjingle/source/talk/libjingle.gyp b/third_party/libjingle/source/talk/libjingle.gyp
-index 6064277..7fbf5b5 100755
+index 90d1f41..22655dc 100755
 --- a/third_party/libjingle/source/talk/libjingle.gyp
 +++ b/third_party/libjingle/source/talk/libjingle.gyp
-@@ -575,8 +575,6 @@
+@@ -455,8 +455,6 @@
            ],
            'libraries': [
              '-lrt',
@@ -30,7 +30,7 @@ index 6064277..7fbf5b5 100755
          }],
          ['OS=="win"', {
 diff --git a/third_party/libjingle/source/talk/libjingle_examples.gyp b/third_party/libjingle/source/talk/libjingle_examples.gyp
-index 3e31f50..44252a3 100755
+index f7ce53b..204bc1e 100755
 --- a/third_party/libjingle/source/talk/libjingle_examples.gyp
 +++ b/third_party/libjingle/source/talk/libjingle_examples.gyp
 @@ -207,10 +207,6 @@
@@ -45,10 +45,10 @@ index 3e31f50..44252a3 100755
                },
              }],  # OS=="linux"
 diff --git a/third_party/webrtc/base/base.gyp b/third_party/webrtc/base/base.gyp
-index ba5678e..e1cabc7 100644
+index 2fd64ba..ccab4e9 100644
 --- a/third_party/webrtc/base/base.gyp
 +++ b/third_party/webrtc/base/base.gyp
-@@ -574,10 +574,6 @@
+@@ -593,10 +593,6 @@
              'libraries': [
                '-ldl',
                '-lrt',
@@ -58,9 +58,9 @@ index ba5678e..e1cabc7 100644
 -              '-lXrender',
              ],
            },
-           'conditions': [
+         }, {
 diff --git a/third_party/webrtc/modules/desktop_capture/desktop_capture.gypi b/third_party/webrtc/modules/desktop_capture/desktop_capture.gypi
-index a0195d6..ec6738b 100644
+index 1b702f2..93ede57 100644
 --- a/third_party/webrtc/modules/desktop_capture/desktop_capture.gypi
 +++ b/third_party/webrtc/modules/desktop_capture/desktop_capture.gypi
 @@ -97,7 +97,7 @@

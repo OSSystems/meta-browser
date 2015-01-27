@@ -1,0 +1,39 @@
+From 61cbd67e88f5e99185d7df1a05f842c58e691495 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Sun, 21 Dec 2014 01:01:04 +0100
+Subject: [PATCH] Add Linux to impl side painting whitelist
+
+Upstream-Status: Inappropriate [enable feature]
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ gpu/config/software_rendering_list_json.cc | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/gpu/config/software_rendering_list_json.cc b/gpu/config/software_rendering_list_json.cc
+index ccf1460..8630d75 100644
+--- a/gpu/config/software_rendering_list_json.cc
++++ b/gpu/config/software_rendering_list_json.cc
+@@ -1088,13 +1088,18 @@ LONG_STRING_CONST(
+     },
+     {
+       "id": 99,
+-      "description": "GPU rasterization is blacklisted on non-Android",
++      "description": "GPU rasterization is blacklisted on non-Android and non-Linux (Yocto patch)",
+       "cr_bugs": [362779],
+       "exceptions": [
+         {
+           "os": {
+             "type": "android"
+           }
++        },
++        {
++          "os": {
++            "type": "linux"
++          }
+         }
+       ],
+       "features": [
+-- 
+1.9.1
+

@@ -1,4 +1,4 @@
-From e5c8af3d5e2a49effd39846657dd55ff6af44a63 Mon Sep 17 00:00:00 2001
+From 518135b0cd6878e91e5fcf489f3185740ec307c0 Mon Sep 17 00:00:00 2001
 From: Carlos Rafael Giani <dv@pseudoterminal.org>
 Date: Sun, 12 Oct 2014 19:31:47 +0200
 Subject: [PATCH] Remove hard coded values for CC and CXX
@@ -18,10 +18,10 @@ Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
  1 file changed, 10 deletions(-)
 
 diff --git a/build/common.gypi b/build/common.gypi
-index 609041c..4040a0b 100644
+index 7ec5ae2..11e8d1d 100644
 --- a/build/common.gypi
 +++ b/build/common.gypi
-@@ -5577,16 +5577,6 @@
+@@ -5808,16 +5808,6 @@
          ['CXX.host', '<(host_cxx)'],
        ],
      }],

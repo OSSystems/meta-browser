@@ -1,4 +1,4 @@
-From e3a694a5324b9fab58875f2a1bd4cbe48fe6e151 Mon Sep 17 00:00:00 2001
+From 68773f2faea2608145e820bf23cf5efaf50e3399 Mon Sep 17 00:00:00 2001
 From: Carlos Rafael Giani <dv@pseudoterminal.org>
 Date: Mon, 9 Jun 2014 15:05:11 +0200
 Subject: [PATCH] Disable API keys info bar
@@ -14,7 +14,7 @@ Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
  1 file changed, 2 insertions(+)
 
 diff --git a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
-index 5014219..bb2a39d 100644
+index edea11a..4aef68f 100644
 --- a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
 +++ b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
 @@ -18,8 +18,10 @@ void GoogleApiKeysInfoBarDelegate::Create(InfoBarService* infobar_service) {
@@ -29,5 +29,5 @@ index 5014219..bb2a39d 100644
  
  GoogleApiKeysInfoBarDelegate::GoogleApiKeysInfoBarDelegate()
 -- 
-1.8.3.2
+1.9.1
 
