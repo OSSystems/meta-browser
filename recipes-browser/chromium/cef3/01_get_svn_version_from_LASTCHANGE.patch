@@ -1,0 +1,32 @@
+Fetch the revision from LASTCHANGE file programmatically
+
+Upstream-Status: Pending
+
+Signed-off-by: Zoltan Kuscsik <zoltan.kuscsik@linaro.org>
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+diff --git a/cef/tools/make_version_header.py b/cef/tools/make_version_header.py
+index 84d49f5..395c2cf 100644
+--- a/cef/tools/make_version_header.py
++++ b/cef/tools/make_version_header.py
+@@ -64,6 +64,8 @@ def write_svn_header(header, chrome_version, cef_version, cpp_header_dir):
+       revision = svn.get_revision()
+     elif git.is_checkout('.'):
+       revision = git.get_svn_revision()
++    elif os.path.isfile("../build/util/LASTCHANGE"):
++      revision = open("../build/util/LASTCHANGE").read().split("=")[1].strip()
+     else:
+       raise Exception('Not a valid checkout')
+
+diff --git a/cef/tools/revision.py b/cef/tools/revision.py
+index 1d94602..eb89e3b 100644
+--- a/cef/tools/revision.py
++++ b/cef/tools/revision.py
+@@ -16,6 +16,8 @@ if os.path.exists(os.path.join('.', '.svn')):
+   sys.stdout.write(svn.get_revision())
+ elif os.path.exists(os.path.join('.', '.git')):
+   sys.stdout.write(git.get_svn_revision())
++elif os.path.isfile("../build/util/LASTCHANGE"):
++  revision = open("../build/util/LASTCHANGE").read().split("=")[1].strip()
+ else:
+   raise Exception('Not a valid checkout')
