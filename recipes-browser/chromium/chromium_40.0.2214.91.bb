@@ -91,6 +91,7 @@ SRC_URI[sha256sum] = "f72fda9ff1ea256ab911610ee532eadf8303137d431f2481d01d3d60e5
 
 OZONE_WAYLAND_EXTRA_PATCHES += " \
         file://chromium-40/0005-Remove-X-libraries-from-GYP-files.patch \
+        file://chromium-40/0010-systemd-218.patch \
 "
 OZONE_WAYLAND_GIT_BRANCH = "Milestone-ThanksGiving"
 OZONE_WAYLAND_GIT_SRCREV = "5d7baa9bc3b8c88e9b7e476e3d6bc8cd44a887fe"
