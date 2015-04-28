@@ -46,14 +46,17 @@ do_install() {
 		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}
 	fi
 	install -d ${D}${libdir}
-        if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libcef.so" ]; then
+        if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so" ]; then
 		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so ${D}${libdir}
         fi
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libpdf.so" ]; then
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libpdf.so ${D}${libdir}/chrome/libpdf.so
+	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so" ]; then
-		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so ${D}${libdir}
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so ${D}${libdir}/chrome/libosmesa.so
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libffmpegsumo.so" ]; then
-		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libffmpegsumo.so ${D}${libdir}
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libffmpegsumo.so ${D}${libdir}/chrome/libffmpegsumo.so
 	fi
 	install -d ${D}${bindir}/chrome
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
@@ -95,22 +98,12 @@ do_install() {
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
 		install -m 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
 	fi
-
-	# take care of yocto-way libraries naming (versions)
-	cd ${D}${libdir}
-	for library in $(find -type f -name '*.so'); do
-		startDir="$(pwd)"
-		cd "$(dirname "$library")"
-		rm -f "$library.0.0.1"
-		mv "$library" "$library.0.0.1"
-		ln -sf "$library.0.0.1" "$library.0.0"
-		ln -sf "$library.0.0" "$library.0"
-		ln -sf "$library.0" "$library"
-		cd "$startDir"
-	done
-
 }
 
+PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-plugin-pdf"
+
+FILES_${PN}-codecs-ffmpeg = "${libdir}/chrome/libffmpegsumo.so"
+FILES_${PN}-plugin-pdf = "${libdir}/chrome/libpdf.so"
 
 FILES_${PN} = "${bindir}/chrome/ ${bindir}/google-chrome ${datadir}/applications ${sbindir}/ ${libdir}/chrome/"
 FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/chrome/.debug/"
@@ -118,11 +111,10 @@ FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/chrome/.debug/"
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 INSANE_SKIP_${PN} = "ldflags"
+SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 FILES_${PN} += "${bindir} ${bindir}/chrome/ ${libdir}"
 FILES_${PN} += "${bindir}/chrome/*.pak"
 FILES_${PN} += "${bindir}/chrome/locales/*.pak"
 FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/.debug/"
-
-
 
