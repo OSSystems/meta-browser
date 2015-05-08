@@ -31,73 +31,43 @@ do_configure() {
 }
 
 do_install() {
-	install -d ${D}${bindir}
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple" ]; then
-		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple ${D}${bindir}
-	fi
 	if [ -f "${WORKDIR}/google-chrome" ]; then
-		install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/
+		install -Dm 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
 	fi
-	install -d ${D}${datadir}/applications
-	if [ -f "${WORKDIR}/google-chrome.desktop" ]; then
-		install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
+		install -Dm 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
+	fi
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple" ]; then
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple ${D}${bindir}/cefsimple
+	fi
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so" ]; then
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so ${D}${bindir}/lib/libcef.so
+	fi
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/chrome/chrome
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}
+		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}/chrome/icudtl.dat
 	fi
-	install -d ${D}${libdir}
-        if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so" ]; then
-		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so ${D}${libdir}
-        fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libpdf.so" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libpdf.so ${D}${libdir}/chrome/libpdf.so
+	if [ -f "${WORKDIR}/google-chrome.desktop" ]; then
+		install -Dm 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
 	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so ${D}${libdir}/chrome/libosmesa.so
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libffmpegsumo.so" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/libffmpegsumo.so ${D}${libdir}/chrome/libffmpegsumo.so
-	fi
-	install -d ${D}${bindir}/chrome
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
-		install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/chrome/chrome
-	fi
-	#Chromium *.pak files
+	#Chromium plugins libs
+	for f in libpdf.so libosmesa.so libffmpegsumo.so; do
+		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
+			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/chrome/$f
+		fi
+	done
 
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/content_resources.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/content_resources.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/keyboard_resources.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/keyboard_resources.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_100_percent.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_100_percent.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/product_logo_48.png" ]; then
-		install -m 0644 ${S}/out/${CHROMIUM_BUILD_TYPE}/product_logo_48.png ${D}${bindir}/chrome/
-    	fi
+	#Chromium *.pak files and CEF pak files ( prefixed with cef_
+	for f in content_resources.pak keyboard_resources.pak chrome_100_percent.pak product_logo_48.png resources.pak \
+	         cef_100_percent.pak cef_200_percent.pak cef_resources.pak cef.pak \
+		 locales/en-US.pak; do
+		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
+			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${bindir}/chrome/$f
+		fi
+	done
 
-    	# CEF *.pak files
-
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cef_100_percent.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/cef_100_percent.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cef_200_percent.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/cef_200_percent.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cef_resources.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/cef_resources.pak ${D}${bindir}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cef.pak" ]; then
-		install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/cef.pak ${D}${bindir}/chrome
-	fi
-	install -d ${D}${bindir}/chrome/locales
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/locales/en-US.pak ${D}${bindir}/chrome/locales
-
-	install -d ${D}${sbindir}
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
-		install -m 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
-	fi
 }
 
 PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-plugin-pdf"
