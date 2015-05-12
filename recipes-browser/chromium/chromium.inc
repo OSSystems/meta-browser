@@ -7,7 +7,7 @@ COMPATIBLE_MACHINE_x86-64 = "(.*)"
 COMPATIBLE_MACHINE_armv6 = "(.*)"
 COMPATIBLE_MACHINE_armv7a = "(.*)"
 
-export CHROMIUM_BUILD_TYPE="Release"
+CHROMIUM_BUILD_TYPE = "Release"
 
 inherit gettext
 
