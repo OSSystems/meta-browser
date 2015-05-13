@@ -189,8 +189,8 @@ do_install_append() {
 
 	# Always adding this libdir (not just with component builds), because the
         # LD_LIBRARY_PATH line in the google-chromium script refers to it
-        install -d ${D}${libdir}/chrome/
+        install -d ${D}${libdir}/${BPN}/
         if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
-                install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/*.so ${D}${libdir}/chrome/
+                install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/*.so ${D}${libdir}/${BPN}/
         fi
 }

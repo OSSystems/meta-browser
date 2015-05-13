@@ -34,20 +34,23 @@ do_install() {
 	if [ -f "${WORKDIR}/google-chrome" ]; then
 		install -Dm 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
 	fi
+	if [ -f "${WORKDIR}/cef-simple" ]; then
+		install -Dm 0755 ${WORKDIR}/cef-simple ${D}${bindir}/cef-simple
+	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
 		install -Dm 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple ${D}${bindir}/cefsimple
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple ${D}${bindir}/${BPN}/cefsimple
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so" ]; then
 		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so ${D}${bindir}/lib/libcef.so
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/chrome/chrome
+		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/${BPN}/chrome
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat" ]; then
-		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}/chrome/icudtl.dat
+		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
 	fi
 	if [ -f "${WORKDIR}/google-chrome.desktop" ]; then
 		install -Dm 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
@@ -55,7 +58,7 @@ do_install() {
 	#Chromium plugins libs
 	for f in libpdf.so libosmesa.so libffmpegsumo.so; do
 		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
-			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/chrome/$f
+			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/${BPN}/$f
 		fi
 	done
 
@@ -64,7 +67,7 @@ do_install() {
 	         cef_100_percent.pak cef_200_percent.pak cef_resources.pak cef.pak \
 		 locales/en-US.pak; do
 		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
-			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${bindir}/chrome/$f
+			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${bindir}/${BPN}/$f
 		fi
 	done
 
@@ -72,19 +75,18 @@ do_install() {
 
 PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-plugin-pdf"
 
-FILES_${PN}-codecs-ffmpeg = "${libdir}/chrome/libffmpegsumo.so"
-FILES_${PN}-plugin-pdf = "${libdir}/chrome/libpdf.so"
+FILES_${PN}-codecs-ffmpeg = "${libdir}/${BPN}/libffmpegsumo.so"
+FILES_${PN}-plugin-pdf = "${libdir}/${BPN}/libpdf.so"
 
-FILES_${PN} = "${bindir}/chrome/ ${bindir}/google-chrome ${datadir}/applications ${sbindir}/ ${libdir}/chrome/"
-FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/chrome/.debug/"
+FILES_${PN} = "${bindir}/${BPN} ${datadir}/applications ${sbindir}/ ${libdir}/${BPN}/"
+FILES_${PN} += "${bindir} ${libdir}"
+FILES_${PN} += "${bindir}/${BPN}/*.pak"
+FILES_${PN} += "${bindir}/${BPN}/locales/*.pak"
+
+FILES_${PN}-dbg += "${bindir}/${BPN}/.debug/ ${libdir}/${BPN}/.debug/ ${libdir}/.debug/"
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 INSANE_SKIP_${PN} = "ldflags"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
-FILES_${PN} += "${bindir} ${bindir}/chrome/ ${libdir}"
-FILES_${PN} += "${bindir}/chrome/*.pak"
-FILES_${PN} += "${bindir}/chrome/locales/*.pak"
-FILES_${PN}-dbg += "${bindir}/chrome/.debug/ ${libdir}/.debug/"
-

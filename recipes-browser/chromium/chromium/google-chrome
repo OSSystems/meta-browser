@@ -1,11 +1,11 @@
 #!/bin/sh
 
 export CHROME_DEVEL_SANDBOX=/usr/sbin/chrome-devel-sandbox
-export LD_LIBRARY_PATH=/usr/lib/chrome
+export LD_LIBRARY_PATH=/usr/lib/chromium
 
 CHROME_EXTRA_ARGS=""
 if [ "${USER}" = "root" ] ; then
 	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=${HOME}/.chromium/"
 fi
 
-/usr/bin/chrome/chrome ${CHROME_EXTRA_ARGS} $@
+/usr/bin/chromium/chrome ${CHROME_EXTRA_ARGS} $@

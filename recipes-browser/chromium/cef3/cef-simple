@@ -1,0 +1,11 @@
+#!/bin/sh
+
+export CHROME_DEVEL_SANDBOX=/usr/sbin/chrome-devel-sandbox
+export LD_LIBRARY_PATH=/usr/lib/cef3
+
+CHROME_EXTRA_ARGS=""
+if [ "${USER}" = "root" ] ; then
+	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=${HOME}/.cef3/"
+fi
+
+/usr/bin/cef3/cefsimple ${CHROME_EXTRA_ARGS} $@
