@@ -26,7 +26,7 @@ Maintainers: Eric Bénard <eric@eukrea.com>
              Otavio Salvador <otavio@ossystems.com.br>
 
 When sending single patches, please use something like :
-'git send-email -1 --to openembedded-devel@lists.openembedded.org --subject-prefix=meta-browser][PATCH'
+git send-email -1 --to openembedded-devel@lists.openembedded.org --subject-prefix='meta-browser][PATCH'
 
 TODO
 ----
