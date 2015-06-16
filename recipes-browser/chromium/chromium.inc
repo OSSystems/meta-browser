@@ -9,7 +9,7 @@ COMPATIBLE_MACHINE_armv7a = "(.*)"
 
 CHROMIUM_BUILD_TYPE = "Release"
 
-inherit gettext
+inherit gettext pythonnative
 
 PACKAGECONFIG ??= "use-egl"
 
