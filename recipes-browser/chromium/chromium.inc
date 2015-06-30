@@ -17,6 +17,13 @@ PACKAGECONFIG ??= "use-egl"
 # automatically and silently fall back to GLX
 PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 
+# Additional PACKAGECONFIG options - listed here to avoid warnings
+PACKAGECONFIG[component-build] = ""
+PACKAGECONFIG[disable-api-keys-info-bar] = ""
+PACKAGECONFIG[ignore-lost-context] = ""
+PACKAGECONFIG[impl-side-painting] = ""
+PACKAGECONFIG[use-gl] = ""
+
 GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
 do_configure() {
