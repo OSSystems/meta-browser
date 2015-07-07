@@ -23,8 +23,8 @@ S = "${WORKDIR}/chromium_rev_${PV}"
 
 do_fetch[vardeps] += "SRCREV_FORMAT SRCREV_cef SRCREV_egl SRCREV_tools"
 
+GYP_ARCH_DEFINES_x86 = " target_arch=ia32"
 GYP_ARCH_DEFINES_armv7a = " target_arch=arm arm_float_abi=hard"
-GYP_ARCH_DEFINES_i586 = " target_arch=ia32"
 
 export GYP_GENERATORS="ninja"
 export BUILD_TARGET_ARCH="${TARGET_ARCH}"
