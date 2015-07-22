@@ -16,9 +16,9 @@
 #    * CHROMIUM_WAYLAND_DEPENDS
 #    * CHROMIUM_WAYLAND_GYP_DEFINES
 
+include chromium.inc
 DESCRIPTION = "Chromium browser"
 DEPENDS += "libgnome-keyring"
-include chromium.inc
 SRC_URI = "\
         http://gsdview.appspot.com/chromium-browser-official/${P}.tar.xz \
         file://include.gypi \
