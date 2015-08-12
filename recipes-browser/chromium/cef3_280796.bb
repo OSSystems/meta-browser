@@ -47,5 +47,5 @@ do_qa_configure() {
 }
 
 do_compile() {
-	ninja -C out/${CHROMIUM_BUILD_TYPE} cefsimple
+	ninja -C out/${CHROMIUM_BUILD_TYPE} -j${BB_NUMBER_THREADS} cefsimple
 }

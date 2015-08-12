@@ -177,7 +177,7 @@ do_configure_append() {
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} chrome chrome_sandbox
+        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -j${BB_NUMBER_THREADS} chrome chrome_sandbox
 }
 
 
