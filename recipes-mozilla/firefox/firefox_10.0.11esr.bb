@@ -8,8 +8,8 @@ LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=9cb02f27e77e702043b827c9418bfbf8"
 
 SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${PV}.source.tar.bz2;name=archive \
-           file://mozilla-${BPN}.png \
-           file://mozilla-${BPN}.desktop \
+           file://mozilla-firefox.png \
+           file://mozilla-firefox.desktop \
            file://fixes/Allow-.js-preference-files-to-set-locked-prefs-with-.patch \
            file://fixes/Avoid-spurious-Run-items-in-application-handlers-con.patch \
            file://fixes/Properly-launch-applications-set-in-HOME-.mailcap.patch \
@@ -94,8 +94,8 @@ do_install() {
 	oe_runmake DESTDIR="${D}" destdir="${D}" install
 	install -d ${D}${datadir}/applications
 	install -d ${D}${datadir}/pixmaps
-	install -m 0644 ${WORKDIR}/mozilla-${PN}.desktop ${D}${datadir}/applications/
-	install -m 0644 ${WORKDIR}/mozilla-${PN}.png ${D}${datadir}/pixmaps/
+	install -m 0644 ${WORKDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/
+	install -m 0644 ${WORKDIR}/mozilla-firefox.png ${D}${datadir}/pixmaps/
 	install -m 0644 ${WORKDIR}/vendor.js ${D}${libdir}/${PN}/defaults/pref/
 	rm -f ${D}${libdir}/${PN}/TestGtkEmbed
 	rm -f ${D}${libdir}/${PN}/defaults/pref/firefox-l10n.js
