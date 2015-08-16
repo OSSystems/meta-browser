@@ -91,7 +91,7 @@ EXTRA_OEMAKE = "installdir=${libdir}/${PN}"
 ARM_INSTRUCTION_SET = "arm"
 
 do_install() {
-	oe_runmake DESTDIR="${D}" destdir="${D}" install
+	oe_runmake -C "${MOZ_OBJDIR}" DESTDIR="${D}" destdir="${D}" install
 	install -d ${D}${datadir}/applications
 	install -d ${D}${datadir}/pixmaps
 	install -m 0644 ${WORKDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/

@@ -12,7 +12,7 @@ SELECTED_OPTIMIZATION = "-Os -fsigned-char -fno-strict-aliasing"
 
 export CROSS_COMPILE = "1"
 export MOZCONFIG = "${WORKDIR}/mozconfig"
-export MOZ_OBJDIR = "${S}"
+export MOZ_OBJDIR = "${WORKDIR}/obj-${TARGET_SYS}"
 
 export CONFIGURE_ARGS = "${EXTRA_OECONF}"
 export HOST_CC = "${BUILD_CC}"
