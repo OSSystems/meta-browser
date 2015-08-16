@@ -16,7 +16,7 @@ PR = "r3"
 # Mangle place where to store the file
 DL_DIR_append = "/${PN}-${PV}"
 
-SRC_URI = "ftp://ftp.mozilla.org/pub/mozilla.org/mozilla.org/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi"
+SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi"
 S = "${WORKDIR}"
 
 inherit allarch
