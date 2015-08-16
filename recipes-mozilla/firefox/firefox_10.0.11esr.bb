@@ -75,7 +75,8 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://powerpc_va_list.patch \
            file://freetype-2.5.patch \
            file://x86_64-fix.patch \
-           file://vendor.js"
+           file://vendor.js \
+           file://alignment.patch"
 
 SRC_URI[archive.md5sum] = "2f0e3a1dd7480e03f374c0121b4155e2"
 SRC_URI[archive.sha256sum] = "94b4d5a339d97dc56fd349f93407c3af4f408a4a8409a64e3680d564d37594f8"
