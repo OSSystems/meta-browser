@@ -1,0 +1,77 @@
+From 71e633697c72c7035cd7b0b49608a2ddcfd91a63 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 25 May 2015 10:50:01 +0900
+Subject: Bug 1094324 - Set browser.newtabpage.enhanced default in prefs
+
+---
+ browser/app/profile/firefox.js             | 3 +++
+ browser/base/content/newtab/intro.js       | 4 ++++
+ browser/base/content/newtab/page.js        | 1 +
+ browser/modules/DirectoryLinksProvider.jsm | 2 +-
+ 4 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
+index 27ceb4d..35fbb8b 100644
+--- a/browser/app/profile/firefox.js
++++ b/browser/app/profile/firefox.js
+@@ -1634,6 +1634,9 @@ pref("browser.newtabpage.introShown", false);
+ // Toggles the content of 'about:newtab'. Shows the grid when enabled.
+ pref("browser.newtabpage.enabled", true);
+ 
++// Toggles the enhanced content of 'about:newtab'. Shows sponsored tiles.
++sticky_pref("browser.newtabpage.enhanced", true);
++
+ // number of rows of newtab grid
+ pref("browser.newtabpage.rows", 3);
+ 
+diff --git a/browser/base/content/newtab/intro.js b/browser/base/content/newtab/intro.js
+index f94c255..f3e4097 100644
+--- a/browser/base/content/newtab/intro.js
++++ b/browser/base/content/newtab/intro.js
+@@ -5,6 +5,7 @@
+ #endif
+ 
+ const PREF_INTRO_SHOWN = "browser.newtabpage.introShown";
++const PREF_NEWTAB_ENHANCED = "browser.newtabpage.enhanced";
+ 
+ let gIntro = {
+   _nodeIDSuffixes: [
+@@ -25,6 +26,9 @@ let gIntro = {
+   },
+ 
+   showIfNecessary: function() {
++    if (!Services.prefs.getBoolPref(PREF_NEWTAB_ENHANCED)) {
++      return;
++    }
+     if (!Services.prefs.getBoolPref(PREF_INTRO_SHOWN)) {
+       Services.prefs.setBoolPref(PREF_INTRO_SHOWN, true);
+       this.showPanel();
+diff --git a/browser/base/content/newtab/page.js b/browser/base/content/newtab/page.js
+index aa4ba92..d916fbe 100644
+--- a/browser/base/content/newtab/page.js
++++ b/browser/base/content/newtab/page.js
+@@ -54,6 +54,7 @@ let gPage = {
+       // Update thumbnails to the new enhanced setting
+       if (aData == "browser.newtabpage.enhanced") {
+         this.update();
++        gIntro.showIfNecessary();
+       }
+ 
+       // Initialize the whole page if we haven't done that, yet.
+diff --git a/browser/modules/DirectoryLinksProvider.jsm b/browser/modules/DirectoryLinksProvider.jsm
+index 9385c09..43a27c7 100644
+--- a/browser/modules/DirectoryLinksProvider.jsm
++++ b/browser/modules/DirectoryLinksProvider.jsm
+@@ -140,7 +140,7 @@ let DirectoryLinksProvider = {
+    */
+   _setDefaultEnhanced: function DirectoryLinksProvider_setDefaultEnhanced() {
+     if (!Services.prefs.prefHasUserValue(PREF_NEWTAB_ENHANCED)) {
+-      let enhanced = true;
++      let enhanced = Services.prefs.getBoolPref(PREF_NEWTAB_ENHANCED);
+       try {
+         // Default to not enhanced if DNT is set to tell websites to not track
+         if (Services.prefs.getBoolPref("privacy.donottrackheader.enabled")) {
+-- 
+cgit v0.11.2
+
+

@@ -1,0 +1,102 @@
+From ad22baf32e37eb93a1c8fca29772fe5cc4dbc350 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Tue, 19 May 2015 20:50:08 +0900
+Subject: Bug 1166243 - Remove build() function from js and xpc shells.
+
+---
+ ipc/testshell/XPCShellEnvironment.cpp | 10 ----------
+ js/src/shell/js.cpp                   | 13 -------------
+ js/xpconnect/src/XPCShellImpl.cpp     | 10 ----------
+ 3 files changed, 33 deletions(-)
+
+diff --git a/ipc/testshell/XPCShellEnvironment.cpp b/ipc/testshell/XPCShellEnvironment.cpp
+index f1ad26d..8d14c22 100644
+--- a/ipc/testshell/XPCShellEnvironment.cpp
++++ b/ipc/testshell/XPCShellEnvironment.cpp
+@@ -193,15 +193,6 @@ Version(JSContext *cx,
+ }
+ 
+ static bool
+-BuildDate(JSContext *cx, unsigned argc, JS::Value *vp)
+-{
+-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+-    fprintf(stdout, "built on %s at %s\n", __DATE__, __TIME__);
+-    args.rval().setUndefined();
+-    return true;
+-}
+-
+-static bool
+ Quit(JSContext *cx,
+      unsigned argc,
+      JS::Value *vp)
+@@ -270,7 +261,6 @@ const JSFunctionSpec gGlobalFunctions[] =
+     JS_FS("load",            Load,           1,0),
+     JS_FS("quit",            Quit,           0,0),
+     JS_FS("version",         Version,        1,0),
+-    JS_FS("build",           BuildDate,      0,0),
+     JS_FS("dumpXPC",         DumpXPC,        1,0),
+     JS_FS("dump",            Dump,           1,0),
+     JS_FS("gc",              GC,             0,0),
+diff --git a/js/src/shell/js.cpp b/js/src/shell/js.cpp
+index c3ef703..380d55d 100644
+--- a/js/src/shell/js.cpp
++++ b/js/src/shell/js.cpp
+@@ -2500,15 +2500,6 @@ DisassWithSrc(JSContext* cx, unsigned argc, jsval* vp)
+ #endif /* DEBUG */
+ 
+ static bool
+-BuildDate(JSContext* cx, unsigned argc, jsval* vp)
+-{
+-    CallArgs args = CallArgsFromVp(argc, vp);
+-    fprintf(gOutFile, "built on %s at %s\n", __DATE__, __TIME__);
+-    args.rval().setUndefined();
+-    return true;
+-}
+-
+-static bool
+ Intern(JSContext* cx, unsigned argc, jsval* vp)
+ {
+     CallArgs args = CallArgsFromVp(argc, vp);
+@@ -4516,10 +4507,6 @@ static const JSFunctionSpecWithHelp shell_functions[] = {
+ "  will be 'null', because they are roots."),
+ 
+ #endif
+-    JS_FN_HELP("build", BuildDate, 0, 0,
+-"build()",
+-"  Show build date and time."),
+-
+     JS_FN_HELP("intern", Intern, 1, 0,
+ "intern(str)",
+ "  Internalize str in the atom table."),
+diff --git a/js/xpconnect/src/XPCShellImpl.cpp b/js/xpconnect/src/XPCShellImpl.cpp
+index 4b75a80..c035be1 100644
+--- a/js/xpconnect/src/XPCShellImpl.cpp
++++ b/js/xpconnect/src/XPCShellImpl.cpp
+@@ -363,15 +363,6 @@ Version(JSContext* cx, unsigned argc, jsval* vp)
+ }
+ 
+ static bool
+-BuildDate(JSContext* cx, unsigned argc, jsval* vp)
+-{
+-    CallArgs args = CallArgsFromVp(argc, vp);
+-    fprintf(gOutFile, "built on %s at %s\n", __DATE__, __TIME__);
+-    args.rval().setUndefined();
+-    return true;
+-}
+-
+-static bool
+ Quit(JSContext* cx, unsigned argc, jsval* vp)
+ {
+     CallArgs args = CallArgsFromVp(argc, vp);
+@@ -649,7 +640,6 @@ static const JSFunctionSpec glob_functions[] = {
+     JS_FS("quit",            Quit,           0,0),
+     JS_FS("ignoreReportedErrors", IgnoreReportedErrors, 1,0),
+     JS_FS("version",         Version,        1,0),
+-    JS_FS("build",           BuildDate,      0,0),
+     JS_FS("dumpXPC",         DumpXPC,        1,0),
+     JS_FS("dump",            Dump,           1,0),
+     JS_FS("gc",              GC,             0,0),
+-- 
+cgit v0.11.2
+
+

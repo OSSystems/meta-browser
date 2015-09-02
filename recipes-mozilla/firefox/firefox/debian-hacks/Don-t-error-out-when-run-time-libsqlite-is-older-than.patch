@@ -1,0 +1,35 @@
+From 5e277f244f59ca24357257ebd4d09c87ed6e9ec8 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 22 Mar 2010 11:45:42 +0100
+Subject: Don't error-out when run-time libsqlite is older than build-time
+ libsqlite
+
+In Debian, we have shlibs to handle this.
+---
+ storage/src/mozStorageService.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/storage/src/mozStorageService.cpp b/storage/src/mozStorageService.cpp
+index e996c53..0688763 100644
+--- a/storage/src/mozStorageService.cpp
++++ b/storage/src/mozStorageService.cpp
+@@ -215,6 +215,7 @@ Service::getSingleton()
+     return gService;
+   }
+ 
++#if 0
+   // Ensure that we are using the same version of SQLite that we compiled with
+   // or newer.  Our configure check ensures we are using a new enough version
+   // at compile time.
+@@ -230,6 +231,7 @@ Service::getSingleton()
+     }
+     ::PR_Abort();
+   }
++#endif
+ 
+   // The first reference to the storage service must be obtained on the
+   // main thread.
+-- 
+cgit v0.11.2
+
+

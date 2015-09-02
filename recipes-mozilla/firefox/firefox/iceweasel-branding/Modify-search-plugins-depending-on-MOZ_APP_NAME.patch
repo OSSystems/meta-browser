@@ -1,0 +1,39 @@
+From 64c0839b2ed6a0695b539640ce6ac9c779312986 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Sat, 19 Feb 2011 11:04:53 +0100
+Subject: Modify search plugins depending on MOZ_APP_NAME
+
+---
+ browser/locales/Makefile.in                     | 2 ++
+ browser/locales/en-US/searchplugins/answers.xml | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/browser/locales/Makefile.in b/browser/locales/Makefile.in
+index d1f3b6e..fbbdd86 100644
+--- a/browser/locales/Makefile.in
++++ b/browser/locales/Makefile.in
+@@ -88,6 +88,8 @@ SEARCHPLUGINS := $(foreach plugin,$(addsuffix .xml,$(SEARCHPLUGINS_NAMES)),$(or
+ SEARCHPLUGINS_FLAGS := --silence-missing-directive-warnings
+ PP_TARGETS += SEARCHPLUGINS
+ 
++DEFINES += -DMOZ_APP_NAME=$(MOZ_APP_NAME)
++
+ # Required for l10n.mk - defines a list of app sub dirs that should
+ # be included in langpack xpis.
+ ifdef MOZ_METRO
+diff --git a/browser/locales/en-US/searchplugins/answers.xml b/browser/locales/en-US/searchplugins/answers.xml
+index 4bd2fbf..e0fcec6 100644
+--- a/browser/locales/en-US/searchplugins/answers.xml
++++ b/browser/locales/en-US/searchplugins/answers.xml
+@@ -12,6 +12,6 @@
+   <Param name="gwp" value="13"/>
+ </Url>
+ <Url type="application/x-suggestions+json" method="GET"
+-     template="http://www.answers.com/main/startswith?output=json&amp;client=firefox&amp;s={searchTerms}"/>
++#expand     template="http://www.answers.com/main/startswith?output=json&amp;client=__MOZ_APP_NAME__&amp;s={searchTerms}"/>
+ <SearchForm>http://www.answers.com/</SearchForm>
+ </SearchPlugin>
+-- 
+cgit v0.11.2
+
+

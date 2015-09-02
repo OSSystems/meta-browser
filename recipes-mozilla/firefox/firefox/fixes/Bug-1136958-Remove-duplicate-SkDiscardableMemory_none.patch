@@ -1,0 +1,26 @@
+From 663e55eb0c2835a349494fbe6cc91d7b32708964 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh+mozilla@glandium.org>
+Date: Thu, 26 Feb 2015 14:14:02 +0900
+Subject: Bug 1136958 - Remove duplicate SkDiscardableMemory_none.cpp from
+ gfx/skia/moz.build
+
+---
+ gfx/skia/moz.build | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/gfx/skia/moz.build b/gfx/skia/moz.build
+index c8f47a0..59bb7af 100644
+--- a/gfx/skia/moz.build
++++ b/gfx/skia/moz.build
+@@ -852,7 +852,6 @@ else:
+         'trunk/src/opts/SkTextureCompression_opts_none.cpp',
+         'trunk/src/opts/SkUtils_opts_none.cpp',
+         'trunk/src/opts/SkXfermode_opts_none.cpp',
+-        'trunk/src/ports/SkDiscardableMemory_none.cpp',
+     ]
+ 
+ 
+-- 
+cgit v0.11.2
+
+

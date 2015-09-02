@@ -1,39 +1,31 @@
+From 00ee4f7ea56a4196a0dfc4a62a2025cd00588fde Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Mon, 14 Jul 2008 15:20:46 +0200
 Subject: Use a variable for xulrunner base version in various places
 
 ---
- config/autoconf.mk.in |    9 +++++----
+ config/baseconfig.mk | 9 +++++----
  1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/config/autoconf.mk.in b/config/autoconf.mk.in
-index fccb1a9..ca251cb 100644
---- a/config/autoconf.mk.in
-+++ b/config/autoconf.mk.in
-@@ -55,6 +55,7 @@ MOZ_APP_PROFILE = @MOZ_APP_PROFILE@
- MOZ_APP_UA_NAME = @MOZ_APP_UA_NAME@
- MOZ_APP_VERSION = @MOZ_APP_VERSION@
- MOZ_APP_MAXVERSION = @MOZ_APP_MAXVERSION@
+diff --git a/config/baseconfig.mk b/config/baseconfig.mk
+index dd4af0d..f1d4b60 100644
+--- a/config/baseconfig.mk
++++ b/config/baseconfig.mk
+@@ -2,10 +2,11 @@
+ # directly in python/mozbuild/mozbuild/base.py for gmake validation.
+ # We thus use INCLUDED_AUTOCONF_MK to enable/disable some parts depending
+ # whether a normal build is happening or whether the check is running.
+-includedir := $(includedir)/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
+-idldir = $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
+-installdir = $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
+-sdkdir = $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_VERSION)
 +MOZ_APP_BASE_VERSION = $(firstword $(subst ., ,$(MOZ_APP_VERSION))).$(word 2,$(subst ., ,$(MOZ_APP_VERSION)))
- MOZ_UA_BUILDID = @MOZ_UA_BUILDID@
- MOZ_MACBUNDLE_NAME = @MOZ_MACBUNDLE_NAME@
- 
-@@ -63,14 +64,14 @@ MOZ_PKG_SPECIAL = @MOZ_PKG_SPECIAL@
- prefix		= @prefix@
- exec_prefix	= @exec_prefix@
- bindir		= @bindir@
--includedir	= @includedir@/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
-+includedir	= @includedir@/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
- libdir		= @libdir@
- datadir		= @datadir@
- mandir		= @mandir@
--idldir		= $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
-+idldir		= $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
- 
--installdir	= $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_VERSION)
--sdkdir		= $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_VERSION)
-+installdir	= $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
-+sdkdir		= $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_BASE_VERSION)
- 
- DIST		= $(DEPTH)/dist
- LIBXUL_SDK      = @LIBXUL_SDK@
++includedir := $(includedir)/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
++idldir = $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
++installdir = $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
++sdkdir = $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_BASE_VERSION)
+ ifndef TOP_DIST
+ TOP_DIST = dist
+ endif
+-- 
+cgit v0.11.2

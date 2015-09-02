@@ -1,0 +1,165 @@
+From d8e24518e18a12815cdc3a60af5c8593ea4fa941 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 13 Jan 2014 12:01:08 +0900
+Subject: [NSS] GNU/kFreeBSD support
+
+---
+ security/nss/coreconf/Linux.mk       | 22 ++++++++++++++++++----
+ security/nss/coreconf/arch.mk        |  8 ++++++++
+ security/nss/coreconf/config.mk      |  2 +-
+ security/nss/lib/freebl/unix_rand.c  |  3 ++-
+ security/nss/lib/softoken/softoken.h |  2 +-
+ security/nss/lib/ssl/sslmutex.c      |  2 +-
+ security/nss/lib/ssl/sslmutex.h      |  2 +-
+ 7 files changed, 32 insertions(+), 9 deletions(-)
+
+diff --git a/security/nss/coreconf/Linux.mk b/security/nss/coreconf/Linux.mk
+index 177a3c8..4f17549 100644
+--- a/security/nss/coreconf/Linux.mk
++++ b/security/nss/coreconf/Linux.mk
+@@ -100,7 +100,7 @@ ifneq ($(OS_TARGET),Android)
+ LIBC_TAG		= _glibc
+ endif
+ 
+-ifeq ($(OS_RELEASE),2.0)
++ifeq ($(KERNEL)-$(OS_RELEASE),linux-2.0)
+ 	OS_REL_CFLAGS	+= -DLINUX2_0
+ 	MKSHLIB		= $(CC) -shared -Wl,-soname -Wl,$(@:$(OBJDIR)/%.so=%.so) $(RPATH)
+ 	ifdef MAPFILE
+@@ -130,14 +130,26 @@ ifeq ($(USE_PTHREADS),1)
+ OS_PTHREAD = -lpthread 
+ endif
+ 
+-OS_CFLAGS		= $(DSO_CFLAGS) $(OS_REL_CFLAGS) $(ARCHFLAG) -Wall -Werror-implicit-function-declaration -Wno-switch -pipe -ffunction-sections -fdata-sections -DLINUX -Dlinux -DHAVE_STRERROR
++# See bug 537829, in particular comment 23.
++# Place -ansi and *_SOURCE before $(DSO_CFLAGS) so DSO_CFLAGS can override
++# -ansi on platforms like Android where the system headers are C99 and do
++# not build with -ansi.
++STANDARDS_CFLAGS	= -D_POSIX_SOURCE -D_BSD_SOURCE -D_XOPEN_SOURCE
++OS_CFLAGS		= $(STANDARDS_CFLAGS) $(DSO_CFLAGS) $(OS_REL_CFLAGS) $(ARCHFLAG) -Wall -Werror-implicit-function-declaration -Wno-switch -pipe -ffunction-sections -fdata-sections -DHAVE_STRERROR
++ifeq ($(KERNEL),linux)
++OS_CFLAGS		+= -DLINUX -Dlinux
++endif
+ OS_LIBS			= $(OS_PTHREAD) -ldl -lc
+ 
+ ifdef USE_PTHREADS
+ 	DEFINES		+= -D_REENTRANT
+ endif
+ 
+-ARCH			= linux
++ifeq ($(KERNEL),linux)
++	ARCH		= linux
++else
++	ARCH		= gnu
++endif
+ 
+ DSO_CFLAGS		= -fPIC
+ DSO_LDOPTS		= -shared $(ARCHFLAG) -Wl,--gc-sections
+@@ -154,7 +166,7 @@ ifdef _SBOX_DIR
+ LDFLAGS			+= -Wl,-rpath-link,/usr/lib:/lib
+ endif
+ 
+-# INCLUDES += -I/usr/include -Y/usr/include/linux
++# INCLUDES += -I/usr/include
+ G++INCLUDES		= -I/usr/include/g++
+ 
+ #
+@@ -189,7 +201,9 @@ RPATH = -Wl,-rpath,'$$ORIGIN:/opt/sun/private/lib'
+ endif
+ endif
+ 
++ifeq ($(KERNEL), linux)
+ OS_REL_CFLAGS   += -DLINUX2_1
++endif
+ MKSHLIB         = $(CC) $(DSO_LDOPTS) -Wl,-soname -Wl,$(@:$(OBJDIR)/%.so=%.so) $(RPATH)
+ 
+ ifdef MAPFILE
+diff --git a/security/nss/coreconf/arch.mk b/security/nss/coreconf/arch.mk
+index 782e6c0..521d265 100644
+--- a/security/nss/coreconf/arch.mk
++++ b/security/nss/coreconf/arch.mk
+@@ -122,6 +122,14 @@ ifeq ($(OS_ARCH),Linux)
+     ifneq ($(words $(OS_RELEASE)),1)
+ 	OS_RELEASE := $(word 1,$(OS_RELEASE)).$(word 2,$(OS_RELEASE))
+     endif
++    KERNEL = linux
++endif
++
++# This check must be last.  Since all uses of OS_ARCH that follow affect only
++# userland, we can merge other Glibc systems with Linux here.
++ifneq (, $(filter GNU GNU_%, $(OS_ARCH)))
++OS_ARCH = Linux
++OS_RELEASE = 2.6
+ endif
+ 
+ #
+diff --git a/security/nss/coreconf/config.mk b/security/nss/coreconf/config.mk
+index 99c6ce6..9d619f1 100644
+--- a/security/nss/coreconf/config.mk
++++ b/security/nss/coreconf/config.mk
+@@ -31,7 +31,7 @@ endif
+ #######################################################################
+ 
+ TARGET_OSES = FreeBSD BSD_OS NetBSD OpenUNIX OS2 QNX Darwin BeOS OpenBSD \
+-              AIX RISCOS WINNT WIN95 Linux Android
++              AIX RISCOS WINNT WIN95 Linux Android GNU GNU_%
+ 
+ ifeq (,$(filter-out $(TARGET_OSES),$(OS_TARGET)))
+ include $(CORE_DEPTH)/coreconf/$(OS_TARGET).mk
+diff --git a/security/nss/lib/freebl/unix_rand.c b/security/nss/lib/freebl/unix_rand.c
+index b4fef7a..20bfaa9 100644
+--- a/security/nss/lib/freebl/unix_rand.c
++++ b/security/nss/lib/freebl/unix_rand.c
+@@ -156,7 +156,8 @@ static SECStatus RNG_kstat(PRUint32* fed)
+ 
+ #if defined(SCO) || defined(UNIXWARE) || defined(BSDI) || defined(FREEBSD) \
+     || defined(NETBSD) || defined(DARWIN) || defined(OPENBSD) \
+-    || defined(NTO) || defined(__riscos__)
++    || defined(NTO) || defined(__riscos__) || defined(__GNU__) \
++    || defined(__FreeBSD_kernel__) || defined(__NetBSD_kernel__)
+ #include <sys/times.h>
+ 
+ #define getdtablesize() sysconf(_SC_OPEN_MAX)
+diff --git a/security/nss/lib/softoken/softoken.h b/security/nss/lib/softoken/softoken.h
+index fbd00b6..bb35af8 100644
+--- a/security/nss/lib/softoken/softoken.h
++++ b/security/nss/lib/softoken/softoken.h
+@@ -184,7 +184,7 @@ extern PRBool sftk_fatalError;
+ 
+ #define CHECK_FORK_MIXED
+ 
+-#elif defined(LINUX)
++#elif defined(LINUX) || defined (__GLIBC__)
+ 
+ #define CHECK_FORK_PTHREAD
+ 
+diff --git a/security/nss/lib/ssl/sslmutex.c b/security/nss/lib/ssl/sslmutex.c
+index ff63680..fb4c4ab7 100644
+--- a/security/nss/lib/ssl/sslmutex.c
++++ b/security/nss/lib/ssl/sslmutex.c
+@@ -56,7 +56,7 @@ static SECStatus single_process_sslMutex_Lock(sslMutex* pMutex)
+     return SECSuccess;
+ }
+ 
+-#if defined(LINUX) || defined(AIX) || defined(BEOS) || defined(BSDI) || (defined(NETBSD) && __NetBSD_Version__ < 500000000) || defined(OPENBSD)
++#if defined(LINUX) || defined(AIX) || defined(BEOS) || defined(BSDI) || (defined(NETBSD) && __NetBSD_Version__ < 500000000) || defined(OPENBSD) || defined(__GLIBC__)
+ 
+ #include <unistd.h>
+ #include <fcntl.h>
+diff --git a/security/nss/lib/ssl/sslmutex.h b/security/nss/lib/ssl/sslmutex.h
+index b784baf..4a21d84 100644
+--- a/security/nss/lib/ssl/sslmutex.h
++++ b/security/nss/lib/ssl/sslmutex.h
+@@ -50,7 +50,7 @@ typedef struct
+ 
+ typedef int    sslPID;
+ 
+-#elif defined(LINUX) || defined(AIX) || defined(BEOS) || defined(BSDI) || (defined(NETBSD) && __NetBSD_Version__ < 500000000) || defined(OPENBSD)
++#elif defined(LINUX) || defined(AIX) || defined(BEOS) || defined(BSDI) || (defined(NETBSD) && __NetBSD_Version__ < 500000000) || defined(OPENBSD) || defined(__GLIBC__)
+ 
+ #include <sys/types.h>
+ #include "prtypes.h"
+-- 
+cgit v0.11.2
+
+

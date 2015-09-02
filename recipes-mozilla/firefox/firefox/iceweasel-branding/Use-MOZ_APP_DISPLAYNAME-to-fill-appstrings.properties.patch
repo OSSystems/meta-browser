@@ -1,0 +1,66 @@
+From be57c51cf79cc412507afe93286dd9f334b1acbc Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Sat, 19 Feb 2011 11:02:30 +0100
+Subject: Use MOZ_APP_DISPLAYNAME to fill appstrings.properties
+
+---
+ browser/locales/Makefile.in                          |  2 ++
+ .../en-US/chrome/overrides/appstrings.properties     | 20 ++++++++++----------
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/browser/locales/Makefile.in b/browser/locales/Makefile.in
+index f6b43cc..d1f3b6e 100644
+--- a/browser/locales/Makefile.in
++++ b/browser/locales/Makefile.in
+@@ -29,6 +29,8 @@ SUBMAKEFILES += \
+ 	$(DEPTH)/$(MOZ_BRANDING_DIRECTORY)/locales/Makefile \
+ 	$(NULL)
+ 
++DEFINES += -DMOZ_APP_DISPLAYNAME=$(MOZ_APP_DISPLAYNAME)
++
+ # This makefile uses variable overrides from the libs-% target to
+ # build non-default locales to non-default dist/ locations. Be aware!
+ 
+diff --git a/browser/locales/en-US/chrome/overrides/appstrings.properties b/browser/locales/en-US/chrome/overrides/appstrings.properties
+index 14fad72..f1b396f 100644
+--- a/browser/locales/en-US/chrome/overrides/appstrings.properties
++++ b/browser/locales/en-US/chrome/overrides/appstrings.properties
+@@ -3,24 +3,24 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ malformedURI=The URL is not valid and cannot be loaded.
+-fileNotFound=Firefox can't find the file at %S.
+-dnsNotFound=Firefox can't find the server at %S.
+-unknownProtocolFound=Firefox doesn't know how to open this address, because one of the following protocols (%S) isn't associated with any program or is not allowed in this context.
+-connectionFailure=Firefox can't establish a connection to the server at %S.
++#expand fileNotFound=__MOZ_APP_DISPLAYNAME__ can't find the file at %S.
++#expand dnsNotFound=__MOZ_APP_DISPLAYNAME__ can't find the server at %S.
++#expand unknownProtocolFound=__MOZ_APP_DISPLAYNAME__ doesn't know how to open this address, because one of the following protocols (%S) isn't associated with any program or is not allowed in this context.
++#expand connectionFailure=__MOZ_APP_DISPLAYNAME__ can't establish a connection to the server at %S.
+ netInterrupt=The connection to %S was interrupted while the page was loading.
+ netTimeout=The server at %S is taking too long to respond.
+-redirectLoop=Firefox has detected that the server is redirecting the request for this address in a way that will never complete.
++#expand redirectLoop=__MOZ_APP_DISPLAYNAME__ has detected that the server is redirecting the request for this address in a way that will never complete.
+ ## LOCALIZATION NOTE (confirmRepostPrompt): In this item, don't translate "%S"
+ confirmRepostPrompt=To display this page, %S must send information that will repeat any action (such as a search or order confirmation) that was performed earlier.
+ resendButton.label=Resend
+-unknownSocketType=Firefox doesn't know how to communicate with the server.
++#expand unknownSocketType=__MOZ_APP_DISPLAYNAME__ doesn't know how to communicate with the server.
+ netReset=The connection to the server was reset while the page was loading.
+ notCached=This document is no longer available.
+-netOffline=Firefox is currently in offline mode and can't browse the Web.
++#expand netOffline=__MOZ_APP_DISPLAYNAME__ is currently in offline mode and can't browse the Web.
+ isprinting=The document cannot change while Printing or in Print Preview.
+-deniedPortAccess=This address uses a network port which is normally used for purposes other than Web browsing. Firefox has canceled the request for your protection.
+-proxyResolveFailure=Firefox is configured to use a proxy server that can't be found.
+-proxyConnectFailure=Firefox is configured to use a proxy server that is refusing connections.
++#expand deniedPortAccess=This address uses a network port which is normally used for purposes other than Web browsing. __MOZ_APP_DISPLAYNAME__ has canceled the request for your protection.
++#expand proxyResolveFailure=__MOZ_APP_DISPLAYNAME__ is configured to use a proxy server that can't be found.
++#expand proxyConnectFailure=__MOZ_APP_DISPLAYNAME__ is configured to use a proxy server that is refusing connections.
+ contentEncodingError=The page you are trying to view cannot be shown because it uses an invalid or unsupported form of compression.
+ unsafeContentType=The page you are trying to view cannot be shown because it is contained in a file type that may not be safe to open. Please contact the website owners to inform them of this problem.
+ externalProtocolTitle=External Protocol Request
+-- 
+cgit v0.11.2
+
+

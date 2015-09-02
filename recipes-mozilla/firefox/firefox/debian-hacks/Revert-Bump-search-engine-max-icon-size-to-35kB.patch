@@ -1,0 +1,27 @@
+From 64d0bce0cdfa18aeee3afbcfe521ba949eac03aa Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 12 Aug 2015 06:30:23 +0900
+Subject: Revert "Bump search engine max icon size to 35kB"
+
+This reverts commit fa6c5003a763005fca0ab6c6c79f2602d1a7ffad.
+---
+ toolkit/components/search/nsSearchService.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/components/search/nsSearchService.js b/toolkit/components/search/nsSearchService.js
+index 7ae7e01..d9cf7e8 100644
+--- a/toolkit/components/search/nsSearchService.js
++++ b/toolkit/components/search/nsSearchService.js
+@@ -114,7 +114,7 @@ const NEW_LINES = /(\r\n|\r|\n)/;
+ 
+ // Set an arbitrary cap on the maximum icon size. Without this, large icons can
+ // cause big delays when loading them at startup.
+-const MAX_ICON_SIZE   = 35000;
++const MAX_ICON_SIZE   = 10000;
+ 
+ // Default charset to use for sending search parameters. ISO-8859-1 is used to
+ // match previous nsInternetSearchService behavior.
+-- 
+cgit v0.11.2
+
+

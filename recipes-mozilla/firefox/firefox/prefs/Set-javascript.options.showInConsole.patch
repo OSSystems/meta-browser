@@ -1,20 +1,24 @@
+From 7679fd1ee207287bfc8164a800c77bdd98df2d18 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 8 Dec 2007 19:24:40 +0100
 Subject: Set javascript.options.showInConsole
 
 ---
- modules/libpref/src/init/all.js |    1 +
+ modules/libpref/init/all.js | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/modules/libpref/src/init/all.js b/modules/libpref/src/init/all.js
-index e8160c2..3c0a70c 100644
---- a/modules/libpref/src/init/all.js
-+++ b/modules/libpref/src/init/all.js
-@@ -627,6 +627,7 @@ pref("javascript.options.strict",           false);
- pref("javascript.options.strict.debug",     true);
+diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
+index ba6de28..b0c3c6f 100644
+--- a/modules/libpref/init/all.js
++++ b/modules/libpref/init/all.js
+@@ -1044,6 +1044,7 @@ pref("javascript.options.strict.debug",     true);
  #endif
- pref("javascript.options.relimit",          true);
+ pref("javascript.options.baselinejit",      true);
+ pref("javascript.options.ion",              true);
 +pref("javascript.options.showInConsole",    true);
- pref("javascript.options.tracejit.content",  false);
- pref("javascript.options.tracejit.chrome",   false);
- pref("javascript.options.methodjit.content", true);
+ pref("javascript.options.asmjs",            true);
+ pref("javascript.options.native_regexp",    true);
+ pref("javascript.options.parallel_parsing", true);
+-- 
+cgit v0.11.2
+

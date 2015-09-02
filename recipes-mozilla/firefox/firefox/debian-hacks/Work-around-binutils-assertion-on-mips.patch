@@ -1,0 +1,39 @@
+From a4f0acf71a76f0e954e1400db8187dc2db614ce6 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 2 Nov 2014 10:26:21 +0900
+Subject: Work around binutils assertion on mips
+
+
+diff --git a/media/libcubeb/tests/moz.build b/media/libcubeb/tests/moz.build
+index bca57ba..f69f29c 100644
+--- a/media/libcubeb/tests/moz.build
++++ b/media/libcubeb/tests/moz.build
+@@ -4,16 +4,17 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-GeckoCppUnitTests([
+-  'test_tone'
+-])
++if CONFIG['CPU_ARCH'] != 'mips':
++    GeckoCppUnitTests([
++      'test_tone'
++    ])
+ 
+-if CONFIG['OS_TARGET'] != 'Android':
+-  GeckoCppUnitTests([
+-    'test_audio',
+-    'test_latency',
+-    'test_sanity'
+-  ])
++    if CONFIG['OS_TARGET'] != 'Android':
++      GeckoCppUnitTests([
++        'test_audio',
++        'test_latency',
++        'test_sanity'
++      ])
+ 
+ LOCAL_INCLUDES += [
+     '../include'
+-- 
+cgit v0.10.2

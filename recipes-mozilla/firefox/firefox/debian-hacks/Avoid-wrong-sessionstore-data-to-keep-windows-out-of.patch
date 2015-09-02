@@ -1,3 +1,4 @@
+From 72297a03ccb8643877fb8c7ae005481b1d24a8ad Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Thu, 12 Nov 2009 17:18:31 +0100
 Subject: Avoid wrong sessionstore data to keep windows out of user sight
@@ -8,15 +9,15 @@ and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
 ---
- browser/components/sessionstore/src/nsSessionStore.js |    4 +---
+ browser/components/sessionstore/SessionStore.jsm | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/browser/components/sessionstore/src/nsSessionStore.js b/browser/components/sessionstore/src/nsSessionStore.js
-index a62821b..0878209 100644
---- a/browser/components/sessionstore/src/nsSessionStore.js
-+++ b/browser/components/sessionstore/src/nsSessionStore.js
-@@ -3460,7 +3460,7 @@ SessionStoreService.prototype = {
-       aWindow.resizeTo(aWidth, aHeight);
+diff --git a/browser/components/sessionstore/SessionStore.jsm b/browser/components/sessionstore/SessionStore.jsm
+index 64017f7..9cc5fa0 100644
+--- a/browser/components/sessionstore/SessionStore.jsm
++++ b/browser/components/sessionstore/SessionStore.jsm
+@@ -2846,7 +2846,7 @@ let SessionStoreInternal = {
+       }
      }
      if (!isNaN(aLeft) && !isNaN(aTop) && (aLeft != win_("screenX") || aTop != win_("screenY"))) {
 -      aWindow.moveTo(aLeft, aTop);
@@ -24,7 +25,7 @@ index a62821b..0878209 100644
      }
      if (aSizeMode && win_("sizemode") != aSizeMode)
      {
-@@ -3470,8 +3470,6 @@ SessionStoreService.prototype = {
+@@ -2856,8 +2856,6 @@ let SessionStoreInternal = {
          aWindow.maximize();
          break;
        case "minimized":
@@ -33,3 +34,7 @@ index a62821b..0878209 100644
        case "normal":
          aWindow.restore();
          break;
+-- 
+cgit v0.11.2
+
+

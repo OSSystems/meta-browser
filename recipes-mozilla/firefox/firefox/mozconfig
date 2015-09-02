@@ -1,60 +1,39 @@
 . $topsrcdir/browser/config/mozconfig
 
-# From xulrunner.mozconfig
-ac_add_options --prefix=@prefix@
-ac_add_options --enable-default-toolkit=cairo-gtk2
-ac_add_options --enable-pango
-ac_add_options --enable-system-cairo # MOZ_TREE_CAIRO=
-ac_add_options --with-system-jpeg # MOZ_NATIVE_JPEG=1
-ac_add_options --with-system-zlib # MOZ_NATIVE_ZLIB=1
-ac_add_options --with-system-bz2 # MOZ_NATIVE_BZ2=1
-#ac_add_options --with-system-nspr # MOZ_NATIVE_NSPR=1
-#ac_add_options --with-system-nss # MOZ_NATIVE_NSS=1
-ac_add_options --enable-svg
-ac_add_options --enable-mathml
+ac_add_options --target=${TARGET_SYS}
+ac_add_options --prefix=${prefix}
+
+ac_add_options --enable-application=browser
+ac_add_options --enable-official-branding
+
+ac_add_options --disable-elf-hack
+ac_add_options --disable-gold
+ac_add_options --disable-strip
+ac_add_options --disable-install-strip
+
+# System libraries
+#ac_add_options --with-system-nss # your version is too old
+#ac_add_options --with-system-jpeg # Insufficient JPEG library version
+ac_add_options --with-system-zlib
+ac_add_options --with-system-bz2
+#ac_add_options --with-system-png # system's libpng doesn't have APNG support
+ac_add_options --with-system-libevent
+ac_add_options --with-system-libvpx
+ac_add_options --with-system-icu
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+
+# Features
+ac_add_options --enable-startup-notification
+ac_add_options --enable-pulseaudio
+ac_add_options --disable-gstreamer
+ac_add_options --disable-pango
+ac_add_options --disable-tests
+ac_add_options --disable-necko-wifi
 ac_add_options --disable-pedantic
-ac_add_options --disable-long-long-warning
 ac_add_options --disable-gnomevfs
 ac_add_options --disable-gconf
-#ac_add_options --enable-gio
-ac_add_options --disable-gio
-#ac_add_options --enable-gnomeui
-ac_add_options --disable-gnomeui
-ac_add_options --disable-mochitest
-ac_add_options --disable-debug
-ac_add_options --enable-canvas
-ac_add_options --enable-readline
-ac_add_options --disable-installer
-ac_add_options --disable-javaxpcom
-ac_add_options --disable-elf-dynstr-gc
-#ac_add_options --enable-system-hunspell # MOZ_NATIVE_HUNSPELL=1
-ac_add_options --disable-system-hunspell # MOZ_NATIVE_HUNSPELL=1
 ac_add_options --disable-crashreporter
-#ac_add_options --enable-system-sqlite # MOZ_NATIVE_SQLITE=1
-ac_add_options --disable-strip
-ac_add_options --disable-install-strip
-ac_add_options --enable-url-classifier
-ac_add_options --enable-startup-notification
-ac_add_options --enable-system-ffi # MOZ_NATIVE_FFI=1
-ac_add_options --with-system-libevent=@STAGING_DIR_TARGET@@prefix@ # MOZ_NATIVE_LIBEVENT=1
-ac_add_options --with-system-libvpx # MOZ_NATIVE_LIBVPX=1
-#ac_add_options --enable-shared-js
-
-# From iceweasel.mozconfig
-ac_add_options --with-user-appdir=.mozilla
-ac_add_options --disable-installer
-ac_add_options --disable-strip
-ac_add_options --disable-install-strip
-ac_add_options --disable-tests
-ac_add_options --enable-extensions=default
-ac_add_options --enable-single-profile
-ac_add_options --disable-profilesharing
 ac_add_options --disable-updater
-ac_add_options --disable-elf-dynstr-gc
-#ac_add_options --with-branding=debian/branding
-ac_add_options --enable-official-branding
-ac_add_options --disable-necko-wifi
-ac_add_options --disable-crashreporter
-ac_add_options --disable-webm
-ac_add_options --enable-chrome-format=jar
-ac_add_options --disable-libjpeg-turbo
+ac_add_options --disable-installer
+ac_add_options --disable-debug-symbols

@@ -1,0 +1,68 @@
+From 66c937f0ccb31c69a63ad8e4f2ac7d82958c1e9f Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 13 Jan 2014 12:00:25 +0900
+Subject: [NSS] Fix FTBFS on Hurd because of MAXPATHLEN
+
+---
+ security/nss/cmd/shlibsign/shlibsign.c | 21 ++++++++++++++++-----
+ security/nss/lib/freebl/unix_rand.c    |  4 ++++
+ 2 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/security/nss/cmd/shlibsign/shlibsign.c b/security/nss/cmd/shlibsign/shlibsign.c
+index 5160441..5dfd7ce 100644
+--- a/security/nss/cmd/shlibsign/shlibsign.c
++++ b/security/nss/cmd/shlibsign/shlibsign.c
+@@ -706,7 +706,6 @@ int main(int argc, char **argv)
+ #ifdef USES_LINKS
+     int ret;
+     struct stat stat_buf;
+-    char link_buf[MAXPATHLEN+1];
+     char *link_file = NULL;
+ #endif
+ 
+@@ -1034,10 +1033,22 @@ int main(int argc, char **argv)
+     }
+     if (S_ISLNK(stat_buf.st_mode)) {
+         char *dirpath,*dirend;
+-        ret = readlink(input_file, link_buf, sizeof(link_buf) - 1);
+-        if (ret < 0) {
+-            perror(input_file);
+-            goto cleanup;
++        char *link_buf = NULL;
++        size_t size = 64;
++        while (1) {
++            link_buf = realloc(link_buf, size);
++            if (!link_buf) {
++                perror(input_file);
++                goto cleanup;
++            }
++            ret = readlink(input_file, link_buf, size - 1);
++            if (ret < 0) {
++                perror(input_file);
++                goto cleanup;
++            }
++            if (ret < size - 1)
++                break;
++            size *= 2;
+         }
+         link_buf[ret] = 0;
+         link_file = mkoutput(input_file);
+diff --git a/security/nss/lib/freebl/unix_rand.c b/security/nss/lib/freebl/unix_rand.c
+index 579040e..b4fef7a 100644
+--- a/security/nss/lib/freebl/unix_rand.c
++++ b/security/nss/lib/freebl/unix_rand.c
+@@ -1031,6 +1031,10 @@ void ReadSingleFile(const char *fileName)
+ #define _POSIX_PTHREAD_SEMANTICS
+ #include <dirent.h>
+ 
++#ifndef PATH_MAX
++#define PATH_MAX 1024
++#endif
++
+ PRBool
+ ReadFileOK(char *dir, char *file)
+ {
+-- 
+cgit v0.11.2
+
+

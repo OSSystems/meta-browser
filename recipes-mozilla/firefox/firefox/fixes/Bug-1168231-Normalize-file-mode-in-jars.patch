@@ -1,0 +1,35 @@
+From 051e925e9b74980aae7e796d38d3212de67c204d Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Tue, 26 May 2015 08:12:43 +0900
+Subject: Bug 1168231 - Normalize file mode in jars
+
+---
+ python/mozbuild/mozpack/files.py | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/python/mozbuild/mozpack/files.py b/python/mozbuild/mozpack/files.py
+index 612aea9..3cddcc5 100644
+--- a/python/mozbuild/mozpack/files.py
++++ b/python/mozbuild/mozpack/files.py
+@@ -212,7 +212,16 @@ class File(BaseFile):
+         if platform.system() == 'Windows':
+             return None
+         assert self.path is not None
+-        return os.stat(self.path).st_mode
++        mode = os.stat(self.path).st_mode
++        # Normalize file mode:
++        # - take the user bits only (leaving away sticky bit, setuid, setgid)
++        # - expand them to group and other
++        # - apply a standard umask
++        # - keep file type (e.g. S_IFREG)
++        file_type = stat.S_IFMT(mode)
++        mode = mode & stat.S_IRWXU;
++        mode = mode | (mode >> 3) | (mode >> 6)
++        return file_type | (mode & 0755);
+ 
+ class ExecutableFile(File):
+     '''
+-- 
+cgit v0.11.2
+
+

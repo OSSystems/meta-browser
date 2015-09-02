@@ -1,0 +1,26 @@
+Upstream-Status: Backport
+
+Subject: [PATCH] freetype-2.6
+
+Fix error: undefined reference to `FT_Get_X11_Font_Format'
+
+Signed-off-by: Fabio Berton <fabio.berton@ossystems.com.br>
+---
+ config/system-headers | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/config/system-headers b/config/system-headers
+index 2c94a7d..4ab45e1 100644
+--- a/config/system-headers
++++ b/config/system-headers
+@@ -471,6 +471,7 @@ freetype/ftbitmap.h
+ freetype/ftxf86.h
+ freetype.h
+ ftcache.h
++ftfntfmt.h
+ ftglyph.h
+ ftsynth.h
+ ftoutln.h
+-- 
+2.1.4
+

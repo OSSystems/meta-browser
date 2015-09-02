@@ -1,0 +1,26 @@
+From b6b668fa53688af84ad8f7cab25347c4d7adb381 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Tue, 19 May 2015 23:07:49 +0900
+Subject: Bug 1166538 - Use dozip.py for langpacks.
+
+---
+ toolkit/locales/l10n.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/locales/l10n.mk b/toolkit/locales/l10n.mk
+index 1c907e5..6ec0b58 100644
+--- a/toolkit/locales/l10n.mk
++++ b/toolkit/locales/l10n.mk
+@@ -172,7 +172,7 @@ langpack-%: libs-%
+ 	$(call py_action,preprocessor,$(DEFINES) $(ACDEFINES) \
+ 	  -I$(TK_DEFINES) -I$(APP_DEFINES) $(srcdir)/generic/install.rdf -o $(DIST)/xpi-stage/$(XPI_NAME)/install.rdf)
+ 	cd $(DIST)/xpi-stage/locale-$(AB_CD) && \
+-	  $(ZIP) -r9D $(LANGPACK_FILE) install.rdf $(PKG_ZIP_DIRS) chrome.manifest
++	  $(PYTHON) $(MOZILLA_DIR)/toolkit/mozapps/installer/dozip.py --base-dir . $(LANGPACK_FILE) install.rdf $(PKG_ZIP_DIRS) chrome.manifest
+ 
+ # This variable is to allow the wget-en-US target to know which ftp server to download from
+ ifndef EN_US_BINARY_URL 
+-- 
+cgit v0.11.2
+
+

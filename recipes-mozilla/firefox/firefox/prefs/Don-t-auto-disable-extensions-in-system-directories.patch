@@ -1,21 +1,25 @@
+From 636a4989f50bd4a59869a75c63b6e01035700c9e Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 17 Feb 2012 17:47:15 +0100
 Subject: Don't auto-disable extensions in system directories
 
 ---
- browser/app/profile/firefox.js |    2 +-
+ browser/app/profile/firefox.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 3d979c2..6d72e8d 100644
+index 27ceb4d..899d7c8 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -88,7 +88,7 @@ pref("extensions.hotfix.certs.1.sha1Fingerprint", "CA:C4:7D:BF:63:4D:24:E9:DC:93
- // Disable add-ons installed into the shared user and shared system areas by
- // default. This does not include the application directory. See the SCOPE
- // constants in AddonManager.jsm for values to use here
+@@ -65,7 +65,7 @@ pref("extensions.hotfix.certs.1.sha1Fingerprint", "91:53:98:0C:C1:86:DF:47:8F:35
+ 
+ // Disable add-ons that are not installed by the user in all scopes by default.
+ // See the SCOPE constants in AddonManager.jsm for values to use here.
 -pref("extensions.autoDisableScopes", 15);
 +pref("extensions.autoDisableScopes", 3);
  
  // Dictionary download preference
  pref("browser.dictionaries.download.url", "https://addons.mozilla.org/%LOCALE%/firefox/dictionaries/");
+-- 
+cgit v0.11.2
+

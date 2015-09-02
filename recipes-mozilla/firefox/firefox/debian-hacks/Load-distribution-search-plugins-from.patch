@@ -1,0 +1,52 @@
+From 3a14281e73c118c188f56427f3662db6f66d258d Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Fri, 30 Mar 2012 15:44:54 +0200
+Subject: Load distribution search plugins from /etc/<appname>/searchplugins
+
+---
+ browser/components/dirprovider/DirectoryProvider.cpp | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/browser/components/dirprovider/DirectoryProvider.cpp b/browser/components/dirprovider/DirectoryProvider.cpp
+index d47830c..3c79e65 100644
+--- a/browser/components/dirprovider/DirectoryProvider.cpp
++++ b/browser/components/dirprovider/DirectoryProvider.cpp
+@@ -5,7 +5,8 @@
+ #include "nsIDirectoryService.h"
+ #include "DirectoryProvider.h"
+ 
+-#include "nsIFile.h"
++#include "nsIXULAppInfo.h"
++#include "nsILocalFile.h"
+ #include "nsISimpleEnumerator.h"
+ #include "nsIPrefService.h"
+ #include "nsIPrefBranch.h"
+@@ -125,11 +126,21 @@ static void
+ AppendDistroSearchDirs(nsIProperties* aDirSvc, nsCOMArray<nsIFile> &array)
+ {
+   nsCOMPtr<nsIFile> searchPlugins;
+-  nsresult rv = aDirSvc->Get(XRE_APP_DISTRIBUTION_DIR,
+-                             NS_GET_IID(nsIFile),
+-                             getter_AddRefs(searchPlugins));
++  nsresult rv = NS_NewLocalFile(NS_LITERAL_STRING("/etc"), false,
++                                getter_AddRefs(searchPlugins));
+   if (NS_FAILED(rv))
+     return;
++  nsCOMPtr<nsIXULAppInfo> appInfo = do_GetService("@mozilla.org/xre/app-info;1");
++  if (!appInfo)
++    return;
++
++  nsAutoCString name;
++  rv = appInfo->GetName(name);
++  if (NS_FAILED(rv))
++    return;
++  ToLowerCase(name);
++
++  searchPlugins->AppendNative(name);
+   searchPlugins->AppendNative(NS_LITERAL_CSTRING("searchplugins"));
+ 
+   bool exists;
+-- 
+cgit v0.11.2
+
+

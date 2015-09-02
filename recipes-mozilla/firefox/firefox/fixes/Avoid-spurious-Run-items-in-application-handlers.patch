@@ -1,0 +1,61 @@
+From 09606f539c4fc193a9bd810570afbb9ce9bd883e Mon Sep 17 00:00:00 2001
+From: Mike Hommey <glandium@debian.org>
+Date: Thu, 10 Jul 2008 21:40:08 +0200
+Subject: Avoid spurious "Run" items in application handlers configuration pane
+
+---
+ browser/components/preferences/applications.js |  1 +
+ uriloader/exthandler/nsHandlerService.js       | 11 +++++------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/browser/components/preferences/applications.js b/browser/components/preferences/applications.js
+index 3334fba..ed50ecb 100644
+--- a/browser/components/preferences/applications.js
++++ b/browser/components/preferences/applications.js
+@@ -1354,6 +1354,7 @@ var gApplicationsPane = {
+     return aExecutable &&
+            aExecutable.exists() &&
+            aExecutable.isExecutable() &&
++           aExecutable.isFile() &&
+ // XXXben - we need to compare this with the running instance executable
+ //          just don't know how to do that via script...
+ // XXXmano TBD: can probably add this to nsIShellService
+diff --git a/uriloader/exthandler/nsHandlerService.js b/uriloader/exthandler/nsHandlerService.js
+index 6aaf8ef..7d9d2e3 100644
+--- a/uriloader/exthandler/nsHandlerService.js
++++ b/uriloader/exthandler/nsHandlerService.js
+@@ -632,25 +632,24 @@ HandlerService.prototype = {
+ 
+     try {
+       file.initWithPath(aPath);
+-
+-      if (file.exists())
+-        return file;
+     }
+     catch(ex) {
+       // Note: for historical reasons, we don't actually check to see
+       // if the exception is NS_ERROR_FILE_UNRECOGNIZED_PATH, which is what
+       // nsILocalFile::initWithPath throws when a path is relative.
+-
+       file = this._dirSvc.get("XCurProcD", Ci.nsIFile);
+ 
+       try {
+         file.append(aPath);
+-        if (file.exists())
+-          return file;
+       }
+       catch(ex) {}
+     }
+ 
++    if (file && file.exists() &&
++        file.isExecutable() &&
++        file.isFile())
++      return file;
++
+     return null;
+   },
+ 
+-- 
+cgit v0.11.2
+
+

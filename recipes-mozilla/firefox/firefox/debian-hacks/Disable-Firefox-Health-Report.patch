@@ -1,0 +1,26 @@
+From 74eb8451af1b62b661fc2dc5b73a5e063cd2b824 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Fri, 15 Mar 2013 17:08:40 +0100
+Subject: Disable Firefox Health Report
+
+---
+ browser/confvars.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/browser/confvars.sh b/browser/confvars.sh
+index c18b90d..6dbd53f 100755
+--- a/browser/confvars.sh
++++ b/browser/confvars.sh
+@@ -28,7 +28,7 @@ MOZ_DISABLE_EXPORT_JS=1
+ MOZ_SAFE_BROWSING=1
+ MOZ_SERVICES_COMMON=1
+ MOZ_SERVICES_CRYPTO=1
+-MOZ_SERVICES_HEALTHREPORT=1
++MOZ_SERVICES_HEALTHREPORT=
+ MOZ_SERVICES_METRICS=1
+ MOZ_SERVICES_SYNC=1
+ MOZ_SERVICES_CLOUDSYNC=1
+-- 
+cgit v0.11.2
+
+

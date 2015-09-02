@@ -1,0 +1,20 @@
+From b8fd5e61b6612a1bdf03af711fa7c72aaa724a39 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 16 Dec 2013 10:53:58 +0900
+Subject: Add debian/extra-stuff to upstream build system directory traversal
+
+
+diff --git a/moz.build b/moz.build
+index 7df9f4a..f0e50b2 100644
+--- a/moz.build
++++ b/moz.build
+@@ -74,4 +74,7 @@ if not CONFIG['JS_STANDALONE'] and CONFIG['MOZ_BUILD_APP']:
+     # Bring in the configuration for the configured application.
+     include('/' + CONFIG['MOZ_BUILD_APP'] + '/app.mozbuild')
+ 
++if not CONFIG['LIBXUL_SDK']:
++    DIRS += ['debian/extra-stuff']
++
+ include('build/templates.mozbuild')
+-- 
+cgit v0.10.2

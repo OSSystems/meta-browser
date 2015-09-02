@@ -1,19 +1,20 @@
+From e9f0b45a4aafcd4332dd92039613939c9673d841 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 02:48:46 +0200
 Subject: Allow .js preference files to set locked prefs with lockPref()
 
 ---
- modules/libpref/src/prefapi.cpp  |    5 ++++-
- modules/libpref/src/prefapi.h    |    3 ++-
- modules/libpref/src/prefread.cpp |   11 ++++++++---
- modules/libpref/src/prefread.h   |    6 ++++--
+ modules/libpref/prefapi.cpp  |  5 ++++-
+ modules/libpref/prefapi.h    |  3 ++-
+ modules/libpref/prefread.cpp | 11 ++++++++---
+ modules/libpref/prefread.h   |  6 ++++--
  4 files changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/modules/libpref/src/prefapi.cpp b/modules/libpref/src/prefapi.cpp
-index 5ecc914..885bdf4 100644
---- a/modules/libpref/src/prefapi.cpp
-+++ b/modules/libpref/src/prefapi.cpp
-@@ -976,7 +976,10 @@ void PREF_ReaderCallback(void       *closure,
+diff --git a/modules/libpref/prefapi.cpp b/modules/libpref/prefapi.cpp
+index b099b2d..19d2d31 100644
+--- a/modules/libpref/prefapi.cpp
++++ b/modules/libpref/prefapi.cpp
+@@ -995,7 +995,10 @@ void PREF_ReaderCallback(void       *closure,
                           const char *pref,
                           PrefValue   value,
                           PrefType    type,
@@ -21,15 +22,15 @@ index 5ecc914..885bdf4 100644
 +                         bool        isDefault,
 +                         bool        isLocked)
  {
-     pref_HashPref(pref, value, type, isDefault);
+     pref_HashPref(pref, value, type, isDefault ? kPrefSetDefault : kPrefForceSet);
 +    if (isLocked)
 +        PREF_LockPref(pref, true);
  }
-diff --git a/modules/libpref/src/prefapi.h b/modules/libpref/src/prefapi.h
-index 22a88d3..2b20c4e 100644
---- a/modules/libpref/src/prefapi.h
-+++ b/modules/libpref/src/prefapi.h
-@@ -208,7 +208,8 @@ void PREF_ReaderCallback( void *closure,
+diff --git a/modules/libpref/prefapi.h b/modules/libpref/prefapi.h
+index 675b384..fe3f2da 100644
+--- a/modules/libpref/prefapi.h
++++ b/modules/libpref/prefapi.h
+@@ -183,7 +183,8 @@ void PREF_ReaderCallback( void *closure,
                            const char *pref,
                            PrefValue   value,
                            PrefType    type,
@@ -37,13 +38,13 @@ index 22a88d3..2b20c4e 100644
 +                          bool        isDefault,
 +                          bool        isLocked);
  
- PR_END_EXTERN_C
- #endif
-diff --git a/modules/libpref/src/prefread.cpp b/modules/libpref/src/prefread.cpp
-index 893d256..d4ef51a 100644
---- a/modules/libpref/src/prefread.cpp
-+++ b/modules/libpref/src/prefread.cpp
-@@ -75,6 +75,7 @@ enum {
+ #ifdef __cplusplus
+ }
+diff --git a/modules/libpref/prefread.cpp b/modules/libpref/prefread.cpp
+index 01612ba..a119669 100644
+--- a/modules/libpref/prefread.cpp
++++ b/modules/libpref/prefread.cpp
+@@ -43,6 +43,7 @@ enum {
  #define BITS_PER_HEX_DIGIT      4
  
  static const char kUserPref[] = "user_pref";
@@ -51,7 +52,7 @@ index 893d256..d4ef51a 100644
  static const char kPref[] = "pref";
  static const char kTrue[] = "true";
  static const char kFalse[] = "false";
-@@ -161,7 +162,7 @@ pref_DoCallback(PrefParseState *ps)
+@@ -129,7 +130,7 @@ pref_DoCallback(PrefParseState *ps)
      default:
          break;
      }
@@ -60,15 +61,15 @@ index 893d256..d4ef51a 100644
      return true;
  }
  
-@@ -220,6 +221,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
-                 ps->vb    = NULL;
+@@ -188,6 +189,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+                 ps->vb    = nullptr;
                  ps->vtype = PREF_INVALID;
                  ps->fdefault = false;
 +                ps->flock = false;
              }
              switch (c) {
              case '/':       /* begin comment block or line? */
-@@ -230,7 +232,9 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+@@ -198,7 +200,9 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
                  break;
              case 'u':       /* indicating user_pref */
              case 'p':       /* indicating pref */
@@ -79,7 +80,7 @@ index 893d256..d4ef51a 100644
                  ps->sindex = 1;
                  ps->nextstate = PREF_PARSE_UNTIL_OPEN_PAREN;
                  state = PREF_PARSE_MATCH_STRING;
-@@ -274,7 +278,8 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+@@ -242,7 +246,8 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
          /* name parsing */
          case PREF_PARSE_UNTIL_NAME:
              if (c == '\"' || c == '\'') {
@@ -89,11 +90,11 @@ index 893d256..d4ef51a 100644
                  ps->quotechar = c;
                  ps->nextstate = PREF_PARSE_UNTIL_COMMA; /* return here when done */
                  state = PREF_PARSE_QUOTED_STRING;
-diff --git a/modules/libpref/src/prefread.h b/modules/libpref/src/prefread.h
-index 50f4d54..93a1702 100644
---- a/modules/libpref/src/prefread.h
-+++ b/modules/libpref/src/prefread.h
-@@ -62,7 +62,8 @@ typedef void (*PrefReader)(void       *closure,
+diff --git a/modules/libpref/prefread.h b/modules/libpref/prefread.h
+index 4d5ce1e..5b6a44f 100644
+--- a/modules/libpref/prefread.h
++++ b/modules/libpref/prefread.h
+@@ -31,7 +31,8 @@ typedef void (*PrefReader)(void       *closure,
                             const char *pref,
                             PrefValue   val,
                             PrefType    type,
@@ -103,7 +104,7 @@ index 50f4d54..93a1702 100644
  
  /* structure fields are private */
  typedef struct PrefParseState {
-@@ -82,7 +83,8 @@ typedef struct PrefParseState {
+@@ -51,7 +52,8 @@ typedef struct PrefParseState {
      char       *lbend;      /* line buffer end               */
      char       *vb;         /* value buffer (ptr into lb)    */
      PrefType    vtype;      /* PREF_STRING,INT,BOOL          */
@@ -113,3 +114,7 @@ index 50f4d54..93a1702 100644
  } PrefParseState;
  
  /**
+-- 
+cgit v0.11.2
+
+

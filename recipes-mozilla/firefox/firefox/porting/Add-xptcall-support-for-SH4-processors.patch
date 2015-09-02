@@ -1,3 +1,4 @@
+From e3972be3d7d144f0fe24a3ccc480d8efcaa26cd8 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Fri, 30 Apr 2010 11:03:50 +0200
 Subject: Add xptcall support for SH4 processors
@@ -5,35 +6,29 @@ Subject: Add xptcall support for SH4 processors
 Closes: #553593
 https://bugzilla.mozilla.org/show_bug.cgi?id=382214
 ---
- xpcom/reflect/xptcall/src/md/unix/Makefile.in      |   11 +
- .../xptcall/src/md/unix/xptcinvoke_linux_sh.cpp    |  203 +++++++++++++++
- .../xptcall/src/md/unix/xptcstubs_linux_sh.cpp     |  271 ++++++++++++++++++++
- 3 files changed, 485 insertions(+)
+ xpcom/reflect/xptcall/md/unix/moz.build            |   5 +
+ .../xptcall/src/md/unix/xptcinvoke_linux_sh.cpp    | 203 +++++++++++++++
+ .../xptcall/src/md/unix/xptcstubs_linux_sh.cpp     | 271 +++++++++++++++++++++
+ 3 files changed, 479 insertions(+)
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
-diff --git a/xpcom/reflect/xptcall/src/md/unix/Makefile.in b/xpcom/reflect/xptcall/src/md/unix/Makefile.in
-index 6c50821..44d6ab1 100644
---- a/xpcom/reflect/xptcall/src/md/unix/Makefile.in
-+++ b/xpcom/reflect/xptcall/src/md/unix/Makefile.in
-@@ -430,6 +430,17 @@ CPPSRCS		:= xptcinvoke_linux_s390x.cpp xptcstubs_linux_s390x.cpp
- CXXFLAGS	+= -fno-strict-aliasing -fno-inline -fomit-frame-pointer -mbackchain
- endif
+diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
+index 8403032..f5296c1 100644
+--- a/xpcom/reflect/xptcall/md/unix/moz.build
++++ b/xpcom/reflect/xptcall/md/unix/moz.build
+@@ -320,6 +320,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
+             '-fomit-frame-pointer',
+             '-mbackchain',
+         ]
++    elif CONFIG['OS_TEST'] in ('sh4', 'sh4a'):
++        SOURCES += [
++            'xptcinvoke_linux_sh.cpp',
++            'xptcstubs_linux_sh.cpp',
++        ]
  
-+############
-+# SuperH
-+############
-+#
-+#
-+# Currently, tested on sh4 and sh4a (non sh4al and sh4al-dsp..)
-+ifeq ($(OS_ARCH),Linux)
-+ifneq (,$(filter sh4 sh4a,$(OS_TEST)))
-+CPPSRCS		:= xptcinvoke_linux_sh.cpp xptcstubs_linux_sh.cpp
-+endif
-+endif
+ FINAL_LIBRARY = 'xul'
  
- # we don't want the shared lib, but we want to force the creation of a static lib.
- FORCE_STATIC_LIB = 1
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 new file mode 100644
 index 0000000..ca4807d
@@ -520,3 +515,6 @@ index 0000000..cf9fcea
 +}
 +
 +#include "xptcstubsdef.inc"
+-- 
+cgit v0.11.2
+
