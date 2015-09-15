@@ -1,0 +1,32 @@
+From bfe80ed5227fccf8ab13df714702fc77e5e3d657 Mon Sep 17 00:00:00 2001
+From: Carlos Alberto Lopez Perez <clopez@igalia.com>
+Date: Thu, 27 Aug 2015 09:54:06 +0200
+Subject: [PATCH] Fix build error with GCC in Debug mode:
+
+  http://code.google.com/p/chromium/issues/detail?id=525428
+---
+ components/invalidation/invalidator_storage.cc | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/components/invalidation/invalidator_storage.cc b/components/invalidation/invalidator_storage.cc
+index 13ba4b1..3d567c1 100644
+--- a/components/invalidation/invalidator_storage.cc
++++ b/components/invalidation/invalidator_storage.cc
+@@ -2,7 +2,14 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#if !defined(NDEBUG)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
++#endif // !defined(NDEBUG)
+ #include "components/invalidation/invalidator_storage.h"
++#if !defined(NDEBUG)
++#pragma GCC diagnostic pop
++#endif // !defined(NDEBUG)
+ 
+ #include <string>
+ #include <utility>
+-- 
+2.1.4
+
