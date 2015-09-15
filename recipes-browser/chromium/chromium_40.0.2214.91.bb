@@ -64,15 +64,9 @@ ENABLE_WAYLAND = "${@base_contains('DISTRO_FEATURES', 'x11', '0', \
                      base_contains('DISTRO_FEATURES', 'wayland', '1', \
                      '0', d),d)}"
 
-# variable for extra ozone-wayland patches, typically extended by BSP layer .bbappends
-# IMPORTANT: do not simply add extra ozone-wayland patches to the SRC_URI in a
-# .bbappend, since the base ozone-wayland patches need to be applied first (see below)
-
-OZONE_WAYLAND_EXTRA_PATCHES = " "
-
 OZONE_WAYLAND_GIT_DESTSUFFIX = "ozone-wayland-git"
-OZONE_WAYLAND_GIT_BRANCH = ""
-OZONE_WAYLAND_GIT_SRCREV = ""
+OZONE_WAYLAND_GIT_BRANCH = "Milestone-ThanksGiving"
+OZONE_WAYLAND_GIT_SRCREV = "5d7baa9bc3b8c88e9b7e476e3d6bc8cd44a887fe"
 SRC_URI += "${@base_conditional('ENABLE_WAYLAND', '1', 'git://github.com/01org/ozone-wayland.git;destsuffix=${OZONE_WAYLAND_GIT_DESTSUFFIX};branch=${OZONE_WAYLAND_GIT_BRANCH};rev=${OZONE_WAYLAND_GIT_SRCREV}', '', d)}"
 OZONE_WAYLAND_PATCH_FILE_GLOB = "*.patch"
 
@@ -90,12 +84,13 @@ SRC_URI += "\
 SRC_URI[md5sum] = "1f5093bd7e435fdebad070e74bfb3438"
 SRC_URI[sha256sum] = "f72fda9ff1ea256ab911610ee532eadf8303137d431f2481d01d3d60e5e64149"
 
-OZONE_WAYLAND_EXTRA_PATCHES += " \
+# Variable for extra ozone-wayland patches, typically extended by BSP layer .bbappends
+# IMPORTANT: do not simply add extra ozone-wayland patches to the SRC_URI in a
+# .bbappend, since the base ozone-wayland patches need to be applied first (see below)
+OZONE_WAYLAND_EXTRA_PATCHES = " \
         file://chromium-40/0005-Remove-X-libraries-from-GYP-files.patch \
         file://chromium-40/0010-systemd-218.patch \
 "
-OZONE_WAYLAND_GIT_BRANCH = "Milestone-ThanksGiving"
-OZONE_WAYLAND_GIT_SRCREV = "5d7baa9bc3b8c88e9b7e476e3d6bc8cd44a887fe"
 # using 00*.patch to skip the WebRTC patches in ozone-wayland
 # the WebRTC patches remove X11 libraries from the linker flags, which is
 # already done by another patch (see above). Furthermore, to be able to use
