@@ -11,7 +11,7 @@ OLDCWD=$PWD
 
 cd $TMPDIR
 echo "Downloading XPI files..."
-wget -c ftp://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$1/linux-i686/xpi/*.xpi
+wget -np -nH -r --cut-dirs 7 -A "*.xpi" http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/$1/linux-i686/xpi/
 
 cd $OLDCWD
 
@@ -21,7 +21,7 @@ for f in $TMPDIR/*.xpi; do
 	lang_code=$(echo $f | sed "s,$TMPDIR/\([^\.]*\).xpi,\1,g" | tr '[A-Z]' '[a-z]')
 
 cat > firefox-l10n-${lang_code}_$1.bb <<EOF
-# Copyright (C) 2009-2014, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2015, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 require firefox-l10n.inc
