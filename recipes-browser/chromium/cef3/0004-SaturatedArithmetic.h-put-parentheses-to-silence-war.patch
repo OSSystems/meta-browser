@@ -1,0 +1,39 @@
+From 947380c31305163b3cea2c7352c6a9f38922749c Mon Sep 17 00:00:00 2001
+From: Max Krummenacher <max.oss.09@gmail.com>
+Date: Sat, 7 Nov 2015 00:52:23 +0100
+Subject: [PATCH] SaturatedArithmetic.h: put parentheses to silence warning
+
+In file included from ../../third_party/WebKit/Source/platform/LayoutUnit.h:36:0,
+                 from ../../third_party/WebKit/Source/platform/animation/AnimationUtilities.h:29,
+                 from ../../third_party/WebKit/Source/platform/graphics/Color.h:29,
+                 from ../../third_party/WebKit/Source/platform/ColorSuggestion.h:34,
+                 from ../../third_party/WebKit/Source/platform/ColorChooserClient.h:34,
+                 from ../../third_party/WebKit/Source/platform/ColorChooserClient.cpp:32:
+../../third_party/WebKit/Source/wtf/SaturatedArithmetic.h: In function 'int32_t saturatedAddition(int32_t, int32_t)':
+../../third_party/WebKit/Source/wtf/SaturatedArithmetic.h:45:26: error: suggest parentheses around operand of '!' or change '&' to '&&' or '!' to '~' [-Werror=parentheses]
+     if (!((ua ^ ub) >> 31) & (result ^ ua) >> 31)
+
+Signed-off-by: Max Krummenacher <max.oss.09@gmail.com>
+
+Upstream-Status: Pending
+Seems to be fixed in current chromium sources.
+---
+ third_party/WebKit/Source/wtf/SaturatedArithmetic.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/WebKit/Source/wtf/SaturatedArithmetic.h b/third_party/WebKit/Source/wtf/SaturatedArithmetic.h
+index 981276f..19c6157 100644
+--- a/third_party/WebKit/Source/wtf/SaturatedArithmetic.h
++++ b/third_party/WebKit/Source/wtf/SaturatedArithmetic.h
+@@ -42,7 +42,7 @@ ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b)
+ 
+     // Can only overflow if the signed bit of the two values match. If the signed
+     // bit of the result and one of the values differ it did overflow.
+-    if (!((ua ^ ub) >> 31) & (result ^ ua) >> 31)
++    if ((!((ua ^ ub) >> 31)) & (result ^ ua) >> 31)
+         result = std::numeric_limits<int>::max() + (ua >> 31);
+ 
+     return result;
+-- 
+1.8.4.5
+

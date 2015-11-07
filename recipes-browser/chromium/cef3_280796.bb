@@ -15,6 +15,10 @@ SRC_URI = "http://people.linaro.org/~zoltan.kuscsik/chromium-browser/chromium_re
            git://chromium.googlesource.com/chromium/tools/depot_tools.git;protocol=https;destsuffix=depot_tools;branch=master;name=tools \
            file://01_get_svn_version_from_LASTCHANGE.patch \
 	   file://cef-simple \
+	   file://0001-bignum.cc-disable-warning-from-gcc-5.patch \
+	   file://0002-image_util.cc-disable-warning-from-gcc-5.patch \
+	   file://0003-gtest-typed-test.h-disable-warning-unused-definition.patch \
+	   file://0004-SaturatedArithmetic.h-put-parentheses-to-silence-war.patch \
 	  "
 SRC_URI[md5sum] = "9efbb50283b731042e62b9bd5e312b2f"
 SRC_URI[sha256sum] = "f608e97dadf6ea4d885b24fd876896d46840fa39bf743ea2025075aee9fb348d"

@@ -1,0 +1,43 @@
+From 1dac3072a62d1bb40db8c2f63f2729e658307761 Mon Sep 17 00:00:00 2001
+From: Max Krummenacher <max.oss.09@gmail.com>
+Date: Sat, 7 Nov 2015 00:45:46 +0100
+Subject: [PATCH] gtest-typed-test.h: disable warning unused definitions
+
+In file included from ../../testing/gtest/include/gtest/gtest.h:66:0,
+                 from ../../base/test/task_runner_test_template.h:62,
+                 from ../../base/test/task_runner_test_template.cc:5:
+../../testing/gtest/include/gtest/gtest-typed-test.h:214:3: error: 'base::gtest_registered_test_names_TaskRunnerTest_' defined but not used [-Werror=unused-variable]
+   gtest_registered_test_names_##TestCaseName##_
+
+Signed-off-by: Max Krummenacher <max.oss.09@gmail.com>
+
+Upstream-Status: Pending
+Seems to be fixed in current chromium sources.
+---
+ testing/gtest/include/gtest/gtest-typed-test.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/testing/gtest/include/gtest/gtest-typed-test.h b/testing/gtest/include/gtest/gtest-typed-test.h
+index fe1e83b..5053bbe 100644
+--- a/testing/gtest/include/gtest/gtest-typed-test.h
++++ b/testing/gtest/include/gtest/gtest-typed-test.h
+@@ -32,6 +32,9 @@
+ #ifndef GTEST_INCLUDE_GTEST_GTEST_TYPED_TEST_H_
+ #define GTEST_INCLUDE_GTEST_GTEST_TYPED_TEST_H_
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic warning "-Wunused"
++
+ // This header implements typed tests and type-parameterized tests.
+ 
+ // Typed (aka type-driven) tests repeat the same test for types in a
+@@ -256,4 +259,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(My, FooTest, MyTypes);
+ 
+ #endif  // GTEST_HAS_TYPED_TEST_P
+ 
++#pragma GCC diagnostic pop
++
+ #endif  // GTEST_INCLUDE_GTEST_GTEST_TYPED_TEST_H_
+-- 
+1.8.4.5
+

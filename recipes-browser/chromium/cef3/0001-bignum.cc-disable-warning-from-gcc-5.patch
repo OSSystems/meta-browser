@@ -1,0 +1,39 @@
+From 5b8c53a6bb11c8aa9b575b5a8155c25c5085f349 Mon Sep 17 00:00:00 2001
+From: Max Krummenacher <max.oss.09@gmail.com>
+Date: Fri, 6 Nov 2015 12:22:35 +0100
+Subject: [PATCH] bignum.cc: disable warning from gcc 5
+
+addresses:
+  ../../third_party/WebKit/Source/wtf/dtoa/bignum.cc:105:10: error: assuming
+  signed overflow does not occur when assuming that (X + c) < X is always
+  false [-Werror=strict-overflow]
+      void Bignum::AssignDecimalString(Vector<const char> value) {
+           ^
+
+Signed-off-by: Max Krummenacher <max.oss.09@gmail.com>
+
+Upstream-Status: Pending
+See the discussion on the issue in Chromium upstream:
+https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/3uwBwunIa7g
+---
+ third_party/WebKit/Source/wtf/dtoa/bignum.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/third_party/WebKit/Source/wtf/dtoa/bignum.cc b/third_party/WebKit/Source/wtf/dtoa/bignum.cc
+index a000b46..6c6d336 100644
+--- a/third_party/WebKit/Source/wtf/dtoa/bignum.cc
++++ b/third_party/WebKit/Source/wtf/dtoa/bignum.cc
+@@ -109,7 +109,10 @@ namespace double_conversion {
+         int length = value.length();
+         int pos = 0;
+         // Let's just say that each digit needs 4 bits.
++#pragma GCC diagnostic push
++#pragma GCC diagnostic warning "-Wstrict-overflow"
+         while (length >= kMaxUint64DecimalDigits) {
++#pragma GCC diagnostic pop
+             uint64_t digits = ReadUInt64(value, pos, kMaxUint64DecimalDigits);
+             pos += kMaxUint64DecimalDigits;
+             length -= kMaxUint64DecimalDigits;
+-- 
+1.8.4.5
+
