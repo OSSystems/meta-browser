@@ -31,21 +31,21 @@ export BUILD_TARGET_ARCH="${TARGET_ARCH}"
 export GYP_DEFINES="${GYP_ARCH_DEFINES} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
 do_configure_append() {
-	export PATH=${WORKDIR}/depot_tools:"$PATH"
-	# End of LD Workaround
-	#-----------------------
-	# Configure cef
-	#------------------------
-	cd cef
-	./cef_create_projects.sh -I ${BUILD_TARGET_ARCH}_ozone.gypi --depth ../
-	cd -
+    export PATH=${WORKDIR}/depot_tools:"$PATH"
+    # End of LD Workaround
+    #-----------------------
+    # Configure cef
+    #------------------------
+    cd cef
+    ./cef_create_projects.sh -I ${BUILD_TARGET_ARCH}_ozone.gypi --depth ../
+    cd -
 }
 
 # Workaround to disable qa_configure
 do_qa_configure() {
-	echo "do_qa_configure"
+    echo "do_qa_configure"
 }
 
 do_compile() {
-	ninja -C out/${CHROMIUM_BUILD_TYPE} -j${BB_NUMBER_THREADS} cefsimple
+    ninja -C out/${CHROMIUM_BUILD_TYPE} -j${BB_NUMBER_THREADS} cefsimple
 }
