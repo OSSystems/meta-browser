@@ -34,6 +34,11 @@ export GYP_GENERATORS="ninja"
 export BUILD_TARGET_ARCH="${TARGET_ARCH}"
 export GYP_DEFINES="${GYP_ARCH_DEFINES} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
+do_configure_prepend() {
+    # there is no rule for the x86-64 architecture, recycle the i586 one
+    cp  cef/i586_ozone.gypi  cef/x86_64_ozone.gypi
+}
+
 do_configure_append() {
     export PATH=${WORKDIR}/depot_tools:"$PATH"
     # End of LD Workaround
