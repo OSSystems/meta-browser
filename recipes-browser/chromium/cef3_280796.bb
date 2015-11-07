@@ -34,6 +34,10 @@ export GYP_GENERATORS="ninja"
 export BUILD_TARGET_ARCH="${TARGET_ARCH}"
 export GYP_DEFINES="${GYP_ARCH_DEFINES} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
+EXTRA_OEGYP =	" \
+    -Ddisable_fatal_linker_warnings=1 \
+"
+
 do_configure_prepend() {
     # there is no rule for the x86-64 architecture, recycle the i586 one
     cp  cef/i586_ozone.gypi  cef/x86_64_ozone.gypi
@@ -46,7 +50,7 @@ do_configure_append() {
     # Configure cef
     #------------------------
     cd cef
-    ./cef_create_projects.sh -I ${BUILD_TARGET_ARCH}_ozone.gypi --depth ../
+    ./cef_create_projects.sh -I ${BUILD_TARGET_ARCH}_ozone.gypi --depth ../ ${EXTRA_OEGYP}
     cd -
 }
 
