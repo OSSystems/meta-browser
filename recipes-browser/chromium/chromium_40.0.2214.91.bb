@@ -28,7 +28,10 @@ SRC_URI = "\
         file://google-chrome.desktop \
         file://chromium-40/fix-build-error-with-GCC-in-Debug-mode.patch \
         file://chromium-40/add_missing_stat_h_include.patch \
+        file://chromium-40/0001-bignum.cc-disable-warning-from-gcc-5.patch \
+        file://chromium-40/0002-image_util.cc-disable-warning-from-gcc-5.patch \
 "
+
 #
 # * use-egl : Without this packageconfig, the Chromium build will use GLX for creating an OpenGL context in X11,
 #             and regular OpenGL for painting operations. Neither are desirable on embedded platforms. With this

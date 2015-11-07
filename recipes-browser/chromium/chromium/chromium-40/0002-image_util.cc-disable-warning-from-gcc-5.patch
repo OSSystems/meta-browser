@@ -1,0 +1,40 @@
+From 2f674d980a116075dc7123a3e243b1451e4a732d Mon Sep 17 00:00:00 2001
+From: Max Krummenacher <max.oss.09@gmail.com>
+Date: Tue, 3 Nov 2015 22:13:40 +0100
+Subject: [PATCH] image_util.cc: disable warning from gcc 5
+
+addresses:
+  ../../ui/gfx/image/image_util.cc:50:6: error: assuming signed overflow does
+  not occur when assuming that (X - c) <= X is always true
+  [-Werror=strict-overflow]
+  bool VisibleMargins(const ImageSkia& image, int* leading, int* trailing) {
+       ^
+
+Signed-off-by: Max Krummenacher <max.oss.09@gmail.com>
+
+Upstream-Status: Pending
+See the discussion on the issue in Chromium upstream:
+https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/3uwBwunIa7g
+
+---
+ ui/gfx/image/image_util.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ui/gfx/image/image_util.cc b/ui/gfx/image/image_util.cc
+index 89a3f8c..d595da3 100644
+--- a/ui/gfx/image/image_util.cc
++++ b/ui/gfx/image/image_util.cc
+@@ -68,7 +68,10 @@ bool VisibleMargins(const ImageSkia& image, int* leading, int* trailing) {
+   int inner_min = bitmap.width();
+   for (int x = 0; x < bitmap.width(); ++x) {
+     for (int y = 0; y < bitmap.height(); ++y) {
++#pragma GCC diagnostic push
++#pragma GCC diagnostic warning "-Wstrict-overflow"
+       if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity) {
++#pragma GCC diagnostic pop
+         inner_min = x;
+         break;
+       }
+-- 
+1.8.4.5
+
