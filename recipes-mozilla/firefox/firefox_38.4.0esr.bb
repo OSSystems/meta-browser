@@ -50,12 +50,12 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://debian-hacks/Revert-Bump-search-engine-max-icon-size-to-35kB.patch \
            "
 
-SRC_URI[archive.md5sum] = "3b9e4d1bf0dc9b502042e973c91d1a08"
-SRC_URI[archive.sha256sum] = "0143b3f99ccb390949d7f3847215f6f9b4bb7cd692f4f802921d2f9961bf270a"
+SRC_URI[archive.md5sum] = "73fff277dfc9abab4de3a3b708b28f65"
+SRC_URI[archive.sha256sum] = "028a1f7ce16b3016b0d98e5a5ef73bcb3f732b80d406e54f49e3c246e207f2c7"
 
 S = "${WORKDIR}/mozilla-esr38"
 # MOZ_APP_BASE_VERSION should be incremented after a release
-MOZ_APP_BASE_VERSION = "38.2"
+MOZ_APP_BASE_VERSION = "38.4"
 
 inherit mozilla
 
