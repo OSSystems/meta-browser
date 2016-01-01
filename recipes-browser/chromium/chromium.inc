@@ -24,7 +24,7 @@ PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[disable-api-keys-info-bar] = ""
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
-PACKAGECONFIG[use-gl] = ""
+PACKAGECONFIG[use-egl] = ""
 
 GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
@@ -71,7 +71,7 @@ do_install() {
 		fi
 	done
 
-	#Chromium *.pak files and CEF pak files ( prefixed with cef_
+	# Chromium *.pak files and CEF pak files (prefixed with cef_)
 	for f in content_resources.pak keyboard_resources.pak chrome_100_percent.pak product_logo_48.png resources.pak \
 	         cef_100_percent.pak cef_200_percent.pak cef_resources.pak cef.pak \
 		 locales/en-US.pak; do
