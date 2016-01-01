@@ -26,39 +26,61 @@ SRC_URI = "\
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         file://google-chrome \
         file://google-chrome.desktop \
+        file://unistd-2.patch \
         file://chromium-40/fix-build-error-with-GCC-in-Debug-mode.patch \
         file://chromium-40/add_missing_stat_h_include.patch \
         file://chromium-40/0001-bignum.cc-disable-warning-from-gcc-5.patch \
         file://chromium-40/0002-image_util.cc-disable-warning-from-gcc-5.patch \
+        file://chromium-40/0004-Remove-hard-coded-values-for-CC-and-CXX.patch \
 "
 
+# PACKAGECONFIG options
+# ^^^^^^^^^^^^^^^^^^^^^
+# * use-egl: (on by default)
+#       Without this packageconfig, the Chromium build will use GLX for
+#       creating an OpenGL context in X11, and regular OpenGL for painting
+#       operations. Neither are desirable on embedded platforms. With this
+#       packageconfig, EGL and OpenGL ES 2.x are used instead.
 #
-# * use-egl : Without this packageconfig, the Chromium build will use GLX for creating an OpenGL context in X11,
-#             and regular OpenGL for painting operations. Neither are desirable on embedded platforms. With this
-#             packageconfig, EGL and OpenGL ES 2.x are used instead. On by default.
+# * disable-api-keys-info-bar: (off by default)
+#       This disables the info bar that warns: "Google API keys are missing".
+#       With some builds, missing API keys are considered OK, so the bar needs
+#       to go.
 #
-# * disable-api-keys-info-bar : This disables the info bar that warns: "Google API keys are missing". With some
-#                               builds, missing API keys are considered OK, so the bar needs to go.
-#                               Off by default.
+# * component-build: (off by default)
+#       Enables component build mode. By default, all of Chromium (with the
+#       exception of FFmpeg) is linked into one big binary. The linker step
+#       requires at least 8 GB RAM. Component mode was created to facilitate
+#       development and testing, since with it, there is not one big binary;
+#       instead, each component is linked to a separate shared object. Use
+#       component mode for development, testing, and in case the build machine
+#       is not a 64-bit one, or has less than 8 GB RAM.
 #
-# * component-build : Enables component build mode. By default, all of Chromium (with the exception of FFmpeg)
-#                     is linked into one big binary. The linker step requires at least 8 GB RAM. Component mode
-#                     was created to facilitate development and testing, since with it, there is not one big
-#                     binary; instead, each component is linked to a separate shared object.
-#                     Use component mode for development, testing, and in case the build machine is not a 64-bit
-#                     one, or has less than 8 GB RAM. Off by default.
+# * ignore-lost-context: (off by default)
+#       There is a flaw in the HTML Canvas specification. When the canvas'
+#       backing store is some kind of hardware resource like an OpenGL
+#       texture, this resource might get lost. In case of OpenGL textures,
+#       this happens when the OpenGL context gets lost. The canvas should then
+#       be repainted, but nothing in the Canvas standard reflects that. This
+#       packageconfig is to be used if the underlying OpenGL (ES) drivers do
+#       not lose the context, or if losing the context is considered okay
+#       (note that canvas contents can vanish then).
 #
-# * ignore-lost-context : There is a flaw in the HTML Canvas specification. When the canvas' backing store is
-#                         some kind of hardware resource like an OpenGL texture, this resource might get lost.
-#                         In case of OpenGL textures, this happens when the OpenGL context gets lost. The canvas
-#                         should then be repainted, but nothing in the Canvas standard reflects that.
-#                         This packageconfig is to be used if the underlying OpenGL (ES) drivers do not lose
-#                         the context, or if losing the context is considered okay (note that canvas contents can
-#                         vanish then). Off by default.
-#
-# * impl-side-painting : This is a new painting mechanism. Still in development stages, it can improve performance.
-#                        See http://www.chromium.org/developers/design-documents/impl-side-painting for more.
-#                        Off by default.
+# * impl-side-painting: (off by default)
+#       This is a new painting mechanism. Still in
+#       development stages, it can improve performance See
+#       http://www.chromium.org/developers/design-documents/impl-side-painting
+#       for more.
+SRC_URI += "\
+        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-40/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', 'file://chromium-40/0002-Add-Linux-to-impl-side-painting-whitelist.patch', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://chromium-40/0003-Disable-API-keys-info-bar.patch', '', d)} \
+"
+CHROMIUM_EXTRA_ARGS ?= " \
+	${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
+	${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
+	${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
+"
 
 # Conditionally add ozone-wayland and its patches to the Chromium sources
 # You can override this by setting CHROMIUM_ENABLE_WAYLAND=1 or CHROMIUM_ENABLE_WAYLAND=0 in local.conf
@@ -97,13 +119,6 @@ do_unpack[postfuncs] += "${@base_conditional('CHROMIUM_ENABLE_WAYLAND', '1', 'co
 do_patch[prefuncs] += "${@base_conditional('CHROMIUM_ENABLE_WAYLAND', '1', 'add_ozone_wayland_patches', '', d)}"
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=537e0b52077bf0a616d0a0c8a79bc9d5"
-SRC_URI += "\
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-40/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', 'file://chromium-40/0002-Add-Linux-to-impl-side-painting-whitelist.patch', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://chromium-40/0003-Disable-API-keys-info-bar.patch', '', d)} \
-        file://chromium-40/0004-Remove-hard-coded-values-for-CC-and-CXX.patch \
-        file://unistd-2.patch \
-"
 SRC_URI[md5sum] = "1f5093bd7e435fdebad070e74bfb3438"
 SRC_URI[sha256sum] = "f72fda9ff1ea256ab911610ee532eadf8303137d431f2481d01d3d60e5e64149"
 
@@ -163,12 +178,6 @@ EXTRA_OEGYP =	" \
 	-f ninja \
 "
 ARMFPABI_armv7a = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
-
-CHROMIUM_EXTRA_ARGS ?= " \
-	${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
-	${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
-	${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
-"
 
 GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
