@@ -77,6 +77,11 @@ SRC_URI = "\
 #       development stages, it can improve performance See
 #       http://www.chromium.org/developers/design-documents/impl-side-painting
 #       for more.
+#
+# * kiosk-mode: (off by default)
+#       Enable this option if you want your browser to start up full-screen,
+#       without any menu bars, without any clutter, and without any initial
+#       start-up indicators.
 SRC_URI += "\
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-40/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', 'file://chromium-40/0002-Add-Linux-to-impl-side-painting-whitelist.patch', '', d)} \
@@ -86,6 +91,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
 	${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
 	${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
 	${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
+	${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run', '', d)} \
 "
 
 # Conditionally add ozone-wayland and its patches to the Chromium sources

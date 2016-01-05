@@ -25,6 +25,7 @@ PACKAGECONFIG[disable-api-keys-info-bar] = ""
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[use-egl] = ""
+PACKAGECONFIG[kiosk-mode] = ""
 
 GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
