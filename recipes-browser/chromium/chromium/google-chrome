@@ -4,8 +4,8 @@ export CHROME_DEVEL_SANDBOX=/usr/sbin/chrome-devel-sandbox
 export LD_LIBRARY_PATH=/usr/lib/chromium
 
 CHROME_EXTRA_ARGS=""
-if [ "${USER}" = "root" ] ; then
-	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=${HOME}/.chromium/"
+if [ "`whoami`" = "root" ] ; then
+	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=ROOT_HOME/.chromium/"
 fi
 
 /usr/bin/chromium/chrome ${CHROME_EXTRA_ARGS} $@
