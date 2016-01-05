@@ -45,7 +45,13 @@ SRC_URI = "\
 # * disable-api-keys-info-bar: (off by default)
 #       This disables the info bar that warns: "Google API keys are missing".
 #       With some builds, missing API keys are considered OK, so the bar needs
-#       to go.
+#       to go. Conversely, if Chromium is compiled with this option off and
+#       the user wishes to disable the warning, the following lines can be
+#       added to the "google-chrome" script (see patchset) before the
+#       chromium binary is called:
+#           export GOOGLE_API_KEY="no"
+#           export GOOGLE_DEFAULT_CLIENT_ID="no"
+#           export GOOGLE_DEFAULT_CLIENT_SECRET="no"
 #
 # * component-build: (off by default)
 #       Enables component build mode. By default, all of Chromium (with the
