@@ -13,7 +13,6 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://mozilla-firefox.desktop \
            file://vendor.js \
            file://fix-python-path.patch \
-           file://freetype-2.6.patch \
            file://prefs/Don-t-auto-disable-extensions-in-system-directories.patch \
            file://prefs/Set-DPI-to-system-settings.patch \
            file://prefs/Set-javascript.options.showInConsole.patch \
