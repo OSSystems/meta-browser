@@ -68,7 +68,7 @@ do_install_append() {
 
     install -m 0644 ${WORKDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/
     install -m 0644 ${WORKDIR}/mozilla-firefox.png ${D}${datadir}/pixmaps/
-    install -m 0644 ${WORKDIR}/vendor.js ${D}${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/defaults/pref/
+    install -m 0644 ${WORKDIR}/vendor.js ${D}${libdir}/${PN}/defaults/pref/
 
     # Fix ownership of files
     chown root:root -R ${D}${datadir}
@@ -78,19 +78,9 @@ do_install_append() {
 FILES_${PN} = "${bindir}/${PN} \
                ${datadir}/applications/ \
                ${datadir}/pixmaps/ \
-               ${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/* \
-               ${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/.autoreg \
+               ${libdir}/${PN}/* \
                ${bindir}/defaults"
-FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
-FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
-FILES_${PN}-dbg += "${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/.debug \
-                    ${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/*/.debug \
-                    ${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/*/*/.debug \
-                    ${libdir}/${PN}-${MOZ_APP_BASE_VERSION}/*/*/*/.debug \
-                    ${libdir}/${PN}-devel-*/*/.debug \
-                    ${libdir}/${PN}-devel-*/*/*/.debug \
-                    ${libdir}/${PN}-devel-*/*/*/*/.debug \
-                    ${bindir}/.debug"
+FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config"
 
 # We don't build XUL as system shared lib, so we can mark all libs as private
 PRIVATE_LIBS = "libmozjs.so \
