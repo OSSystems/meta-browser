@@ -30,7 +30,7 @@ do_install() {
         [ -z "$EXTENSION" ] && exit 1
 
         mkdir -p ${D}${libdir}/firefox/extensions/
-        mv $e ${D}${libdir}/firefox/extensions/${EXTENSION}
+        cp -R --no-dereference --preserve=mode,links -v $e ${D}${libdir}/firefox/extensions/${EXTENSION}
     done
 }
 
