@@ -1,0 +1,19 @@
+../../third_party/WebKit/Source/core/inspector/InspectorTimelineAgent.cpp: In static member function 'static void WTF::HashTableBucketInitializer<false>::initialize(Value&) [with Traits = WTF::HashMapValueTraits<WTF::HashTraits<int>, WTF::HashTraits<blink::TimelineThreadState> >; Value = WTF::KeyValuePair<int, blink::TimelineThreadState>]':
+../../third_party/WebKit/Source/core/inspector/InspectorTimelineAgent.cpp:234:8: error: '<anonymous>.blink::TimelineThreadState::inKnownLayerTask' is used uninitialized in this function [-Werror=uninitialized]
+ struct TimelineThreadState {
+        ^
+
+--- a/third_party/WebKit/Source/core/inspector/InspectorTimelineAgent.cpp	2016-03-10 08:14:18.771413000 -1000
++++ b/third_party/WebKit/Source/core/inspector/InspectorTimelineAgent.cpp	2016-03-10 08:15:58.179413000 -1000
+@@ -231,7 +231,11 @@
+     Vector<Entry> m_stack;
+ };
+ 
++#pragma GCC diagnostic push
++#pragma GCC diagnostic warning "-Wuninitialized"
+ struct TimelineThreadState {
++#pragma GCC diagnostic pop
++
+     ALLOW_ONLY_INLINE_ALLOCATION();
+ public:
+     TimelineThreadState() { }

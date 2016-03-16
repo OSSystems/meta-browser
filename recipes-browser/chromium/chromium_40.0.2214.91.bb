@@ -31,6 +31,7 @@ SRC_URI = "\
         file://chromium-40/add_missing_stat_h_include.patch \
         file://chromium-40/0001-bignum.cc-disable-warning-from-gcc-5.patch \
         file://chromium-40/0002-image_util.cc-disable-warning-from-gcc-5.patch \
+        file://chromium-40/0003-disable-uninitialized-warning.patch \
         file://chromium-40/0004-Remove-hard-coded-values-for-CC-and-CXX.patch \
 "
 

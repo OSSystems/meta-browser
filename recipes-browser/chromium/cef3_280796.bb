@@ -17,6 +17,7 @@ SRC_URI = "http://people.linaro.org/~zoltan.kuscsik/chromium-browser/chromium_re
 	   file://cef-simple \
 	   file://0001-bignum.cc-disable-warning-from-gcc-5.patch \
 	   file://0002-image_util.cc-disable-warning-from-gcc-5.patch \
+           file://0003-disable-uninitialized-warning.patch \
 	   file://0003-gtest-typed-test.h-disable-warning-unused-definition.patch \
 	   file://0004-SaturatedArithmetic.h-put-parentheses-to-silence-war.patch \
 	  "
