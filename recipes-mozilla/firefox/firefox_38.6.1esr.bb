@@ -47,6 +47,7 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://debian-hacks/NSS-Adds-the-SPI-Inc.-and-CAcert.org-CA-certificates.patch \
            file://debian-hacks/Work-around-binutils-assertion-on-mips.patch \
            file://debian-hacks/Revert-Bump-search-engine-max-icon-size-to-35kB.patch \
+           file://fixes/Fix-firefox-install-dir.patch \
            "
 
 SRC_URI[archive.md5sum] = "cc74abc48ac7a888aeb24ba31a7ff209"

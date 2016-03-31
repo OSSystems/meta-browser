@@ -29,8 +29,8 @@ do_install() {
         EXTENSION=`sed --posix '/em:id=/!d;s/[ ]*em:id="//;s/".*//' $e/install.rdf`
         [ -z "$EXTENSION" ] && exit 1
 
-        mkdir -p ${D}${libdir}/firefox/extensions/
-        cp -R --no-dereference --preserve=mode,links -v $e ${D}${libdir}/firefox/extensions/${EXTENSION}
+        mkdir -p ${D}${libdir}/firefox/browser/extensions/
+        cp -R --no-dereference --preserve=mode,links -v $e ${D}${libdir}/firefox/browser/extensions/${EXTENSION}
     done
 }
 

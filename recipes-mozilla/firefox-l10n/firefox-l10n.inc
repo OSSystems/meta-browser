@@ -39,8 +39,8 @@ do_install() {
 
     xpi-pack ${LANGUAGE} ${EXTENSION}.xpi
 
-    mkdir -p ${D}${libdir}/firefox/extensions/
-    install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/extensions/${EXTENSION}.xpi
+    mkdir -p ${D}${libdir}/firefox/browser/extensions/
+    install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
 }
 
 FILES_${PN} += "${libdir}/firefox"
