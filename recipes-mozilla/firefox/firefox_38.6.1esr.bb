@@ -66,6 +66,7 @@ ARM_INSTRUCTION_SET = "arm"
 do_install_append() {
     install -d ${D}${datadir}/applications
     install -d ${D}${datadir}/pixmaps
+    install -d ${D}${libdir}/${PN}/defaults/pref
 
     install -m 0644 ${WORKDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/
     install -m 0644 ${WORKDIR}/mozilla-firefox.png ${D}${datadir}/pixmaps/
@@ -81,8 +82,8 @@ FILES_${PN} = "${bindir}/${PN} \
                ${datadir}/pixmaps/ \
                ${libdir}/${PN}/* \
                ${bindir}/defaults"
-FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config"
-
+FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
+FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
 # We don't build XUL as system shared lib, so we can mark all libs as private
 PRIVATE_LIBS = "libmozjs.so \
                 libxpcom.so \
