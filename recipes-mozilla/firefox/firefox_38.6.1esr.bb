@@ -84,6 +84,7 @@ FILES_${PN} = "${bindir}/${PN} \
                ${bindir}/defaults"
 FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
 FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
+FILES_${PN}-dbg += "${libdir}/${PN}/*/*/.debug/* ${libdir}/${PN}/*/.debug/* ${libdir}/${PN}-devel-*/sdk/lib/.debug/*"
 # We don't build XUL as system shared lib, so we can mark all libs as private
 PRIVATE_LIBS = "libmozjs.so \
                 libxpcom.so \
