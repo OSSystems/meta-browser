@@ -22,7 +22,7 @@ index edea11a..4aef68f 100644
      return;
  
 +#if 0
-   infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
        scoped_ptr<ConfirmInfoBarDelegate>(new GoogleApiKeysInfoBarDelegate())));
 +#endif
  }

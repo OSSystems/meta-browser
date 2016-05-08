@@ -1,0 +1,46 @@
+From 2d7143090fdfd82950be352078daa5019279d81f Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Fri, 29 Apr 2016 17:14:15 +0200
+Subject: [PATCH] Fix build errors with GCC in Debug mode
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ third_party/WebKit/Source/wtf/dtoa/utils.h                         | 7 +++++++
+ .../cacheinvalidation/src/google/cacheinvalidation/include/types.h | 2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/WebKit/Source/wtf/dtoa/utils.h b/third_party/WebKit/Source/wtf/dtoa/utils.h
+index 0a61c01..7738e9a 100644
+--- a/third_party/WebKit/Source/wtf/dtoa/utils.h
++++ b/third_party/WebKit/Source/wtf/dtoa/utils.h
+@@ -165,7 +165,14 @@ namespace double_conversion {
+ 
+         // Access individual vector elements - checks bounds in debug mode.
+         T& operator[](int index) const {
++#if !defined(NDEBUG)
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wstrict-overflow"
++#endif // !defined(NDEBUG)
+             ASSERT(0 <= index && index < length_);
++#if !defined(NDEBUG)
++#pragma GCC diagnostic pop
++#endif // !defined(NDEBUG)
+             return start_[index];
+         }
+ 
+diff --git a/third_party/cacheinvalidation/src/google/cacheinvalidation/include/types.h b/third_party/cacheinvalidation/src/google/cacheinvalidation/include/types.h
+index 4e3be27..835e956 100644
+--- a/third_party/cacheinvalidation/src/google/cacheinvalidation/include/types.h
++++ b/third_party/cacheinvalidation/src/google/cacheinvalidation/include/types.h
+@@ -172,7 +172,7 @@ class ErrorInfo {
+  */
+ class ObjectId {
+  public:
+-  ObjectId() : is_initialized_(false) {}
++  ObjectId() : is_initialized_(false), source_(0) {}
+ 
+   /* Creates an object id for the given source and name (the name is copied). */
+   ObjectId(int source, const string& name)
+-- 
+2.5.0
+

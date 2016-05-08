@@ -1,0 +1,30 @@
+From ef3aaa58be440c1845e60432a498501088da07fe Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Thu, 28 Apr 2016 09:29:59 +0200
+Subject: [PATCH] Override root filesystem access restriction
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ sandbox/linux/suid/client/setuid_sandbox_client.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/sandbox/linux/suid/client/setuid_sandbox_client.cc b/sandbox/linux/suid/client/setuid_sandbox_client.cc
+index 12ef7f9..b59908a 100644
+--- a/sandbox/linux/suid/client/setuid_sandbox_client.cc
++++ b/sandbox/linux/suid/client/setuid_sandbox_client.cc
+@@ -21,8 +21,12 @@
+ namespace {
+ 
+ bool IsFileSystemAccessDenied() {
++#if 0
+   base::ScopedFD root_dir(HANDLE_EINTR(open("/", O_RDONLY)));
+   return !root_dir.is_valid();
++#else
++  return true;
++#endif
+ }
+ 
+ int GetHelperApi(base::Environment* env) {
+-- 
+2.5.0
+

@@ -1,0 +1,25 @@
+From 135debdc4613d5d323d1659166466f74f2e75284 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Fri, 6 May 2016 12:44:36 +0200
+Subject: [PATCH] Fix "'rv' may be used uninitialized in this function" warning
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ third_party/mojo/src/mojo/edk/system/unique_identifier.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/mojo/src/mojo/edk/system/unique_identifier.cc b/third_party/mojo/src/mojo/edk/system/unique_identifier.cc
+index 22abf22..6f9a761 100644
+--- a/third_party/mojo/src/mojo/edk/system/unique_identifier.cc
++++ b/third_party/mojo/src/mojo/edk/system/unique_identifier.cc
+@@ -31,6 +31,7 @@ UniqueIdentifier UniqueIdentifier::FromString(const std::string& s,
+     memcpy(rv.data_, &bytes[0], sizeof(rv.data_));
+     *success = true;
+   } else {
++    memset(rv.data_, 0, sizeof(rv.data_));
+     *success = false;
+   }
+   return rv;
+-- 
+2.7.4
+

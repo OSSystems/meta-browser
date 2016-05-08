@@ -34,7 +34,7 @@ index a000b46..6c6d336 100644
          // 2^64 = 18446744073709551616 > 10^19
          const int kMaxUint64DecimalDigits = 19;
          Zero();
-@@ -699,7 +699,10 @@
+@@ -696,7 +696,10 @@
      }
 
 
@@ -45,7 +45,7 @@ index a000b46..6c6d336 100644
          if (exponent_ > other.exponent_) {
              // If "X" represents a "hidden" digit (by the exponent) then we are in the
              // following case (a == this, b == other):
-@@ -715,7 +715,10 @@
+@@ -709,7 +709,10 @@
              for (int i = used_digits_ - 1; i >= 0; --i) {
                  bigits_[i + zero_digits] = bigits_[i];
              }

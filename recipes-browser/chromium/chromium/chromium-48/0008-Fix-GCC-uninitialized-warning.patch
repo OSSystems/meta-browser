@@ -1,0 +1,26 @@
+From 12d7fb643188ea5033aaf70ffe64b4c58eefc5eb Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Fri, 29 Apr 2016 14:02:44 +0200
+Subject: [PATCH] Fix GCC uninitialized warning
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ third_party/ots/src/name.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/ots/src/name.cc b/third_party/ots/src/name.cc
+index a0dd1ea..070ddae 100644
+--- a/third_party/ots/src/name.cc
++++ b/third_party/ots/src/name.cc
+@@ -79,7 +79,7 @@ bool ots_name_parse(Font *font, const uint8_t* data, size_t length) {
+   const char* string_base = reinterpret_cast<const char*>(data) +
+       string_offset;
+ 
+-  NameRecord prev_record;
++  NameRecord prev_record(0, 0, 0, 0);
+   bool sort_required = false;
+ 
+   // Read all the names, discarding any with invalid IDs,
+-- 
+2.5.0
+
