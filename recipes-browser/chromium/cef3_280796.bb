@@ -36,7 +36,7 @@ export BUILD_TARGET_ARCH="${TARGET_ARCH}"
 export GYP_DEFINES="${GYP_ARCH_DEFINES} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
 EXTRA_OEGYP =	" \
-    ${@base_contains('DISTRO_FEATURES', 'ld-is-gold', '-Ddisable_fatal_linker_warnings=1', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '-Ddisable_fatal_linker_warnings=1', '', d)} \
 "
 
 do_configure_prepend() {
