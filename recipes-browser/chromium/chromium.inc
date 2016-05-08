@@ -13,20 +13,7 @@ CHROMIUM_BUILD_TYPE ??= "Release"
 
 inherit gettext pythonnative
 
-PACKAGECONFIG ??= "use-egl"
-
-# this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
-# automatically and silently fall back to GLX
-PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
-
-# Additional PACKAGECONFIG options - listed here to avoid warnings
-PACKAGECONFIG[component-build] = ""
-PACKAGECONFIG[disable-api-keys-info-bar] = ""
-PACKAGECONFIG[ignore-lost-context] = ""
-PACKAGECONFIG[impl-side-painting] = ""
-PACKAGECONFIG[use-egl] = ""
-PACKAGECONFIG[kiosk-mode] = ""
-
+ARMFPABI_armv7a = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'arm_float_abi=hard', 'arm_float_abi=softfp', d)}"
 GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot=''"
 
 do_configure() {
