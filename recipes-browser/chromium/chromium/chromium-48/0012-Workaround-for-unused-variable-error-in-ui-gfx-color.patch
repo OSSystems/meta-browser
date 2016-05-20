@@ -1,0 +1,86 @@
+From 41cb20a99eb12443f649051a608c7dfe28661d85 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Thu, 19 May 2016 22:38:32 +0200
+Subject: [PATCH] Workaround for unused-variable error in
+ ui/gfx/color_palette.h
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ ui/gfx/BUILD.gn         |  1 +
+ ui/gfx/color_palette.cc | 12 ++++++++++++
+ ui/gfx/color_palette.h  | 12 ++++++------
+ ui/gfx/gfx.gyp          |  1 +
+ 4 files changed, 20 insertions(+), 6 deletions(-)
+ create mode 100644 ui/gfx/color_palette.cc
+
+diff --git a/ui/gfx/BUILD.gn b/ui/gfx/BUILD.gn
+index dcd15b0..bf1455c 100644
+--- a/ui/gfx/BUILD.gn
++++ b/ui/gfx/BUILD.gn
+@@ -61,6 +61,7 @@ component("gfx") {
+     "codec/png_codec.h",
+     "color_analysis.cc",
+     "color_analysis.h",
++    "color_palette.cc",
+     "color_palette.h",
+     "color_profile.cc",
+     "color_profile.h",
+diff --git a/ui/gfx/color_palette.cc b/ui/gfx/color_palette.cc
+new file mode 100644
+index 0000000..a8e6280
+--- /dev/null
++++ b/ui/gfx/color_palette.cc
+@@ -0,0 +1,12 @@
++#include "color_palette.h"
++
++namespace gfx {
++
++const SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
++const SkColor kGoogleBlue300 = SkColorSetRGB(0x7B, 0xAA, 0xF7);
++const SkColor kGoogleBlue500 = SkColorSetRGB(0x42, 0x85, 0xF4);
++const SkColor kGoogleRed700 = SkColorSetRGB(0xC5, 0x39, 0x29);
++const SkColor kGoogleGreen700 = SkColorSetRGB(0x0B, 0x80, 0x43);
++const SkColor kGoogleYellow700 = SkColorSetRGB(0xF0, 0x93, 0x00);
++
++}  // namespace gfx
+diff --git a/ui/gfx/color_palette.h b/ui/gfx/color_palette.h
+index 372f52c..63fa8af 100644
+--- a/ui/gfx/color_palette.h
++++ b/ui/gfx/color_palette.h
+@@ -9,15 +9,15 @@
+ 
+ namespace gfx {
+ 
+-const SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
++extern const SkColor kChromeIconGrey;
+ 
+ // The number refers to the shade of darkness. Each color in the MD
+ // palette ranges from 100-900.
+-const SkColor kGoogleBlue300 = SkColorSetRGB(0x7B, 0xAA, 0xF7);
+-const SkColor kGoogleBlue500 = SkColorSetRGB(0x42, 0x85, 0xF4);
+-const SkColor kGoogleRed700 = SkColorSetRGB(0xC5, 0x39, 0x29);
+-const SkColor kGoogleGreen700 = SkColorSetRGB(0x0B, 0x80, 0x43);
+-const SkColor kGoogleYellow700 = SkColorSetRGB(0xF0, 0x93, 0x00);
++extern const SkColor kGoogleBlue300;
++extern const SkColor kGoogleBlue500;
++extern const SkColor kGoogleRed700;
++extern const SkColor kGoogleGreen700;
++extern const SkColor kGoogleYellow700;
+ 
+ }  // namespace gfx
+ 
+diff --git a/ui/gfx/gfx.gyp b/ui/gfx/gfx.gyp
+index 8067bee..98b6312 100644
+--- a/ui/gfx/gfx.gyp
++++ b/ui/gfx/gfx.gyp
+@@ -142,6 +142,7 @@
+         'codec/png_codec.h',
+         'color_analysis.cc',
+         'color_analysis.h',
++        'color_palette.cc',
+         'color_palette.h',
+         'color_profile.cc',
+         'color_profile.h',
+-- 
+2.7.4
+

@@ -10,6 +10,8 @@ SRC_URI += "\
         file://chromium-48/0008-Fix-GCC-uninitialized-warning.patch \
         file://chromium-48/0009-Fix-build-errors-with-GCC-in-Debug-mode.patch \
         file://chromium-48/0010-Fix-rv-may-be-used-uninitialized-in-this-function-wa.patch \
+        file://chromium-48/0011-Replace-readdir_r-with-readdir.patch \
+        file://chromium-48/0012-Workaround-for-unused-variable-error-in-ui-gfx-color.patch \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-48/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://chromium-48/0002-Disable-API-keys-info-bar.patch', '', d)} \
 "
