@@ -63,3 +63,6 @@ do_qa_configure() {
 do_compile() {
     ninja -C out/${CHROMIUM_BUILD_TYPE} ${PARALLEL_MAKE} cefsimple
 }
+
+# | ../../v8/src/objects.h:8925:36: error: left operand of shift expression '(-8 << 26u)' is negative [-fpermissive]
+PNBLACKLIST[cef3] ?= "BROKEN: fails to build with gcc-6"

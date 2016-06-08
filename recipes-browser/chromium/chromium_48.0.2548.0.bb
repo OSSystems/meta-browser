@@ -43,3 +43,8 @@ CHROMIUM_X11_DEPENDS = "xextproto gtk+ libxi libxss"
 CHROMIUM_X11_GYP_DEFINES = ""
 CHROMIUM_WAYLAND_DEPENDS = "wayland libxkbcommon"
 CHROMIUM_WAYLAND_GYP_DEFINES = "use_ash=1 use_aura=1 chromeos=0 use_ozone=1 use_xkbcommon=1"
+
+# | gen/protoc_out/components/enhanced_bookmarks/proto/cluster.pb.cc:257:3: error: this 'if' clause does not guard... [-Werror=misleading-indentation]
+# |    if (!_extensions_.IsInitialized()) return false;  return true;
+# |    ^~
+PNBLACKLIST[chromium] ?= "BROKEN: fails to build with gcc-6"

@@ -105,3 +105,18 @@ PRIVATE_LIBS += " \
     libssl3.so \
     libsoftokn3.so \
 "
+
+# | i586-oe-linux-gcc  -m32 -march=i586 --sysroot=/home/jenkins/oe/world/shr-core/tmp-glibc/sysroots/qemux86 -o WebMElement.o -c
+#  -I../../dist/system_wrappers -include /home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/config/gcc_hidden.h -DMOZ_GLUE_IN_PROGRAM -DAB_CD=en-US -DNO_NSPR_10_SUPPORT
+#  -I/home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/media/libmkv -I. 
+#  -I../../dist/include   -I/home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/firefox-build-dir/dist/include/nspr -I/home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/firefox-build-dir/dist/include/nss   
+#  -I/home/jenkins/oe/world/shr-core/tmp-glibc/sysroots/qemux86/usr/include/pixman-1   -fPIC   -include ../../mozilla-config.h -DMOZILLA_CLIENT -MD -MP -MF .deps/WebMElement.o.pp  -Wall -Wdeclaration-after-statement -Wempty-body -Wpointer-to-int-cast -Wsign-compare -Wtype-limits -Wno-unused -Wcast-align -Os -fsigned-char -fno-strict-aliasing -std=gnu99 -fgnu89-inline -fno-strict-aliasing -fno-math-errno -pthread -pipe  -DNDEBUG -DTRIMMED -freorder-blocks -Os -fomit-frame-pointer     /home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/media/libmkv/WebMElement.c
+# | In file included from ../../../dist/system_wrappers/stdlib.h:3:0,
+# |                  from ../../../dist/include/mozilla/mozalloc.h:15,
+# |                  from ../../../dist/stl_wrappers/cstdlib:39,
+# |                  from /home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/gfx/graphite2/src/inc/Main.h:29,
+# |                  from /home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/gfx/graphite2/src/CmapCache.cpp:28,
+# |                  from /home/jenkins/oe/world/shr-core/tmp-glibc/work/i586-oe-linux/firefox/38.7.1esr-r0/mozilla-esr38/firefox-build-dir/gfx/graphite2/src/Unified_cpp_gfx_graphite2_src0.cpp:11:
+# | /home/jenkins/oe/world/shr-core/tmp-glibc/sysroots/qemux86/usr/include/c++/6.1.1/stdlib.h:38:12: error: 'std::abort' has not been declared
+# |  using std::abort;
+PNBLACKLIST[firefox] ?= "BROKEN: fails to build with gcc-6"
