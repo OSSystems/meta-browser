@@ -98,7 +98,6 @@ PACKAGECONFIG[disable-api-keys-info-bar] = ""
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
-PACKAGECONFIG[use-egl] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
 
