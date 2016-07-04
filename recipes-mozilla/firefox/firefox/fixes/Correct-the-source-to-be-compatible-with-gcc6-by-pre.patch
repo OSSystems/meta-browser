@@ -1,0 +1,29 @@
+From fd21526d36bd579f2a227b3add38bd615e59db5e Mon Sep 17 00:00:00 2001
+From: Fabio Berton <fabio.berton@ossystems.com.br>
+Date: Thu, 30 Jun 2016 16:57:00 -0300
+Subject: [PATCH] Correct the source to be compatible with gcc6 by preventing
+ c++ scope errors
+Organization: O.S. Systems Software LTDA.
+
+Signed-off-by: Fabio Berton <fabio.berton@ossystems.com.br>
+---
+ nsprpub/config/make-system-wrappers.pl | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/nsprpub/config/make-system-wrappers.pl b/nsprpub/config/make-system-wrappers.pl
+index fa0873a..bf09583 100644
+--- a/nsprpub/config/make-system-wrappers.pl
++++ b/nsprpub/config/make-system-wrappers.pl
+@@ -19,7 +19,9 @@ while (<STDIN>) {
+     open OUT, ">$output_dir/$_";
+     print OUT "#pragma GCC system_header\n";  # suppress include_next warning
+     print OUT "#pragma GCC visibility push(default)\n";
++        print OUT "#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS\n";
+     print OUT "#include_next \<$_\>\n";
++        print OUT "#undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS\n";
+     print OUT "#pragma GCC visibility pop\n";
+     close OUT;
+ }
+-- 
+2.1.4
+
