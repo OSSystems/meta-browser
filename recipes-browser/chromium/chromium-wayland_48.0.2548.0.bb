@@ -4,16 +4,15 @@ DEPENDS += "wayland libxkbcommon"
 
 SRC_URI += "\
         file://chromium-wayland/add_missing_stat_h_include.patch \
-        file://chromium-wayland/0003-Remove-hard-coded-values-for-CC-and-CXX.patch \
-        file://chromium-wayland/0004-Create-empty-i18n_process_css_test.html-file-to-avoi.patch \
-        file://chromium-wayland/0005-Override-root-filesystem-access-restriction.patch \
+        file://0003-Remove-hard-coded-values-for-CC-and-CXX.patch \
+        file://0004-Create-empty-i18n_process_css_test.html-file-to-avoi.patch \
+        file://0005-Override-root-filesystem-access-restriction.patch \
 	file://chromium-wayland/0006-Remove-GBM-support-from-wayland.gyp.patch \
 	file://chromium-wayland/0007-Workaround-for-glib-related-build-error-with-ozone-w.patch \
         file://chromium-wayland/0011-Replace-readdir_r-with-readdir.patch \
         file://chromium-wayland/remove-Werror.patch \
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-wayland/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://chromium-wayland/0002-Disable-API-keys-info-bar.patch', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
 "
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d"

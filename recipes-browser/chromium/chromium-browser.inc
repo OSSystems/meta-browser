@@ -23,6 +23,7 @@ SRC_URI = "\
         file://include.gypi \
         file://oe-defaults.gypi \
         file://google-chrome \
+        ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://api-keys.patch;patchdir=${WORKDIR}', '', d)} \
         file://google-chrome.desktop \
 "
 
