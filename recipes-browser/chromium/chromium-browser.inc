@@ -2,9 +2,8 @@
 # 1) Add patches to SRC_URI. Version specific patches should be contained in a
 #    "chromium-XX" subdirectory, where XX is the major version. There are also
 #    patches that are shared amongst versions but may one day no longer be
-#    needed (like unistd2.patch). These do not belong in such a subdirectory,
-#    but still need to be explicitely be added. Do NOT add ozone-wayland patches
-#    to SRC_URI here!
+#    needed. These do not belong in such a subdirectory, but still need to be
+#    explicitely be added. Do NOT add ozone-wayland patches to SRC_URI here!
 # 2) Add md5sum and sha256sum hashes of the tarball.
 # 3) Add ozone-wayland patches to the OZONE_WAYLAND_EXTRA_PATCHES variable.
 #    The rule with the chromium-XX subdirectory also applies here.
