@@ -1,0 +1,33 @@
+From 68773f2faea2608145e820bf23cf5efaf50e3399 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Mon, 9 Jun 2014 15:05:11 +0200
+Subject: [PATCH] Disable API keys info bar
+
+Upstream-Status: Inappropriate [other]
+The info bar is not a bug; it is just undesirable in some use cases.
+A clean approach - which requires discussion with upstream - is to
+disable it by using a command line option.
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
+index edea11a..4aef68f 100644
+--- a/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
++++ b/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc
+@@ -18,8 +18,10 @@ void GoogleApiKeysInfoBarDelegate::Create(InfoBarService* infobar_service) {
+   if (google_apis::HasKeysConfigured())
+     return;
+ 
++#if 0
+   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+       scoped_ptr<ConfirmInfoBarDelegate>(new GoogleApiKeysInfoBarDelegate())));
++#endif
+ }
+ 
+ GoogleApiKeysInfoBarDelegate::GoogleApiKeysInfoBarDelegate()
+-- 
+1.9.1
+

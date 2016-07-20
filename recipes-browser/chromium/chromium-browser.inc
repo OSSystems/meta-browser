@@ -1,19 +1,16 @@
 # Recipe files have to perform the following tasks after including this file:
-# 1) Add patches to SRC_URI. Version specific patches should be contained in a
-#    "chromium-XX" subdirectory, where XX is the major version. There are also
-#    patches that are shared amongst versions but may one day no longer be
-#    needed. These do not belong in such a subdirectory, but still need to be
-#    explicitely be added. Do NOT add ozone-wayland patches to SRC_URI here!
+# 1) Add patches to SRC_URI. Platform-specific patches should be contained in
+#    either "chromium-x11" or "chromium-wayland". There are also patches that
+#    are shared amongst platforms but may one day no longer be needed. These
+#    do not belong in such a subdirectory, but still need to be explicitely be
+#    added. Do NOT add ozone-wayland patches to SRC_URI here!
 # 2) Add md5sum and sha256sum hashes of the tarball.
 # 3) Add ozone-wayland patches to the OZONE_WAYLAND_EXTRA_PATCHES variable.
-#    The rule with the chromium-XX subdirectory also applies here.
 # 4) Set the OZONE_WAYLAND_GIT_BRANCH and OZONE_WAYLAND_GIT_SRCREV values.
 # 5) Optionally, set values for these variables:
 #    * OZONE_WAYLAND_PATCH_FILE_GLOB
 #    * OZONE_WAYLAND_GIT_DESTSUFFIX
-#    * CHROMIUM_X11_DEPENDS
 #    * CHROMIUM_X11_GYP_DEFINES
-#    * CHROMIUM_WAYLAND_DEPENDS
 #    * CHROMIUM_WAYLAND_GYP_DEFINES
 
 include chromium.inc
@@ -22,12 +19,15 @@ DESCRIPTION = "Chromium browser"
 DEPENDS += "libgnome-keyring"
 
 SRC_URI = "\
-        http://gsdview.appspot.com/chromium-browser-official/${P}.tar.xz \
+        http://gsdview.appspot.com/chromium-browser-official/chromium-${PV}.tar.xz \
         file://include.gypi \
         file://oe-defaults.gypi \
         file://google-chrome \
         file://google-chrome.desktop \
 "
+
+S = "${WORKDIR}/chromium-${PV}"
+BPN = "chromium"
 
 
 # PACKAGECONFIG options
@@ -121,9 +121,7 @@ OZONE_WAYLAND_EXTRA_PATCHES ?= ""
 
 # These are present as their own variables, since they have changed between versions
 # a few times in the past already; making them variables makes it easier to handle that
-CHROMIUM_X11_DEPENDS ?= ""
 CHROMIUM_X11_GYP_DEFINES ?= ""
-CHROMIUM_WAYLAND_DEPENDS ?= ""
 CHROMIUM_WAYLAND_GYP_DEFINES ?= ""
 
 
@@ -133,12 +131,6 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run', '', d)} \
 "
-
-SRC_URI += "\
-        ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
-        ${@oe.utils.conditional('CHROMIUM_ENABLE_WAYLAND', '1', 'git://github.com/01org/ozone-wayland.git;destsuffix=${OZONE_WAYLAND_GIT_DESTSUFFIX};branch=${OZONE_WAYLAND_GIT_BRANCH};rev=${OZONE_WAYLAND_GIT_SRCREV}', '', d)} \
-"
-
 
 # Some sanity checks.
 python do_check_variables() {
@@ -158,7 +150,7 @@ python do_check_variables() {
     if (CHROMIUM_ENABLE_WAYLAND == '1'):
         bb.plain("INFO: Chromium has been configured with Wayland support (ozone-wayland). Build type is \'%s\'" %CHROMIUM_BUILD_TYPE)
     else:
-        bb.plain("INFO: Chromium has been configured without Wayland support. Build type is \'%s\'" %CHROMIUM_BUILD_TYPE)
+        bb.plain("INFO: Chromium has been configured for X11. Build type is \'%s\'" %CHROMIUM_BUILD_TYPE)
 }
 addtask check_variables before do_fetch
 
@@ -191,6 +183,7 @@ EXTRA_OEGYP = " \
 	-Dclang=0 \
 	-Dhost_clang=0 \
 	-Ddisable_fatal_linker_warnings=1 \
+	-Dv8_use_external_startup_data=0 \
 	-Dlinux_use_bundled_gold=0 \
 	-Dlinux_use_bundled_binutils=0 \
 	${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '-Dlinux_use_gold_flags=1', '-Dlinux_use_gold_flags=0', d)} \
@@ -203,10 +196,8 @@ EXTRA_OEGYP = " \
 
 python() {
     if d.getVar('CHROMIUM_ENABLE_WAYLAND', True) == '1':
-        d.appendVar('DEPENDS', ' %s ' % d.getVar('CHROMIUM_WAYLAND_DEPENDS', True))
         d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_WAYLAND_GYP_DEFINES', True))
     else:
-        d.appendVar('DEPENDS', ' %s ' % d.getVar('CHROMIUM_X11_DEPENDS', True))
         d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_X11_GYP_DEFINES', True))
 }
 

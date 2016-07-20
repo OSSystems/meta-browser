@@ -1,0 +1,26 @@
+From 5158da97132db1a43c95f4c0ad65b4ac2629c4da Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Sat, 23 Apr 2016 14:05:04 +0200
+Subject: [PATCH] Create empty i18n_process_css_test.html file to avoid build
+ failure
+
+According to https://groups.google.com/a/chromium.org/forum/#!topic/chromium-packagers/9JX1N2nf4PU
+creating an empty i18n_process_css_test.html is a valid workaround for the
+following build error:
+
+"Exception: Failed to open test/data/webui/i18n_process_css_test.html while trying to flatten test/data/webui/i18n_process_css_test.html. (No such file or directory)"
+
+Upstream-Status: Pending
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ chrome/test/data/webui/i18n_process_css_test.html | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 chrome/test/data/webui/i18n_process_css_test.html
+
+diff --git a/chrome/test/data/webui/i18n_process_css_test.html b/chrome/test/data/webui/i18n_process_css_test.html
+new file mode 100644
+index 0000000..e69de29
+-- 
+2.5.0
+

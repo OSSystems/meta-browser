@@ -1,0 +1,49 @@
+From be6f1d02f3f784594642929dff289dae33014d56 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Sun, 3 Apr 2016 17:46:59 +0200
+Subject: [PATCH] Remove accelerated Canvas support from blacklist
+
+Together with the --gpu-no-context-lost command line switch, this patch is
+necessary to enable hardware accelerated 2D canvas rendering when using
+EGL.
+
+Note the implications on the behavior of Canvas, in particular with lost
+contexts, as discussed here:
+
+http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2012-September/206450.html
+
+Upstream-Status: Inappropiate [see link above]
+---
+ gpu/config/software_rendering_list_json.cc | 16 ----------------
+ 1 file changed, 16 deletions(-)
+
+diff --git a/gpu/config/software_rendering_list_json.cc b/gpu/config/software_rendering_list_json.cc
+index 484467d..c3b5855 100644
+--- a/gpu/config/software_rendering_list_json.cc
++++ b/gpu/config/software_rendering_list_json.cc
+@@ -240,22 +240,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
+       ]
+     },
+     {
+-      "id": 24,
+-      "description": "Accelerated 2d canvas is unstable in Linux at the moment",
+-      "os": {
+-        "type": "linux"
+-      },
+-      "exceptions": [
+-        {
+-          "gl_vendor": "Vivante Corporation", 
+-          "gl_renderer": "Vivante GC1000"
+-        }
+-      ],
+-      "features": [
+-        "accelerated_2d_canvas"
+-      ]
+-    },
+-    {
+       "id": 27,
+       "description": "ATI/AMD cards with older drivers in Linux are crash-prone",
+       "cr_bugs": [95934, 94973, 136240, 357314],
+-- 
+2.5.0
+
