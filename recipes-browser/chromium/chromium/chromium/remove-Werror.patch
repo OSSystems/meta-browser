@@ -1,0 +1,74 @@
+Index: chromium-53.0.2774.4/build/common.gypi
+===================================================================
+--- chromium-53.0.2774.4.orig/build/common.gypi
++++ chromium-53.0.2774.4/build/common.gypi
+@@ -1446,7 +1446,7 @@
+ 
+     # Disable fatal linker warnings, similarly to how we make it possible
+     # to disable -Werror (e.g. for different toolchain versions).
+-    'disable_fatal_linker_warnings%': 0,
++    'disable_fatal_linker_warnings%': 1,
+ 
+     'release_valgrind_build%': 0,
+ 
+@@ -3074,12 +3074,6 @@
+             # third-party code either.
+             'cflags!': [ '-Wall' ],
+           }],
+-          # TODO: Fix all warnings on chromeos too.
+-          [ 'os_posix==1 and OS!="mac" and OS!="ios" and (clang!=1 or chromeos==1)', {
+-            'cflags!': [
+-              '-Werror',
+-            ],
+-          }],
+           [ 'OS=="win"', {
+             'defines': [
+               '_CRT_SECURE_NO_DEPRECATE',
+@@ -3615,10 +3609,10 @@
+     }],
+     ['os_posix==1 and OS!="mac" and OS!="ios"', {
+       'target_defaults': {
+-        # Enable -Werror by default, but put it in a variable so it can
++        # Disable -Werror by default and put it in a variable so it can
+         # be disabled in ~/.gyp/include.gypi on the valgrind builders.
+         'variables': {
+-          'werror%': '-Werror',
++          'werror%': '',
+           'libraries_for_target%': '',
+           'conditions' : [
+             # Enable -Wextra for chromium_code when we control the compiler.
+@@ -5076,7 +5070,7 @@
+           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
+           'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
+           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
+-          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
++          'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',    # -Werror
+           'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
+           'USE_HEADERMAP': 'NO',
+           'WARNING_CFLAGS': [
+Index: chromium-53.0.2774.4/build/config/compiler/BUILD.gn
+===================================================================
+--- chromium-53.0.2774.4.orig/build/config/compiler/BUILD.gn
++++ chromium-53.0.2774.4/build/config/compiler/BUILD.gn
+@@ -1040,9 +1040,6 @@ config("chromium_code") {
+     cflags = [ "/W4" ]  # Warning level 4.
+   } else {
+     cflags = [ "-Wall" ]
+-    if (treat_warnings_as_errors) {
+-      cflags += [ "-Werror" ]
+-    }
+     if (is_clang) {
+       # Enable -Wextra for chromium_code when we control the compiler.
+       cflags += [ "-Wextra" ]
+@@ -1089,11 +1086,6 @@ config("no_chromium_code") {
+       "_CRT_NONSTDC_NO_DEPRECATE",
+     ]
+   } else {
+-    # GCC may emit unsuppressible warnings so don't add -Werror for no chromium
+-    # code. crbug.com/589724
+-    if (treat_warnings_as_errors && is_clang) {
+-      cflags += [ "-Werror" ]
+-    }
+     if (is_clang && !is_nacl) {
+       # TODO(thakis): Remove !is_nacl once
+       # https://codereview.webrtc.org/1552863002/ made its way into chromium.

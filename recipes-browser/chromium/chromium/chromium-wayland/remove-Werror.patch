@@ -1,0 +1,73 @@
+Index: chromium-48.0.2548.0/build/common.gypi
+===================================================================
+--- chromium-48.0.2548.0.orig/build/common.gypi
++++ chromium-48.0.2548.0/build/common.gypi
+@@ -1421,7 +1421,7 @@
+ 
+     # Disable fatal linker warnings, similarly to how we make it possible
+     # to disable -Werror (e.g. for different toolchain versions).
+-    'disable_fatal_linker_warnings%': 0,
++    'disable_fatal_linker_warnings%': 1,
+ 
+     'release_valgrind_build%': 0,
+ 
+@@ -3135,12 +3135,6 @@
+               '-Wsign-compare',
+             ]
+           }],
+-          # TODO: Fix all warnings on chromeos too.
+-          [ 'os_posix==1 and OS!="mac" and OS!="ios" and (clang!=1 or chromeos==1)', {
+-            'cflags!': [
+-              '-Werror',
+-            ],
+-          }],
+           [ 'os_posix==1 and os_bsd!=1 and OS!="mac" and OS!="android"', {
+             'cflags': [
+               # Don't warn about ignoring the return value from e.g. close().
+@@ -3692,10 +3686,10 @@
+     }],
+     ['os_posix==1 and OS!="mac" and OS!="ios"', {
+       'target_defaults': {
+-        # Enable -Werror by default, but put it in a variable so it can
++        # Disable -Werror by default, but put it in a variable so it can
+         # be disabled in ~/.gyp/include.gypi on the valgrind builders.
+         'variables': {
+-          'werror%': '-Werror',
++          'werror%': '',
+           'libraries_for_target%': '',
+         },
+         'defines': [
+@@ -5045,7 +5039,7 @@
+           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
+           'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
+           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
+-          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
++          'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',     # -Werror
+           'GCC_VERSION': '4.2',
+           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
+           'USE_HEADERMAP': 'NO',
+Index: chromium-48.0.2548.0/build/config/compiler/BUILD.gn
+===================================================================
+--- chromium-48.0.2548.0.orig/build/config/compiler/BUILD.gn
++++ chromium-48.0.2548.0/build/config/compiler/BUILD.gn
+@@ -687,7 +687,6 @@ config("default_warnings") {
+     cflags += [
+       # Enables.
+       "-Wendif-labels",  # Weird old-style text after an #endif.
+-      "-Werror",  # Warnings as errors.
+ 
+       # Disables.
+       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
+Index: chromium-48.0.2548.0/build/nocompile.gypi
+===================================================================
+--- chromium-48.0.2548.0.orig/build/nocompile.gypi
++++ chromium-48.0.2548.0/build/nocompile.gypi
+@@ -81,7 +81,7 @@
+             '<(nocompile_driver)',
+             '4', # number of compilers to invoke in parallel.
+             '<(RULE_INPUT_PATH)',
+-            '-Wall -Werror -Wfatal-errors -I<(DEPTH)',
++            '-Wall -I<(DEPTH)',
+             '<(nc_result_path)',
+             ],
+           'message': 'Generating no compile results for <(RULE_INPUT_PATH)',

@@ -1,0 +1,186 @@
+From feb645ae0259582e2075691047e27b5e064ec160 Mon Sep 17 00:00:00 2001
+From: Carlos Rafael Giani <dv@pseudoterminal.org>
+Date: Thu, 19 May 2016 21:12:05 +0200
+Subject: [PATCH] Replace readdir_r with readdir
+
+readdir_r is deprecated in newer glibc version. Documented at:
+https://sourceware.org/bugzilla/show_bug.cgi?id=19056
+
+Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
+---
+ base/files/file_enumerator_posix.cc                | 15 ++++++++++---
+ net/disk_cache/simple/simple_index_file_posix.cc   | 10 ++++++---
+ sandbox/linux/services/proc_util.cc                | 24 +++++++++++++--------
+ third_party/boringssl/src/crypto/directory_posix.c | 25 +++-------------------
+ .../crashpad/crashpad/util/posix/close_multiple.cc |  8 +++++--
+ third_party/leveldatabase/env_chromium.cc          | 13 ++++++++---
+ 6 files changed, 53 insertions(+), 42 deletions(-)
+
+diff --git a/base/files/file_enumerator_posix.cc b/base/files/file_enumerator_posix.cc
+index 7533a24..637b8cd 100644
+--- a/base/files/file_enumerator_posix.cc
++++ b/base/files/file_enumerator_posix.cc
+@@ -8,6 +8,7 @@
+ #include <errno.h>
+ #include <fnmatch.h>
+ #include <stdint.h>
++#include <string.h>
+ 
+ #include "base/logging.h"
+ #include "base/threading/thread_restrictions.h"
+@@ -129,9 +130,17 @@ bool FileEnumerator::ReadDirectory(std::vector<FileInfo>* entries,
+          additional space for pathname may be needed
+ #endif
+ 
+-  struct dirent dent_buf;
+-  struct dirent* dent;
+-  while (readdir_r(dir, &dent_buf, &dent) == 0 && dent) {
++  while (true) {
++    struct dirent* dent;
++    errno = 0;
++    dent = readdir(dir);
++    if (errno != 0) {
++      DPLOG(ERROR) << "Couldn't read directory entry: " << strerror(errno);
++      break;
++    }
++    if (dent == NULL)
++      break;
++
+     FileInfo info;
+     info.filename_ = FilePath(dent->d_name);
+ 
+diff --git a/net/disk_cache/simple/simple_index_file_posix.cc b/net/disk_cache/simple/simple_index_file_posix.cc
+index 586699d..bbe81fc 100644
+--- a/net/disk_cache/simple/simple_index_file_posix.cc
++++ b/net/disk_cache/simple/simple_index_file_posix.cc
+@@ -34,8 +34,12 @@ bool SimpleIndexFile::TraverseCacheDirectory(
+     PLOG(ERROR) << "opendir " << cache_path.value();
+     return false;
+   }
+-  dirent entry, *result;
+-  while (readdir_r(dir.get(), &entry, &result) == 0) {
++  dirent *result;
++  while (true) {
++    errno = 0;
++    result = readdir(dir.get());
++    if (errno != 0)
++      break;
+     if (!result)
+       return true;  // The traversal completed successfully.
+     const std::string file_name(result->d_name);
+@@ -45,7 +49,7 @@ bool SimpleIndexFile::TraverseCacheDirectory(
+         base::FilePath(file_name));
+     entry_file_callback.Run(file_path);
+   }
+-  PLOG(ERROR) << "readdir_r " << cache_path.value();
++  PLOG(ERROR) << "readdir " << cache_path.value();
+   return false;
+ }
+ 
+diff --git a/sandbox/linux/services/proc_util.cc b/sandbox/linux/services/proc_util.cc
+index 8341b4a..1603415 100644
+--- a/sandbox/linux/services/proc_util.cc
++++ b/sandbox/linux/services/proc_util.cc
+@@ -50,15 +50,18 @@ int ProcUtil::CountOpenFds(int proc_fd) {
+   CHECK(dir);
+ 
+   int count = 0;
+-  struct dirent e;
+   struct dirent* de;
+-  while (!readdir_r(dir.get(), &e, &de) && de) {
+-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
++  while (true) {
++    errno = 0;
++    de = readdir(dir.get());
++    if (de == NULL || errno != 0)
++      break;
++    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
+       continue;
+     }
+ 
+     int fd_num;
+-    CHECK(base::StringToInt(e.d_name, &fd_num));
++    CHECK(base::StringToInt(de->d_name, &fd_num));
+     if (fd_num == proc_fd || fd_num == proc_self_fd) {
+       continue;
+     }
+@@ -80,22 +83,25 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
+   ScopedDIR dir(fdopendir(proc_self_fd));
+   CHECK(dir);
+ 
+-  struct dirent e;
+   struct dirent* de;
+-  while (!readdir_r(dir.get(), &e, &de) && de) {
+-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
++  while (true) {
++    errno = 0;
++    de = readdir(dir.get());
++    if (de == NULL || errno != 0)
++      break;
++    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
+       continue;
+     }
+ 
+     int fd_num;
+-    CHECK(base::StringToInt(e.d_name, &fd_num));
++    CHECK(base::StringToInt(de->d_name, &fd_num));
+     if (fd_num == proc_fd || fd_num == proc_self_fd) {
+       continue;
+     }
+ 
+     struct stat s;
+     // It's OK to use proc_self_fd here, fstatat won't modify it.
+-    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
++    CHECK(fstatat(proc_self_fd, de->d_name, &s, 0) == 0);
+     if (S_ISDIR(s.st_mode)) {
+       return true;
+     }
+diff --git a/third_party/crashpad/crashpad/util/posix/close_multiple.cc b/third_party/crashpad/crashpad/util/posix/close_multiple.cc
+index d94d575..4c1287a 100644
+--- a/third_party/crashpad/crashpad/util/posix/close_multiple.cc
++++ b/third_party/crashpad/crashpad/util/posix/close_multiple.cc
+@@ -100,10 +100,14 @@ bool CloseMultipleNowOrOnExecUsingFDDir(int fd, int preserve_fd) {
+     return false;
+   }
+ 
+-  dirent entry;
+   dirent* result;
+   int rv;
+-  while ((rv = readdir_r(dir, &entry, &result)) == 0 && result != nullptr) {
++  while (true) {
++    errno = 0;
++    result = readdir(dir);
++    if (errno != 0 || result == nullptr)
++      break;
++
+     const char* entry_name = &(*result->d_name);
+     if (strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0) {
+       continue;
+diff --git a/third_party/leveldatabase/env_chromium.cc b/third_party/leveldatabase/env_chromium.cc
+index 939534c..f23142e 100644
+--- a/third_party/leveldatabase/env_chromium.cc
++++ b/third_party/leveldatabase/env_chromium.cc
+@@ -79,10 +79,17 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
+   DIR* dir = opendir(dir_string.c_str());
+   if (!dir)
+     return base::File::OSErrorToFileError(errno);
+-  struct dirent dent_buf;
+   struct dirent* dent;
+-  int readdir_result;
+-  while ((readdir_result = readdir_r(dir, &dent_buf, &dent)) == 0 && dent) {
++  int readdir_result = 0;
++  while (true) {
++    errno = 0;
++    dent = readdir(dir);
++    if (errno != 0) {
++      readdir_result = 1;
++      break;
++    }
++    if (dent == NULL)
++      break;
+     if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
+       continue;
+     result->push_back(FilePath::FromUTF8Unsafe(dent->d_name));
+-- 
+2.7.4
+
