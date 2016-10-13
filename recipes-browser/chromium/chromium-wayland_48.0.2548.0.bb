@@ -28,6 +28,8 @@ python() {
     if (d.getVar('CHROMIUM_ENABLE_WAYLAND', True) == '1'):
         if bb.utils.contains('PACKAGECONFIG', 'component-build', True, False, d):
             bb.fatal("Chromium 48 Wayland version cannot be built in component-mode")
+    else:
+        raise bb.parse.SkipPackage("CHROMIUM_ENABLE_WAYLAND isn't enabled")
 }
 
 CHROMIUM_WAYLAND_GYP_DEFINES = "use_ash=1 use_aura=1 chromeos=0 use_ozone=1 use_xkbcommon=1"
