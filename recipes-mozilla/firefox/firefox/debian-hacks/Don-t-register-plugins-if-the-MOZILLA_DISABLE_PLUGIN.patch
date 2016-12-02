@@ -1,0 +1,24 @@
+From: Mike Hommey <glandium@debian.org>
+Date: Sat, 27 Sep 2008 17:17:39 +0200
+Subject: Don't register plugins if the MOZILLA_DISABLE_PLUGINS environment
+ variable is set
+
+---
+ dom/plugins/base/nsPluginHost.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/dom/plugins/base/nsPluginHost.cpp b/dom/plugins/base/nsPluginHost.cpp
+index 7a0f710..d081f03 100644
+--- a/dom/plugins/base/nsPluginHost.cpp
++++ b/dom/plugins/base/nsPluginHost.cpp
+@@ -308,6 +308,10 @@ nsPluginHost::nsPluginHost()
+   Preferences::AddStrongObserver(this, "plugin.disable");
+   Preferences::AddStrongObserver(this, "plugins.click_to_play");
+ 
++  const char *env = PR_GetEnv("MOZILLA_DISABLE_PLUGINS");
++  if (env && env[0])
++    mPluginsDisabled = PR_TRUE;
++
+   nsCOMPtr<nsIObserverService> obsService =
+     mozilla::services::GetObserverService();
+   if (obsService) {

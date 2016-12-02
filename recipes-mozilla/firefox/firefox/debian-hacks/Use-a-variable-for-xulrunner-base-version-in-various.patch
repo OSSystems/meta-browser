@@ -1,4 +1,3 @@
-From 00ee4f7ea56a4196a0dfc4a62a2025cd00588fde Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Mon, 14 Jul 2008 15:20:46 +0200
 Subject: Use a variable for xulrunner base version in various places
@@ -8,7 +7,7 @@ Subject: Use a variable for xulrunner base version in various places
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/config/baseconfig.mk b/config/baseconfig.mk
-index dd4af0d..f1d4b60 100644
+index 86920aa..7149f41 100644
 --- a/config/baseconfig.mk
 +++ b/config/baseconfig.mk
 @@ -2,10 +2,11 @@
@@ -24,8 +23,6 @@ index dd4af0d..f1d4b60 100644
 +idldir = $(datadir)/idl/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
 +installdir = $(libdir)/$(MOZ_APP_NAME)-$(MOZ_APP_BASE_VERSION)
 +sdkdir = $(libdir)/$(MOZ_APP_NAME)-devel-$(MOZ_APP_BASE_VERSION)
- ifndef TOP_DIST
- TOP_DIST = dist
- endif
--- 
-cgit v0.11.2
+ ifeq (.,$(DEPTH))
+ DIST = dist
+ else

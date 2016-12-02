@@ -1,0 +1,36 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sat, 5 Dec 2015 18:23:58 +0900
+Subject: Allow unsigned addons in /usr/{lib,share}/mozilla/extensions
+
+---
+ toolkit/mozapps/extensions/content/extensions.js    | 2 ++
+ toolkit/mozapps/extensions/internal/XPIProvider.jsm | 3 ++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/toolkit/mozapps/extensions/content/extensions.js b/toolkit/mozapps/extensions/content/extensions.js
+index 53e9781..8f6db46 100644
+--- a/toolkit/mozapps/extensions/content/extensions.js
++++ b/toolkit/mozapps/extensions/content/extensions.js
+@@ -211,6 +211,8 @@ function isCorrectlySigned(aAddon) {
+   // temporary add-ons do not require signing
+   if (aAddon.scope == AddonManager.SCOPE_TEMPORARY)
+       return true;
++  if (aAddon.scope == AddonManager.SCOPE_SYSTEM)
++    return true;
+   if (aAddon.signedState <= AddonManager.SIGNEDSTATE_MISSING)
+     return false;
+   return true;
+diff --git a/toolkit/mozapps/extensions/internal/XPIProvider.jsm b/toolkit/mozapps/extensions/internal/XPIProvider.jsm
+index e68f8e6..02e7431 100644
+--- a/toolkit/mozapps/extensions/internal/XPIProvider.jsm
++++ b/toolkit/mozapps/extensions/internal/XPIProvider.jsm
+@@ -682,7 +682,8 @@ function isUsableAddon(aAddon) {
+     return false;
+   }
+   // temporary and system add-ons do not require signing
+-  if ((aAddon._installLocation.name != KEY_APP_SYSTEM_DEFAULTS &&
++  if ((aAddon._installLocation.scope != AddonManager.SCOPE_SYSTEM &&
++       aAddon._installLocation.name != KEY_APP_SYSTEM_DEFAULTS &&
+        aAddon._installLocation.name != KEY_APP_TEMPORARY) &&
+        mustSign(aAddon.type)) {
+     if (aAddon.signedState <= AddonManager.SIGNEDSTATE_MISSING)

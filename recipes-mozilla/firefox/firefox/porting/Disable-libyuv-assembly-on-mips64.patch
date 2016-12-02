@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 21 Sep 2016 06:50:09 +0900
+Subject: Disable libyuv assembly on mips64
+
+---
+ build/gyp.mozbuild | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/build/gyp.mozbuild b/build/gyp.mozbuild
+index 2ae5ac0..35672c4 100644
+--- a/build/gyp.mozbuild
++++ b/build/gyp.mozbuild
+@@ -131,5 +131,8 @@ if CONFIG['INTEL_ARCHITECTURE']:
+     if not CONFIG['HAVE_TOOLCHAIN_SUPPORT_MSSSE3'] or not CONFIG['HAVE_TOOLCHAIN_SUPPORT_MSSE4_1']:
+         gyp_vars['yuv_disable_asm'] = 1
+ 
++if 'mips64' in CONFIG['TARGET_CPU']:
++    gyp_vars['yuv_disable_asm'] = 1
++
+ if CONFIG['MACOS_SDK_DIR']:
+     gyp_vars['mac_sdk_path'] = CONFIG['MACOS_SDK_DIR']

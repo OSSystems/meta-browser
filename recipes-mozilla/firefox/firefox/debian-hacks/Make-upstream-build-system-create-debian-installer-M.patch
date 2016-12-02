@@ -1,0 +1,19 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 16 Dec 2013 11:11:13 +0900
+Subject: Make upstream build system create debian/installer/Makefile
+
+---
+ moz.build | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/moz.build b/moz.build
+index 6215aac..184fa3b 100644
+--- a/moz.build
++++ b/moz.build
+@@ -67,4 +67,6 @@ if not CONFIG['JS_STANDALONE'] and CONFIG['MOZ_BUILD_APP']:
+ if not CONFIG['LIBXUL_SDK']:
+     DIRS += ['debian/extra-stuff']
+ 
++CONFIGURE_SUBST_FILES += ['debian/installer/Makefile']
++
+ include('build/templates.mozbuild')

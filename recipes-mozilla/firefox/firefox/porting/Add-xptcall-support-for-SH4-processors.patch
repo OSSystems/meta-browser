@@ -1,4 +1,3 @@
-From e3972be3d7d144f0fe24a3ccc480d8efcaa26cd8 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Fri, 30 Apr 2010 11:03:50 +0200
 Subject: Add xptcall support for SH4 processors
@@ -14,10 +13,10 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index 8403032..f5296c1 100644
+index 3dad5e6..2dca257 100644
 --- a/xpcom/reflect/xptcall/md/unix/moz.build
 +++ b/xpcom/reflect/xptcall/md/unix/moz.build
-@@ -320,6 +320,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
+@@ -316,6 +316,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
              '-fomit-frame-pointer',
              '-mbackchain',
          ]
@@ -515,6 +514,3 @@ index 0000000..cf9fcea
 +}
 +
 +#include "xptcstubsdef.inc"
--- 
-cgit v0.11.2
-
