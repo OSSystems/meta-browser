@@ -1,0 +1,70 @@
+From: Mike Hommey <mh+mozilla@glandium.org>
+Date: Fri, 25 Dec 2015 09:41:44 +0900
+Subject: Bug 1235107 - Move bookmarks.html to a chrome localized location
+
+---
+ browser/components/migration/MigrationUtils.jsm | 2 +-
+ browser/components/nsBrowserGlue.js             | 2 +-
+ browser/installer/package-manifest.in           | 1 -
+ browser/locales/Makefile.in                     | 4 ++--
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/browser/components/migration/MigrationUtils.jsm b/browser/components/migration/MigrationUtils.jsm
+index 6af635b..472e60d 100644
+--- a/browser/components/migration/MigrationUtils.jsm
++++ b/browser/components/migration/MigrationUtils.jsm
+@@ -291,7 +291,7 @@ this.MigratorPrototype = {
+           doMigrate();
+         };
+         BookmarkHTMLUtils.importFromURL(
+-          "resource:///defaults/profile/bookmarks.html", true).then(
++          "chrome://browser/locale/bookmarks.html", true).then(
+           onImportComplete, onImportComplete);
+         return;
+       }
+diff --git a/browser/components/nsBrowserGlue.js b/browser/components/nsBrowserGlue.js
+index 8f32378..fa8ec67 100644
+--- a/browser/components/nsBrowserGlue.js
++++ b/browser/components/nsBrowserGlue.js
+@@ -1758,7 +1758,7 @@ BrowserGlue.prototype = {
+         let bookmarksUrl = null;
+         if (restoreDefaultBookmarks) {
+           // User wants to restore bookmarks.html file from default profile folder
+-          bookmarksUrl = "resource:///defaults/profile/bookmarks.html";
++          bookmarksUrl = "chrome://browser/locale/bookmarks.html";
+         }
+         else if (yield OS.File.exists(BookmarkHTMLUtils.defaultPath)) {
+           bookmarksUrl = OS.Path.toFileURI(BookmarkHTMLUtils.defaultPath);
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+index 57247f1..7a38cd2 100644
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -46,7 +46,6 @@
+ @RESPATH@/browser/chrome/@AB_CD@.manifest
+ @RESPATH@/chrome/@AB_CD@@JAREXT@
+ @RESPATH@/chrome/@AB_CD@.manifest
+-@RESPATH@/browser/defaults/profile/bookmarks.html
+ @RESPATH@/browser/defaults/profile/chrome/*
+ @RESPATH@/browser/defaults/profile/localstore.rdf
+ @RESPATH@/browser/defaults/profile/mimeTypes.rdf
+diff --git a/browser/locales/Makefile.in b/browser/locales/Makefile.in
+index be9454e..3564b75 100644
+--- a/browser/locales/Makefile.in
++++ b/browser/locales/Makefile.in
+@@ -110,14 +110,14 @@ PROFILE_CHROME = userChrome-example.css userContent-example.css
+ 
+ NO_JA_JP_MAC_AB_CD := $(if $(filter ja-JP-mac, $(AB_CD)),ja,$(AB_CD))
+ 
+-%/defaults/profile/bookmarks.html: bookmarks.inc generic/profile/bookmarks.html.in
++%/chrome/$(AB_CD)/locale/browser/bookmarks.html: bookmarks.inc generic/profile/bookmarks.html.in
+ 	$(call py_action,preprocessor, \
+ 	  -I $< \
+ 	  -DAB_CD=$(NO_JA_JP_MAC_AB_CD) \
+ 	  $(srcdir)/generic/profile/bookmarks.html.in \
+ 	  -o $@)
+ 
+-libs:: $(FINAL_TARGET)/defaults/profile/bookmarks.html ;
++libs:: $(FINAL_TARGET)/chrome/$(AB_CD)/locale/browser/bookmarks.html ;
+ 
+ libs:: $(addprefix generic/profile/,$(PROFILE_FILES))
+ 	$(SYSINSTALL) $(IFLAGS1) $^ $(FINAL_TARGET)/defaults/profile

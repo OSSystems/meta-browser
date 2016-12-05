@@ -1,0 +1,20 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 30 Aug 2015 18:35:43 +0900
+Subject: Bug 1178266 - Link against libatomic when necessary
+
+---
+ mfbt/moz.build | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/mfbt/moz.build b/mfbt/moz.build
+index a071040..45087fa 100644
+--- a/mfbt/moz.build
++++ b/mfbt/moz.build
+@@ -122,6 +122,7 @@ DISABLE_STL_WRAPPING = True
+ if CONFIG['GNU_CXX']:
+     SOURCES['/mfbt/Compression.cpp'].flags += ['-Wno-unused-function']
+ 
++
+ if CONFIG['_MSC_VER']:
+     # Error 4804 is "'>' : unsafe use of type 'bool' in operation"
+     SOURCES['/mfbt/Compression.cpp'].flags += ['-wd4804']
