@@ -1,6 +1,5 @@
 SECTION = "x11/utils"
-DEPENDS += "gnu-config-native virtual/libintl libxt libxi \
-	    zip-native gtk+ orbit2 libidl-native"
+DEPENDS += "gnu-config-native virtual/libintl libxt libxi zip-native gtk+"
 
 SRC_URI += "file://mozconfig"
 
