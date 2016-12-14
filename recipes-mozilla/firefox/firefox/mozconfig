@@ -13,7 +13,8 @@ ac_add_options --disable-strip
 ac_add_options --disable-install-strip
 
 # System libraries
-#ac_add_options --with-system-nss # your version is too old
+ac_add_options --with-system-nss
+ac_add_options --with-system-nspr
 #ac_add_options --with-system-jpeg # Insufficient JPEG library version
 ac_add_options --with-system-zlib
 ac_add_options --with-system-bz2
