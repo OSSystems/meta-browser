@@ -87,7 +87,11 @@ PRIVATE_LIBS = "libmozjs.so \
                 libxul.so \
                 libmozalloc.so \
                 libplc4.so \
-                libplds4.so"
+                libplds4.so \
+                liblgpllibs.so \
+                libmozsqlite3.so \
+                libbrowsercomps.so \
+                libclearkey.so"
 
 # mark libraries also provided by nss as private too
 PRIVATE_LIBS += " \
