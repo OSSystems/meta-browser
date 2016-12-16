@@ -41,12 +41,12 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://fixes/Correct-the-source-to-be-compatible-with-gcc6-by-pre.patch \
            "
 
-SRC_URI[archive.md5sum] = "ec943bcff82e868d2f5e95dde7edb83f"
-SRC_URI[archive.sha256sum] = "2796c22ab04fdd8529192118ce6cd9dee7ae88de0ed9317b4192da6eefac9db8"
+SRC_URI[archive.md5sum] = "ee3cf2401a5716cebacaae5fb70d133f"
+SRC_URI[archive.sha256sum] = "c1e7ddf6efb0f54c8071131b6395f4942a422c2ab70f2e9a81b588373d6fbf5b"
 
-S = "${WORKDIR}/firefox-45.5.1esr"
+S = "${WORKDIR}/firefox-45.6.0esr"
 # MOZ_APP_BASE_VERSION should be incremented after a release
-MOZ_APP_BASE_VERSION = "45.5"
+MOZ_APP_BASE_VERSION = "45.6"
 
 inherit mozilla
 
