@@ -1,0 +1,42 @@
+Index: chromium-52.0.2743.76/build/common.gypi
+===================================================================
+--- chromium-52.0.2743.76.orig/build/common.gypi
++++ chromium-52.0.2743.76/build/common.gypi
+@@ -3849,10 +3849,6 @@
+                   '-msse2',
+                   '-mfpmath=sse',
+                   '-mmmx',  # Allows mmintrin.h for MMX intrinsics.
+-                  '-m32',
+-                ],
+-                'ldflags': [
+-                  '-m32',
+                 ],
+                 'conditions': [
+                   # Use gold linker for Android ia32 target.
+Index: chromium-52.0.2743.76/build/config/compiler/BUILD.gn
+===================================================================
+--- chromium-52.0.2743.76.orig/build/config/compiler/BUILD.gn
++++ chromium-52.0.2743.76/build/config/compiler/BUILD.gn
+@@ -502,8 +502,6 @@ config("compiler_cpu_abi") {
+       ]
+       ldflags += [ "-m64" ]
+     } else if (current_cpu == "x86") {
+-      cflags += [ "-m32" ]
+-      ldflags += [ "-m32" ]
+       if (!is_nacl) {
+         cflags += [
+           "-msse2",
+Index: chromium-52.0.2743.76/third_party/icu/icu.gyp
+===================================================================
+--- chromium-52.0.2743.76.orig/third_party/icu/icu.gyp
++++ chromium-52.0.2743.76/third_party/icu/icu.gyp
+@@ -48,9 +48,6 @@
+          target_arch=="mipsel")', {
+         'target_conditions': [
+           ['_toolset=="host"', {
+-            'cflags': [ '-m32' ],
+-            'ldflags': [ '-m32' ],
+-            'asflags': [ '-32' ],
+             'xcode_settings': {
+               'ARCHS': [ 'i386' ],
+             },
