@@ -102,12 +102,6 @@ PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
 
 
-# Conditionally add ozone-wayland and its patches to the Chromium sources
-# You can override this by setting CHROMIUM_ENABLE_WAYLAND=1 or CHROMIUM_ENABLE_WAYLAND=0 in local.conf
-CHROMIUM_ENABLE_WAYLAND ??= "${@bb.utils.contains('DISTRO_FEATURES', 'x11', '0', \
-                     bb.utils.contains('DISTRO_FEATURES', 'wayland', '1', \
-                     '0', d),d)}"
-
 # ozone-wayland will be cloned into a directory with this name
 OZONE_WAYLAND_GIT_DESTSUFFIX ?= "ozone-wayland-git"
 # Use glob to filter out the patches that shall be applied against ozone-wayland.
