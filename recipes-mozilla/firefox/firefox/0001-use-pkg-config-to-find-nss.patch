@@ -1,0 +1,47 @@
+From f5533e4f2ac147256f7c41166ae1ef98f41d7f39 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@googlemail.com>
+Date: Wed, 14 Dec 2016 21:37:03 +0100
+Subject: [PATCH] use pkg-config to find nss
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Andreas Müller <schnitzeltony@googlemail.com>
+---
+ configure | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/configure b/configure
+index c27acdd..9b68803 100755
+--- a/configure
++++ b/configure
+@@ -15630,7 +15630,8 @@ fi
+ 	min_nss_version=3.21.3
+ 	echo $ac_n "checking for NSS - version >= $min_nss_version""... $ac_c" 1>&6
+ echo "configure:15633: checking for NSS - version >= $min_nss_version" >&5
+-
++	NSS_CONFIG="pkg-config nss"
++	nss_config_args=
+ 	no_nss=""
+ 	if test "$NSS_CONFIG" = "no"; then
+ 		no_nss="yes"
+@@ -15638,11 +15639,11 @@ echo "configure:15633: checking for NSS - version >= $min_nss_version" >&5
+ 		NSS_CFLAGS=`$NSS_CONFIG $nss_config_args --cflags`
+ 		NSS_LIBS=`$NSS_CONFIG $nss_config_args --libs`
+ 
+-		nss_config_major_version=`$NSS_CONFIG $nss_config_args --version | \
++		nss_config_major_version=`$NSS_CONFIG $nss_config_args --modversion | \
+ 			sed 's/\([0-9]*\)\.\([0-9]*\)\(\.\([0-9]*\)\)\{0,1\}/\1/'`
+-		nss_config_minor_version=`$NSS_CONFIG $nss_config_args --version | \
++		nss_config_minor_version=`$NSS_CONFIG $nss_config_args --modversion | \
+ 			sed 's/\([0-9]*\)\.\([0-9]*\)\(\.\([0-9]*\)\)\{0,1\}/\2/'`
+-		nss_config_micro_version=`$NSS_CONFIG $nss_config_args --version | \
++		nss_config_micro_version=`$NSS_CONFIG $nss_config_args --modversion | \
+ 			sed 's/\([0-9]*\)\.\([0-9]*\)\(\.\([0-9]*\)\)\{0,1\}/\4/'`
+ 		if test -z "$nss_config_micro_version"; then
+ 			nss_config_micro_version="0"
+-- 
+2.7.4
+
