@@ -1,0 +1,37 @@
+From cdb21594b814af82c4128ccd1179267de2e0e780 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@googlemail.com>
+Date: Wed, 14 Dec 2016 22:57:55 +0100
+Subject: [PATCH] use pkg-config to find nspr
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Andreas Müller <schnitzeltony@googlemail.com>
+---
+ configure | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/configure b/configure
+index 9b68803..312c8a3 100755
+--- a/configure
++++ b/configure
+@@ -15153,10 +15153,13 @@ fi
+ echo "configure:15154: checking for NSPR - version >= $min_nspr_version" >&5
+ 
+ 	no_nspr=""
++	NSPR_CONFIG="pkg-config nspr"
++	nspr_config_args=
+ 	if test "$NSPR_CONFIG" != "no"; then
+ 		NSPR_CFLAGS=`$NSPR_CONFIG $nspr_config_args --cflags`
+ 		NSPR_LIBS=`$NSPR_CONFIG $nspr_config_args --libs`
+-		NSPR_VERSION_STRING=`$NSPR_CONFIG $nspr_config_args --version`	
++		NSPR_VERSION_STRING=`$NSPR_CONFIG $nspr_config_args --modversion`	
++		echo -n "$NSPR_VERSION_STRING... "
+ 	elif test -n "${NO_NSPR_CONFIG_SYSTEM_VERSION}"; then
+ 	    NSPR_CFLAGS="${NO_NSPR_CONFIG_SYSTEM_CFLAGS}"
+ 		NSPR_LIBS="${NO_NSPR_CONFIG_SYSTEM_LDFLAGS}"
+-- 
+2.7.4
+
