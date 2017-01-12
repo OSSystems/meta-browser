@@ -1,0 +1,48 @@
+From 82862c9be8e1c87d32b639403f1f5715c8f4be59 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@googlemail.com>
+Date: Thu, 15 Dec 2016 00:23:41 +0100
+Subject: [PATCH] do not link against crmf library - it is not there
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Andreas Müller <schnitzeltony@googlemail.com>
+---
+ config/external/nss/crmf/moz.build | 1 -
+ configure                          | 6 +-----
+ 2 files changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/config/external/nss/crmf/moz.build b/config/external/nss/crmf/moz.build
+index 9b8005f..4bfcc81 100644
+--- a/config/external/nss/crmf/moz.build
++++ b/config/external/nss/crmf/moz.build
+@@ -8,7 +8,6 @@ Library('crmf')
+ 
+ if CONFIG['MOZ_NATIVE_NSS']:
+     OS_LIBS += [l for l in CONFIG['NSS_LIBS'] if l.startswith('-L')]
+-    OS_LIBS += ['-lcrmf']
+ else:
+     USE_LIBS += [
+         # The dependency on nss is not real, but is required to force the
+diff --git a/configure b/configure
+index 312c8a3..2f77843 100755
+--- a/configure
++++ b/configure
+@@ -15689,11 +15689,7 @@ echo "configure:15633: checking for NSS - version >= $min_nss_version" >&5
+ 
+ fi
+ 
+-if test -n "$MOZ_NATIVE_NSS"; then
+-   NSS_LIBS="$NSS_LIBS -lcrmf"
+-else
+-   NSS_CFLAGS="-I${DIST}/include/nss"
+-fi
++
+ 
+ 
+ echo $ac_n "checking for YASM assembler""... $ac_c" 1>&6
+-- 
+2.7.4
+
