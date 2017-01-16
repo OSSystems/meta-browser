@@ -95,15 +95,3 @@ PRIVATE_LIBS = "libmozjs.so \
                 libmozsqlite3.so \
                 libbrowsercomps.so \
                 libclearkey.so"
-
-# mark libraries also provided by nss as private too
-PRIVATE_LIBS += " \
-    libfreebl3.so \
-    libnss3.so \
-    libnssckbi.so \
-    libsmime3.so \
-    libnssutil3.so \
-    libnssdbm3.so \
-    libssl3.so \
-    libsoftokn3.so \
-"
