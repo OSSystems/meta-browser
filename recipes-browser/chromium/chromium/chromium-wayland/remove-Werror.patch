@@ -1,8 +1,8 @@
-Index: chromium-48.0.2548.0/build/common.gypi
+Index: chromium-53.0.2785.143/build/common.gypi
 ===================================================================
---- chromium-48.0.2548.0.orig/build/common.gypi
-+++ chromium-48.0.2548.0/build/common.gypi
-@@ -1421,7 +1421,7 @@
+--- chromium-53.0.2785.143.orig/build/common.gypi
++++ chromium-53.0.2785.143/build/common.gypi
+@@ -1431,7 +1431,7 @@
  
      # Disable fatal linker warnings, similarly to how we make it possible
      # to disable -Werror (e.g. for different toolchain versions).
@@ -11,9 +11,9 @@ Index: chromium-48.0.2548.0/build/common.gypi
  
      'release_valgrind_build%': 0,
  
-@@ -3135,12 +3135,6 @@
-               '-Wsign-compare',
-             ]
+@@ -3052,12 +3052,6 @@
+             # third-party code either.
+             'cflags!': [ '-Wall' ],
            }],
 -          # TODO: Fix all warnings on chromeos too.
 -          [ 'os_posix==1 and OS!="mac" and OS!="ios" and (clang!=1 or chromeos==1)', {
@@ -21,10 +21,10 @@ Index: chromium-48.0.2548.0/build/common.gypi
 -              '-Werror',
 -            ],
 -          }],
-           [ 'os_posix==1 and os_bsd!=1 and OS!="mac" and OS!="android"', {
-             'cflags': [
-               # Don't warn about ignoring the return value from e.g. close().
-@@ -3692,10 +3686,10 @@
+           [ 'OS=="win"', {
+             'defines': [
+               '_CRT_SECURE_NO_DEPRECATE',
+@@ -3593,10 +3587,10 @@
      }],
      ['os_posix==1 and OS!="mac" and OS!="ios"', {
        'target_defaults': {
@@ -35,34 +35,36 @@ Index: chromium-48.0.2548.0/build/common.gypi
 -          'werror%': '-Werror',
 +          'werror%': '',
            'libraries_for_target%': '',
-         },
-         'defines': [
-@@ -5045,7 +5039,7 @@
+           'conditions' : [
+             # Enable -Wextra for chromium_code when we control the compiler.
+@@ -5062,7 +5056,7 @@
            'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
            'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
            'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
 -          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
-+          'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',     # -Werror
-           'GCC_VERSION': '4.2',
-           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
++          'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',    # -Werror
+           'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
            'USE_HEADERMAP': 'NO',
-Index: chromium-48.0.2548.0/build/config/compiler/BUILD.gn
+           'WARNING_CFLAGS': [
+Index: chromium-53.0.2785.143/build/config/compiler/BUILD.gn
 ===================================================================
---- chromium-48.0.2548.0.orig/build/config/compiler/BUILD.gn
-+++ chromium-48.0.2548.0/build/config/compiler/BUILD.gn
-@@ -687,7 +687,6 @@ config("default_warnings") {
-     cflags += [
-       # Enables.
-       "-Wendif-labels",  # Weird old-style text after an #endif.
--      "-Werror",  # Warnings as errors.
- 
-       # Disables.
-       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
-Index: chromium-48.0.2548.0/build/nocompile.gypi
+--- chromium-53.0.2785.143.orig/build/config/compiler/BUILD.gn
++++ chromium-53.0.2785.143/build/config/compiler/BUILD.gn
+@@ -1039,9 +1039,6 @@ config("chromium_code") {
+     cflags = [ "/W4" ]  # Warning level 4.
+   } else {
+     cflags = [ "-Wall" ]
+-    if (treat_warnings_as_errors) {
+-      cflags += [ "-Werror" ]
+-    }
+     if (is_clang) {
+       # Enable -Wextra for chromium_code when we control the compiler.
+       cflags += [ "-Wextra" ]
+Index: chromium-53.0.2785.143/build/nocompile.gypi
 ===================================================================
---- chromium-48.0.2548.0.orig/build/nocompile.gypi
-+++ chromium-48.0.2548.0/build/nocompile.gypi
-@@ -81,7 +81,7 @@
+--- chromium-53.0.2785.143.orig/build/nocompile.gypi
++++ chromium-53.0.2785.143/build/nocompile.gypi
+@@ -82,7 +82,7 @@
              '<(nocompile_driver)',
              '4', # number of compilers to invoke in parallel.
              '<(RULE_INPUT_PATH)',
