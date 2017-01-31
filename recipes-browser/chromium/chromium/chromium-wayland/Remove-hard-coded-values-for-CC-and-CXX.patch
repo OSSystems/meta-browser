@@ -21,7 +21,7 @@ diff --git a/build/common.gypi b/build/common.gypi
 index 7ec5ae2..11e8d1d 100644
 --- a/build/common.gypi
 +++ b/build/common.gypi
-@@ -6047,16 +6047,6 @@
+@@ -6027,16 +6027,6 @@
          ['CXX.host', '<(host_cxx)'],
        ],
      }],
@@ -35,9 +35,8 @@ index 7ec5ae2..11e8d1d 100644
 -        ['CXX.host', '<(host_cxx)'],
 -      ],
 -    }],
-     # TODO(yyanagisawa): supports GENERATOR==make
-     #  make generator doesn't support CC_wrapper without CC
-     #  in make_global_settings yet.
+     ['use_goma==1', {
+       'make_global_settings': [
+        ['CC_wrapper', '<(gomadir)/gomacc'],
 -- 
-1.9.1
-
+2.1.4
