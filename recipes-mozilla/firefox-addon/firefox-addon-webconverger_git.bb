@@ -3,6 +3,8 @@
 
 require firefox-addon.inc
 
+DEPENDS += "zip-native"
+
 PV = "20120228"
 
 S = "${WORKDIR}/git"
