@@ -1,7 +1,7 @@
 # Copyright (C) 2009-2014, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
-DEPENDS = "mozilla-devscripts-native"
+DEPENDS = "mozilla-devscripts-native unzip-native zip-native"
 # drop to keep allarch
 # RDEPENDS_${PN} = "firefox"
 
