@@ -13,6 +13,7 @@ SRC_URI += "\
         file://chromium-wayland/0011-Replace-readdir_r-with-readdir.patch \
         file://chromium-wayland/remove-Werror.patch \
         file://chromium-wayland/guard-x11_desktop_handler-inclusion.patch \
+        file://chromium-wayland/fix-non-x11-build-when-use_xkbcommon-1.patch \
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
 "
