@@ -3,7 +3,7 @@
 
 require firefox-addon.inc
 
-DEPENDS += "zip-native"
+DEPENDS += "zip-native unzip-native"
 
 PV = "20120228"
 
