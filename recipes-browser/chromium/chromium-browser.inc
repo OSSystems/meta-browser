@@ -16,7 +16,7 @@
 include chromium.inc
 
 DESCRIPTION = "Chromium browser"
-DEPENDS += "libgnome-keyring"
+DEPENDS += "libgnome-keyring gperf-native"
 
 SRC_URI = "\
         http://gsdview.appspot.com/chromium-browser-official/chromium-${PV}.tar.xz \
