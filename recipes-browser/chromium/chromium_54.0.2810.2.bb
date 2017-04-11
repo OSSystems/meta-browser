@@ -14,7 +14,7 @@ SRC_URI += "\
         file://chromium/unset-madv-free.patch \
         file://chromium/Do-not-depend-on-Linux-4.5.patch \
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
         file://chromium/m32.patch \
 "
 

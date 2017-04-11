@@ -15,7 +15,7 @@ SRC_URI += "\
         file://chromium-wayland/guard-x11_desktop_handler-inclusion.patch \
         file://chromium-wayland/fix-non-x11-build-when-use_xkbcommon-1.patch \
         ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium-wayland/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
 "
 
 LIC_FILES_CHKSUM = "file://LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d"
