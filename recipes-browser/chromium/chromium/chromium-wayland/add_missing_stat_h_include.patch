@@ -34,6 +34,6 @@ Upstream-Status: Pending
  #include <mntent.h>
  #include <stdio.h>
 +#include <sys/stat.h>
- 
+ #include <limits>
  #include <list>
  

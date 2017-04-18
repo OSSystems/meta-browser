@@ -1,4 +1,4 @@
-From feb645ae0259582e2075691047e27b5e064ec160 Mon Sep 17 00:00:00 2001
+From 3781812308b7aea64b3be037202c940e1a7ebf03 Mon Sep 17 00:00:00 2001
 From: Carlos Rafael Giani <dv@pseudoterminal.org>
 Date: Thu, 19 May 2016 21:12:05 +0200
 Subject: [PATCH] Replace readdir_r with readdir
@@ -8,27 +8,26 @@ https://sourceware.org/bugzilla/show_bug.cgi?id=19056
 
 Signed-off-by: Carlos Rafael Giani <dv@pseudoterminal.org>
 ---
- base/files/file_enumerator_posix.cc                | 15 ++++++++++---
+ base/files/file_enumerator_posix.cc                | 15 +++++++++++---
  net/disk_cache/simple/simple_index_file_posix.cc   | 10 ++++++---
- sandbox/linux/services/proc_util.cc                | 24 +++++++++++++--------
- third_party/boringssl/src/crypto/directory_posix.c | 25 +++-------------------
- .../crashpad/crashpad/util/posix/close_multiple.cc |  8 +++++--
- third_party/leveldatabase/env_chromium.cc          | 13 ++++++++---
- 6 files changed, 53 insertions(+), 42 deletions(-)
+ sandbox/linux/services/proc_util.cc                | 24 ++++++++++++++--------
+ .../crashpad/crashpad/util/posix/close_multiple.cc |  8 ++++++--
+ third_party/leveldatabase/env_chromium.cc          | 13 +++++++++---
+ 5 files changed, 50 insertions(+), 20 deletions(-)
 
 diff --git a/base/files/file_enumerator_posix.cc b/base/files/file_enumerator_posix.cc
-index 7533a24..637b8cd 100644
+index fb4010a..cf2fd40 100644
 --- a/base/files/file_enumerator_posix.cc
 +++ b/base/files/file_enumerator_posix.cc
-@@ -7,6 +7,7 @@
- #include <dirent.h>
+@@ -8,6 +8,7 @@
  #include <errno.h>
  #include <fnmatch.h>
+ #include <stdint.h>
 +#include <string.h>
  
  #include "base/logging.h"
  #include "base/threading/thread_restrictions.h"
-@@ -129,9 +130,17 @@ bool FileEnumerator::ReadDirectory(std::vector<FileInfo>* entries,
+@@ -131,9 +132,17 @@ bool FileEnumerator::ReadDirectory(std::vector<FileInfo>* entries,
           additional space for pathname may be needed
  #endif
  
@@ -50,7 +49,7 @@ index 7533a24..637b8cd 100644
      info.filename_ = FilePath(dent->d_name);
  
 diff --git a/net/disk_cache/simple/simple_index_file_posix.cc b/net/disk_cache/simple/simple_index_file_posix.cc
-index 586699d..bbe81fc 100644
+index e0dd3dd..b155d92 100644
 --- a/net/disk_cache/simple/simple_index_file_posix.cc
 +++ b/net/disk_cache/simple/simple_index_file_posix.cc
 @@ -34,8 +34,12 @@ bool SimpleIndexFile::TraverseCacheDirectory(
@@ -78,10 +77,10 @@ index 586699d..bbe81fc 100644
  }
  
 diff --git a/sandbox/linux/services/proc_util.cc b/sandbox/linux/services/proc_util.cc
-index 8341b4a..1603415 100644
+index b6d58de..3c7bb84 100644
 --- a/sandbox/linux/services/proc_util.cc
 +++ b/sandbox/linux/services/proc_util.cc
-@@ -50,15 +50,18 @@ int ProcUtil::CountOpenFds(int proc_fd) {
+@@ -51,15 +51,18 @@ int ProcUtil::CountOpenFds(int proc_fd) {
    CHECK(dir);
  
    int count = 0;
@@ -104,7 +103,7 @@ index 8341b4a..1603415 100644
      if (fd_num == proc_fd || fd_num == proc_self_fd) {
        continue;
      }
-@@ -80,22 +83,25 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
+@@ -81,22 +84,25 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
    ScopedDIR dir(fdopendir(proc_self_fd));
    CHECK(dir);
  
@@ -135,59 +134,8 @@ index 8341b4a..1603415 100644
      if (S_ISDIR(s.st_mode)) {
        return true;
      }
-diff --git a/third_party/boringssl/src/crypto/directory_posix.c b/third_party/boringssl/src/crypto/directory_posix.c
-index b944b69..17143a7 100644
---- a/third_party/boringssl/src/crypto/directory_posix.c
-+++ b/third_party/boringssl/src/crypto/directory_posix.c
-@@ -24,10 +24,6 @@
-  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
- 
--#if !defined(_POSIX_C_SOURCE)
--#define _POSIX_C_SOURCE 201409  /* for readdir_r */
--#endif
--
- #include "directory.h"
- 
- 
-@@ -38,21 +34,6 @@
- #include <stdlib.h>
- #include <string.h>
- 
--#if defined(OPENSSL_PNACL)
--/* pnacl doesn't include readdir_r! So we do the best we can. */
--int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result) {
--  errno = 0;
--  *result = readdir(dirp);
--  if (*result != NULL) {
--    return 0;
--  }
--  if (errno) {
--    return 1;
--  }
--  return 0;
--}
--#endif
--
- struct OPENSSL_dir_context_st {
-   DIR *dir;
-   struct dirent dirent;
-@@ -85,10 +66,10 @@ const char *OPENSSL_DIR_read(OPENSSL_DIR_CTX **ctx, const char *directory) {
-     }
-   }
- 
--  if (readdir_r((*ctx)->dir, &(*ctx)->dirent, &dirent) != 0 ||
--      dirent == NULL) {
-+  errno = 0;
-+  dirent = readdir((*ctx)->dir);
-+  if (dirent == NULL || errno != 0)
-     return 0;
--  }
- 
-   return (*ctx)->dirent.d_name;
- }
 diff --git a/third_party/crashpad/crashpad/util/posix/close_multiple.cc b/third_party/crashpad/crashpad/util/posix/close_multiple.cc
-index d94d575..4c1287a 100644
+index fea7ca0..0b23b83 100644
 --- a/third_party/crashpad/crashpad/util/posix/close_multiple.cc
 +++ b/third_party/crashpad/crashpad/util/posix/close_multiple.cc
 @@ -100,10 +100,14 @@ bool CloseMultipleNowOrOnExecUsingFDDir(int fd, int preserve_fd) {
@@ -208,10 +156,10 @@ index d94d575..4c1287a 100644
      if (strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0) {
        continue;
 diff --git a/third_party/leveldatabase/env_chromium.cc b/third_party/leveldatabase/env_chromium.cc
-index 939534c..f23142e 100644
+index 200a12a..4b5d86c 100644
 --- a/third_party/leveldatabase/env_chromium.cc
 +++ b/third_party/leveldatabase/env_chromium.cc
-@@ -79,10 +79,17 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
+@@ -82,10 +82,17 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
    DIR* dir = opendir(dir_string.c_str());
    if (!dir)
      return base::File::OSErrorToFileError(errno);
@@ -233,5 +181,5 @@ index 939534c..f23142e 100644
        continue;
      result->push_back(FilePath::FromUTF8Unsafe(dent->d_name));
 -- 
-2.7.4
+2.1.4
 
