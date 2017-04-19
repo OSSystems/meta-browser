@@ -6,7 +6,7 @@ RDEPENDS_${PN} += "pango cairo fontconfig pciutils pulseaudio freetype fontconfi
 
 SRCREV_tools = "99bcb0e676eb396bcf8e1af3903aa4b578aeeee0"
 SRCREV_cef = "bbad53dfca9f98dddcb31a590410fece0a4f0234"
-SRCREV_egl = "a5b81b7617ba6757802b9b5f8c950034d5f961ec"
+SRCREV_egl = "18198a3b877ababfbb90aa19c360b7162639bf8b"
 SRCREV_FORMAT = "cef_egl_tools"
 
 SRC_URI = "http://people.linaro.org/~zoltan.kuscsik/chromium-browser/chromium_rev_${PV}.tar.xz \
