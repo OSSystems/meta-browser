@@ -84,7 +84,7 @@ BPN = "chromium"
 #       Enable this option if you want to add support for additional proprietary
 #       codecs, most notably MPEG standards (h.264, h.265, MP4, MP3, AAC, MPEG-2 ..)
 
-PACKAGECONFIG ??= "use-egl"
+PACKAGECONFIG ??= "use-egl build-chromedriver"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -100,6 +100,7 @@ PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
+PACKAGECONFIG[build-chromedriver] = ""
 
 
 # ozone-wayland will be cloned into a directory with this name
@@ -204,7 +205,8 @@ do_configure_append() {
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} ${PARALLEL_MAKE} chrome chrome_sandbox
+        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} ${PARALLEL_MAKE} chrome chrome_sandbox \
+		${@bb.utils.contains('PACKAGECONFIG', 'build-chromedriver', 'chromedriver', '', d)}
 }
 
 do_install_append() {
