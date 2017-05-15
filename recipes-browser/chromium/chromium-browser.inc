@@ -25,6 +25,7 @@ SRC_URI = "\
         file://google-chrome \
         ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://api-keys.patch;patchdir=${WORKDIR}', '', d)} \
         file://google-chrome.desktop \
+        file://unset-madv-free.patch \
 "
 
 S = "${WORKDIR}/chromium-${PV}"
