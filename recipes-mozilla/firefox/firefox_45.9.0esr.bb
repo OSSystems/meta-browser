@@ -1,8 +1,8 @@
-# Copyright (C) 2009-2016, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2017, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DESCRIPTION ?= "Browser made by mozilla"
-DEPENDS += "alsa-lib curl startup-notification libevent cairo libnotify libvpx \
+DEPENDS += "alsa-lib curl startup-notification libevent libnotify libvpx \
             virtual/libgl nss nspr pulseaudio yasm-native icu unzip-native"
 
 LICENSE = "MPLv1 | GPLv2+ | LGPLv2.1+"
