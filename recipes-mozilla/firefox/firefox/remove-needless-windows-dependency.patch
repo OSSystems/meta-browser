@@ -1,0 +1,10 @@
+diff -Nur firefox-51.0b9-bak/build/moz.configure/toolchain.configure firefox-51.0b9/build/moz.configure/toolchain.configure
+--- firefox-51.0b9-bak/build/moz.configure/toolchain.configure	2016-12-20 01:20:15.000000000 +0900
++++ firefox-51.0b9/build/moz.configure/toolchain.configure	2016-12-26 14:44:36.325894355 +0900
+@@ -874,5 +874,5 @@
+ set_define('_LIBCPP_INLINE_VISIBILITY', libcxx_inline_visibility)
+ set_define('_LIBCPP_INLINE_VISIBILITY_EXCEPT_GCC49', libcxx_inline_visibility)
+ 
+-include('windows.configure')
++#include('windows.configure')
+ include('rust.configure')
