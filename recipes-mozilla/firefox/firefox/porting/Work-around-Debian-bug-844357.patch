@@ -1,0 +1,20 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 21 Nov 2016 08:15:38 +0900
+Subject: Work around Debian bug #844357
+
+---
+ widget/gtk/mozgtk/gtk3/moz.build | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/widget/gtk/mozgtk/gtk3/moz.build b/widget/gtk/mozgtk/gtk3/moz.build
+index 4e9379565dd6..538ef1acfcc6 100644
+--- a/widget/gtk/mozgtk/gtk3/moz.build
++++ b/widget/gtk/mozgtk/gtk3/moz.build
+@@ -36,3 +36,7 @@ OS_LIBS += [
+     'gdk-3',
+ ]
+ OS_LIBS += as_needed
++
++# Work around Debian bug #844357
++if CONFIG['CPU_ARCH'].startswith('mips'):
++    OS_LIBS += ['-Wl,--no-gc-sections']

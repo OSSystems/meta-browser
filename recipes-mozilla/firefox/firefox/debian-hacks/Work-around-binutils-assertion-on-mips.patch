@@ -3,24 +3,39 @@ Date: Sun, 2 Nov 2014 10:26:21 +0900
 Subject: Work around binutils assertion on mips
 
 ---
- media/libcubeb/tests/moz.build | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ media/libcubeb/tests/moz.build | 33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
 diff --git a/media/libcubeb/tests/moz.build b/media/libcubeb/tests/moz.build
-index e98d8d9..c291598 100644
+index 1b17c7b1cb23..a292b63bbf38 100644
 --- a/media/libcubeb/tests/moz.build
 +++ b/media/libcubeb/tests/moz.build
-@@ -6,16 +6,17 @@
+@@ -6,24 +6,25 @@
  
  DEFINES['CUBEB_GECKO_BUILD'] = True
  
 -GeckoCppUnitTests([
--  'test_tone'
+-  'test_duplex',
+-  'test_record',
+-  'test_tone',
+-  'test_utils'
 -])
 +if CONFIG['CPU_ARCH'] != 'mips':
 +    GeckoCppUnitTests([
-+      'test_tone'
++      'test_duplex',
++      'test_record',
++      'test_tone',
++      'test_utils'
 +    ])
+ 
+-if CONFIG['MOZ_PULSEAUDIO'] or CONFIG['OS_TARGET'] in ('Darwin', 'WINNT', 'Android'):
+-  GeckoCppUnitTests([
+-    'test_resampler',
+-  ])
++    if CONFIG['MOZ_PULSEAUDIO'] or CONFIG['OS_TARGET'] in ('Darwin', 'WINNT', 'Android'):
++      GeckoCppUnitTests([
++        'test_resampler',
++      ])
  
 -if CONFIG['OS_TARGET'] != 'Android':
 -  GeckoCppUnitTests([
@@ -36,4 +51,4 @@ index e98d8d9..c291598 100644
 +      ])
  
  LOCAL_INCLUDES += [
-     '../include'
+     '../include',

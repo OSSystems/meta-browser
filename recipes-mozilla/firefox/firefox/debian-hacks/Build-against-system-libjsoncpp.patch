@@ -1,0 +1,69 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Thu, 9 Mar 2017 07:17:01 +0900
+Subject: Build against system libjsoncpp
+
+---
+ config/system-headers                              |  1 +
+ .../crashreporter/jsoncpp/src/lib_json/moz.build   | 27 +---------------------
+ toolkit/crashreporter/minidump-analyzer/moz.build  |  2 +-
+ 3 files changed, 3 insertions(+), 27 deletions(-)
+
+diff --git a/config/system-headers b/config/system-headers
+index be3162f58edb..623dd1552c94 100644
+--- a/config/system-headers
++++ b/config/system-headers
+@@ -1335,3 +1335,4 @@ unicode/utypes.h
+ libutil.h
+ unwind.h
+ fenv.h
++json/json.h
+diff --git a/toolkit/crashreporter/jsoncpp/src/lib_json/moz.build b/toolkit/crashreporter/jsoncpp/src/lib_json/moz.build
+index 2d51c2ce3162..5e20a3d42fd9 100644
+--- a/toolkit/crashreporter/jsoncpp/src/lib_json/moz.build
++++ b/toolkit/crashreporter/jsoncpp/src/lib_json/moz.build
+@@ -4,31 +4,6 @@
+ # License, v. 2.0. If a copy of the MPL was not distributed with this
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+-UNIFIED_SOURCES += [
+-    'json_reader.cpp',
+-    'json_value.cpp',
+-    'json_writer.cpp'
+-]
+-
+-LOCAL_INCLUDES += [
+-    '/toolkit/crashreporter/jsoncpp/include',
+-]
+-
+-# This code is only used in the stand-alone minidump analyzer executable so
+-# enabling exceptions should be fine.
+-if CONFIG['CLANG_CL']:
+-    CXXFLAGS += [
+-        '-Xclang',
+-        '-fcxx-exceptions',
+-    ]
+-elif not CONFIG['_MSC_VER']:
+-    CXXFLAGS += [
+-        '-fexceptions',
+-    ]
+-
+-# Required to build with exceptions enabled
+-DISABLE_STL_WRAPPING = True
+-
+ Library('jsoncpp')
+ 
+-include('/toolkit/crashreporter/crashreporter.mozbuild')
++OS_LIBS += ['jsoncpp']
+diff --git a/toolkit/crashreporter/minidump-analyzer/moz.build b/toolkit/crashreporter/minidump-analyzer/moz.build
+index bd4aa762fb67..e4ac2de2fbf6 100644
+--- a/toolkit/crashreporter/minidump-analyzer/moz.build
++++ b/toolkit/crashreporter/minidump-analyzer/moz.build
+@@ -20,7 +20,7 @@ if CONFIG['OS_TARGET'] != 'Android':
+     ]
+ 
+     LOCAL_INCLUDES += [
+-        '/toolkit/crashreporter/jsoncpp/include',
++        '%/usr/include/jsoncpp',
+     ]
+ 
+ 
