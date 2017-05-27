@@ -13,10 +13,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d
 LANGUAGE = "${@get_language_name('${PN}')}"
 PR = "r3"
 
-# Mangle place where to store the file
-DL_DIR_append = "/${PN}-${PV}"
-
-SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi"
+SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi;downloadfilename=${PN}-${PV}-${LANGUAGE}.xpi"
 S = "${WORKDIR}"
 
 inherit allarch
@@ -31,7 +28,7 @@ def get_language_name(package):
     return lang
 
 do_configure() {
-    xpi-unpack ${LANGUAGE}.xpi ${LANGUAGE}
+    xpi-unpack ${PN}-${PV}-${LANGUAGE}.xpi ${LANGUAGE}
 }
 
 do_install() {
