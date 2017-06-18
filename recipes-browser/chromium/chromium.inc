@@ -36,17 +36,8 @@ do_install() {
 	if [ -f "${WORKDIR}/google-chrome" ]; then
 		install -Dm 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
 	fi
-	if [ -f "${WORKDIR}/cef-simple" ]; then
-		install -Dm 0755 ${WORKDIR}/cef-simple ${D}${bindir}/cef-simple
-	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
 		install -Dm 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/cefsimple ${D}${bindir}/${BPN}/cefsimple
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/libcef.so ${D}${libdir}/${BPN}/libcef.so
 	fi
 	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
 		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/${BPN}/chrome
@@ -78,7 +69,7 @@ do_install() {
 		fi
 	done
 
-	# Chromium *.pak files and CEF pak files ( prefixed with cef_ )
+	# Chromium *.pak files
 	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && find . -type f -name \*.pak); do
 			install -Dm 0644 "${B}/out/${CHROMIUM_BUILD_TYPE}/${f}" "${D}${bindir}/${BPN}/${f}"
 	done
