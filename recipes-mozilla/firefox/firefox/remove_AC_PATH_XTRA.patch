@@ -1,0 +1,59 @@
+Drop unused X_* flags.
+
+There are actually causing harm doing cross builds since they are picking
+up $includedir which  is /usr/include and pouring that into CFLAGS in
+case of cairo, which ends up referening to build host's include paths
+
+Luckily, we have a QA check to catch such issues
+
+ERROR: firefox-45.9.0esr-r0 do_package_qa: QA Issue: firefox: The compile log indicates that host include and/or library paths were used.
+         Please check the log '/mnt/a/oe/build/tmp/work/corei7-64-bec-linux/firefox/45.9.0esr-r0/temp/log.do_compile' for more information. [compile-host-path]
+
+This patch fixes it
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+Index: firefox-45.9.0esr/configure
+===================================================================
+--- firefox-45.9.0esr.orig/configure
++++ firefox-45.9.0esr/configure
+@@ -30605,10 +30605,6 @@ sed 's/$/,/' >> $CONFIG_STATUS <<EOF
+     (''' MACOS_SDK_DIR ''', r''' $MACOS_SDK_DIR ''')
+     (''' MACOS_PRIVATE_FRAMEWORKS_DIR ''', r''' $MACOS_PRIVATE_FRAMEWORKS_DIR ''')
+     (''' GMAKE ''', r''' $GMAKE ''')
+-    (''' X_CFLAGS ''', r''' $X_CFLAGS ''')
+-    (''' X_PRE_LIBS ''', r''' $X_PRE_LIBS ''')
+-    (''' X_LIBS ''', r''' $X_LIBS ''')
+-    (''' X_EXTRA_LIBS ''', r''' $X_EXTRA_LIBS ''')
+     (''' SOLARIS_SUNPRO_CC ''', r''' $SOLARIS_SUNPRO_CC ''')
+     (''' SOLARIS_SUNPRO_CXX ''', r''' $SOLARIS_SUNPRO_CXX ''')
+     (''' MOZ_THUMB2 ''', r''' $MOZ_THUMB2 ''')
+Index: firefox-45.9.0esr/js/src/configure
+===================================================================
+--- firefox-45.9.0esr.orig/js/src/configure
++++ firefox-45.9.0esr/js/src/configure
+@@ -17188,10 +17188,6 @@ sed 's/$/,/' >> $CONFIG_STATUS <<EOF
+     (''' MACOSX_DEPLOYMENT_TARGET ''', r''' $MACOSX_DEPLOYMENT_TARGET ''')
+     (''' MACOS_SDK_DIR ''', r''' $MACOS_SDK_DIR ''')
+     (''' GMAKE ''', r''' $GMAKE ''')
+-    (''' X_CFLAGS ''', r''' $X_CFLAGS ''')
+-    (''' X_PRE_LIBS ''', r''' $X_PRE_LIBS ''')
+-    (''' X_LIBS ''', r''' $X_LIBS ''')
+-    (''' X_EXTRA_LIBS ''', r''' $X_EXTRA_LIBS ''')
+     (''' MOZILLA_SYMBOLVERSION ''', r''' $MOZILLA_SYMBOLVERSION ''')
+     (''' JS_SHELL_NAME ''', r''' $JS_SHELL_NAME ''')
+     (''' JS_CONFIG_NAME ''', r''' $JS_CONFIG_NAME ''')
+Index: firefox-45.9.0esr/gfx/cairo/cairo/src/moz.build
+===================================================================
+--- firefox-45.9.0esr.orig/gfx/cairo/cairo/src/moz.build
++++ firefox-45.9.0esr/gfx/cairo/cairo/src/moz.build
+@@ -246,9 +246,6 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'qt':
+     CFLAGS += CONFIG['MOZ_QT_CFLAGS']
+     CXXFLAGS += CONFIG['MOZ_QT_CFLAGS']
+ 
+-if CONFIG['MOZ_X11']:
+-    CFLAGS += CONFIG['XCFLAGS']
+-
+ if CONFIG['MOZ_ENABLE_CAIRO_FT']:
+     CFLAGS += CONFIG['CAIRO_FT_CFLAGS']
+     CXXFLAGS += CONFIG['CAIRO_FT_CFLAGS']
