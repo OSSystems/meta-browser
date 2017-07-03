@@ -43,6 +43,7 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://0002-use-pkg-config-to-find-nspr.patch \
            file://0003-do-not-link-against-crmf-library-it-is-not-there.patch \
            file://gcc7.patch \
+           file://remove_AC_PATH_XTRA.patch \
 "
 
 SRC_URI[archive.md5sum] = "f4d83c5150fc5085db20d71862497eb8"
