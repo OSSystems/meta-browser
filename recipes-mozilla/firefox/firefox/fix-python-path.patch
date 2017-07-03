@@ -9,18 +9,29 @@ Signed-off-by: Fabio Berton <fabio.berton@ossystems.com.br>
  js/src/configure | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/js/src/configure b/js/src/configure
-index cce5430..780d201 100755
---- a/js/src/configure
-+++ b/js/src/configure
-@@ -15933,7 +15933,7 @@ echo creating $CONFIG_STATUS
+Index: firefox-45.9.0esr/js/src/configure
+===================================================================
+--- firefox-45.9.0esr.orig/js/src/configure
++++ firefox-45.9.0esr/js/src/configure
+@@ -17061,7 +17061,7 @@ echo creating $CONFIG_STATUS
  extra_python_path=${COMM_BUILD:+"'mozilla', "}
  
  cat > $CONFIG_STATUS <<EOF
 -#!${PYTHON}
-+#!/usr/bin/python
++#!/usr/bin/env `basename $PYTHON`
  # coding=$encoding
  
  import os
--- 
-2.1.4
+Index: firefox-45.9.0esr/configure
+===================================================================
+--- firefox-45.9.0esr.orig/configure
++++ firefox-45.9.0esr/configure
+@@ -30461,7 +30461,7 @@ echo creating $CONFIG_STATUS
+ extra_python_path=${COMM_BUILD:+"'mozilla', "}
+ 
+ cat > $CONFIG_STATUS <<EOF
+-#!${PYTHON}
++#!/usr/bin/env `basename ${PYTHON}`
+ # coding=$encoding
+ 
+ import os
