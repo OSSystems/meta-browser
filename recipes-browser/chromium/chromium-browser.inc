@@ -28,6 +28,8 @@ SRC_URI = "\
         file://unset-madv-free.patch \
         file://0001-v8-fix-build-with-gcc7.patch \
         file://0002-WebKit-fix-build-with-gcc7.patch \
+	file://0001-openh264-disable-format-security-warning.patch.patch \
+	file://0002-replace-struct-ucontext-with-ucontext_t.patch \
 "
 
 S = "${WORKDIR}/chromium-${PV}"
