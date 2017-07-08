@@ -1,0 +1,30 @@
+From b31468e975212556f1d8c7d5d2cf8f3313496803 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sat, 8 Jul 2017 16:27:06 -0700
+Subject: [PATCH 11/12] Don't build libav with sysctl on Unix (it's not used
+ anyway)
+
+backported from
+https://hg.mozilla.org/integration/mozilla-inbound/rev/081c52bae5e7
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ media/libav/config_unix.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/libav/config_unix.h b/media/libav/config_unix.h
+index 3921293a0..b3c44d62b 100644
+--- a/media/libav/config_unix.h
++++ b/media/libav/config_unix.h
+@@ -219,7 +219,7 @@
+ #define HAVE_STRERROR_R 1
+ #define HAVE_STRPTIME 1
+ #define HAVE_SYSCONF 1
+-#define HAVE_SYSCTL 1
++#define HAVE_SYSCTL 0
+ #define HAVE_USLEEP 1
+ #define HAVE_VIRTUALALLOC 0
+ #define HAVE_PTHREADS 0
+-- 
+2.13.2
+

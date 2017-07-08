@@ -1,0 +1,32 @@
+From 68aa10845658bd4493e35e37d636002f87b57486 Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Sat, 8 Jul 2017 15:57:27 -0700
+Subject: [PATCH 08/12] %% original patch: musl-missing-headers.patch
+
+---
+ config/system-headers | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/config/system-headers b/config/system-headers
+index 403fa8d95..0fc063530 100644
+--- a/config/system-headers
++++ b/config/system-headers
+@@ -420,7 +420,6 @@ execinfo.h
+ extras.h
+ fabdef.h
+ fcntl.h
+-features.h
+ fibdef.h
+ File.h
+ filehdr.h
+@@ -1065,7 +1064,6 @@ sys/statfs.h
+ sys/stat.h
+ sys/statvfs.h
+ sys/syscall.h
+-sys/sysctl.h
+ sys/sysinfo.h
+ sys/sysmp.h
+ sys/syssgi.h
+-- 
+2.13.2
+
