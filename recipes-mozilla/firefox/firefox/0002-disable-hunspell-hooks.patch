@@ -1,0 +1,26 @@
+From 7d2397a5386d05ea17bccc4c6b71fb5de12ee521 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Fri, 7 Jul 2017 22:50:04 -0700
+Subject: [PATCH 2/4] disable hunspell hooks
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ mozilla-config.h.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mozilla-config.h.in b/mozilla-config.h.in
+index 8d2c857..47b9338 100644
+--- a/mozilla-config.h.in
++++ b/mozilla-config.h.in
+@@ -53,7 +53,7 @@
+  * HUNSPELL_STATIC is defined in extensions/spellcheck/hunspell/src/Makefile.in,
+  * unless --enable-system-hunspell is defined.
+  */
+-#if defined(HUNSPELL_STATIC)
++#if 0
+ #include "hunspell_alloc_hooks.h"
+ #include "hunspell_fopen_hooks.h"
+ #endif
+-- 
+2.13.2
+

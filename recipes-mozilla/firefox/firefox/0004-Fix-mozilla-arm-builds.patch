@@ -1,0 +1,26 @@
+From 1dd87a490540b5a9c13a3d8a10e1ffe9855b566b Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Fri, 7 Jul 2017 23:01:56 -0700
+Subject: [PATCH 4/4] Fix mozilla arm builds
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ gfx/ycbcr/moz.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gfx/ycbcr/moz.build b/gfx/ycbcr/moz.build
+index 8ceb6d3..684fb59 100644
+--- a/gfx/ycbcr/moz.build
++++ b/gfx/ycbcr/moz.build
+@@ -55,7 +55,7 @@ else:
+         'yuv_row_other.cpp',
+     ]
+ 
+-if CONFIG['CPU_ARCH'] == 'arm' and CONFIG['HAVE_ARM_NEON']:
++if CONFIG['HAVE_ARM_NEON']:
+     SOURCES += [
+         'yuv_row_arm.s',
+     ]
+-- 
+2.13.2
+
