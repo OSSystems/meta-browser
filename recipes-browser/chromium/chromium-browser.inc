@@ -198,6 +198,8 @@ python add_ozone_wayland_patches() {
     d.appendVar('SRC_URI', ' ' + d.getVar('OZONE_WAYLAND_EXTRA_PATCHES', False))
 }
 
+USEGOLD ?= "-Dlinux_use_gold_flags=1"
+
 EXTRA_OEGYP = " \
 	-Dangle_use_commit_id=0 \
 	-Dclang=0 \
@@ -206,11 +208,11 @@ EXTRA_OEGYP = " \
 	-Dv8_use_external_startup_data=0 \
 	-Dlinux_use_bundled_gold=0 \
 	-Dlinux_use_bundled_binutils=0 \
-	${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '-Dlinux_use_gold_flags=1', '', d)} \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \
 	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-I ${WORKDIR}/component-build.gypi', '', d)} \
 	${@bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', '-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome', '', d)} \
+	${USEGOLD} \
 	-f ninja \
 "
 
