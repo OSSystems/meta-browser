@@ -49,6 +49,8 @@ SRC_URI_append_libc-musl = "\
            file://0014-link-with-libexecinfo-on-musl.patch \
            file://0015-metrics-Keep-GNU-extentions-effective-only-when-usin.patch \
            file://0016-getcontext-API-is-unimplemented-in-musl.patch \
+           file://0017-Use-_fpstate-instead-of-_libc_fpstate.patch \
+           file://0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
 "
 
 S = "${WORKDIR}/chromium-${PV}"
