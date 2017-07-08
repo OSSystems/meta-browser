@@ -45,6 +45,12 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://gcc7.patch \
            file://remove_AC_PATH_XTRA.patch \
 "
+SRC_URI_append_libc-musl = "\
+           file://0001-mallinfo-is-glibc-specific-API.patch \
+           file://0002-disable-hunspell-hooks.patch \
+           file://0003-define-TEMP_FAILURE_RETRY.patch \
+           file://0004-Fix-mozilla-arm-builds.patch \
+"
 
 SRC_URI[archive.md5sum] = "f4d83c5150fc5085db20d71862497eb8"
 SRC_URI[archive.sha256sum] = "2afb02029e115fae65dbe1d9c562cbfeb761a6807338bbd30dbffba616cb2d20"
@@ -54,6 +60,7 @@ S = "${WORKDIR}/firefox-45.9.0esr"
 MOZ_APP_BASE_VERSION = "45.9"
 
 inherit mozilla
+EXTRA_OECONF_append_libc-musl = " --disable-jemalloc"
 
 EXTRA_OEMAKE += "installdir=${libdir}/${PN}"
 

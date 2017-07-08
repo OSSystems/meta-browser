@@ -1,0 +1,20 @@
+Index: firefox-45.9.0esr/gfx/skia/skia/src/core/SkUtilsArm.cpp
+===================================================================
+--- firefox-45.9.0esr.orig/gfx/skia/skia/src/core/SkUtilsArm.cpp
++++ firefox-45.9.0esr/gfx/skia/skia/src/core/SkUtilsArm.cpp
+@@ -16,6 +16,15 @@
+ #include <string.h>
+ #include <pthread.h>
+ 
++#ifndef TEMP_FAILURE_RETRY
++# define TEMP_FAILURE_RETRY(expression) \
++       (__extension__                  \
++        ({ long int __result;          \
++         do __result = (long int) (expression); \
++         while (__result == -1L && errno == EINTR); \
++         __result; }))
++#endif
++
+ // Set USE_ANDROID_NDK_CPU_FEATURES to use the Android NDK's
+ // cpu-features helper library to detect NEON at runtime. See
+ // http://crbug.com/164154 to see why this is needed in Chromium
