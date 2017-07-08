@@ -1,0 +1,40 @@
+From 819e83dfbd0af9fa37f674f6d3783556b7ccb867 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Fri, 7 Jul 2017 14:03:18 -0700
+Subject: [PATCH 02/12] breakpad: Replace __WORDSIZE with defines from limits.h
+
+Fixes
+elf_core_dump.h:59:2: error: #error "Unsupported __WORDSIZE for ElfCoreDump."
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ breakpad/src/common/linux/elf_core_dump.h | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/breakpad/src/common/linux/elf_core_dump.h b/breakpad/src/common/linux/elf_core_dump.h
+index d03c7a88d..78ca9dd92 100644
+--- a/breakpad/src/common/linux/elf_core_dump.h
++++ b/breakpad/src/common/linux/elf_core_dump.h
+@@ -36,6 +36,7 @@
+ #include <elf.h>
+ #include <link.h>
+ #include <stddef.h>
++#include <limits.h>
+ 
+ #include "common/memory_range.h"
+ 
+@@ -51,9 +52,9 @@ class ElfCoreDump {
+   typedef ElfW(Phdr) Phdr;
+   typedef ElfW(Word) Word;
+   typedef ElfW(Addr) Addr;
+-#if __WORDSIZE == 32
++#if ULONG_MAX == 0xffffffff
+   static const int kClass = ELFCLASS32;
+-#elif __WORDSIZE == 64
++#elif ULONG_MAX == 0xffffffffffffffff
+   static const int kClass = ELFCLASS64;
+ #else
+ #error "Unsupported __WORDSIZE for ElfCoreDump."
+-- 
+2.13.2
+

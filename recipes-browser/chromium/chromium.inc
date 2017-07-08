@@ -21,6 +21,13 @@ GYP_DEFINES += "${ARMFPABI} release_extra_cflags='-Wno-error=unused-local-typede
 	${@bb.utils.contains("AVAILTUNES", "mips", "", "release_extra_cflags='-fno-delete-null-pointer-checks'", d)}"
 GYP_DEFINES_append_x86 = " generate_character_data=0"
 
+do_configure_prepend_libc-musl() {
+	for f in `find ${S}/third_party/ffmpeg/chromium/config/Chromium/linux/ -name config.h -o -name config.asm`; do
+		sed -i -e "s:define HAVE_SYSCTL 1:define HAVE_SYSCTL 0:g" $f
+	done
+	sed -i -e "s:define HAVE_STRUCT_MALLINFO 1:/*undef HAVE_STRUCT_MALLINFO */:g" ${S}/third_party/tcmalloc/chromium/src/config_linux.h
+}
+
 do_configure() {
 	cd ${S}
 	GYP_DEFINES="${GYP_DEFINES}" export GYP_DEFINES
