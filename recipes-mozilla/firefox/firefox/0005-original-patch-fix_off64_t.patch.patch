@@ -1,0 +1,63 @@
+From b1a3d3332e74b5a1bcf2a4fb7e08f3dece08318c Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Sat, 8 Jul 2017 15:57:20 -0700
+Subject: [PATCH 05/12] %% original patch: fix_off64_t.patch
+
+---
+ toolkit/crashreporter/google-breakpad/src/common/moz.build           | 5 +++--
+ .../google-breakpad/src/third_party/lss/linux_syscall_support.h      | 2 +-
+ tools/profiler/core/platform.h                                       | 2 +-
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/toolkit/crashreporter/google-breakpad/src/common/moz.build b/toolkit/crashreporter/google-breakpad/src/common/moz.build
+index 6456e2864..9aec5afd3 100644
+--- a/toolkit/crashreporter/google-breakpad/src/common/moz.build
++++ b/toolkit/crashreporter/google-breakpad/src/common/moz.build
+@@ -35,8 +35,8 @@ if CONFIG['OS_ARCH'] == 'Linux':
+         'linux/dump_symbols.cc',
+         'linux/elf_symbols_to_module.cc',
+     ]
+-    HOST_DEFINES['HAVE_A_OUT_H'] = True
+-    DEFINES['HAVE_A_OUT_H'] = True
++    HOST_DEFINES['HAVE_A_OUT_H'] = False
++    DEFINES['HAVE_A_OUT_H'] = False
+ 
+ if CONFIG['OS_ARCH'] == 'Darwin' and CONFIG['HOST_OS_ARCH'] != 'Darwin':
+     HOST_CXXFLAGS += [
+@@ -98,6 +98,7 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'gonk':
+ 
+ if CONFIG['OS_TARGET'] == 'Android':
+     DEFINES['NO_STABS_SUPPORT'] = True
++DEFINES['NO_STABS_SUPPORT'] = True
+ 
+ DEFINES['BP_LOGGING_INCLUDE'] = '"BreakpadLogging.h"'
+ 
+diff --git a/toolkit/crashreporter/google-breakpad/src/third_party/lss/linux_syscall_support.h b/toolkit/crashreporter/google-breakpad/src/third_party/lss/linux_syscall_support.h
+index 18277490f..b67d3a92d 100644
+--- a/toolkit/crashreporter/google-breakpad/src/third_party/lss/linux_syscall_support.h
++++ b/toolkit/crashreporter/google-breakpad/src/third_party/lss/linux_syscall_support.h
+@@ -2814,7 +2814,7 @@ struct kernel_statfs {
+     LSS_INLINE _syscall6(void*, mmap,              void*, s,
+                          size_t,                   l, int,               p,
+                          int,                      f, int,               d,
+-                         __off64_t,                o)
++                         off64_t,                o)
+ 
+     LSS_INLINE _syscall4(int, newfstatat,         int,   d,
+                          const char *,            p,
+diff --git a/tools/profiler/core/platform.h b/tools/profiler/core/platform.h
+index 5d2e25c8e..4917e5b8e 100644
+--- a/tools/profiler/core/platform.h
++++ b/tools/profiler/core/platform.h
+@@ -61,7 +61,7 @@
+ 
+ // We need a definition of gettid(), but glibc doesn't provide a
+ // wrapper for it.
+-#if defined(__GLIBC__)
++#if defined(__linux__)
+ #include <unistd.h>
+ #include <sys/syscall.h>
+ static inline pid_t gettid()
+-- 
+2.13.2
+

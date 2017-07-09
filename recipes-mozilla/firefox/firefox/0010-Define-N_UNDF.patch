@@ -1,0 +1,31 @@
+From 86544a22d8f241b3ba2545f470831edc019c6638 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sat, 8 Jul 2017 16:08:43 -0700
+Subject: [PATCH 10/12] Define N_UNDF
+
+Fixes
+error: 'N_UNDF' was not declared in this scope
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ toolkit/crashreporter/google-breakpad/src/stab.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/toolkit/crashreporter/google-breakpad/src/stab.h b/toolkit/crashreporter/google-breakpad/src/stab.h
+index 6f70af398..8fb2ffc97 100644
+--- a/toolkit/crashreporter/google-breakpad/src/stab.h
++++ b/toolkit/crashreporter/google-breakpad/src/stab.h
+@@ -41,6 +41,10 @@
+  * the N_STAB mask set.
+  */
+ 
++#if !defined (N_UNDF)
++#define N_UNDF 0
++#endif
++
+ #define	N_GSYM		0x20	/* global symbol */
+ #define	N_FNAME		0x22	/* F77 function name */
+ #define	N_FUN		0x24	/* procedure name */
+-- 
+2.13.2
+

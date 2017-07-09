@@ -1,0 +1,30 @@
+From ba081ed6eb612d72e0d9deb5cf40aa6f8ff5380a Mon Sep 17 00:00:00 2001
+From: OpenEmbedded <oe.patch@oe>
+Date: Sat, 8 Jul 2017 15:57:22 -0700
+Subject: [PATCH 06/12] %% original patch: getcontext.patch
+
+---
+ tools/profiler/core/platform-linux.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/tools/profiler/core/platform-linux.cc b/tools/profiler/core/platform-linux.cc
+index 0df1e8f08..d8688959d 100644
+--- a/tools/profiler/core/platform-linux.cc
++++ b/tools/profiler/core/platform-linux.cc
+@@ -711,11 +711,13 @@ void OS::Startup() {
+ void TickSample::PopulateContext(void* aContext)
+ {
+   MOZ_ASSERT(aContext);
++#if defined(__GLIBC__)
+   ucontext_t* pContext = reinterpret_cast<ucontext_t*>(aContext);
+   if (!getcontext(pContext)) {
+     context = pContext;
+     SetSampleContext(this, aContext);
+   }
++#endif
+ }
+ 
+ void OS::SleepMicro(int microseconds)
+-- 
+2.13.2
+

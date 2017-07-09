@@ -1,0 +1,30 @@
+From 92e6fdcc84c69ae25e9d4ed9e1e9c3203afeeaea Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sat, 8 Jul 2017 16:37:03 -0700
+Subject: [PATCH 12/12] musl libc calls siginfo_t member __si_fields instead of
+ _sifields
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ security/sandbox/chromium/sandbox/linux/seccomp-bpf/trap.cc | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/security/sandbox/chromium/sandbox/linux/seccomp-bpf/trap.cc b/security/sandbox/chromium/sandbox/linux/seccomp-bpf/trap.cc
+index dce6b7b85..5b2e2cc02 100644
+--- a/security/sandbox/chromium/sandbox/linux/seccomp-bpf/trap.cc
++++ b/security/sandbox/chromium/sandbox/linux/seccomp-bpf/trap.cc
+@@ -23,6 +23,11 @@
+ #include "sandbox/linux/services/android_ucontext.h"
+ #endif
+ 
++// musl libc defines siginfo_t __si_fields instead of _sifields
++#if defined(OS_LINUX) && !defined(__GLIBC__)
++#define _sifields __si_fields
++#endif
++
+ namespace {
+ 
+ struct arch_sigsys {
+-- 
+2.13.2
+
