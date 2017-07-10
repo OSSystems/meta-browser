@@ -1,0 +1,40 @@
+Index: firefox-45.9.0esr/webapprt/gtk/moz.build
+===================================================================
+--- firefox-45.9.0esr.orig/webapprt/gtk/moz.build
++++ firefox-45.9.0esr/webapprt/gtk/moz.build
+@@ -24,3 +24,7 @@ DISABLE_STL_WRAPPING = True
+ CXXFLAGS += CONFIG['TK_CFLAGS']
+ 
+ OS_LIBS += CONFIG['TK_LIBS']
++OS_LIBS += [
++    'resolv',
++]
++
+Index: firefox-45.9.0esr/ipc/app/moz.build
+===================================================================
+--- firefox-45.9.0esr.orig/ipc/app/moz.build
++++ firefox-45.9.0esr/ipc/app/moz.build
+@@ -129,6 +129,9 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'gonk
+         'binder',
+         'utils',
+     ]
++OS_LIBS += [
++    'resolv',
++]
+ 
+ if CONFIG['GNU_CXX']:
+     CXXFLAGS += ['-Wshadow']
+Index: firefox-45.9.0esr/js/xpconnect/shell/moz.build
+===================================================================
+--- firefox-45.9.0esr.orig/js/xpconnect/shell/moz.build
++++ firefox-45.9.0esr/js/xpconnect/shell/moz.build
+@@ -35,6 +35,9 @@ if CONFIG['OS_ARCH'] == 'WINNT':
+ CFLAGS += CONFIG['TK_CFLAGS']
+ CXXFLAGS += CONFIG['TK_CFLAGS']
+ OS_LIBS += CONFIG['TK_LIBS']
++OS_LIBS += [
++    'resolv',
++]
+ 
+ if CONFIG['GNU_CXX']:
+     CXXFLAGS += ['-Wshadow']

@@ -44,6 +44,7 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://0003-do-not-link-against-crmf-library-it-is-not-there.patch \
            file://gcc7.patch \
            file://remove_AC_PATH_XTRA.patch \
+           file://add-libresolv.patch \
 "
 SRC_URI_append_libc-musl = "\
            file://0001-mallinfo-is-glibc-specific-API.patch \
