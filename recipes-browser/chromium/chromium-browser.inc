@@ -200,7 +200,12 @@ python add_ozone_wayland_patches() {
     d.appendVar('SRC_URI', ' ' + d.getVar('OZONE_WAYLAND_EXTRA_PATCHES', False))
 }
 
-USEGOLD ?= "-Dlinux_use_gold_flags=1"
+# uncomment below or set it in a bbappend if you want to use gold linker
+# to link chromium irrespective of system linker, gold speeds up linking
+# chromium ( 8mins to < 2mins on a decent xeon system)
+#
+#USEGOLD = "-Dlinux_use_gold_flags=1"
+USE_GOLD ??= ""
 
 EXTRA_OEGYP = " \
 	-Dangle_use_commit_id=0 \
