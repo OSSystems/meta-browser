@@ -205,7 +205,7 @@ python add_ozone_wayland_patches() {
 # chromium ( 8mins to < 2mins on a decent xeon system)
 #
 #USEGOLD = "-Dlinux_use_gold_flags=1"
-USE_GOLD ??= ""
+USEGOLD ??= ""
 
 EXTRA_OEGYP = " \
 	-Dangle_use_commit_id=0 \
