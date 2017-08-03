@@ -10,6 +10,7 @@
     'use_kerberos': 0,
     'use_cups': 0,
     'use_gnome_keyring': 0,
-    'linux_link_gnome_keyring': 0
+    'linux_link_gnome_keyring': 0,
+    'use_sysroot': 0,
   }, 
 }
