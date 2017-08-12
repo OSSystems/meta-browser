@@ -75,8 +75,11 @@ EXTRA_OEMAKE += "installdir=${libdir}/${PN}"
 
 ARM_INSTRUCTION_SET = "arm"
 
-CFLAGS +=" -fno-delete-null-pointer-checks -fno-lifetime-dse"
-CXXFLAGS +=" -fno-delete-null-pointer-checks -fno-lifetime-dse"
+CXXFLAGS += "-fno-delete-null-pointer-checks -fno-lifetime-dse"
+CXXFLAGS_remove_toolchain-clang = "-fno-lifetime-dse"
+CFLAGS += "-fno-delete-null-pointer-checks -fno-lifetime-dse"
+CFLAGS_remove_toolchain-clang = "-fno-lifetime-dse"
+
 TARGET_CC_ARCH += "${LDFLAGS}"
 
 do_install_append() {
