@@ -43,7 +43,6 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://0002-use-pkg-config-to-find-nspr.patch \
            file://0003-do-not-link-against-crmf-library-it-is-not-there.patch \
            file://gcc7.patch \
-           file://remove_AC_PATH_XTRA.patch \
            file://add-libresolv.patch \
 "
 SRC_URI_append_libc-musl = "\
@@ -69,6 +68,7 @@ S = "${WORKDIR}/firefox-45.9.0esr"
 MOZ_APP_BASE_VERSION = "45.9"
 
 inherit mozilla
+EXTRA_OECONF_append = " --x-includes=${STAGING_INCDIR} --x-libraries=${STAGING_LIBDIR}"
 EXTRA_OECONF_append_libc-musl = " --disable-jemalloc"
 
 EXTRA_OEMAKE += "installdir=${libdir}/${PN}"
