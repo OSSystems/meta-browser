@@ -104,7 +104,6 @@ FILES_${PN}-dbg += "${bindir}/${BPN}/.debug/ ${libdir}/${BPN}/.debug/ ${libdir}/
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 # chromium-54.0.2810.2: ELF binary 'i586-oe-linux/chromium/54.0.2810.2-r0/packages-split/chromium/usr/bin/chromium/chrome' has relocations in .text [textrel]
-# chromium-wayland-53.0.2785.143: ELF binary 'i586-oe-linux/chromium-wayland/53.0.2785.143-r0/packages-split/chromium-wayland/usr/bin/chromium/chrome' has relocations in .text [textrel]
 INSANE_SKIP_${PN} = "ldflags textrel"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
