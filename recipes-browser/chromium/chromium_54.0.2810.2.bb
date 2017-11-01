@@ -7,6 +7,7 @@ DEPENDS += " \
     libxi \
     libxss \
     libxtst \
+    virtual/libgl \
     xextproto \
 "
 
