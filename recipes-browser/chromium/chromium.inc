@@ -13,7 +13,7 @@ COMPATIBLE_MACHINE_aarch64 = "(.*)"
 # the variable CHROMIUM_BUILD_TYPE to "Debug" in your conf/local.conf file.
 CHROMIUM_BUILD_TYPE ??= "Release"
 
-inherit gettext pythonnative
+inherit pythonnative
 
 GYP_DEFINES += "release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot='' \
 	${@bb.utils.contains("AVAILTUNES", "mips", "", "release_extra_cflags='-fno-delete-null-pointer-checks'", d)}"
