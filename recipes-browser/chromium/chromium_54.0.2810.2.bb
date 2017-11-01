@@ -6,6 +6,7 @@ DEPENDS += " \
     gtk+ \
     libxi \
     libxss \
+    libxtst \
     xextproto \
 "
 
