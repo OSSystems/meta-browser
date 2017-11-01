@@ -7,7 +7,20 @@ B = "${S}/${OUTPUT_DIR}"
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
 # adds packages to DEPENDS.
-DEPENDS += "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
+DEPENDS += " \
+    cairo \
+    cups \
+    gconf \
+    libdrm \
+    libexif \
+    ninja-native \
+    nss \
+    pango \
+    pciutils \
+    pulseaudio \
+    xz-native \
+    zlib-native \
+"
 
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_x86 = "(.*)"

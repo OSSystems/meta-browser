@@ -2,7 +2,12 @@ require chromium-browser.inc
 
 inherit distro_features_check
 
-DEPENDS += "xextproto gtk+ libxi libxss"
+DEPENDS += " \
+    gtk+ \
+    libxi \
+    libxss \
+    xextproto \
+"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS_${PN} = "bash"
