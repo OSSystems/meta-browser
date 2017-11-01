@@ -47,10 +47,6 @@ SRC_URI_append_libc-musl = "\
            file://0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
 "
 
-S = "${WORKDIR}/chromium-${PV}"
-BPN = "chromium"
-
-
 # PACKAGECONFIG options
 # ^^^^^^^^^^^^^^^^^^^^^
 # * use-egl: (on by default)
