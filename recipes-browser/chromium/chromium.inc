@@ -17,7 +17,7 @@ DEPENDS += " \
     nss \
     pango \
     pciutils \
-    pulseaudio \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     xz-native \
     zlib-native \
 "

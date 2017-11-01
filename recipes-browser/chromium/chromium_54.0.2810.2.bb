@@ -3,6 +3,7 @@ require chromium-browser.inc
 inherit distro_features_check
 
 DEPENDS += " \
+    alsa-lib \
     gtk+ \
     libxi \
     libxss \
