@@ -115,8 +115,6 @@ FILES_${PN} += "${bindir} ${libdir}"
 FILES_${PN} += "${bindir}/${BPN}/*.pak"
 FILES_${PN} += "${bindir}/${BPN}/locales/*.pak"
 
-FILES_${PN}-dbg += "${bindir}/${BPN}/.debug/ ${libdir}/${BPN}/.debug/ ${libdir}/.debug/"
-
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 # chromium-54.0.2810.2: ELF binary 'i586-oe-linux/chromium/54.0.2810.2-r0/packages-split/chromium/usr/bin/chromium/chrome' has relocations in .text [textrel]
