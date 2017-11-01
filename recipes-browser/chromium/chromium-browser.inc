@@ -89,7 +89,7 @@ SRC_URI_append_libc-musl = "\
 #       Enable this option if you want to add support for additional proprietary
 #       codecs, most notably MPEG standards (h.264, h.265, MP4, MP3, AAC, MPEG-2 ..)
 
-PACKAGECONFIG ??= "use-egl build-chromedriver"
+PACKAGECONFIG ??= "use-egl"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -104,7 +104,6 @@ PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
-PACKAGECONFIG[build-chromedriver] = ""
 
 
 # These are present as their own variables, since they have changed between versions
@@ -166,8 +165,7 @@ do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -v ${PARALLEL_MAKE} chrome chrome_sandbox \
-		${@bb.utils.contains('PACKAGECONFIG', 'build-chromedriver', 'chromedriver', '', d)}
+        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
 }
 
 do_install_append() {
