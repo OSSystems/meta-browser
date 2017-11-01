@@ -7,7 +7,6 @@ SRC_URI += "\
         file://0003-Remove-hard-coded-values-for-CC-and-CXX.patch \
         file://0005-Override-root-filesystem-access-restriction.patch \
         file://chromium/0011-Replace-readdir_r-with-readdir.patch \
-        ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
         file://chromium/m32.patch \
 "
