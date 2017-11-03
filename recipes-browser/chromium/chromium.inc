@@ -102,7 +102,7 @@ do_install() {
 	fi
 
 	# Chromium plugins libs
-	for f in libpdf.so libosmesa.so libffmpegsumo.so; do
+	for f in libosmesa.so libffmpegsumo.so; do
 		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
 			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/${BPN}/$f
 		fi
@@ -120,10 +120,9 @@ do_install() {
 
 }
 
-PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-plugin-pdf ${PN}-chromedriver"
+PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-chromedriver"
 
 FILES_${PN}-codecs-ffmpeg = "${libdir}/${BPN}/libffmpegsumo.so"
-FILES_${PN}-plugin-pdf = "${libdir}/${BPN}/libpdf.so"
 FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
 FILES_${PN} = "${bindir}/${BPN} ${datadir}/applications ${sbindir}/ ${libdir}/${BPN}/"
