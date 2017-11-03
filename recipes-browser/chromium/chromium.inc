@@ -102,11 +102,9 @@ do_install() {
 	fi
 
 	# Chromium plugins libs
-	for f in libosmesa.so libffmpegsumo.so; do
-		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
-			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/${BPN}/$f
-		fi
-	done
+	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so" ]; then
+		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/libosmesa.so ${D}${libdir}/${BPN}/libosmesa.so
+	fi
 
 	# Chromium *.pak files
 	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && find . -type f -name \*.pak); do
@@ -120,9 +118,8 @@ do_install() {
 
 }
 
-PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-chromedriver"
+PACKAGES =+ "${PN}-chromedriver"
 
-FILES_${PN}-codecs-ffmpeg = "${libdir}/${BPN}/libffmpegsumo.so"
 FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
 FILES_${PN} = "${bindir}/${BPN} ${datadir}/applications ${sbindir}/ ${libdir}/${BPN}/"
