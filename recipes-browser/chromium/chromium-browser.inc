@@ -6,7 +6,7 @@
 #    added.
 # 2) Add md5sum and sha256sum hashes of the tarball.
 
-include chromium.inc
+require chromium.inc
 
 DESCRIPTION = "Chromium is an open-source browser project that aims to build a safer, faster, and more stable way for all users to experience the web."
 HOMEPAGE = "https://www.chromium.org/Home"
