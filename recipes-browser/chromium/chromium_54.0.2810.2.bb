@@ -1,4 +1,4 @@
-require chromium-browser.inc
+require chromium.inc
 
 inherit distro_features_check gtk-icon-cache
 
@@ -57,6 +57,23 @@ SRC_URI[sha256sum] = "f038e72cbd8b7383d13c286329623fda8d6d48f45fa2d964e554b55652
 
 # For now, we need X11 for Chromium to build and run.
 REQUIRED_DISTRO_FEATURES = "x11"
+
+PACKAGECONFIG ??= "use-egl"
+
+# this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
+# automatically and silently fall back to GLX
+PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
+
+# Empty PACKAGECONFIG options listed here to avoid warnings.
+# The .bb file should use these to conditionally add patches
+# and command-line switches (extra dependencies should not
+# be necessary but are OK to add).
+PACKAGECONFIG[component-build] = ""
+PACKAGECONFIG[cups] = "-Duse_cups=1,-Duse_cups=0,cups"
+PACKAGECONFIG[ignore-lost-context] = ""
+PACKAGECONFIG[impl-side-painting] = ""
+PACKAGECONFIG[kiosk-mode] = ""
+PACKAGECONFIG[proprietary-codecs] = ""
 
 # These are present as their own variables, since they have changed between versions
 # a few times in the past already; making them variables makes it easier to handle that
@@ -133,6 +150,13 @@ GYP_DEFINES_append_arm = " \
         -Darm_fpu=${ARM_FPU} \
         -Darm_tune=${ARM_TUNE} \
         -Darm_version=${ARM_VERSION} \
+"
+
+CHROMIUM_EXTRA_ARGS ?= " \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run --incognito', '', d)} \
 "
 
 python() {
