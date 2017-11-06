@@ -19,7 +19,6 @@ SRC_URI = "\
         file://include.gypi \
         file://oe-defaults.gypi \
         file://google-chrome \
-        file://google-chrome.desktop \
         file://unset-madv-free.patch \
         file://0001-v8-fix-build-with-gcc7.patch \
         file://0002-WebKit-fix-build-with-gcc7.patch \

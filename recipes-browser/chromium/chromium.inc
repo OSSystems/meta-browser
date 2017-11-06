@@ -93,7 +93,13 @@ do_install() {
 	install -m 0755 chrome ${D}${libdir}/chromium/chromium
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
 	install -m 0644 icudtl.dat ${D}${libdir}/chromium/icudtl.dat
-	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
+
+	# Process and install Chromium's template .desktop file.
+	sed -e "s,@@MENUNAME@@,Chromium Browser,g" \
+	    -e "s,@@PACKAGE@@,chromium,g" \
+	    -e "s,@@USR_BIN_SYMLINK_NAME@@,chromium,g" \
+	    ${S}/chrome/installer/linux/common/desktop.template > chromium.desktop
+	install -m 0644 chromium.desktop ${D}${datadir}/applications/chromium.desktop
 
 	# Install icons.
 	for size in 16 22 24 32 48 64 128 256; do
