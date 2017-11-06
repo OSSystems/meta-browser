@@ -165,7 +165,7 @@ do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
+        ninja -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
 }
 
 do_install_append() {
@@ -181,6 +181,6 @@ do_install_append() {
         # LD_LIBRARY_PATH line in the google-chromium script refers to it
         install -d ${D}${libdir}/${BPN}/
         if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
-                install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/*.so ${D}${libdir}/${BPN}/
+                install -m 0755 lib/*.so ${D}${libdir}/${BPN}/
         fi
 }

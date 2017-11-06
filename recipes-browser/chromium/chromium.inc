@@ -1,4 +1,8 @@
 LICENSE = "BSD"
+
+OUTPUT_DIR = "out/${CHROMIUM_BUILD_TYPE}"
+B = "${S}/${OUTPUT_DIR}"
+
 DEPENDS = "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
 
 COMPATIBLE_MACHINE = "(-)"
@@ -80,19 +84,19 @@ do_install() {
 	install -d ${D}${sbindir}
 
 	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
-	install -m 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
-	install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/${BPN}/chrome
-	install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chromedriver ${D}${bindir}/chromedriver
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
+	install -m 4755 chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
+	install -m 0755 chrome ${D}${bindir}/${BPN}/chrome
+	install -m 0755 chromedriver ${D}${bindir}/chromedriver
+	install -m 0644 icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
 	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/product_logo_48.png ${D}${bindir}/${BPN}/product_logo_48.png
+	install -m 0644 product_logo_48.png ${D}${bindir}/${BPN}/product_logo_48.png
 
 	# Chromium *.pak files
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_*.pak ${D}${bindir}/${BPN}/
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/resources.pak ${D}${bindir}/${BPN}/resources.pak
+	install -m 0644 chrome_*.pak ${D}${bindir}/${BPN}/
+	install -m 0644 resources.pak ${D}${bindir}/${BPN}/resources.pak
 
 	# Locales.
-	install -m 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/locales/*.pak ${D}${bindir}/${BPN}/locales/
+	install -m 0644 locales/*.pak ${D}${bindir}/${BPN}/locales/
 }
 
 PACKAGES =+ "${PN}-chromedriver"
