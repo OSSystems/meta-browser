@@ -85,6 +85,7 @@ EXTRA_OEGYP = " \
 	-Dv8_use_external_startup_data=0 \
 	-Dlinux_use_bundled_gold=0 \
 	-Dlinux_use_bundled_binutils=0 \
+	-Duse_gconf=0 \
 	-Duse_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', '1', '0', d)} \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \

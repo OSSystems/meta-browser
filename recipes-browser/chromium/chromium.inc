@@ -10,7 +10,6 @@ B = "${S}/${OUTPUT_DIR}"
 DEPENDS += " \
     cairo \
     cups \
-    gconf \
     libdrm \
     libexif \
     ninja-native \
