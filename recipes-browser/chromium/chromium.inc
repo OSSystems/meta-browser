@@ -95,15 +95,11 @@ do_install() {
 	fi
 
 	# Chromium *.pak files
-	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && find . -type f -name \*.pak); do
-			install -Dm 0644 "${B}/out/${CHROMIUM_BUILD_TYPE}/${f}" "${D}${bindir}/${BPN}/${f}"
-	done
+	install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_*.pak ${D}${bindir}/${BPN}/
+	install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/resources.pak ${D}${bindir}/${BPN}/resources.pak
 
-	# Chromium resource files (for the inspector).
-	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && test -d resources && find resources -type f); do
-			install -Dm 0644 "${B}/out/${CHROMIUM_BUILD_TYPE}/${f}" "${D}${bindir}/${BPN}/${f}"
-	done
-
+	# Locales.
+	install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/locales/*.pak ${D}${bindir}/${BPN}/locales/
 }
 
 PACKAGES =+ "${PN}-chromedriver"
