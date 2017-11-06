@@ -4,12 +4,21 @@ inherit distro_features_check
 
 DEPENDS += " \
     alsa-lib \
+    cairo \
+    gperf-native \
     gtk+ \
+    libdrm \
     libxi \
     libxss \
     libxtst \
+    ninja-native \
+    nss \
+    pango \
+    pciutils \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     virtual/libgl \
 "
+DEPENDS_append_libc-musl = " libexecinfo"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS_${PN} = "bash"

@@ -5,18 +5,6 @@ inherit gtk-icon-cache
 OUTPUT_DIR = "out/${CHROMIUM_BUILD_TYPE}"
 B = "${S}/${OUTPUT_DIR}"
 
-# Append instead of assigning; the gtk-icon-cache class inherited above also
-# adds packages to DEPENDS.
-DEPENDS += " \
-    cairo \
-    libdrm \
-    ninja-native \
-    nss \
-    pango \
-    pciutils \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
-"
-
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_x86 = "(.*)"
 COMPATIBLE_MACHINE_x86-64 = "(.*)"
