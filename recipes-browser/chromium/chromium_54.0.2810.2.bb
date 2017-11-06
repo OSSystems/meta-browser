@@ -62,6 +62,79 @@ REQUIRED_DISTRO_FEATURES = "x11"
 # a few times in the past already; making them variables makes it easier to handle that
 CHROMIUM_X11_GYP_DEFINES ?= ""
 
+GYP_DEFINES += "release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot='' \
+	${@bb.utils.contains("AVAILTUNES", "mips", "", "release_extra_cflags='-fno-delete-null-pointer-checks'", d)}"
+GYP_DEFINES_append_x86 = " generate_character_data=0"
+
+# Disable activation of field trial tests that can cause problems in
+# production.
+# See https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/ECWC57W7E0k/9Kc5UAmyDAAJ
+GYP_DEFINES += "-Dfieldtrial_testing_like_official_build=1"
+
+EXTRA_OEGYP = " \
+	${PACKAGECONFIG_CONFARGS} \
+	-Dangle_use_commit_id=0 \
+	-Dclang=0 \
+	-Dhost_clang=0 \
+	-Ddisable_fatal_linker_warnings=1 \
+	-Dwerror= \
+	-Dv8_use_external_startup_data=0 \
+	-Dlinux_use_bundled_gold=0 \
+	-Dlinux_use_bundled_binutils=0 \
+	-Duse_gconf=0 \
+	-Duse_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', '1', '0', d)} \
+	-I ${WORKDIR}/oe-defaults.gypi \
+	-I ${WORKDIR}/include.gypi \
+	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-Dcomponent=shared_library', '', d)} \
+	${@bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', '-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome', '', d)} \
+	-Dlinux_use_gold_flags=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '1', '0', d)} \
+	-f ninja \
+"
+
+# API keys for accessing Google services. By default, we use an invalid key
+# only to prevent the "you are missing an API key" infobar from being shown on
+# startup.
+# See https://dev.chromium.org/developers/how-tos/api-keys for more information
+# on how to obtain your own keys. You can then set the variables below in
+# local.conf or a .bbappend file.
+GOOGLE_API_KEY ??= "invalid-api-key"
+GOOGLE_DEFAULT_CLIENT_ID ??= "invalid-client-id"
+GOOGLE_DEFAULT_CLIENT_SECRET ??= "invalid-client-secret"
+EXTRA_OEGYP += "\
+        -Dgoogle_api_key=${GOOGLE_API_KEY} \
+        -Dgoogle_default_client_id=${GOOGLE_DEFAULT_CLIENT_ID} \
+        -Dgoogle_default_client_secret=${GOOGLE_DEFAULT_CLIENT_SECRET} \
+"
+
+# ARM builds need special additional flags (see ${S}/build/config/arm.gni).
+# If we do not pass |arm_arch| and friends to GN, it will deduce a value that
+# will then conflict with TUNE_CCARGS and CC.
+def get_arm_version(arm_arch):
+    import re
+    try:
+        return re.match(r'armv(\d).*', arm_arch).group(1)
+    except IndexError:
+        bb.fatal('Unrecognized ARM architecture value: %s' % arm_arch)
+def get_compiler_flag(params, param_name, d):
+    """Given a sequence of compiler arguments in |params|, returns the value of
+    an option |param_name| or an empty string if the option is not present."""
+    for param in params:
+      if param.startswith(param_name):
+        return param.split('=')[1]
+    return ''
+ARM_ARCH = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-march', d)}"
+ARM_FLOAT_ABI = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hard', 'softfp', d)}"
+ARM_FPU = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mfpu', d)}"
+ARM_TUNE = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mcpu', d)}"
+ARM_VERSION = "${@get_arm_version(d.getVar('ARM_ARCH'))}"
+GYP_DEFINES_append_arm = " \
+        -Darm_arch=${ARM_ARCH} \
+        -Darm_float_abi=${ARM_FLOAT_ABI} \
+        -Darm_fpu=${ARM_FPU} \
+        -Darm_tune=${ARM_TUNE} \
+        -Darm_version=${ARM_VERSION} \
+"
+
 python() {
     d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_X11_GYP_DEFINES', True))
 }
@@ -155,3 +228,24 @@ do_install() {
 	# ChromeDriver.
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
 }
+
+PACKAGES =+ "${PN}-chromedriver"
+
+FILES_${PN}-chromedriver = "${bindir}/chromedriver"
+
+FILES_${PN} = " \
+        ${bindir}/${PN} \
+        ${datadir}/applications/${PN}.desktop \
+        ${datadir}/icons/hicolor/*x*/apps/chromium.png \
+        ${libdir}/${PN}/* \
+"
+
+PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
+
+# chromium-54.0.2810.2: ELF binary 'i586-oe-linux/chromium/54.0.2810.2-r0/packages-split/chromium/usr/bin/chromium/chrome' has relocations in .text [textrel]
+INSANE_SKIP_${PN} = "ldflags textrel"
+SOLIBS = ".so"
+FILES_SOLIBSDEV = ""
+
+# There is no need to ship empty -dev packages.
+ALLOW_EMPTY_${PN}-dev = "0"

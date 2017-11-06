@@ -60,46 +60,9 @@ PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
 
-
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run --incognito', '', d)} \
-"
-
-
-EXTRA_OEGYP = " \
-	${PACKAGECONFIG_CONFARGS} \
-	-Dangle_use_commit_id=0 \
-	-Dclang=0 \
-	-Dhost_clang=0 \
-	-Ddisable_fatal_linker_warnings=1 \
-	-Dwerror= \
-	-Dv8_use_external_startup_data=0 \
-	-Dlinux_use_bundled_gold=0 \
-	-Dlinux_use_bundled_binutils=0 \
-	-Duse_gconf=0 \
-	-Duse_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', '1', '0', d)} \
-	-I ${WORKDIR}/oe-defaults.gypi \
-	-I ${WORKDIR}/include.gypi \
-	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-Dcomponent=shared_library', '', d)} \
-	${@bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', '-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome', '', d)} \
-	-Dlinux_use_gold_flags=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '1', '0', d)} \
-	-f ninja \
-"
-
-# API keys for accessing Google services. By default, we use an invalid key
-# only to prevent the "you are missing an API key" infobar from being shown on
-# startup.
-# See https://dev.chromium.org/developers/how-tos/api-keys for more information
-# on how to obtain your own keys. You can then set the variables below in
-# local.conf or a .bbappend file.
-GOOGLE_API_KEY ??= "invalid-api-key"
-GOOGLE_DEFAULT_CLIENT_ID ??= "invalid-client-id"
-GOOGLE_DEFAULT_CLIENT_SECRET ??= "invalid-client-secret"
-EXTRA_OEGYP += "\
-        -Dgoogle_api_key=${GOOGLE_API_KEY} \
-        -Dgoogle_default_client_id=${GOOGLE_DEFAULT_CLIENT_ID} \
-        -Dgoogle_default_client_secret=${GOOGLE_DEFAULT_CLIENT_SECRET} \
 "
