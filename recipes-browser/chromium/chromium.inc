@@ -11,7 +11,6 @@ DEPENDS += " \
     cairo \
     cups \
     libdrm \
-    libexif \
     ninja-native \
     nss \
     pango \
