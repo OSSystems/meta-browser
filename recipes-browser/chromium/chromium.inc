@@ -2,6 +2,7 @@ DESCRIPTION = "Chromium is an open-source browser project that aims to build a s
 HOMEPAGE = "https://www.chromium.org/Home"
 
 LICENSE = "BSD"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d"
 
 SRC_URI = "\
         https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz \
@@ -34,6 +35,8 @@ SRC_URI_append_libc-musl = "\
         file://musl-support/0017-Use-_fpstate-instead-of-_libc_fpstate.patch \
         file://musl-support/0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
 "
+SRC_URI[md5sum] = "3f596ecbd6a39d5ada29f11780ec6dcf"
+SRC_URI[sha256sum] = "f038e72cbd8b7383d13c286329623fda8d6d48f45fa2d964e554b5565283ad71"
 
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_x86 = "(.*)"
