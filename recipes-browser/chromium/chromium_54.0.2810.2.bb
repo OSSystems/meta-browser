@@ -9,7 +9,6 @@ DEPENDS += " \
     libxss \
     libxtst \
     virtual/libgl \
-    xextproto \
 "
 
 # The wrapper script we use from upstream requires bash.
