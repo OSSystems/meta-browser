@@ -4,12 +4,26 @@ inherit distro_features_check
 
 DEPENDS += " \
     alsa-lib \
+    atk \
+    bison-native \
     cairo \
+    dbus \
+    expat \
+    freetype \
+    glib-2.0 \
     gperf-native \
     gtk+ \
     libdrm \
+    libx11 \
+    libxcomposite \
+    libxcursor \
+    libxdamage \
+    libxext \
+    libxfixes \
     libxi \
-    libxss \
+    libxrandr \
+    libxrender \
+    libxscrnsaver \
     libxtst \
     ninja-native \
     nss \
