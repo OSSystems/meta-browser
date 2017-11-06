@@ -110,10 +110,16 @@ PACKAGES =+ "${PN}-chromedriver"
 
 FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
-FILES_${PN} = "${bindir}/${BPN} ${datadir}/applications ${sbindir}/ ${libdir}/${BPN}/"
-FILES_${PN} += "${bindir} ${libdir}"
-FILES_${PN} += "${bindir}/${BPN}/*.pak"
-FILES_${PN} += "${bindir}/${BPN}/locales/*.pak"
+FILES_${PN} = " \
+        ${bindir} \
+        ${bindir}/${BPN} \
+        ${bindir}/${BPN}/*.pak \
+        ${bindir}/${BPN}/locales/*.pak \
+        ${datadir}/applications \
+        ${libdir} \
+        ${libdir}/${BPN}/ \
+        ${sbindir}/ \
+"
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
