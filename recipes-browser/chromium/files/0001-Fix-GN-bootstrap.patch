@@ -1,0 +1,43 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From c0854701a20853eb16cf4aa7a9584eefa000d559 Mon Sep 17 00:00:00 2001
+From: "Pawel Hajdan, Jr" <phajdan.jr@chromium.org>
+Date: Tue, 2 Aug 2016 08:55:05 +0000
+Subject: [PATCH] Fix GN bootstrap
+
+BUG=none
+R=dpranke@chromium.org
+
+Review URL: https://codereview.chromium.org/2198023002 .
+
+Cr-Commit-Position: refs/heads/master@{#409158}
+---
+ tools/gn/bootstrap/bootstrap.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tools/gn/bootstrap/bootstrap.py b/tools/gn/bootstrap/bootstrap.py
+index 9a3740e898b7..fa81d1079cb9 100755
+--- a/tools/gn/bootstrap/bootstrap.py
++++ b/tools/gn/bootstrap/bootstrap.py
+@@ -427,6 +427,7 @@ def write_gn_ninja(path, root_gen_dir, options):
+       'base/profiler/scoped_tracker.cc',
+       'base/profiler/tracked_time.cc',
+       'base/run_loop.cc',
++      'base/sequence_token.cc',
+       'base/sequence_checker_impl.cc',
+       'base/sequenced_task_runner.cc',
+       'base/sha1.cc',
+@@ -439,7 +440,7 @@ def write_gn_ninja(path, root_gen_dir, options):
+       'base/strings/stringprintf.cc',
+       'base/strings/utf_string_conversion_utils.cc',
+       'base/strings/utf_string_conversions.cc',
+-      'base/synchronization/cancellation_flag.cc',
++      'base/synchronization/atomic_flag.cc',
+       'base/synchronization/lock.cc',
+       'base/sys_info.cc',
+       'base/task_runner.cc',
+-- 
+2.13.6
+
