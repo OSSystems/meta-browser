@@ -1,0 +1,127 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 2a395c69f43be191344cb9b198fe8e77f6c4bd17 Mon Sep 17 00:00:00 2001
+From: mostynb <mostynb@opera.com>
+Date: Tue, 2 Aug 2016 09:12:14 -0700
+Subject: [PATCH] make use of existing gn args in ui build config
+
+BUG=632297
+
+Review-Url: https://codereview.chromium.org/2185163003
+Cr-Commit-Position: refs/heads/master@{#409203}
+---
+ build/config/ui.gni        |  3 ++-
+ chrome/browser/ui/BUILD.gn |  5 +++--
+ ui/accessibility/BUILD.gn  | 11 +++++++++--
+ ui/events/BUILD.gn         | 10 ++++++----
+ 4 files changed, 20 insertions(+), 9 deletions(-)
+
+diff --git a/build/config/ui.gni b/build/config/ui.gni
+index 279d63b..77d98df 100644
+--- a/build/config/ui.gni
++++ b/build/config/ui.gni
+@@ -15,6 +15,7 @@
+ # to set up feature flags.
+ 
+ import("//build/config/chromecast_build.gni")
++import("//build/config/features.gni")
+ 
+ declare_args() {
+   # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
+@@ -83,7 +84,7 @@ if (is_linux && !use_ozone) {
+ }
+ 
+ # Whether to use atk, the Accessibility ToolKit library
+-use_atk = is_desktop_linux && use_x11
++use_atk = is_desktop_linux && use_x11 && use_gconf
+ 
+ use_clipboard_aurax11 =
+     (is_desktop_linux && use_aura && use_x11) || enable_clipboard_aurax11
+diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
+index e18158a..db85b4d 100644
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -347,10 +347,11 @@ split_static_library("ui") {
+       deps -= [ "//chrome/browser/ui/views" ]
+     }
+   }
++  if (use_gio) {
++    deps += [ "//build/linux/libgio" ]
++  }
+   if (use_aura && !use_ozone && is_desktop_linux) {
+     deps += [
+-      "//build/linux/libgio",
+-
+       # gtk2 is the only component that can interact with gtk2 in our new
+       # world.
+       "//chrome/browser/ui/libgtk2ui",
+diff --git a/ui/accessibility/BUILD.gn b/ui/accessibility/BUILD.gn
+index 92d2728..fa5c491 100644
+--- a/ui/accessibility/BUILD.gn
++++ b/ui/accessibility/BUILD.gn
+@@ -3,6 +3,7 @@
+ # found in the LICENSE file.
+ 
+ import("//build/config/linux/pkg_config.gni")
++import("//build/config/features.gni")
+ import("//build/config/ui.gni")
+ import("//build/json_schema_api.gni")
+ import("//testing/test.gni")
+@@ -104,9 +105,15 @@ component("accessibility") {
+     configs += [
+       ":atk",
+       ":atk_warnings",
+-      "//build/config/linux/gconf",
+-      "//build/config/linux:glib",
+     ]
++
++    if (use_gconf) {
++      configs += [ "//build/config/linux/gconf" ]
++    }
++
++    if (use_glib) {
++      configs += [ "//build/config/linux:glib" ]
++    }
+   }
+ }
+ 
+diff --git a/ui/events/BUILD.gn b/ui/events/BUILD.gn
+index 59fe835..103ee50 100644
+--- a/ui/events/BUILD.gn
++++ b/ui/events/BUILD.gn
+@@ -2,6 +2,7 @@
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+ 
++import("//build/config/features.gni")
+ import("//build/config/ui.gni")
+ import("//testing/test.gni")
+ import("//ui/ozone/ozone.gni")
+@@ -145,10 +146,7 @@ component("events") {
+ 
+   if (use_x11) {
+     sources += [ "x/events_x.cc" ]
+-    configs += [
+-      "//build/config/linux:glib",
+-      "//build/config/linux:x11",
+-    ]
++    configs += [ "//build/config/linux:x11" ]
+     deps += [
+       "//ui/events/devices",
+       "//ui/events/devices/x11",
+@@ -157,6 +155,10 @@ component("events") {
+     ]
+   }
+ 
++  if (use_glib) {
++    configs += [ "//build/config/linux:glib" ]
++  }
++
+   if (use_ozone || (is_android && use_aura)) {
+     sources += [ "events_default.cc" ]
+   }
+-- 
+2.7.4
+

@@ -1,0 +1,85 @@
+Upstream-Status: Backport
+
+This is required for us to properly change arm_fpu via the command line to the
+value set in BitBake.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From e90481d12da0f6b26e5fa541d111ae4e5b9f9022 Mon Sep 17 00:00:00 2001
+From: hashimoto <hashimoto@chromium.org>
+Date: Sun, 4 Dec 2016 20:20:27 -0800
+Subject: [PATCH] gn: Make arm_fpu configurable
+
+Chrome OS needs to use values like neon-vfpv4 or crypto-neon-fp-armv8.
+
+BUG=670541
+
+Review-Url: https://codereview.chromium.org/2546033002
+Cr-Commit-Position: refs/heads/master@{#436231}
+---
+ build/config/arm.gni | 28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/build/config/arm.gni b/build/config/arm.gni
+index 47c836a22219..865f6427c368 100644
+--- a/build/config/arm.gni
++++ b/build/config/arm.gni
+@@ -18,6 +18,10 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
+     # An empty string means to use the default for the arm_version.
+     arm_arch = ""
+ 
++    # The ARM floating point hardware. This will be a string like "neon" or
++    # "vfpv3". An empty string means to use the default for the arm_version.
++    arm_fpu = ""
++
+     # The ARM floating point mode. This is either the string "hard", "soft", or
+     # "softfp". An empty string means to use the default one for the
+     # arm_version.
+@@ -61,7 +65,9 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
+     if (arm_float_abi == "") {
+       arm_float_abi = "softfp"
+     }
+-    arm_fpu = "vfp"
++    if (arm_fpu == "") {
++      arm_fpu = "vfp"
++    }
+     arm_use_thumb = false
+   } else if (arm_version == 7) {
+     if (arm_arch == "") {
+@@ -82,10 +88,12 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
+       }
+     }
+ 
+-    if (arm_use_neon) {
+-      arm_fpu = "neon"
+-    } else {
+-      arm_fpu = "vfpv3-d16"
++    if (arm_fpu == "") {
++      if (arm_use_neon) {
++        arm_fpu = "neon"
++      } else {
++        arm_fpu = "vfpv3-d16"
++      }
+     }
+   } else if (arm_version == 8) {
+     if (arm_arch == "") {
+@@ -103,10 +111,12 @@ if (current_cpu == "arm" || v8_current_cpu == "arm") {
+       }
+     }
+ 
+-    if (arm_use_neon) {
+-      arm_fpu = "neon"
+-    } else {
+-      arm_fpu = "vfpv3-d16"
++    if (arm_fpu == "") {
++      if (arm_use_neon) {
++        arm_fpu = "neon"
++      } else {
++        arm_fpu = "vfpv3-d16"
++      }
+     }
+   }
+ } else if (current_cpu == "arm64" || v8_current_cpu == "arm64") {
+-- 
+2.13.6
+

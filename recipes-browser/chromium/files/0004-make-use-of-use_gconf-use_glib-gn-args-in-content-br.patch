@@ -1,0 +1,40 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From ebc6e12c115205ceb95330395da611991d874e11 Mon Sep 17 00:00:00 2001
+From: mostynb <mostynb@opera.com>
+Date: Thu, 28 Jul 2016 01:53:41 -0700
+Subject: [PATCH] make use of use_gconf & use_glib gn args in content/browser/
+
+Review-Url: https://codereview.chromium.org/2191733002
+Cr-Commit-Position: refs/heads/master@{#408362}
+---
+ content/browser/BUILD.gn | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
+index 35b2f19..83c5903 100644
+--- a/content/browser/BUILD.gn
++++ b/content/browser/BUILD.gn
+@@ -279,9 +279,15 @@ source_set("browser") {
+     configs += [
+       "//build/config/linux/atk",
+       "//build/config/linux/atk:warnings",
+-      "//build/config/linux/gconf",
+-      "//build/config/linux:glib",
+     ]
++
++    if (use_gconf) {
++      configs += [ "//build/config/linux/gconf" ]
++    }
++
++    if (use_glib) {
++      configs += [ "//build/config/linux:glib" ]
++    }
+   }
+ 
+   if (is_linux && use_aura) {
+-- 
+2.7.4
+

@@ -9,6 +9,11 @@ We refer to the web browser as Chromium, not Chrome, because "Chrome" is
 Google's version of the web browser with proprietary content on top of the
 open-source Chromium browser.
 
+Compared to a usual, smaller recipe, the Chromium recipe has a few
+peculiarities:
+- Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
+  built for the target, for which we use QEMU.
+
 PACKAGECONFIG knobs
 -------------------
 * component-build: (off by default)

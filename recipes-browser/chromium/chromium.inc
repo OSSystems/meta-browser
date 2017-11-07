@@ -8,8 +8,4 @@ SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/ch
 SRC_URI[md5sum] = "3f596ecbd6a39d5ada29f11780ec6dcf"
 SRC_URI[sha256sum] = "f038e72cbd8b7383d13c286329623fda8d6d48f45fa2d964e554b5565283ad71"
 
-# The build type defaults to Release. If you want a Debug build, you can set
-# the variable CHROMIUM_BUILD_TYPE to "Debug" in your conf/local.conf file.
-CHROMIUM_BUILD_TYPE ??= "Release"
-
 inherit pythonnative

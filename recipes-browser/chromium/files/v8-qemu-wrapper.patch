@@ -1,0 +1,27 @@
+Upstream-Status: Inappropriate [embedder specific]
+
+The patch below makes the V8 binaries run during the build be invoked through
+QEMU, as they are built for the target.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+
+diff --git a/v8/BUILD.gn b/v8/BUILD.gn
+index dcefe37..e6a8c8f 100644
+--- a/v8/BUILD.gn
++++ b/v8/BUILD.gn
+@@ -632,6 +632,7 @@ action("run_mksnapshot") {
+   ]
+ 
+   args = [
++    "./v8-qemu-wrapper.sh",
+     "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
+                                       "root_out_dir") + "/mksnapshot",
+                        root_build_dir),
+@@ -676,6 +677,7 @@ action("run_mkpeephole") {
+   script = "tools/run.py"
+ 
+   args = [
++    "./v8-qemu-wrapper.sh",
+     "./" + rebase_path(get_label_info(":mkpeephole($v8_snapshot_toolchain)",
+                                       "root_out_dir") + "/mkpeephole",
+                        root_build_dir),
