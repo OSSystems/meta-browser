@@ -88,9 +88,8 @@ do_install() {
 	install -d ${D}${libdir}/chromium
 	install -d ${D}${libdir}/chromium/locales
 
-	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/chromium
 	install -m 4755 chrome_sandbox ${D}${libdir}/chromium/chrome-sandbox
-	install -m 0755 chrome ${D}${libdir}/chromium/chromium
+	install -m 0755 chrome ${D}${libdir}/chromium/chromium-bin
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
 	install -m 0644 icudtl.dat ${D}${libdir}/chromium/icudtl.dat
 
@@ -113,6 +112,16 @@ do_install() {
 			fi
 		done
 	done
+
+	# A wrapper for the proprietary Google Chrome version already exists.
+	# We can just use that one instead of reinventing the wheel.
+	WRAPPER_FILE=${S}/chrome/installer/linux/common/wrapper
+	sed -e "s,@@CHANNEL@@,stable,g" \
+		-e "s,@@DEFAULT_FLAGS@@ ,,g" \
+		-e "s,@@PROGNAME@@,chromium-bin,g" \
+		${WRAPPER_FILE} > chromium-wrapper
+	install -m 0755 chromium-wrapper ${D}${libdir}/chromium/chromium-wrapper
+	ln -s ${libdir}/chromium/chromium-wrapper ${D}${bindir}/chromium
 
 	# Chromium *.pak files
 	install -m 0644 chrome_*.pak ${D}${libdir}/chromium/

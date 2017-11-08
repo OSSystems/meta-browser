@@ -1,8 +1,0 @@
-#!/bin/sh
-
-CHROME_EXTRA_ARGS=""
-if [ "`whoami`" = "root" ] ; then
-	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=ROOT_HOME/.chromium/"
-fi
-
-/usr/lib/chromium/chromium ${CHROME_EXTRA_ARGS} $@

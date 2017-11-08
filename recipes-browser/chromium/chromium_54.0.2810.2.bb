@@ -2,6 +2,9 @@ require chromium-browser.inc
 
 DEPENDS += "xextproto gtk+ libxi libxss"
 
+# The wrapper script we use from upstream requires bash.
+RDEPENDS_${PN} = "bash"
+
 SRC_URI += "\
         file://add_missing_stat_h_include.patch \
         file://0003-Remove-hard-coded-values-for-CC-and-CXX.patch \

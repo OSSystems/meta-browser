@@ -18,12 +18,12 @@ SRC_URI = "\
         https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz \
         file://include.gypi \
         file://oe-defaults.gypi \
-        file://google-chrome \
         file://unset-madv-free.patch \
         file://0001-v8-fix-build-with-gcc7.patch \
         file://0002-WebKit-fix-build-with-gcc7.patch \
 	file://0001-openh264-disable-format-security-warning.patch.patch \
 	file://0002-replace-struct-ucontext-with-ucontext_t.patch \
+        file://wrapper-extra-flags.patch \
 "
 SRC_URI_append_libc-musl = "\
            file://musl-support/0001-sandbox-Define-TEMP_FAILURE_RETRY-if-not-defined.patch \
@@ -127,12 +127,12 @@ do_compile() {
 
 do_install_append() {
 
-	# Add extra command line arguments to google-chrome script by modifying
-        # the dummy "CHROME_EXTRA_ARGS" line
-        sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${bindir}/chromium
+	# Add extra command line arguments to the chromium-wrapper script by
+	# modifying the dummy "CHROME_EXTRA_ARGS" line
+        sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
 
         # update ROOT_HOME with the root user's $HOME
-        sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${bindir}/chromium
+        sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${libdir}/chromium/chromium-wrapper
 
         if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
                 install -m 0755 lib/*.so ${D}${libdir}/chromium/
