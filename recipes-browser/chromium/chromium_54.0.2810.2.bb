@@ -192,7 +192,6 @@ GN_ARGS += ' \
         target_cpu="${@gn_target_arch_name(d)}" \
         use_gold=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', 'true', 'false', d)} \
         v8_snapshot_toolchain="//build/toolchain/yocto:yocto_target" \
-        v8_use_external_startup_data=false \
 '
 
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
@@ -302,6 +301,7 @@ do_install() {
 
 	install -m 4755 chrome_sandbox ${D}${libdir}/chromium/chrome-sandbox
 	install -m 0755 chrome ${D}${libdir}/chromium/chromium-bin
+	install -m 0644 *.bin ${D}${libdir}/chromium/
 	install -m 0644 icudtl.dat ${D}${libdir}/chromium/icudtl.dat
 
 	# Process and install Chromium's template .desktop file.
