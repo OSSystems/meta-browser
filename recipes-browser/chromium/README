@@ -1,0 +1,67 @@
+Chromium recipe
+===============
+
+This recipe provides a package for the Chromium web browser. It strives to
+always follow the latest stable Linux release as listed in
+https://omahaproxy.appspot.com
+
+We refer to the web browser as Chromium, not Chrome, because "Chrome" is
+Google's version of the web browser with proprietary content on top of the
+open-source Chromium browser.
+
+PACKAGECONFIG knobs
+-------------------
+* component-build: (off by default)
+  Enables component build mode. By default, all of Chromium (with the exception
+  of FFmpeg) is linked into one big binary. The linker step requires at least 8
+  GB RAM. Component mode was created to facilitate development and testing,
+  since with it, there is not one big binary; instead, each component is linked
+  to a separate shared object. Use component mode for development, testing, and
+  in case the build machine is not a 64-bit one, or has less than 8 GB RAM.
+
+* ignore-lost-context: (off by default)
+  There is a flaw in the HTML Canvas specification. When the canvas' backing
+  store is some kind of hardware resource like an OpenGL texture, this resource
+  might get lost. In case of OpenGL textures, this happens when the OpenGL
+  context gets lost. The canvas should then be repainted, but nothing in the
+  Canvas standard reflects that. This packageconfig is to be used if the
+  underlying OpenGL (ES) drivers do not lose the context, or if losing the
+  context is considered okay (note that canvas contents can vanish then).
+
+* impl-side-painting: (off by default)
+  This is a new painting mechanism. Still in development stages, it can improve
+  performance See
+  http://www.chromium.org/developers/design-documents/impl-side-painting for
+  more.
+
+* kiosk-mode: (off by default)
+  Enable this option if you want your browser to start up full-screen, without
+  any menu bars, without any clutter, and without any initial start-up
+  indicators.
+
+* proprietary-codecs: (off by default)
+  Enable this option if you want to add support for additional proprietary
+  codecs, most notably MPEG standards (h.264, h.265, MP4, MP3, AAC etc). It is
+  your responsibility to make sure you are complying with the codecs' licensing
+  terms.
+
+* use-egl: (on by default)
+  Without this packageconfig, the Chromium build will use GLX for creating an
+  OpenGL context in X11, and regular OpenGL for painting operations. Neither
+  are desirable on embedded platforms. With this packageconfig, EGL and OpenGL
+  ES 2.x are used instead.
+
+Google API keys
+---------------
+Some Chromium features use Google APIs, and to access those APIs either an API
+Key or a set of OAuth 2.0 tokens is required. Setting up API keys is optional.
+
+If you don't do it, the specific APIs using Google services won't work in your
+build, but all other features will run normally.
+
+By default, we build Chromium with invalid keys to avoid the "Google API keys
+are missing" error message in the browser's infobar. If you have your own API
+keys, you need to set the GOOGLE_API_KEY, GOOGLE_DEFAULT_CLIENT_ID and
+GOOGLE_DEFAULT_CLIENT_SECRET appropriately in your local.conf.
+
+For more information, see https://dev.chromium.org/developers/how-tos/api-keys.

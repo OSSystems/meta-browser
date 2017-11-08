@@ -47,48 +47,6 @@ SRC_URI_append_libc-musl = "\
            file://musl-support/0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
 "
 
-# PACKAGECONFIG options
-# ^^^^^^^^^^^^^^^^^^^^^
-# * use-egl: (on by default)
-#       Without this packageconfig, the Chromium build will use GLX for
-#       creating an OpenGL context in X11, and regular OpenGL for painting
-#       operations. Neither are desirable on embedded platforms. With this
-#       packageconfig, EGL and OpenGL ES 2.x are used instead.
-#
-# * component-build: (off by default)
-#       Enables component build mode. By default, all of Chromium (with the
-#       exception of FFmpeg) is linked into one big binary. The linker step
-#       requires at least 8 GB RAM. Component mode was created to facilitate
-#       development and testing, since with it, there is not one big binary;
-#       instead, each component is linked to a separate shared object. Use
-#       component mode for development, testing, and in case the build machine
-#       is not a 64-bit one, or has less than 8 GB RAM.
-#
-# * ignore-lost-context: (off by default)
-#       There is a flaw in the HTML Canvas specification. When the canvas'
-#       backing store is some kind of hardware resource like an OpenGL
-#       texture, this resource might get lost. In case of OpenGL textures,
-#       this happens when the OpenGL context gets lost. The canvas should then
-#       be repainted, but nothing in the Canvas standard reflects that. This
-#       packageconfig is to be used if the underlying OpenGL (ES) drivers do
-#       not lose the context, or if losing the context is considered okay
-#       (note that canvas contents can vanish then).
-#
-# * impl-side-painting: (off by default)
-#       This is a new painting mechanism. Still in
-#       development stages, it can improve performance See
-#       http://www.chromium.org/developers/design-documents/impl-side-painting
-#       for more.
-#
-# * kiosk-mode: (off by default)
-#       Enable this option if you want your browser to start up full-screen,
-#       without any menu bars, without any clutter, and without any initial
-#       start-up indicators.
-#
-# * proprietary-codecs: (off by default)
-#       Enable this option if you want to add support for additional proprietary
-#       codecs, most notably MPEG standards (h.264, h.265, MP4, MP3, AAC, MPEG-2 ..)
-
 PACKAGECONFIG ??= "use-egl"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
