@@ -1,4 +1,5 @@
 require chromium.inc
+require chromium-unbundle.inc
 require gn-utils.inc
 
 inherit distro_features_check gtk-icon-cache qemu
@@ -16,12 +17,14 @@ DEPENDS += " \
     cairo \
     dbus \
     expat \
+    flac \
     freetype \
     glib-2.0 \
     gn-native \
     gperf-native \
     gtk+ \
     libdrm \
+    libwebp \
     libx11 \
     libxcomposite \
     libxcursor \
@@ -29,9 +32,11 @@ DEPENDS += " \
     libxext \
     libxfixes \
     libxi \
+    libxml2 \
     libxrandr \
     libxrender \
     libxscrnsaver \
+    libxslt \
     libxtst \
     ninja-native \
     nss \
@@ -42,6 +47,8 @@ DEPENDS += " \
     virtual/libgl \
 "
 DEPENDS_append_libc-musl = " libexecinfo"
+DEPENDS_append_x86 = "yasm-native"
+DEPENDS_append_x86-64 = "yasm-native"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS_${PN} = "bash"
@@ -282,6 +289,7 @@ do_configure_prepend_libc-musl() {
 
 do_configure() {
 	cd ${S}
+	./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
 	gn gen --args='${GN_ARGS}' "${OUTPUT_DIR}"
 }
 
