@@ -61,11 +61,6 @@ PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
 
 
-# These are present as their own variables, since they have changed between versions
-# a few times in the past already; making them variables makes it easier to handle that
-CHROMIUM_X11_GYP_DEFINES ?= ""
-
-
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
@@ -108,34 +103,3 @@ EXTRA_OEGYP += "\
         -Dgoogle_default_client_id=${GOOGLE_DEFAULT_CLIENT_ID} \
         -Dgoogle_default_client_secret=${GOOGLE_DEFAULT_CLIENT_SECRET} \
 "
-
-python() {
-    d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_X11_GYP_DEFINES', True))
-}
-
-do_configure_append() {
-
-	build/gyp_chromium --depth=. ${EXTRA_OEGYP}
-
-}
-
-do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
-
-do_compile() {
-        # build with ninja
-        ninja -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
-}
-
-do_install_append() {
-
-	# Add extra command line arguments to the chromium-wrapper script by
-	# modifying the dummy "CHROME_EXTRA_ARGS" line
-        sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
-
-        # update ROOT_HOME with the root user's $HOME
-        sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${libdir}/chromium/chromium-wrapper
-
-        if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
-                install -m 0755 lib/*.so ${D}${libdir}/chromium/
-        fi
-}
