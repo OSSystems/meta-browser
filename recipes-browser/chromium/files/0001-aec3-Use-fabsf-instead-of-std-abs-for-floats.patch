@@ -1,0 +1,70 @@
+Upstream-Status: Backport
+
+This fixes the build with GCC 5. The backport is actually from WebRTC's git
+repository, not Chromium's.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 0743814fb852a02ca86b41e4d6def3abfb109bc3 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Mon, 16 Oct 2017 17:00:02 +0200
+Subject: [PATCH] aec3: Use fabsf() instead of std::abs() for floats.
+
+We are using <math.h>, not <cmath>. While the latter defines additional
+overloads for abs(), including abs(float), they are not guaranteed to be
+available in <math.h>.
+
+libc++ ships its own math.h with the additional overloads, and libstdc++ (v6
+or later) has a math.h that includes <cmath>, but this is not always
+expected to work: for example, GCC 5.x's libstdc++ does not have these
+additional overloads and causes the build to fail.
+
+Just use fabsf() from the C standard library directly, as it achieves the
+same thing in a more portable fashion.
+
+Bug: None
+Change-Id: I805728269b35051edb54126e204eccd2706e3a92
+Reviewed-on: https://webrtc-review.googlesource.com/11460
+Reviewed-by: Henrik Lundin <henrik.lundin@webrtc.org>
+Commit-Queue: Raphael Kubo da Costa (rakuco) <raphael.kubo.da.costa@intel.com>
+Cr-Commit-Position: refs/heads/master@{#20325}
+---
+ modules/audio_processing/aec3/aec_state.cc | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/modules/audio_processing/aec3/aec_state.cc b/modules/audio_processing/aec3/aec_state.cc
+index 14b83e10b..92ad5cf0d 100644
+--- a/third_party/webrtc/modules/audio_processing/aec3/aec_state.cc
++++ b/third_party/webrtc/modules/audio_processing/aec3/aec_state.cc
+@@ -11,6 +11,7 @@
+ #include "modules/audio_processing/aec3/aec_state.h"
+ 
+ #include <math.h>
++
+ #include <numeric>
+ #include <vector>
+ 
+@@ -258,9 +259,9 @@ void AecState::EchoAudibility::Update(rtc::ArrayView<const float> x,
+   auto result_x = std::minmax_element(x.begin(), x.end());
+   auto result_s = std::minmax_element(s.begin(), s.end());
+   const float x_abs =
+-      std::max(std::abs(*result_x.first), std::abs(*result_x.second));
++      std::max(fabsf(*result_x.first), fabsf(*result_x.second));
+   const float s_abs =
+-      std::max(std::abs(*result_s.first), std::abs(*result_s.second));
++      std::max(fabsf(*result_s.first), fabsf(*result_s.second));
+ 
+   if (converged_filter) {
+     if (x_abs < 20.f) {
+@@ -290,7 +291,7 @@ void AecState::EchoAudibility::Update(rtc::ArrayView<const float> x,
+ void AecState::EchoAudibility::UpdateWithOutput(rtc::ArrayView<const float> e) {
+   const float e_max = *std::max_element(e.begin(), e.end());
+   const float e_min = *std::min_element(e.begin(), e.end());
+-  const float e_abs = std::max(std::abs(e_max), std::abs(e_min));
++  const float e_abs = std::max(fabsf(e_max), fabsf(e_min));
+ 
+   if (max_nearend_ < e_abs) {
+     max_nearend_ = e_abs;
+-- 
+2.13.6
+

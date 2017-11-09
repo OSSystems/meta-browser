@@ -1,0 +1,49 @@
+Upstream-Status: Inappropriate
+
+This is a workaround for GCC5, which does not seem to be able to choose the
+proper base::span constructor for those values. For example:
+
+In file included from ../../gpu/ipc/common/mailbox_holder_struct_traits.h:10:0,
+                 from ../../cc/ipc/texture_mailbox_struct_traits.h:10,
+                 from gen/cc/ipc/copy_output_result.mojom.cc:29:
+../../gpu/ipc/common/mailbox_struct_traits.h: In static member function 'static base::span<const signed char> mojo::StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox>::name(const gpu::Mailbox&)':
+../../gpu/ipc/common/mailbox_struct_traits.h:18:20: error: could not convert '(const int8_t*)(& mailbox.gpu::Mailbox::name)' from 'const int8_t* {aka const signed char*}' to 'base::span<const signed char>'
+
+Upstreaming does not make much sense, as this looks like a compiler bug.
+
+Obtained from: https://gitweb.gentoo.org/repo/gentoo.git/commit/www-client/chromium?id=7843d29ab07411a9c70962fb90b4cd1546910242
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+--- a/gpu/ipc/common/mailbox_struct_traits.h
++++ b/gpu/ipc/common/mailbox_struct_traits.h
+@@ -15,7 +15,7 @@ namespace mojo {
+ template <>
+ struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
+   static base::span<const int8_t> name(const gpu::Mailbox& mailbox) {
+-    return mailbox.name;
++    return base::make_span(mailbox.name);
+   }
+   static bool Read(gpu::mojom::MailboxDataView data, gpu::Mailbox* out);
+ };
+--- a/services/viz/public/cpp/compositing/filter_operation_struct_traits.h
++++ b/services/viz/public/cpp/compositing/filter_operation_struct_traits.h
+@@ -134,7 +134,7 @@ struct StructTraits<viz::mojom::FilterOperationDataView, cc::FilterOperation> {
+   static base::span<const float> matrix(const cc::FilterOperation& operation) {
+     if (operation.type() != cc::FilterOperation::COLOR_MATRIX)
+       return base::span<const float>();
+-    return operation.matrix();
++    return base::make_span(operation.matrix());
+   }
+
+   static base::span<const gfx::Rect> shape(
+--- a/services/viz/public/cpp/compositing/quads_struct_traits.h
++++ b/services/viz/public/cpp/compositing/quads_struct_traits.h
+@@ -284,7 +284,7 @@
+
+   static base::span<const float> vertex_opacity(const cc::DrawQuad& input) {
+     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
+-    return quad->vertex_opacity;
++    return base::make_span(quad->vertex_opacity);
+   }
+
+   static bool y_flipped(const cc::DrawQuad& input) {

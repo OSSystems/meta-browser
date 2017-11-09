@@ -5,21 +5,21 @@ Subject: [PATCH 2/2] link with libexecinfo on musl
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- base/base.gyp | 1 +
+ build/config/BUILD.gn | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/base/base.gyp b/base/base.gyp
-index 67e051ae4..7f5dfe214 100644
---- a/base/base.gyp
-+++ b/base/base.gyp
-@@ -126,6 +126,7 @@
-               '-lrt',
-               # For 'native_library_linux.cc'
-               '-ldl',
-+              '-lexecinfo',
-             ],
-           },
-           'conditions': [
+diff --git a/build/config/BUILD.gn b/build/config/BUILD.gn
+index 17de20b1e4e9..f579a51d8297 100644
+--- a/build/config/BUILD.gn
++++ b/build/config/BUILD.gn
+@@ -253,6 +253,7 @@ config("default_libs") {
+       "dl",
+       "pthread",
+       "rt",
++      "execinfo",
+     ]
+   }
+ }
 -- 
 2.13.2
 

@@ -1,0 +1,64 @@
+Upstream-Status: Backport
+
+In addition to being a very small optimization, this patch is also required for
+Chromium to build with GCC 5.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From b870abe3a8f113db8733af2ddff4e1fc70ccfeab Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Thu, 19 Oct 2017 07:52:21 +0000
+Subject: [PATCH] WebCORS: Use WebString() directly instead of converting from
+ const char*.
+
+When we want to return an empty WebString, just explicitly return a
+WebString() instead of going through the
+
+    const char* -> WTF::String::FromUTF8 -> WTF::String -> WebString
+
+path to achieve the same thing.
+
+Bug: 736308
+Change-Id: If3c9a45b3cac140a1a2d9d48c2b68558d09f106a
+Reviewed-on: https://chromium-review.googlesource.com/726085
+Reviewed-by: Kinuko Yasuda <kinuko@chromium.org>
+Commit-Queue: Raphael Kubo da Costa (rakuco) <raphael.kubo.da.costa@intel.com>
+Cr-Commit-Position: refs/heads/master@{#510028}
+---
+ third_party/WebKit/Source/platform/exported/WebCORS.cpp | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/third_party/WebKit/Source/platform/exported/WebCORS.cpp b/third_party/WebKit/Source/platform/exported/WebCORS.cpp
+index 39ae80a798bf..83d954bfe098 100644
+--- a/third_party/WebKit/Source/platform/exported/WebCORS.cpp
++++ b/third_party/WebKit/Source/platform/exported/WebCORS.cpp
+@@ -480,7 +480,7 @@ WebString AccessControlErrorString(
+     }
+     default:
+       NOTREACHED();
+-      return "";
++      return WebString();
+   }
+ }
+ 
+@@ -512,7 +512,7 @@ WebString PreflightErrorString(const PreflightStatus status,
+     }
+     default:
+       NOTREACHED();
+-      return "";
++      return WebString();
+   }
+ }
+ 
+@@ -533,7 +533,7 @@ WebString RedirectErrorString(const RedirectStatus status,
+     }
+     default:
+       NOTREACHED();
+-      return "";
++      return WebString();
+   }
+ }
+ 
+-- 
+2.13.6
+

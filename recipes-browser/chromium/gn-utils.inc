@@ -53,13 +53,15 @@ def write_toolchain_file(d, file_path):
         '  ld = cxx  # GN expects a compiler, not a linker.\n'
         '  nm = "${nm}"\n'
         '  readelf = "${readelf}"\n'
-        '  is_clang = false\n'
-        '  toolchain_cpu = "${current_cpu}"\n'
-        '  toolchain_os = "linux"\n'
         '  extra_cflags = "${extra_cflags}"\n'
         '  extra_cppflags = "${extra_cppflags}"\n'
         '  extra_cxxflags = "${extra_cxxflags}"\n'
         '  extra_ldflags = "${extra_ldflags}"\n'
+        '  toolchain_args = {\n'
+        '    current_cpu = "${current_cpu}"\n'
+        '    current_os = "linux"\n'
+        '    is_clang = false\n'
+        '  }\n'
         '}\n'
     )
 
