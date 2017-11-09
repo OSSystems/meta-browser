@@ -415,6 +415,13 @@ do_install() {
 		install -m 0755 *.so ${D}${libdir}/chromium/
 	fi
 
+	# Swiftshader is only built for x86 and x86-64.
+	if [ -d "swiftshader" ]; then
+		install -d ${D}${libdir}/chromium/swiftshader
+		install -m 0644 swiftshader/libEGL.so ${D}${libdir}/chromium/swiftshader/
+		install -m 0644 swiftshader/libGLESv2.so ${D}${libdir}/chromium/swiftshader/
+	fi
+
 	# ChromeDriver.
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
 }
