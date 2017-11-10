@@ -9,7 +9,6 @@ B = "${S}/${OUTPUT_DIR}"
 # adds packages to DEPENDS.
 DEPENDS += " \
     cairo \
-    cups \
     libdrm \
     ninja-native \
     nss \

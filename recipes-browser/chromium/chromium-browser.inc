@@ -57,6 +57,7 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # and command-line switches (extra dependencies should not
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
+PACKAGECONFIG[cups] = "-Duse_cups=1,-Duse_cups=0,cups"
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
@@ -77,6 +78,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
 
 
 EXTRA_OEGYP = " \
+	${PACKAGECONFIG_CONFARGS} \
 	-Dangle_use_commit_id=0 \
 	-Dclang=0 \
 	-Dhost_clang=0 \
