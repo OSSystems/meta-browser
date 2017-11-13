@@ -1,5 +1,3 @@
-CHROMIUM_ENABLE_WAYLAND = "0"
-
 include chromium-browser.inc
 
 DEPENDS += "xextproto gtk+ libxi libxss"

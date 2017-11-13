@@ -3,15 +3,8 @@
 #    either "chromium-x11" or "chromium-wayland". There are also patches that
 #    are shared amongst platforms but may one day no longer be needed. These
 #    do not belong in such a subdirectory, but still need to be explicitely be
-#    added. Do NOT add ozone-wayland patches to SRC_URI here!
+#    added.
 # 2) Add md5sum and sha256sum hashes of the tarball.
-# 3) Add ozone-wayland patches to the OZONE_WAYLAND_EXTRA_PATCHES variable.
-# 4) Set the OZONE_WAYLAND_GIT_BRANCH and OZONE_WAYLAND_GIT_SRCREV values.
-# 5) Optionally, set values for these variables:
-#    * OZONE_WAYLAND_PATCH_FILE_GLOB
-#    * OZONE_WAYLAND_GIT_DESTSUFFIX
-#    * CHROMIUM_X11_GYP_DEFINES
-#    * CHROMIUM_WAYLAND_GYP_DEFINES
 
 include chromium.inc
 
@@ -129,22 +122,9 @@ PACKAGECONFIG[proprietary-codecs] = ""
 PACKAGECONFIG[build-chromedriver] = ""
 
 
-# ozone-wayland will be cloned into a directory with this name
-OZONE_WAYLAND_GIT_DESTSUFFIX ?= "ozone-wayland-git"
-# Use glob to filter out the patches that shall be applied against ozone-wayland.
-# Useful if some of the patches would break the build.
-OZONE_WAYLAND_PATCH_FILE_GLOB ?= "*.patch"
-
-# Variable for extra ozone-wayland patches, typically extended by BSP layer .bbappends
-# IMPORTANT: do not simply add extra ozone-wayland patches to the SRC_URI in a
-# .bbappend, since the base ozone-wayland patches need to be applied first (see below)
-OZONE_WAYLAND_EXTRA_PATCHES ?= ""
-
-
 # These are present as their own variables, since they have changed between versions
 # a few times in the past already; making them variables makes it easier to handle that
 CHROMIUM_X11_GYP_DEFINES ?= ""
-CHROMIUM_WAYLAND_GYP_DEFINES ?= ""
 
 
 CHROMIUM_EXTRA_ARGS ?= " \
@@ -154,51 +134,6 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run --incognito', '', d)} \
 "
 
-# Some sanity checks.
-python do_check_variables() {
-    CHROMIUM_BUILD_TYPE = d.getVar('CHROMIUM_BUILD_TYPE', True)
-    CHROMIUM_ENABLE_WAYLAND = d.getVar('CHROMIUM_ENABLE_WAYLAND', True)
-    DISTRO_FEATURES = d.getVar("DISTRO_FEATURES", True).split()
-    if CHROMIUM_BUILD_TYPE not in ['Release', 'Debug']:
-        bb.fatal("Wrong value for CHROMIUM_BUILD_TYPE. Please set it either to \'Release\' or to \'Debug\'")
-    if CHROMIUM_ENABLE_WAYLAND not in ['0', '1']:
-        bb.fatal("Wrong value for CHROMIUM_ENABLE_WAYLAND. Please set it to \'1\' to enable the feature or to \'0\' to disable it")
-    if ( (CHROMIUM_ENABLE_WAYLAND == '1') and ('wayland' not in DISTRO_FEATURES) ):
-        bb.warn("You have selected to build Chromium with Wayland support, but you have not enabled wayland in DISTRO_FEATURES")
-    if ( (CHROMIUM_ENABLE_WAYLAND != '1') and ('x11' not in DISTRO_FEATURES) ):
-        bb.warn("You have selected to build Chromium without Wayland support, but you have not enabled x11 in DISTRO_FEATURES")
-    # Print both on log.do_checkvariables and on the console the configuration that is selected.
-    # This useful both for throubleshooting and for checking how the build is finally configured.
-    if (CHROMIUM_ENABLE_WAYLAND == '1'):
-        bb.plain("INFO: Chromium has been configured with Wayland support (ozone-wayland). Build type is \'%s\'" %CHROMIUM_BUILD_TYPE)
-    else:
-        bb.plain("INFO: Chromium has been configured for X11. Build type is \'%s\'" %CHROMIUM_BUILD_TYPE)
-}
-addtask check_variables before do_fetch
-
-do_unpack[postfuncs] += "${@oe.utils.conditional('CHROMIUM_ENABLE_WAYLAND', '1', 'copy_ozone_wayland_files', '', d)}"
-do_patch[prefuncs] += "${@oe.utils.conditional('CHROMIUM_ENABLE_WAYLAND', '1', 'add_ozone_wayland_patches', '', d)}"
-
-copy_ozone_wayland_files() {
-	# ozone-wayland sources must be placed in an "ozone"
-	# subdirectory in ${S} in order for the .gyp build
-	# scripts to work
-	cp -r ${WORKDIR}/ozone-wayland-git ${S}/ozone
-}
-
-python add_ozone_wayland_patches() {
-    import glob
-    srcdir = d.getVar('S', True)
-    # find all ozone-wayland patches and add them to SRC_URI
-    upstream_patches_dir = srcdir + "/ozone/patches"
-    upstream_patches = glob.glob(upstream_patches_dir + "/" + d.getVar('OZONE_WAYLAND_PATCH_FILE_GLOB', True))
-    upstream_patches.sort()
-    for upstream_patch in upstream_patches:
-        d.appendVar('SRC_URI', ' file://' + upstream_patch)
-    # then, add the extra patches to SRC_URI order matters;
-    # extra patches may depend on the base ozone-wayland ones
-    d.appendVar('SRC_URI', ' ' + d.getVar('OZONE_WAYLAND_EXTRA_PATCHES', False))
-}
 
 # uncomment below or set it in a bbappend if you want to use gold linker
 # to link chromium irrespective of system linker, gold speeds up linking
@@ -224,10 +159,7 @@ EXTRA_OEGYP = " \
 "
 
 python() {
-    if d.getVar('CHROMIUM_ENABLE_WAYLAND', True) == '1':
-        d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_WAYLAND_GYP_DEFINES', True))
-    else:
-        d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_X11_GYP_DEFINES', True))
+    d.appendVar('GYP_DEFINES', ' %s ' % d.getVar('CHROMIUM_X11_GYP_DEFINES', True))
 }
 
 do_configure_append() {
