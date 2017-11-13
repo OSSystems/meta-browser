@@ -1,4 +1,4 @@
-include chromium-browser.inc
+require chromium-browser.inc
 
 DEPENDS += "xextproto gtk+ libxi libxss"
 

@@ -6,14 +6,16 @@
 #    added.
 # 2) Add md5sum and sha256sum hashes of the tarball.
 
-include chromium.inc
+require chromium.inc
 
-DESCRIPTION = "Chromium browser"
+DESCRIPTION = "Chromium is an open-source browser project that aims to build a safer, faster, and more stable way for all users to experience the web."
+HOMEPAGE = "https://www.chromium.org/Home"
+
 DEPENDS += "libgnome-keyring gperf-native"
 DEPENDS_append_libc-musl = " libexecinfo"
 
 SRC_URI = "\
-        http://gsdview.appspot.com/chromium-browser-official/chromium-${PV}.tar.xz \
+        https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz \
         file://include.gypi \
         file://oe-defaults.gypi \
         file://google-chrome \
@@ -172,7 +174,7 @@ do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} ${PARALLEL_MAKE} chrome chrome_sandbox \
+        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -v ${PARALLEL_MAKE} chrome chrome_sandbox \
 		${@bb.utils.contains('PACKAGECONFIG', 'build-chromedriver', 'chromedriver', '', d)}
 }
 
