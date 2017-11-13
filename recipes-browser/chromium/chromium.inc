@@ -1,4 +1,8 @@
 LICENSE = "BSD"
+
+OUTPUT_DIR = "out/${CHROMIUM_BUILD_TYPE}"
+B = "${S}/${OUTPUT_DIR}"
+
 DEPENDS = "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
 
 COMPATIBLE_MACHINE = "(-)"
@@ -13,7 +17,7 @@ COMPATIBLE_MACHINE_aarch64 = "(.*)"
 # the variable CHROMIUM_BUILD_TYPE to "Debug" in your conf/local.conf file.
 CHROMIUM_BUILD_TYPE ??= "Release"
 
-inherit gettext pythonnative
+inherit pythonnative
 
 GYP_DEFINES += "release_extra_cflags='-Wno-error=unused-local-typedefs' sysroot='' \
 	${@bb.utils.contains("AVAILTUNES", "mips", "", "release_extra_cflags='-fno-delete-null-pointer-checks'", d)}"
@@ -72,66 +76,43 @@ do_configure() {
 }
 
 do_install() {
-	if [ -f "${WORKDIR}/google-chrome" ]; then
-		install -Dm 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox" ]; then
-		install -Dm 4755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chrome" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chrome ${D}${bindir}/${BPN}/chrome
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/chromedriver" ]; then
-		install -Dm 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/chromedriver ${D}${bindir}/${BPN}/chromedriver
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat" ]; then
-		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
-	fi
-	if [ -f "${WORKDIR}/google-chrome.desktop" ]; then
-		install -Dm 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/product_logo_48.png" ]; then
-		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/product_logo_48.png ${D}${bindir}/${BPN}/product_logo_48.png
-	fi
+	install -d ${D}${bindir}
+	install -d ${D}${bindir}/${BPN}
+	install -d ${D}${bindir}/${BPN}/locales
+	install -d ${D}${datadir}
+	install -d ${D}${datadir}/applications
+	install -d ${D}${sbindir}
 
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/natives_blob.bin" ]; then
-		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/natives_blob.bin ${D}${bindir}/${BPN}/natives_blob.bin
-	fi
-	if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/snapshot_blob.bin" ]; then
-		install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/snapshot_blob.bin ${D}${bindir}/${BPN}/snapshot_blob.bin
-	fi
-
-	# Chromium plugins libs
-	for f in libpdf.so libosmesa.so libffmpegsumo.so; do
-		if [ -f "${B}/out/${CHROMIUM_BUILD_TYPE}/$f" ]; then
-			install -Dm 0644 ${B}/out/${CHROMIUM_BUILD_TYPE}/$f ${D}${libdir}/${BPN}/$f
-		fi
-	done
+	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
+	install -m 4755 chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
+	install -m 0755 chrome ${D}${bindir}/${BPN}/chrome
+	install -m 0755 chromedriver ${D}${bindir}/chromedriver
+	install -m 0644 icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
+	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
+	install -m 0644 product_logo_48.png ${D}${bindir}/${BPN}/product_logo_48.png
 
 	# Chromium *.pak files
-	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && find . -type f -name \*.pak); do
-			install -Dm 0644 "${B}/out/${CHROMIUM_BUILD_TYPE}/${f}" "${D}${bindir}/${BPN}/${f}"
-	done
+	install -m 0644 chrome_*.pak ${D}${bindir}/${BPN}/
+	install -m 0644 resources.pak ${D}${bindir}/${BPN}/resources.pak
 
-	# Chromium resource files (for the inspector).
-	for f in $(cd ${B}/out/${CHROMIUM_BUILD_TYPE}/ && test -d resources && find resources -type f); do
-			install -Dm 0644 "${B}/out/${CHROMIUM_BUILD_TYPE}/${f}" "${D}${bindir}/${BPN}/${f}"
-	done
-
+	# Locales.
+	install -m 0644 locales/*.pak ${D}${bindir}/${BPN}/locales/
 }
 
-PACKAGES =+ "${PN}-codecs-ffmpeg ${PN}-plugin-pdf ${PN}-chromedriver"
+PACKAGES =+ "${PN}-chromedriver"
 
-FILES_${PN}-codecs-ffmpeg = "${libdir}/${BPN}/libffmpegsumo.so"
-FILES_${PN}-plugin-pdf = "${libdir}/${BPN}/libpdf.so"
-FILES_${PN}-chromedriver = "${bindir}/${BPN}/chromedriver"
+FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
-FILES_${PN} = "${bindir}/${BPN} ${datadir}/applications ${sbindir}/ ${libdir}/${BPN}/"
-FILES_${PN} += "${bindir} ${libdir}"
-FILES_${PN} += "${bindir}/${BPN}/*.pak"
-FILES_${PN} += "${bindir}/${BPN}/locales/*.pak"
-
-FILES_${PN}-dbg += "${bindir}/${BPN}/.debug/ ${libdir}/${BPN}/.debug/ ${libdir}/.debug/"
+FILES_${PN} = " \
+        ${bindir} \
+        ${bindir}/${BPN} \
+        ${bindir}/${BPN}/*.pak \
+        ${bindir}/${BPN}/locales/*.pak \
+        ${datadir}/applications \
+        ${libdir} \
+        ${libdir}/${BPN}/ \
+        ${sbindir}/ \
+"
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
@@ -139,3 +120,6 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 INSANE_SKIP_${PN} = "ldflags textrel"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
+
+# There is no need to ship empty -dev packages.
+ALLOW_EMPTY_${PN}-dev = "0"

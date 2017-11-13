@@ -27,73 +27,27 @@ SRC_URI = "\
 	file://0002-replace-struct-ucontext-with-ucontext_t.patch \
 "
 SRC_URI_append_libc-musl = "\
-           file://0001-sandbox-Define-TEMP_FAILURE_RETRY-if-not-defined.patch \
-           file://0002-breakpad-Replace-__WORDSIZE-with-defines-from-limits.patch \
-           file://0003-Avoid-mallinfo-APIs-on-non-glibc-linux.patch \
-           file://0004-include-fcntl.h-for-loff_t.patch \
-           file://0005-use-off64_t-instead-of-the-internal-__off64_t.patch \
-           file://0006-linux-glibc-make-the-distinction.patch \
-           file://0007-allocator-Do-not-include-glibc_weak_symbols-for-musl.patch \
-           file://0008-Use-correct-member-name-__si_fields-from-LinuxSigInf.patch \
-           file://0009-Match-syscalls-to-match-musl.patch \
-           file://0010-Define-res_ninit-and-res_nclose-for-non-glibc-platfo.patch \
-           file://0011-Do-not-define-__sbrk-on-musl.patch \
-           file://0012-Adjust-default-pthread-stack-size.patch \
-           file://0013-include-asm-generic-ioctl.h-for-TCGETS2.patch \
-           file://0014-link-with-libexecinfo-on-musl.patch \
-           file://0015-metrics-Keep-GNU-extentions-effective-only-when-usin.patch \
-           file://0016-getcontext-API-is-unimplemented-in-musl.patch \
-           file://0017-Use-_fpstate-instead-of-_libc_fpstate.patch \
-           file://0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
+           file://musl-support/0001-sandbox-Define-TEMP_FAILURE_RETRY-if-not-defined.patch \
+           file://musl-support/0002-breakpad-Replace-__WORDSIZE-with-defines-from-limits.patch \
+           file://musl-support/0003-Avoid-mallinfo-APIs-on-non-glibc-linux.patch \
+           file://musl-support/0004-include-fcntl.h-for-loff_t.patch \
+           file://musl-support/0005-use-off64_t-instead-of-the-internal-__off64_t.patch \
+           file://musl-support/0006-linux-glibc-make-the-distinction.patch \
+           file://musl-support/0007-allocator-Do-not-include-glibc_weak_symbols-for-musl.patch \
+           file://musl-support/0008-Use-correct-member-name-__si_fields-from-LinuxSigInf.patch \
+           file://musl-support/0009-Match-syscalls-to-match-musl.patch \
+           file://musl-support/0010-Define-res_ninit-and-res_nclose-for-non-glibc-platfo.patch \
+           file://musl-support/0011-Do-not-define-__sbrk-on-musl.patch \
+           file://musl-support/0012-Adjust-default-pthread-stack-size.patch \
+           file://musl-support/0013-include-asm-generic-ioctl.h-for-TCGETS2.patch \
+           file://musl-support/0014-link-with-libexecinfo-on-musl.patch \
+           file://musl-support/0015-metrics-Keep-GNU-extentions-effective-only-when-usin.patch \
+           file://musl-support/0016-getcontext-API-is-unimplemented-in-musl.patch \
+           file://musl-support/0017-Use-_fpstate-instead-of-_libc_fpstate.patch \
+           file://musl-support/0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
 "
 
-S = "${WORKDIR}/chromium-${PV}"
-BPN = "chromium"
-
-
-# PACKAGECONFIG options
-# ^^^^^^^^^^^^^^^^^^^^^
-# * use-egl: (on by default)
-#       Without this packageconfig, the Chromium build will use GLX for
-#       creating an OpenGL context in X11, and regular OpenGL for painting
-#       operations. Neither are desirable on embedded platforms. With this
-#       packageconfig, EGL and OpenGL ES 2.x are used instead.
-#
-# * component-build: (off by default)
-#       Enables component build mode. By default, all of Chromium (with the
-#       exception of FFmpeg) is linked into one big binary. The linker step
-#       requires at least 8 GB RAM. Component mode was created to facilitate
-#       development and testing, since with it, there is not one big binary;
-#       instead, each component is linked to a separate shared object. Use
-#       component mode for development, testing, and in case the build machine
-#       is not a 64-bit one, or has less than 8 GB RAM.
-#
-# * ignore-lost-context: (off by default)
-#       There is a flaw in the HTML Canvas specification. When the canvas'
-#       backing store is some kind of hardware resource like an OpenGL
-#       texture, this resource might get lost. In case of OpenGL textures,
-#       this happens when the OpenGL context gets lost. The canvas should then
-#       be repainted, but nothing in the Canvas standard reflects that. This
-#       packageconfig is to be used if the underlying OpenGL (ES) drivers do
-#       not lose the context, or if losing the context is considered okay
-#       (note that canvas contents can vanish then).
-#
-# * impl-side-painting: (off by default)
-#       This is a new painting mechanism. Still in
-#       development stages, it can improve performance See
-#       http://www.chromium.org/developers/design-documents/impl-side-painting
-#       for more.
-#
-# * kiosk-mode: (off by default)
-#       Enable this option if you want your browser to start up full-screen,
-#       without any menu bars, without any clutter, and without any initial
-#       start-up indicators.
-#
-# * proprietary-codecs: (off by default)
-#       Enable this option if you want to add support for additional proprietary
-#       codecs, most notably MPEG standards (h.264, h.265, MP4, MP3, AAC, MPEG-2 ..)
-
-PACKAGECONFIG ??= "use-egl build-chromedriver"
+PACKAGECONFIG ??= "use-egl"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -108,7 +62,6 @@ PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ""
-PACKAGECONFIG[build-chromedriver] = ""
 
 
 # These are present as their own variables, since they have changed between versions
@@ -170,8 +123,7 @@ do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
 
 do_compile() {
         # build with ninja
-        ninja -C ${S}/out/${CHROMIUM_BUILD_TYPE} -v ${PARALLEL_MAKE} chrome chrome_sandbox \
-		${@bb.utils.contains('PACKAGECONFIG', 'build-chromedriver', 'chromedriver', '', d)}
+        ninja -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
 }
 
 do_install_append() {
@@ -187,6 +139,6 @@ do_install_append() {
         # LD_LIBRARY_PATH line in the google-chromium script refers to it
         install -d ${D}${libdir}/${BPN}/
         if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
-                install -m 0755 ${B}/out/${CHROMIUM_BUILD_TYPE}/lib/*.so ${D}${libdir}/${BPN}/
+                install -m 0755 lib/*.so ${D}${libdir}/${BPN}/
         fi
 }
