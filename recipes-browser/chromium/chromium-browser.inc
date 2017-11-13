@@ -137,13 +137,6 @@ CHROMIUM_EXTRA_ARGS ?= " \
 "
 
 
-# uncomment below or set it in a bbappend if you want to use gold linker
-# to link chromium irrespective of system linker, gold speeds up linking
-# chromium ( 8mins to < 2mins on a decent xeon system)
-#
-#USEGOLD = "-Dlinux_use_gold_flags=1"
-USEGOLD ??= ""
-
 EXTRA_OEGYP = " \
 	-Dangle_use_commit_id=0 \
 	-Dclang=0 \
@@ -156,7 +149,7 @@ EXTRA_OEGYP = " \
 	-I ${WORKDIR}/include.gypi \
 	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-I ${WORKDIR}/component-build.gypi', '', d)} \
 	${@bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', '-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome', '', d)} \
-	${USEGOLD} \
+	-Dlinux_use_gold_flags=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '1', '0', d)} \
 	-f ninja \
 "
 
