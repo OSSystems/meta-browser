@@ -5,11 +5,8 @@ DEPENDS += "xextproto gtk+ libxi libxss"
 SRC_URI += "\
         file://chromium/add_missing_stat_h_include.patch \
         file://0003-Remove-hard-coded-values-for-CC-and-CXX.patch \
-        file://0004-Create-empty-i18n_process_css_test.html-file-to-avoi.patch \
         file://0005-Override-root-filesystem-access-restriction.patch \
         file://chromium/0011-Replace-readdir_r-with-readdir.patch \
-        file://chromium/remove-Werror.patch \
-        ${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'file://component-build.gypi', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://chromium/0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
         file://chromium/m32.patch \
 "

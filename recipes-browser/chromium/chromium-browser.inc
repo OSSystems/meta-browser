@@ -19,7 +19,6 @@ SRC_URI = "\
         file://include.gypi \
         file://oe-defaults.gypi \
         file://google-chrome \
-        ${@bb.utils.contains('PACKAGECONFIG', 'disable-api-keys-info-bar', 'file://api-keys.patch;patchdir=${WORKDIR}', '', d)} \
         file://google-chrome.desktop \
         file://unset-madv-free.patch \
         file://0001-v8-fix-build-with-gcc7.patch \
@@ -59,17 +58,6 @@ BPN = "chromium"
 #       creating an OpenGL context in X11, and regular OpenGL for painting
 #       operations. Neither are desirable on embedded platforms. With this
 #       packageconfig, EGL and OpenGL ES 2.x are used instead.
-#
-# * disable-api-keys-info-bar: (off by default)
-#       This disables the info bar that warns: "Google API keys are missing".
-#       With some builds, missing API keys are considered OK, so the bar needs
-#       to go. Conversely, if Chromium is compiled with this option off and
-#       the user wishes to disable the warning, the following lines can be
-#       added to the "google-chrome" script (see patchset) before the
-#       chromium binary is called:
-#           export GOOGLE_API_KEY="no"
-#           export GOOGLE_DEFAULT_CLIENT_ID="no"
-#           export GOOGLE_DEFAULT_CLIENT_SECRET="no"
 #
 # * component-build: (off by default)
 #       Enables component build mode. By default, all of Chromium (with the
@@ -115,7 +103,6 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # The .bb file should use these to conditionally add patches
 # and command-line switches (extra dependencies should not
 # be necessary but are OK to add).
-PACKAGECONFIG[disable-api-keys-info-bar] = ""
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
@@ -142,15 +129,31 @@ EXTRA_OEGYP = " \
 	-Dclang=0 \
 	-Dhost_clang=0 \
 	-Ddisable_fatal_linker_warnings=1 \
+	-Dwerror= \
 	-Dv8_use_external_startup_data=0 \
 	-Dlinux_use_bundled_gold=0 \
 	-Dlinux_use_bundled_binutils=0 \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \
-	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-I ${WORKDIR}/component-build.gypi', '', d)} \
+	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-Dcomponent=shared_library', '', d)} \
 	${@bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', '-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome', '', d)} \
 	-Dlinux_use_gold_flags=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', '1', '0', d)} \
 	-f ninja \
+"
+
+# API keys for accessing Google services. By default, we use an invalid key
+# only to prevent the "you are missing an API key" infobar from being shown on
+# startup.
+# See https://dev.chromium.org/developers/how-tos/api-keys for more information
+# on how to obtain your own keys. You can then set the variables below in
+# local.conf or a .bbappend file.
+GOOGLE_API_KEY ??= "invalid-api-key"
+GOOGLE_DEFAULT_CLIENT_ID ??= "invalid-client-id"
+GOOGLE_DEFAULT_CLIENT_SECRET ??= "invalid-client-secret"
+EXTRA_OEGYP += "\
+        -Dgoogle_api_key=${GOOGLE_API_KEY} \
+        -Dgoogle_default_client_id=${GOOGLE_DEFAULT_CLIENT_ID} \
+        -Dgoogle_default_client_secret=${GOOGLE_DEFAULT_CLIENT_SECRET} \
 "
 
 python() {
