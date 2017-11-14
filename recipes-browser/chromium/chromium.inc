@@ -5,10 +5,6 @@ inherit gtk-icon-cache
 OUTPUT_DIR = "out/${CHROMIUM_BUILD_TYPE}"
 B = "${S}/${OUTPUT_DIR}"
 
-# Append instead of assigning; the gtk-icon-cache class inherited above also
-# adds packages to DEPENDS.
-DEPENDS += "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
-
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_x86 = "(.*)"
 COMPATIBLE_MACHINE_x86-64 = "(.*)"

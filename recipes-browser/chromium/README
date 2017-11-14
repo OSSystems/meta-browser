@@ -19,6 +19,9 @@ PACKAGECONFIG knobs
   to a separate shared object. Use component mode for development, testing, and
   in case the build machine is not a 64-bit one, or has less than 8 GB RAM.
 
+* cups: (off by default)
+  Enables CUPS support in Chromium, and adds a dependency on the "cups" recipe.
+
 * ignore-lost-context: (off by default)
   There is a flaw in the HTML Canvas specification. When the canvas' backing
   store is some kind of hardware resource like an OpenGL texture, this resource

@@ -11,9 +11,6 @@ require chromium.inc
 DESCRIPTION = "Chromium is an open-source browser project that aims to build a safer, faster, and more stable way for all users to experience the web."
 HOMEPAGE = "https://www.chromium.org/Home"
 
-DEPENDS += "libgnome-keyring gperf-native"
-DEPENDS_append_libc-musl = " libexecinfo"
-
 SRC_URI = "\
         https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz \
         file://include.gypi \
@@ -57,6 +54,7 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # and command-line switches (extra dependencies should not
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
+PACKAGECONFIG[cups] = "-Duse_cups=1,-Duse_cups=0,cups"
 PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
@@ -77,6 +75,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
 
 
 EXTRA_OEGYP = " \
+	${PACKAGECONFIG_CONFARGS} \
 	-Dangle_use_commit_id=0 \
 	-Dclang=0 \
 	-Dhost_clang=0 \
@@ -85,6 +84,8 @@ EXTRA_OEGYP = " \
 	-Dv8_use_external_startup_data=0 \
 	-Dlinux_use_bundled_gold=0 \
 	-Dlinux_use_bundled_binutils=0 \
+	-Duse_gconf=0 \
+	-Duse_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', '1', '0', d)} \
 	-I ${WORKDIR}/oe-defaults.gypi \
 	-I ${WORKDIR}/include.gypi \
 	${@bb.utils.contains('PACKAGECONFIG', 'component-build', '-Dcomponent=shared_library', '', d)} \
