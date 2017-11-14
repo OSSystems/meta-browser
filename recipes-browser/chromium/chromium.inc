@@ -77,26 +77,25 @@ do_configure() {
 
 do_install() {
 	install -d ${D}${bindir}
-	install -d ${D}${bindir}/${BPN}
-	install -d ${D}${bindir}/${BPN}/locales
 	install -d ${D}${datadir}
 	install -d ${D}${datadir}/applications
-	install -d ${D}${sbindir}
+	install -d ${D}${libdir}/chromium
+	install -d ${D}${libdir}/chromium/locales
 
-	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/google-chrome
-	install -m 4755 chrome_sandbox ${D}${sbindir}/chrome-devel-sandbox
-	install -m 0755 chrome ${D}${bindir}/${BPN}/chrome
+	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/chromium
+	install -m 4755 chrome_sandbox ${D}${libdir}/chromium/chrome-sandbox
+	install -m 0755 chrome ${D}${libdir}/chromium/chromium
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
-	install -m 0644 icudtl.dat ${D}${bindir}/${BPN}/icudtl.dat
+	install -m 0644 icudtl.dat ${D}${libdir}/chromium/icudtl.dat
 	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
-	install -m 0644 product_logo_48.png ${D}${bindir}/${BPN}/product_logo_48.png
+	install -m 0644 product_logo_48.png ${D}${libdir}/chromium/product_logo_48.png
 
 	# Chromium *.pak files
-	install -m 0644 chrome_*.pak ${D}${bindir}/${BPN}/
-	install -m 0644 resources.pak ${D}${bindir}/${BPN}/resources.pak
+	install -m 0644 chrome_*.pak ${D}${libdir}/chromium/
+	install -m 0644 resources.pak ${D}${libdir}/chromium/resources.pak
 
 	# Locales.
-	install -m 0644 locales/*.pak ${D}${bindir}/${BPN}/locales/
+	install -m 0644 locales/*.pak ${D}${libdir}/chromium/locales/
 }
 
 PACKAGES =+ "${PN}-chromedriver"
@@ -104,14 +103,9 @@ PACKAGES =+ "${PN}-chromedriver"
 FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
 FILES_${PN} = " \
-        ${bindir} \
-        ${bindir}/${BPN} \
-        ${bindir}/${BPN}/*.pak \
-        ${bindir}/${BPN}/locales/*.pak \
-        ${datadir}/applications \
-        ${libdir} \
-        ${libdir}/${BPN}/ \
-        ${sbindir}/ \
+        ${bindir}/${PN} \
+        ${datadir}/applications/${PN}.desktop \
+        ${libdir}/${PN}/* \
 "
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"

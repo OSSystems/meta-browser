@@ -130,15 +130,12 @@ do_install_append() {
 
 	# Add extra command line arguments to google-chrome script by modifying
         # the dummy "CHROME_EXTRA_ARGS" line
-        sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${bindir}/google-chrome
+        sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${bindir}/chromium
 
         # update ROOT_HOME with the root user's $HOME
-        sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${bindir}/google-chrome
+        sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${bindir}/chromium
 
-	# Always adding this libdir (not just with component builds), because the
-        # LD_LIBRARY_PATH line in the google-chromium script refers to it
-        install -d ${D}${libdir}/${BPN}/
         if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
-                install -m 0755 lib/*.so ${D}${libdir}/${BPN}/
+                install -m 0755 lib/*.so ${D}${libdir}/chromium/
         fi
 }
