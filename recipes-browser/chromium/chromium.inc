@@ -1,9 +1,13 @@
 LICENSE = "BSD"
 
+inherit gtk-icon-cache
+
 OUTPUT_DIR = "out/${CHROMIUM_BUILD_TYPE}"
 B = "${S}/${OUTPUT_DIR}"
 
-DEPENDS = "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
+# Append instead of assigning; the gtk-icon-cache class inherited above also
+# adds packages to DEPENDS.
+DEPENDS += "xz-native pciutils pulseaudio cairo nss zlib-native cups ninja-native gconf libexif pango libdrm"
 
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE_x86 = "(.*)"
@@ -79,16 +83,45 @@ do_install() {
 	install -d ${D}${bindir}
 	install -d ${D}${datadir}
 	install -d ${D}${datadir}/applications
+	install -d ${D}${datadir}/icons
+	install -d ${D}${datadir}/icons/hicolor
 	install -d ${D}${libdir}/chromium
 	install -d ${D}${libdir}/chromium/locales
 
-	install -m 0755 ${WORKDIR}/google-chrome ${D}${bindir}/chromium
 	install -m 4755 chrome_sandbox ${D}${libdir}/chromium/chrome-sandbox
-	install -m 0755 chrome ${D}${libdir}/chromium/chromium
+	install -m 0755 chrome ${D}${libdir}/chromium/chromium-bin
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
 	install -m 0644 icudtl.dat ${D}${libdir}/chromium/icudtl.dat
-	install -m 0644 ${WORKDIR}/google-chrome.desktop ${D}${datadir}/applications/google-chrome.desktop
-	install -m 0644 product_logo_48.png ${D}${libdir}/chromium/product_logo_48.png
+
+	# Process and install Chromium's template .desktop file.
+	sed -e "s,@@MENUNAME@@,Chromium Browser,g" \
+	    -e "s,@@PACKAGE@@,chromium,g" \
+	    -e "s,@@USR_BIN_SYMLINK_NAME@@,chromium,g" \
+	    ${S}/chrome/installer/linux/common/desktop.template > chromium.desktop
+	install -m 0644 chromium.desktop ${D}${datadir}/applications/chromium.desktop
+
+	# Install icons.
+	for size in 16 22 24 32 48 64 128 256; do
+		install -d ${D}${datadir}/icons/hicolor/${size}x${size}
+		install -d ${D}${datadir}/icons/hicolor/${size}x${size}/apps
+		for dirname in "chromium" "default_100_percent/chromium"; do
+			icon="${S}/chrome/app/theme/${dirname}/product_logo_${size}.png"
+			if [ -f "${icon}" ]; then
+				install -m 0644 "${icon}" \
+					${D}${datadir}/icons/hicolor/${size}x${size}/apps/chromium.png
+			fi
+		done
+	done
+
+	# A wrapper for the proprietary Google Chrome version already exists.
+	# We can just use that one instead of reinventing the wheel.
+	WRAPPER_FILE=${S}/chrome/installer/linux/common/wrapper
+	sed -e "s,@@CHANNEL@@,stable,g" \
+		-e "s,@@DEFAULT_FLAGS@@ ,,g" \
+		-e "s,@@PROGNAME@@,chromium-bin,g" \
+		${WRAPPER_FILE} > chromium-wrapper
+	install -m 0755 chromium-wrapper ${D}${libdir}/chromium/chromium-wrapper
+	ln -s ${libdir}/chromium/chromium-wrapper ${D}${bindir}/chromium
 
 	# Chromium *.pak files
 	install -m 0644 chrome_*.pak ${D}${libdir}/chromium/
@@ -105,6 +138,7 @@ FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 FILES_${PN} = " \
         ${bindir}/${PN} \
         ${datadir}/applications/${PN}.desktop \
+        ${datadir}/icons/hicolor/*x*/apps/chromium.png \
         ${libdir}/${PN}/* \
 "
 
