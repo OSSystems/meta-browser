@@ -1,0 +1,20 @@
+Upstream-Status: Inappropriate [musl support]
+
+secure_getenv() is a glibc extension, stop telling code that it exists.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+diff --git a/third_party/angle/src/vulkan_support/BUILD.gn b/third_party/angle/src/vulkan_support/BUILD.gn
+index b2c3473e7..cc526bf9d 100644
+--- a/third_party/angle/src/vulkan_support/BUILD.gn
++++ b/third_party/angle/src/vulkan_support/BUILD.gn
+@@ -209,10 +209,6 @@ config("vulkan_loader_config") {
+   if (is_win) {
+     cflags = [ "/wd4201" ]
+   }
+-  if (is_linux) {
+-    # assume secure_getenv() is available
+-    defines += [ "HAVE_SECURE_GETENV" ]
+-  }
+ }
+ 
+ static_library("vulkan_loader") {

@@ -16,6 +16,16 @@ peculiarities:
 - Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
   built for the target, for which we use QEMU.
 
+Build requirements
+------------------
+As part of its build process, Chromium builds and runs some binaries on the
+host. As such, as of M62 this means you must have a C++ compiler that is
+capable of building C++11 (preferably C++14) code, which for GCC means at least
+version 5.4.0.
+
+Additionally, make sure the machine being used to build Chromium is powerful
+enough: a x86-64 machine with at least 16GB RAM is recommended.
+
 PACKAGECONFIG knobs
 -------------------
 * component-build: (off by default)
@@ -28,15 +38,6 @@ PACKAGECONFIG knobs
 
 * cups: (off by default)
   Enables CUPS support in Chromium, and adds a dependency on the "cups" recipe.
-
-* ignore-lost-context: (off by default)
-  There is a flaw in the HTML Canvas specification. When the canvas' backing
-  store is some kind of hardware resource like an OpenGL texture, this resource
-  might get lost. In case of OpenGL textures, this happens when the OpenGL
-  context gets lost. The canvas should then be repainted, but nothing in the
-  Canvas standard reflects that. This packageconfig is to be used if the
-  underlying OpenGL (ES) drivers do not lose the context, or if losing the
-  context is considered okay (note that canvas contents can vanish then).
 
 * impl-side-painting: (off by default)
   This is a new painting mechanism. Still in development stages, it can improve

@@ -6,23 +6,12 @@ extra flags to it by default.
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 --- a/chrome/installer/linux/common/wrapper
 +++ b/chrome/installer/linux/common/wrapper
-@@ -45,12 +45,17 @@
+@@ -45,5 +45,7 @@
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
  
 +CHROME_EXTRA_ARGS=""
-+if [ "`whoami`" = "root" ] ; then
-+	CHROME_EXTRA_ARGS="${CHROME_EXTRA_ARGS} --user-data-dir=ROOT_HOME/.chromium/"
-+fi
 +
- # Make sure that the profile directory specified in the environment, if any,
- # overrides the default.
- if [[ -n "$CHROME_USER_DATA_DIR" ]]; then
-   # Note: exec -a below is a bashism.
-   exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ \
--    --user-data-dir="$CHROME_USER_DATA_DIR" "$@"
-+    --user-data-dir="$CHROME_USER_DATA_DIR" "${CHROME_EXTRA_ARGS}" "$@"
- else
--  exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$@"
-+  exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "${CHROME_EXTRA_ARGS}" "$@"
- fi
+ # Note: exec -a below is a bashism.
+-exec -a "$0" "$HERE/@@PROGNAME@@" "$@"
++exec -a "$0" "$HERE/@@PROGNAME@@" ${CHROME_EXTRA_ARGS} "$@"

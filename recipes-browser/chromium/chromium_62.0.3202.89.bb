@@ -22,7 +22,8 @@ DEPENDS += " \
     glib-2.0 \
     gn-native \
     gperf-native \
-    gtk+ \
+    gtk+3 \
+    jpeg \
     libdrm \
     libwebp \
     libx11 \
@@ -39,9 +40,14 @@ DEPENDS += " \
     libxslt \
     libxtst \
     ninja-native \
+    nodejs-native \
+    nspr \
+    nspr-native \
     nss \
+    nss-native \
     pango \
     pciutils \
+    pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
     virtual/libgl \
@@ -54,22 +60,13 @@ DEPENDS_append_x86-64 = "yasm-native"
 RDEPENDS_${PN} = "bash"
 
 SRC_URI += "\
-        file://add_missing_stat_h_include.patch \
-        file://0005-Override-root-filesystem-access-restriction.patch \
-        file://0011-Replace-readdir_r-with-readdir.patch \
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', 'file://0001-Remove-accelerated-Canvas-support-from-blacklist.patch', '', d)} \
-        file://unset-madv-free.patch \
-        file://0001-v8-fix-build-with-gcc7.patch \
-        file://0002-WebKit-fix-build-with-gcc7.patch \
-        file://0001-openh264-disable-format-security-warning.patch.patch \
-        file://0002-replace-struct-ucontext-with-ucontext_t.patch \
-        file://0001-make-use-of-existing-gn-args-in-ui-build-config.patch \
-        file://0002-gn-Stop-asserting-on-use_gconf-when-looking-for-atk.patch \
-        file://0003-gn-Stop-making-use_atk-depend-on-use_gconf.patch \
-        file://0004-make-use-of-use_gconf-use_glib-gn-args-in-content-br.patch \
-        file://0001-gn-Use-a-separate-flag-for-enabling-libgnome-keyring.patch \
-        file://0001-gn-Make-arm_arch-configurable.patch \
-        file://0002-gn-Make-arm_fpu-configurable.patch \
+        file://0001-Replace-remaining-references-to-struct-ucontext-with.patch \
+        file://0001-Rename-ArrayBufferContents-AllocationKind-to-GetAllo.patch \
+        file://0001-aec3-Use-fabsf-instead-of-std-abs-for-floats.patch \
+        file://0001-WebCORS-Use-WebString-directly-instead-of-converting.patch \
+        file://0001-More-conservative-check-for-string_view-availability.patch \
+        file://chromium-gcc5-cxx14-workaround.patch \
+        file://chromium-gcc5-workarounds.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
 "
@@ -92,6 +89,8 @@ SRC_URI_append_libc-musl = "\
         file://musl-support/0016-getcontext-API-is-unimplemented-in-musl.patch \
         file://musl-support/0017-Use-_fpstate-instead-of-_libc_fpstate.patch \
         file://musl-support/0018-tcmalloc-Use-off64_t-insread-of-__off64_t.patch \
+        file://musl-support/0019-Disable-HAVE_SECURE_GETENV.patch \
+        file://musl-support/0020-Disable-mallinfo-usage-in-base.patch \
 "
 
 COMPATIBLE_MACHINE = "(-)"
@@ -117,7 +116,6 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
-PACKAGECONFIG[ignore-lost-context] = ""
 PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ' \
@@ -133,6 +131,8 @@ GN_ARGS = " \
         use_gnome_keyring=false \
         use_kerberos=false \
         use_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'true', 'false', d)} \
+        use_system_freetype=true \
+        use_system_libjpeg=true \
 "
 
 # From Chromium's BUILDCONFIG.gn:
@@ -143,6 +143,39 @@ GN_ARGS = " \
 # separate flags.
 # See also: https://groups.google.com/a/chromium.org/d/msg/chromium-dev/hkcb6AOX5gE/PPT1ukWoBwAJ
 GN_ARGS += "is_debug=false is_official_build=true"
+
+# Starting with M61, Chromium defaults to building with its own copy of libc++
+# instead of the system's libstdc++. Explicitly disable this behavior.
+# https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/8aYO3me2SCE/SZ8pJXhZAwAJ
+GN_ARGS += "use_custom_libcxx=false"
+
+# By default, passing is_official_build=true to GN causes its symbol_level
+# variable to be set to "2". This means the compiler will be passed "-g2" and
+# we will end up with a very large chrome binary (around 5Gb as of M58)
+# regardless of whether DEBUG_BUILD has been set or not. In addition, binutils,
+# file and other utilities are unable to read a 32-bit binary this size, which
+# causes it not to be stripped.
+# The solution is two-fold:
+# 1. Make sure -g is not passed on 32-bit architectures via DEBUG_FLAGS. -g is
+#    the same as -g2. -g1 generates an 800MB binary, which is a lot more
+#    manageable.
+# 2. Explicitly pass symbol_level=0 to GN. This causes -g0 to be passed
+#    instead, so that if DEBUG_BUILD is not set GN will not create a huge debug
+#    binary anyway. Since our compiler flags are passed after GN's, -g0 does
+#    not cause any issues if DEBUG_BUILD is set, as -g1 will be passed later.
+DEBUG_FLAGS_remove_arm = "-g"
+DEBUG_FLAGS_append_arm = "-g1"
+DEBUG_FLAGS_remove_x86 = "-g"
+DEBUG_FLAGS_append_x86 = "-g1"
+GN_ARGS += "symbol_level=0"
+
+# As of Chromium 60.0.3112.101 and Yocto Pyro (GCC 6, binutils 2.28), passing
+# -g to the compiler results in many linker errors on x86_64, such as:
+# obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)(.debug_loc+0x1e9a5): error: relocation overflow: reference to local symbol 82 in obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)
+# obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)(.debug_loc+0x253c): error: relocation overflow: reference to local symbol 31 in obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)
+# so we have to use the same hack described above.
+DEBUG_FLAGS_remove_x86-64 = "-g"
+DEBUG_FLAGS_append_x86-64 = "-g1"
 
 # Disable Chrome Remote Desktop (aka Chromoting) support. Building host support
 # (so that the machine running this recipe can be controlled remotely from
@@ -166,6 +199,12 @@ GN_ARGS += "use_sysroot=false"
 # -Werror" by default and we do not have much control over which warnings GCC
 # decides to include in -Wall.
 GN_ARGS += "treat_warnings_as_errors=false"
+
+# Starting with M57 and https://codereview.chromium.org/2621193003,
+# link-time optimization (LTO) is enabled by default on Linux x86_64
+# builds, but the options are clang-specific and the builds are only
+# tested with clang upstream.
+GN_ARGS += "allow_posix_link_time_opt=false"
 
 # Disable activation of field trial tests that can cause problems in
 # production.
@@ -204,6 +243,9 @@ GN_ARGS += ' \
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
 # If we do not pass |arm_arch| and friends to GN, it will deduce a value that
 # will then conflict with TUNE_CCARGS and CC.
+# Note that as of M61 in some corner cases parts of the build system disable
+# the "compiler_arm_fpu" GN config, whereas -mfpu is always passed via ${CC}.
+# We might want to rework that if there are issues in the future.
 def get_arm_version(arm_arch):
     import re
     try:
@@ -236,9 +278,12 @@ GN_ARGS_append_armv6 += 'use_allocator="none"'
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
 GN_ARGS_append_armv6 += 'arm_use_neon=false'
 
+# tcmalloc does not play well with musl as of M62 (and possibly earlier).
+# https://github.com/gperftools/gperftools/issues/693
+GN_ARGS_append_libc-musl += 'use_allocator="none" use_allocator_shim=false'
+
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'ignore-lost-context', '--gpu-no-context-lost', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--start-fullscreen --kiosk --no-first-run --incognito', '', d)} \
 "
@@ -279,6 +324,20 @@ python do_write_toolchain_file () {
     write_toolchain_file(d, toolchain_file)
 }
 addtask write_toolchain_file after do_patch before do_configure
+
+do_add_nodejs_symlink () {
+	# Adds a symlink to the node binary to the location expected by
+	# Chromium's build system.
+	chromium_node_dir="${S}/third_party/node/linux/node-linux-x64/bin"
+	nodejs_native_path="${STAGING_BINDIR_NATIVE}/node"
+	mkdir -p "${chromium_node_dir}"
+	if [ ! -f "${nodejs_native_path}" ]; then
+		echo "${nodejs_native_path} does not exist."
+		exit 1
+	fi
+	ln -sf "${nodejs_native_path}" "${chromium_node_dir}/node"
+}
+addtask add_nodejs_symlink after do_configure before do_compile
 
 do_configure_prepend_libc-musl() {
 	for f in `find ${S}/third_party/ffmpeg/chromium/config/{Chrome,Chromium}/linux/ -name config.h -o -name config.asm`; do
@@ -336,7 +395,6 @@ do_install() {
 	# We can just use that one instead of reinventing the wheel.
 	WRAPPER_FILE=${S}/chrome/installer/linux/common/wrapper
 	sed -e "s,@@CHANNEL@@,stable,g" \
-		-e "s,@@DEFAULT_FLAGS@@ ,,g" \
 		-e "s,@@PROGNAME@@,chromium-bin,g" \
 		${WRAPPER_FILE} > chromium-wrapper
 	install -m 0755 chromium-wrapper ${D}${libdir}/chromium/chromium-wrapper
@@ -353,11 +411,15 @@ do_install() {
 	# modifying the dummy "CHROME_EXTRA_ARGS" line
 	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
 
-	# update ROOT_HOME with the root user's $HOME
-	sed -i "s#ROOT_HOME#${ROOT_HOME}#" ${D}${libdir}/chromium/chromium-wrapper
-
 	if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
 		install -m 0755 *.so ${D}${libdir}/chromium/
+	fi
+
+	# Swiftshader is only built for x86 and x86-64.
+	if [ -d "swiftshader" ]; then
+		install -d ${D}${libdir}/chromium/swiftshader
+		install -m 0644 swiftshader/libEGL.so ${D}${libdir}/chromium/swiftshader/
+		install -m 0644 swiftshader/libGLESv2.so ${D}${libdir}/chromium/swiftshader/
 	fi
 
 	# ChromeDriver.
@@ -376,11 +438,6 @@ FILES_${PN} = " \
 "
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
-
-# chromium-54.0.2810.2: ELF binary 'i586-oe-linux/chromium/54.0.2810.2-r0/packages-split/chromium/usr/bin/chromium/chrome' has relocations in .text [textrel]
-INSANE_SKIP_${PN} = "ldflags textrel"
-SOLIBS = ".so"
-FILES_SOLIBSDEV = ""
 
 # There is no need to ship empty -dev packages.
 ALLOW_EMPTY_${PN}-dev = "0"

@@ -1,0 +1,41 @@
+Upstream-Status: Backport
+
+This fixes the build with GCC 5.
+
+Sent by Jacobo Aragunde Pérez <jaragunde@igalia.com>.
+---
+From ec0d7abe5c1520464ff0ea2405b2c59d51b0b775 Mon Sep 17 00:00:00 2001
+From: Piotr Tworek <ptworek@opera.com>
+Date: Fri, 1 Sep 2017 12:20:03 +0000
+Subject: [PATCH] Rename ArrayBufferContents::AllocationKind to
+ GetAllocationKind.
+
+Current name clashes with the name of the enum class the function is
+supposed to return. Clang does not care, but gcc fails to compile the
+code.
+
+Bug: 760070
+Change-Id: I935d91493a3fc7b289d03f776c14b6ec4f3f622a
+Reviewed-on: https://chromium-review.googlesource.com/645549
+Reviewed-by: Yuta Kitamura <yutak@chromium.org>
+Commit-Queue: Yuta Kitamura <yutak@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#499171}
+---
+ .../WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.h     | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.h b/third_party/WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.h
+index 94bb9161ec85..0671c471cbe0 100644
+--- a/third_party/WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.h
++++ b/third_party/WebKit/Source/platform/wtf/typed_arrays/ArrayBufferContents.h
+@@ -122,7 +122,9 @@ class WTF_EXPORT ArrayBufferContents {
+     void* Data() const { return data_; }
+     size_t DataLength() const { return data_length_; }
+ 
+-    ArrayBufferContents::AllocationKind AllocationKind() const { return kind_; }
++    ArrayBufferContents::AllocationKind GetAllocationKind() const {
++      return kind_;
++    }
+ 
+     operator bool() const { return allocation_base_; }
+ 

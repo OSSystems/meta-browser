@@ -2,6 +2,7 @@
 # system-wide counterparts.
 GN_UNBUNDLE_LIBS = " \
         flac \
+        libjpeg \
         libwebp \
         libxml \
         libxslt \

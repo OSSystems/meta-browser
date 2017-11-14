@@ -5,31 +5,30 @@ Subject: [PATCH] metrics: Keep GNU extentions effective only when using glibc
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-index b1af95d46..c31c9bebf 100644
+index 78880e154793..f79f6bea4f7e 100644
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-@@ -37,8 +37,9 @@
+@@ -42,7 +42,9 @@
  #endif  // defined(OS_ANDROID) && defined(__arm__)
  
  #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if defined(__GLIBC__)
  #include <gnu/libc-version.h>
--
 +#endif
- #include "base/version.h"
- #if defined(USE_X11)
- #include "ui/base/x/x11_util.h"
-@@ -169,7 +170,7 @@ void RecordStartupMetricsOnBlockingPool() {
- }
+ 
+ #include "base/linux_util.h"
+ #include "base/strings/string_split.h"
+@@ -298,7 +300,7 @@ void RecordLinuxDistro() {
+ #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
  
  void RecordLinuxGlibcVersion() {
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
-   Version version(gnu_get_libc_version());
+   base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
 -- 

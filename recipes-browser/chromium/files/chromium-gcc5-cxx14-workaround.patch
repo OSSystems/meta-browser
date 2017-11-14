@@ -1,0 +1,50 @@
+Upstream-Status: Inappropriate
+
+This is a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67064,
+which affects the GCC 5.4.0 build with -std=gnu++14 (tested with
+MACHINE="raspberrypi3" at least):
+
+In file included from ../../third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h:51:0,
+                 from ../../third_party/tcmalloc/chromium/src/malloc_hook.cc:698:
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h: In function 'int sys_clone(int (*)(void*), void*, int, void*, int*, void*, int*)':
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:1446:23: error: address of explicit register variable '__res' requested
+       LSS_RETURN(int, __res);
+                       ^
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:755:27: note: in definition of macro 'LSS_RETURN'
+       if ((unsigned long)(res) >= (unsigned long)(-4095)) {                   \
+                           ^
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:1446:23: error: address of explicit register variable '__res' requested
+       LSS_RETURN(int, __res);
+                       ^
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:756:23: note: in definition of macro 'LSS_RETURN'
+         LSS_ERRNO = -(res);                                                   \
+                       ^
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:1446:23: error: address of explicit register variable '__res' requested
+       LSS_RETURN(int, __res);
+                       ^
+../../third_party/tcmalloc/chromium/src/base/linux_syscall_support.h:759:22: note: in definition of macro 'LSS_RETURN'
+       return (type) (res);                                                    \
+                      ^
+
+There are no plans to upstream this, as it's a workaround for a GCC 5 bug and
+https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=229021 is present in GCC
+6.1.0 and later.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+--- a/third_party/tcmalloc/chromium/src/base/linux_syscall_support.h	2017-10-30 12:45:10.272681148 +0100
++++ b/third_party/tcmalloc/chromium/src/base/linux_syscall_support.h	2017-10-30 13:16:35.895907914 +0100
+@@ -752,11 +752,11 @@
+    */
+   #define LSS_RETURN(type, res)                                               \
+     do {                                                                      \
+-      if ((unsigned long)(res) >= (unsigned long)(-4095)) {                   \
+-        LSS_ERRNO = -(res);                                                   \
++      if ((unsigned long)res >= (unsigned long)(-4095)) {                     \
++        LSS_ERRNO = -res;                                                     \
+         res = -1;                                                             \
+       }                                                                       \
+-      return (type) (res);                                                    \
++      return (type)res;                                                       \
+     } while (0)
+   #elif defined(__mips__)
+   /* On MIPS, failing system calls return -1, and set errno in a
