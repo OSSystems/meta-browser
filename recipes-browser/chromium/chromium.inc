@@ -2,8 +2,8 @@ DESCRIPTION = "Chromium is an open-source browser project that aims to build a s
 HOMEPAGE = "https://www.chromium.org/Home"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "7c00d61cd737a2d81f2b8ca9efb44d6a"
-SRC_URI[sha256sum] = "9f79760dc22f7183602a07af3d37d2226bd63ab0ca7163d88ac0d81982de9469"
+SRC_URI[md5sum] = "98cf7b6eca255e2422f96094eccc1887"
+SRC_URI[sha256sum] = "cabc4d267bf08aabe11c5739048c43dde18c61acf595223a1c3aa1d3499558d4"
 
 inherit pythonnative
 
