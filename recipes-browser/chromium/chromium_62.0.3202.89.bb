@@ -169,6 +169,12 @@ DEBUG_FLAGS_remove_x86 = "-g"
 DEBUG_FLAGS_append_x86 = "-g1"
 GN_ARGS += "symbol_level=0"
 
+# As of Chromium 62.0.3202.94 and Yocto Rocko (GCC 7, binutils 2.29), passing
+# -g to the compiler results in many linker errors on aarch64, such as:
+# obj/third_party/WebKit/Source/modules/payments/libpayments.a(PaymentEventDataConversion.o)(.debug_loc+0x4e25): error: relocation overflow in R_AARCH64_ABS32
+DEBUG_FLAGS_remove_aarch64 = "-g"
+DEBUG_FLAGS_append_aarch64 = "-g1"
+
 # As of Chromium 60.0.3112.101 and Yocto Pyro (GCC 6, binutils 2.28), passing
 # -g to the compiler results in many linker errors on x86_64, such as:
 # obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)(.debug_loc+0x1e9a5): error: relocation overflow: reference to local symbol 82 in obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)
