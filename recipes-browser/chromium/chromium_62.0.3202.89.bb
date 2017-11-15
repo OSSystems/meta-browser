@@ -53,8 +53,8 @@ DEPENDS += " \
     virtual/libgl \
 "
 DEPENDS_append_libc-musl = " libexecinfo"
-DEPENDS_append_x86 = "yasm-native"
-DEPENDS_append_x86-64 = "yasm-native"
+DEPENDS_append_x86 = " yasm-native"
+DEPENDS_append_x86-64 = " yasm-native"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS_${PN} = "bash"
