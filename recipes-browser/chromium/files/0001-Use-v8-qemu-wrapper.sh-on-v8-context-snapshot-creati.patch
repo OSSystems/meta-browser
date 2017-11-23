@@ -1,0 +1,28 @@
+From 270da4b3b5a5f87e1466f7940bca7760b3ec348a Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 27 Nov 2017 12:54:02 +0100
+Subject: [PATCH] Use v8-qemu-wrapper.sh on v8 context snapshot creation.
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ tools/v8_context_snapshot/BUILD.gn | 1 +
+ v8/BUILD.gn                        | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
+index 9f2d3db..5012a7d 100644
+--- a/tools/v8_context_snapshot/BUILD.gn
++++ b/tools/v8_context_snapshot/BUILD.gn
+@@ -50,6 +50,7 @@ if (use_v8_context_snapshot) {
+     output_path = rebase_path(output_file, root_build_dir)
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(
+                       ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
+-- 
+2.11.0
+

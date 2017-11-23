@@ -1,0 +1,40 @@
+From 90fae047307d5b30d141eed3f97601b38e52238d Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jose.dapena@lge.com>
+Date: Tue, 21 Nov 2017 22:44:46 +0100
+Subject: GCC fix: lambda expression cannot reach this scope.
+
+Compilation fails in CSSNumericValue.equals in GCC,
+in a lambda expression predicate for std::all_of.
+Equals() call does not automatically use this in the
+calling function scope.
+
+This is caused by the bug in GCC "Inconsistent `this->`
+required when calling member function in a lambda
+capturing `this` through another function"
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67274
+
+The change exposing GCC error was:
+    commit 4bb7df981adb7e5e6f52363b9411dc38d6829f88
+    Author: Darren Shen <shend@chromium.org>
+    Date:   Thu Nov 16 04:25:01 2017 +0000
+
+    [css-typed-om] Implement CSSNumericValue.equals
+
+Bug: 787601
+
+diff --git a/third_party/WebKit/Source/core/css/cssom/CSSNumericValue.cpp b/third_party/WebKit/Source/core/css/cssom/CSSNumericValue.cpp
+index e0aa3e3da2aa..03b2e943ea11 100644
+--- a/third_party/WebKit/Source/core/css/cssom/CSSNumericValue.cpp
++++ b/third_party/WebKit/Source/core/css/cssom/CSSNumericValue.cpp
+@@ -202,7 +202,7 @@ CSSNumericValue* CSSNumericValue::max(
+ bool CSSNumericValue::equals(const HeapVector<CSSNumberish>& args) {
+   CSSNumericValueVector values = CSSNumberishesToNumericValues(args);
+   return std::all_of(values.begin(), values.end(),
+-                     [this](const auto& v) { return Equals(*v); });
++                     [this](const auto& v) { return this->Equals(*v); });
+ }
+ 
+ CSSNumericValue* CSSNumericValue::Negate() {
+-- 
+2.14.1
+

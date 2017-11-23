@@ -1,0 +1,29 @@
+From c81f1961b3108a14b68f12c11030852a5cd010c3 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 30 Nov 2017 10:13:28 +0200
+Subject: [PATCH] Fix 'memcpy' was not declared in this scope.
+
+This patch adds missing <cstring> header to fix compilation
+failures.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ cc/paint/raw_memory_transfer_cache_entry.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/cc/paint/raw_memory_transfer_cache_entry.cc b/cc/paint/raw_memory_transfer_cache_entry.cc
+index 302cf0ded2fa..57c920178a37 100644
+--- a/cc/paint/raw_memory_transfer_cache_entry.cc
++++ b/cc/paint/raw_memory_transfer_cache_entry.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "cc/paint/raw_memory_transfer_cache_entry.h"
+ 
++#include <cstring>
++
+ namespace cc {
+ 
+ ClientRawMemoryTransferCacheEntry::ClientRawMemoryTransferCacheEntry(
+-- 
+2.11.0
+
