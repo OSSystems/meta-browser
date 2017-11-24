@@ -391,10 +391,10 @@ PACKAGES =+ "${PN}-chromedriver"
 FILES_${PN}-chromedriver = "${bindir}/chromedriver"
 
 FILES_${PN} = " \
-        ${bindir}/${PN} \
-        ${datadir}/applications/${PN}.desktop \
+        ${bindir}/chromium \
+        ${datadir}/applications/chromium.desktop \
         ${datadir}/icons/hicolor/*x*/apps/chromium.png \
-        ${libdir}/${PN}/* \
+        ${libdir}/chromium/* \
 "
 
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
