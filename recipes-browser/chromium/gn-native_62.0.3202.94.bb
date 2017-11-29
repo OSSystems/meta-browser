@@ -2,7 +2,7 @@
 # It is not released separately, and each Chromium release is only expected to
 # work with the GN version provided with it.
 
-require chromium.inc
+require chromium-upstream-tarball.inc
 
 inherit native
 
@@ -13,6 +13,10 @@ S = "${WORKDIR}/chromium-${PV}"
 # random name outside the build directory, so we choose the lesser of the two
 # evils.
 B = "${S}/out_bootstrap"
+
+
+SRC_URI[md5sum] = "98cf7b6eca255e2422f96094eccc1887"
+SRC_URI[sha256sum] = "cabc4d267bf08aabe11c5739048c43dde18c61acf595223a1c3aa1d3499558d4"
 
 SRC_URI += " \
         file://0001-Fix-GN-bootstrap.patch \
