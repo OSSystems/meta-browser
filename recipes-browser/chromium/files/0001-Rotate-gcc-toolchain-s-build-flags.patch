@@ -1,0 +1,38 @@
+From 7b24b46b9bca5a90073b1770a7117d25aff289f9 Mon Sep 17 00:00:00 2001
+From: Deligor6321 <deligor6321@gmail.com>
+Date: Tue, 29 Aug 2017 06:45:39 +0200
+Subject: [PATCH] Rotate gcc toolchain's build flags
+
+The patch is taken from https://github.com/Igalia/meta-browser/pull/9.
+
+By this, we can ensure chromium libs are compiled with right flags
+and those are not overriden with AGL ones.
+---
+ build/toolchain/gcc_toolchain.gni | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/build/toolchain/gcc_toolchain.gni b/build/toolchain/gcc_toolchain.gni
+index e80d4d96117a..996847f93d92 100644
+--- a/build/toolchain/gcc_toolchain.gni
++++ b/build/toolchain/gcc_toolchain.gni
+@@ -269,7 +269,7 @@ template("gcc_toolchain") {
+ 
+     tool("cc") {
+       depfile = "{{output}}.d"
+-      command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}${extra_cppflags}${extra_cflags} -c {{source}} -o {{output}}"
++      command = "$cc -MMD -MF $depfile ${extra_cppflags}${extra_cflags} ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+       depsformat = "gcc"
+       description = "CC {{output}}"
+       outputs = [
+@@ -287,7 +287,7 @@ template("gcc_toolchain") {
+ 
+     tool("cxx") {
+       depfile = "{{output}}.d"
+-      command = "$cxx -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}}${extra_cppflags}${extra_cxxflags} -c {{source}} -o {{output}}"
++      command = "$cxx -MMD -MF $depfile ${extra_cppflags}${extra_cxxflags} ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+       depsformat = "gcc"
+       description = "CXX {{output}}"
+       outputs = [
+-- 
+2.11.0
+
