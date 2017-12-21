@@ -8,6 +8,8 @@ SRC_URI += " \
  file://0001-Fix-memcpy-was-not-declared-in-this-scope.patch \
 "
 
+REQUIRED_DISTRO_FEATURES = "wayland"
+
 DEPENDS += "\
         libxkbcommon \
         virtual/egl \
