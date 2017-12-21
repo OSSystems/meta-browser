@@ -9,7 +9,8 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-           file://v8-qemu-wrapper.patch \
+        file://v8-qemu-wrapper.patch \
+        file://wrapper-extra-flags.patch \
 "
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also

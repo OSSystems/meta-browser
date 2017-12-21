@@ -24,3 +24,6 @@ GN_ARGS += "\
         use_xkbcommon=true \
         use_jumbo_build=true \
 "
+
+# The chromium binary must always be started with those arguments.
+CHROMIUM_EXTRA_ARGS_append = " --mus --ozone-platform=wayland"
