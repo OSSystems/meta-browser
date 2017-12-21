@@ -1,20 +1,6 @@
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 S = "${WORKDIR}/chromium-${PV}"
-inherit pythonnative
 
-# Chromium itself is licensed under the 3-clause BSD license. However, it
-# depends upon several other projects whose copyright files are listed in
-# LIC_FILES_CHKSUM. The licenses in those files vary, but none of them should
-# cause the main Chromium license to change. The list of copyright files was
-# generated with the aid of Chromium's own tools/licenses.py module. As such,
-# it contains more items than we actually use in our build (e.g. there are
-# components specific to Android, OS X, iOS etc, or bundled dependencies that
-# we replace with system-wide versions). For more information about each
-# project, you can consult README.chromium in each directory listed below.
-# LICENSE does not cover all the licenses in LIC_FILES_CHKSUM; instead, it
-# currently contains Chromium's license (BSD-3-Clause) as well as Blink's
-# (LGPL2.0, LGPL2.1 and BSD-2-Clause).
-LICENSE = "BSD-3-Clause & LGPL-2.0 & LGPL-2.1"
 LIC_FILES_CHKSUM = "\
     file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
     file://${S}/LICENSE.chromium_os;md5=87dd8458232da630f5617873d42d8350 \
