@@ -34,7 +34,6 @@ SRC_URI_append_libc-musl = "\
         file://musl-support/0020-Disable-mallinfo-usage-in-base.patch \
 "
 
-# For now, we need X11 for Chromium to build and run.
 REQUIRED_DISTRO_FEATURES = "x11"
 
 DEPENDS += "\
