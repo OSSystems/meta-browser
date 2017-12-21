@@ -2,6 +2,7 @@
 # It is not released separately, and each Chromium release is only expected to
 # work with the GN version provided with it.
 
+require chromium.inc
 require chromium-upstream-tarball.inc
 
 inherit native
