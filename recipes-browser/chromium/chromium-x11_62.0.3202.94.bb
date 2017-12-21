@@ -1,4 +1,5 @@
-require chromium-x11.inc
+require chromium-upstream-tarball.inc
+require chromium-gn.inc
 
 SRC_URI += "\
         file://0001-Replace-remaining-references-to-struct-ucontext-with.patch \
@@ -36,6 +37,20 @@ SRC_URI_append_libc-musl = "\
 # For now, we need X11 for Chromium to build and run.
 REQUIRED_DISTRO_FEATURES = "x11"
 
+DEPENDS += "\
+        gtk+3 \
+        libx11 \
+        libxcomposite \
+        libxcursor \
+        libxdamage \
+        libxext \
+        libxfixes \
+        libxi \
+        libxrandr \
+        libxrender \
+        libxscrnsaver \
+        libxtst \
+"
 DEPENDS_append_libc-musl = " libexecinfo"
 
 # Compatibility glue while we have both chromium-x11 and
