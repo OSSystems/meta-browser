@@ -15,10 +15,6 @@ S = "${WORKDIR}/chromium-${PV}"
 # evils.
 B = "${S}/out_bootstrap"
 
-
-SRC_URI[md5sum] = "98cf7b6eca255e2422f96094eccc1887"
-SRC_URI[sha256sum] = "cabc4d267bf08aabe11c5739048c43dde18c61acf595223a1c3aa1d3499558d4"
-
 SRC_URI += " \
         file://0001-Fix-GN-bootstrap.patch \
         "

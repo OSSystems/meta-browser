@@ -1,8 +1,5 @@
 require chromium-x11.inc
 
-SRC_URI[md5sum] = "98cf7b6eca255e2422f96094eccc1887"
-SRC_URI[sha256sum] = "cabc4d267bf08aabe11c5739048c43dde18c61acf595223a1c3aa1d3499558d4"
-
 SRC_URI += "\
         file://0001-Replace-remaining-references-to-struct-ucontext-with.patch \
         file://0001-Rename-ArrayBufferContents-AllocationKind-to-GetAllo.patch \

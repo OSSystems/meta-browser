@@ -1,6 +1,9 @@
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 S = "${WORKDIR}/chromium-${PV}"
 
+SRC_URI[md5sum] = "98cf7b6eca255e2422f96094eccc1887"
+SRC_URI[sha256sum] = "cabc4d267bf08aabe11c5739048c43dde18c61acf595223a1c3aa1d3499558d4"
+
 LIC_FILES_CHKSUM = "\
     file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
     file://${S}/LICENSE.chromium_os;md5=87dd8458232da630f5617873d42d8350 \
