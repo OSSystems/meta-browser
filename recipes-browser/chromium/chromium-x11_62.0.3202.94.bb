@@ -40,3 +40,8 @@ SRC_URI_append_libc-musl = "\
 REQUIRED_DISTRO_FEATURES = "x11"
 
 DEPENDS_append_libc-musl = " libexecinfo"
+
+# Compatibility glue while we have both chromium-x11 and
+# chromium-ozone-wayland recipes, and the former used to be called just
+# "chromium".
+PROVIDES = "chromium"
