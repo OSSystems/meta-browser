@@ -387,6 +387,14 @@ do_install() {
 
 	# ChromeDriver.
 	install -m 0755 chromedriver ${D}${bindir}/chromedriver
+
+	# EGL / GLESv2
+	if [ -f libEGL.so ]; then
+		install libEGL.so ${D}${libdir}/chromium
+	fi
+	if [ -f libGLESv2.so ]; then
+		install libGLESv2.so ${D}${libdir}/chromium
+    fi
 }
 
 PACKAGES =+ "${PN}-chromedriver"
