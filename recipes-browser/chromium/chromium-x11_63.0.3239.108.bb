@@ -2,11 +2,10 @@ require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += "\
-        file://0001-Replace-remaining-references-to-struct-ucontext-with.patch \
-        file://0001-Rename-ArrayBufferContents-AllocationKind-to-GetAllo.patch \
         file://0001-aec3-Use-fabsf-instead-of-std-abs-for-floats.patch \
         file://0001-WebCORS-Use-WebString-directly-instead-of-converting.patch \
-        file://0001-More-conservative-check-for-string_view-availability.patch \
+        file://0001-IWYU-Include-math.h-for-round-3.patch \
+        file://0001-Fix-build-with-gcc5.patch \
         file://chromium-gcc5-cxx14-workaround.patch \
         file://chromium-gcc5-workarounds.patch \
 "
