@@ -25,3 +25,6 @@ GN_ARGS += "\
         ozone_platform_x11=false \
         use_xkbcommon=true \
 "
+
+# The chromium binary must always be started with those arguments.
+CHROMIUM_EXTRA_ARGS_append = " --mus --ozone-platform=wayland"

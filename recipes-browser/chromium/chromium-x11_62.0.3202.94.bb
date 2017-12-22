@@ -9,7 +9,6 @@ SRC_URI += "\
         file://0001-More-conservative-check-for-string_view-availability.patch \
         file://chromium-gcc5-cxx14-workaround.patch \
         file://chromium-gcc5-workarounds.patch \
-        file://wrapper-extra-flags.patch \
 "
 SRC_URI_append_libc-musl = "\
         file://musl-support/0001-sandbox-Define-TEMP_FAILURE_RETRY-if-not-defined.patch \
