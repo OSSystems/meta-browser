@@ -22,5 +22,4 @@ GN_ARGS += "\
         ozone_platform_wayland=true \
         ozone_platform_x11=false \
         use_xkbcommon=true \
-        use_jumbo_build=true \
 "

@@ -45,6 +45,14 @@ PACKAGECONFIG knobs
   http://www.chromium.org/developers/design-documents/impl-side-painting for
   more.
 
+* jumbo-build: (off by default)
+  Enables what's also known as "unity builds": several source files are merged
+  together and compiled only once in order to reduce build times, but may end
+  up requiring more memory at certain points.
+
+  Jumbo builds are documented here:
+  https://chromium.googlesource.com/chromium/src/+/master/docs/jumbo.md
+
 * kiosk-mode: (off by default)
   Enable this option if you want your browser to start up full-screen, without
   any menu bars, without any clutter, and without any initial start-up
