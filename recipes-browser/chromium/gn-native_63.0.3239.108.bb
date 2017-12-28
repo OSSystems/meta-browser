@@ -15,10 +15,6 @@ S = "${WORKDIR}/chromium-${PV}"
 # evils.
 B = "${S}/out_bootstrap"
 
-SRC_URI += " \
-        file://0001-Fix-GN-bootstrap.patch \
-        "
-
 # The build system expects the linker to be invoked via the compiler. If we use
 # the default value for BUILD_LD, it will fail because it does not recognize
 # some of the arguments passed to it.

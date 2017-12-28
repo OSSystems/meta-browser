@@ -38,12 +38,12 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
    static base::span<const gfx::Rect> shape(
 --- a/services/viz/public/cpp/compositing/quads_struct_traits.h
 +++ b/services/viz/public/cpp/compositing/quads_struct_traits.h
-@@ -284,7 +284,7 @@
-
-   static base::span<const float> vertex_opacity(const cc::DrawQuad& input) {
-     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
+@@ -308,7 +308,7 @@
+   static base::span<const float> vertex_opacity(const viz::DrawQuad& input) {
+     const viz::TextureDrawQuad* quad =
+         viz::TextureDrawQuad::MaterialCast(&input);
 -    return quad->vertex_opacity;
 +    return base::make_span(quad->vertex_opacity);
    }
-
-   static bool y_flipped(const cc::DrawQuad& input) {
+ 
+   static bool y_flipped(const viz::DrawQuad& input) {
