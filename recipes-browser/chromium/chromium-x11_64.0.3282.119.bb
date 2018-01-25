@@ -2,10 +2,10 @@ require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += "\
-        file://0001-aec3-Use-fabsf-instead-of-std-abs-for-floats.patch \
-        file://0001-WebCORS-Use-WebString-directly-instead-of-converting.patch \
         file://0001-IWYU-Include-math.h-for-round-3.patch \
-        file://0001-Fix-build-with-gcc5.patch \
+        file://0001-Mark-StaticType-related-functions-as-constexpr.patch \
+        file://0001-memcpy-used-without-including-string.h.patch \
+        file://0001-Fix-use_cups-false-build.patch \
         file://chromium-gcc5-cxx14-workaround.patch \
         file://chromium-gcc5-workarounds.patch \
 "
