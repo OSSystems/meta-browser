@@ -4,7 +4,7 @@ require chromium-gn.inc
 SRC_URI += " \
  file://0001-Rotate-gcc-toolchain-s-build-flags.patch \
  file://0001-GCC-fix-lambda-expression-cannot-reach-this-scope.patch \
- file://0001-Fix-memcpy-was-not-declared-in-this-scope.patch \
+ file://0001-memcpy-used-without-including-string.h.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "wayland"
