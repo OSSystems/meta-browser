@@ -1,0 +1,43 @@
+Upstream-Status: Inappropriate
+
+This was only necessary when base::Optional<> was used in the code; this has
+not been the case since upstream commit
+76da73abaeede740fc97479c09c92a52972bc477 ("cleanup how
+ConfigurationPolicyProviders are set").
+
+Obtained from: https://github.com/lgsvl/meta-lgsvl-browser/tree/rocko/recipes-browser/chromium/files
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From d3341d5de1584cede92ec5c328652f01716d6602 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jose.dapena@lge.com>
+Date: Tue, 6 Mar 2018 16:52:10 +0100
+Subject: GCC: fully declare ConfigurationPolicyProvider
+
+As it is used from a base::Optional, it needs the full declaration
+to calculate is_trivially_*.
+
+Change-Id: I9a1dde8b2278f8094407a39bc58f3931c7d0a5e3
+
+diff --git a/components/policy/core/browser/browser_policy_connector_base.h b/components/policy/core/browser/browser_policy_connector_base.h
+index a7674b55cdf4..c12c62c0ba73 100644
+--- a/components/policy/core/browser/browser_policy_connector_base.h
++++ b/components/policy/core/browser/browser_policy_connector_base.h
+@@ -12,13 +12,13 @@
+ #include "base/macros.h"
+ #include "base/optional.h"
+ #include "components/policy/core/browser/configuration_policy_handler_list.h"
++#include "components/policy/core/common/configuration_policy_provider.h"
+ #include "components/policy/core/common/schema.h"
+ #include "components/policy/core/common/schema_registry.h"
+ #include "components/policy/policy_export.h"
+ 
+ namespace policy {
+ 
+-class ConfigurationPolicyProvider;
+ class PolicyService;
+ class PolicyServiceImpl;
+ 
+-- 
+2.14.1
+

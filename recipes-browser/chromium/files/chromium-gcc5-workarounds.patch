@@ -1,19 +1,319 @@
 Upstream-Status: Inappropriate
 
-This is a workaround for GCC5, which does not seem to be able to choose the
-proper base::span constructor for those values. For example:
+This patch file contains a series of workarounds for GCC 5:
 
-In file included from ../../gpu/ipc/common/mailbox_holder_struct_traits.h:10:0,
-                 from ../../cc/ipc/texture_mailbox_struct_traits.h:10,
-                 from gen/cc/ipc/copy_output_result.mojom.cc:29:
-../../gpu/ipc/common/mailbox_struct_traits.h: In static member function 'static base::span<const signed char> mojo::StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox>::name(const gpu::Mailbox&)':
-../../gpu/ipc/common/mailbox_struct_traits.h:18:20: error: could not convert '(const int8_t*)(& mailbox.gpu::Mailbox::name)' from 'const int8_t* {aka const signed char*}' to 'base::span<const signed char>'
+* components/assist_ranker/ranker_example_util.cc
 
-Upstreaming does not make much sense, as this looks like a compiler bug.
+  GCC 5's libstdc++ does not have a math.h with all the symbols this file needs
+  in the std namespace. Include <cmath> directly instead.
 
-Obtained from: https://gitweb.gentoo.org/repo/gentoo.git/commit/www-client/chromium?id=7843d29ab07411a9c70962fb90b4cd1546910242
+* content/browser/accessibility/accessibility_tree_formatter_blink.cc,
+  third_party/WebKit/Source/modules/accessibility/AXNodeObject.cpp
+
+  ../../content/browser/accessibility/accessibility_tree_formatter_blink.cc: In member function 'virtual void content::AccessibilityTreeFormatterBlink::AddProperties(const content::BrowserAccessibility&, base::DictionaryValue*)':
+  ../../content/browser/accessibility/accessibility_tree_formatter_blink.cc:198:78: error: 'isfinite' was not declared in this scope
+       if (node.HasFloatAttribute(attr) && isfinite(node.GetFloatAttribute(attr)))
+                                                                                ^
+
+* gpu/command_buffer/service/texture_manager.cc
+
+  GCC 5 does not accept the list-initialization syntax for std::tuple.
+
+  ../../gpu/command_buffer/service/texture_manager.cc: In constructor 'gpu::gles2::{anonymous}::FormatTypeValidator::FormatTypeValidator()':
+  ../../gpu/command_buffer/service/texture_manager.cc:224:5: error: converting to 'gpu::gles2::{anonymous}::FormatTypeValidator::FormatType {aka std::tuple<unsigned int, unsigned int, unsigned int>}' from initializer list would use explicit constructor 'constexpr std::tuple< <template-parameter-1-1> >::tuple(_UElements&& ...) [with _UElements = {int, int, int}; <template-parameter-2-2> = void; _Elements = {unsigned int, unsigned int, unsigned int}]'
+       };
+       ^
+
+  ../../gpu/command_buffer/service/texture_manager.cc: In member function 'bool gpu::gles2::{anonymous}::FormatTypeValidator::IsValid(gpu::ContextType, GLenum, GLenum, GLenum) const':
+  ../../gpu/command_buffer/service/texture_manager.cc:272:56: error: converting to 'gpu::gles2::{anonymous}::FormatTypeValidator::FormatType {aka std::tuple<unsigned int, unsigned int, unsigned int>}' from initializer list would use explicit constructor 'constexpr std::tuple< <template-parameter-1-1> >::tuple(_UElements&& ...) [with _UElements = {unsigned int&, unsigned int&, unsigned int&}; <template-parameter-2-2> = void; _Elements = {unsigned int, unsigned int, unsigned int}]'
+       FormatType query = { internal_format, format, type };
+                                                          ^
+  (among others)
+
+* gpu/ipc/common/mailbox_struct_traits.h,
+  services/viz/public/cpp/compositing/filter_operation_struct_traits.h,
+  services/viz/public/cpp/compositing/quads_struct_traits.h
+
+  This is a workaround for GCC5, which does not seem to be able to choose the
+  proper base::span constructor for those values. For example:
+
+  In file included from ../../gpu/ipc/common/mailbox_holder_struct_traits.h:10:0,
+                   from ../../cc/ipc/texture_mailbox_struct_traits.h:10,
+                   from gen/cc/ipc/copy_output_result.mojom.cc:29:
+  ../../gpu/ipc/common/mailbox_struct_traits.h: In static member function 'static base::span<const signed char> mojo::StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox>::name(const gpu::Mailbox&)':
+  ../../gpu/ipc/common/mailbox_struct_traits.h:18:20: error: could not convert '(const int8_t*)(& mailbox.gpu::Mailbox::name)' from 'const int8_t* {aka const signed char*}' to 'base::span<const signed char>'
+
+  Upstreaming does not make much sense, as this looks like a compiler bug.
+
+  Obtained from: https://gitweb.gentoo.org/repo/gentoo.git/commit/www-client/chromium?id=7843d29ab07411a9c70962fb90b4cd1546910242
 
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+--- a/components/assist_ranker/ranker_example_util.cc
++++ b/components/assist_ranker/ranker_example_util.cc
+@@ -2,7 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
+-#include <math.h>
++#include <cmath>
+ 
+ #include "components/assist_ranker/ranker_example_util.h"
+ #include "base/bit_cast.h"
+--- a/content/browser/accessibility/accessibility_tree_formatter_blink.cc
++++ b/content/browser/accessibility/accessibility_tree_formatter_blink.cc
+@@ -194,7 +194,7 @@
+        attr_index <= ui::AX_FLOAT_ATTRIBUTE_LAST;
+        ++attr_index) {
+     auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
+-    if (node.HasFloatAttribute(attr) && isfinite(node.GetFloatAttribute(attr)))
++    if (node.HasFloatAttribute(attr) && std::isfinite(node.GetFloatAttribute(attr)))
+       dict->SetDouble(ui::ToString(attr), node.GetFloatAttribute(attr));
+   }
+ 
+--- a/gpu/command_buffer/service/texture_manager.cc
++++ b/gpu/command_buffer/service/texture_manager.cc
+@@ -131,130 +131,130 @@ class FormatTypeValidator {
+   FormatTypeValidator() {
+     static const FormatType kSupportedFormatTypes[] = {
+         // ES2.
+-        {GL_RGB, GL_RGB, GL_UNSIGNED_BYTE},
+-        {GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},
+-        {GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE},
+-        {GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4},
+-        {GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},
+-        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE},
+-        {GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE},
+-        {GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE},
++        std::make_tuple(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGB, GL_RGB, GL_UNSIGNED_SHORT_5_6_5),
++        std::make_tuple(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4),
++        std::make_tuple(GL_RGBA, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1),
++        std::make_tuple(GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE),
+ 
+         // ES3.
+-        {GL_R8, GL_RED, GL_UNSIGNED_BYTE},
+-        {GL_R8_SNORM, GL_RED, GL_BYTE},
+-        {GL_R16F, GL_RED, GL_HALF_FLOAT},
+-        {GL_R16F, GL_RED, GL_FLOAT},
+-        {GL_R32F, GL_RED, GL_FLOAT},
+-        {GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE},
+-        {GL_R8I, GL_RED_INTEGER, GL_BYTE},
+-        {GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT},
+-        {GL_R16I, GL_RED_INTEGER, GL_SHORT},
+-        {GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT},
+-        {GL_R32I, GL_RED_INTEGER, GL_INT},
+-        {GL_RG8, GL_RG, GL_UNSIGNED_BYTE},
+-        {GL_RG8_SNORM, GL_RG, GL_BYTE},
+-        {GL_RG16F, GL_RG, GL_HALF_FLOAT},
+-        {GL_RG16F, GL_RG, GL_FLOAT},
+-        {GL_RG32F, GL_RG, GL_FLOAT},
+-        {GL_RG8UI, GL_RG_INTEGER, GL_UNSIGNED_BYTE},
+-        {GL_RG8I, GL_RG_INTEGER, GL_BYTE},
+-        {GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT},
+-        {GL_RG16I, GL_RG_INTEGER, GL_SHORT},
+-        {GL_RG32UI, GL_RG_INTEGER, GL_UNSIGNED_INT},
+-        {GL_RG32I, GL_RG_INTEGER, GL_INT},
+-        {GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE},
+-        {GL_SRGB8, GL_RGB, GL_UNSIGNED_BYTE},
+-        {GL_RGB565, GL_RGB, GL_UNSIGNED_BYTE},
+-        {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},
+-        {GL_RGB8_SNORM, GL_RGB, GL_BYTE},
+-        {GL_R11F_G11F_B10F, GL_RGB, GL_UNSIGNED_INT_10F_11F_11F_REV},
+-        {GL_R11F_G11F_B10F, GL_RGB, GL_HALF_FLOAT},
+-        {GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT},
+-        {GL_RGB9_E5, GL_RGB, GL_UNSIGNED_INT_5_9_9_9_REV},
+-        {GL_RGB9_E5, GL_RGB, GL_HALF_FLOAT},
+-        {GL_RGB9_E5, GL_RGB, GL_FLOAT},
+-        {GL_RGB16F, GL_RGB, GL_HALF_FLOAT},
+-        {GL_RGB16F, GL_RGB, GL_FLOAT},
+-        {GL_RGB32F, GL_RGB, GL_FLOAT},
+-        {GL_RGB8UI, GL_RGB_INTEGER, GL_UNSIGNED_BYTE},
+-        {GL_RGB8I, GL_RGB_INTEGER, GL_BYTE},
+-        {GL_RGB16UI, GL_RGB_INTEGER, GL_UNSIGNED_SHORT},
+-        {GL_RGB16I, GL_RGB_INTEGER, GL_SHORT},
+-        {GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT},
+-        {GL_RGB32I, GL_RGB_INTEGER, GL_INT},
+-        {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},
+-        {GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE},
+-        {GL_RGBA8_SNORM, GL_RGBA, GL_BYTE},
+-        {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_BYTE},
+-        {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},
+-        {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},
+-        {GL_RGBA4, GL_RGBA, GL_UNSIGNED_BYTE},
+-        {GL_RGBA4, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4},
+-        {GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV},
+-        {GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT},
+-        {GL_RGBA16F, GL_RGBA, GL_FLOAT},
+-        {GL_RGBA32F, GL_RGBA, GL_FLOAT},
+-        {GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE},
+-        {GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE},
+-        {GL_RGB10_A2UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV},
+-        {GL_RGBA16UI, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT},
+-        {GL_RGBA16I, GL_RGBA_INTEGER, GL_SHORT},
+-        {GL_RGBA32I, GL_RGBA_INTEGER, GL_INT},
+-        {GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT},
+-        {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},
+-        {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT},
+-        {GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT},
+-        {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT},
+-        {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
+-        {GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL,
+-         GL_FLOAT_32_UNSIGNED_INT_24_8_REV},
++        std::make_tuple(GL_R8, GL_RED, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_R8_SNORM, GL_RED, GL_BYTE),
++        std::make_tuple(GL_R16F, GL_RED, GL_HALF_FLOAT),
++        std::make_tuple(GL_R16F, GL_RED, GL_FLOAT),
++        std::make_tuple(GL_R32F, GL_RED, GL_FLOAT),
++        std::make_tuple(GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_R8I, GL_RED_INTEGER, GL_BYTE),
++        std::make_tuple(GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_R16I, GL_RED_INTEGER, GL_SHORT),
++        std::make_tuple(GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT),
++        std::make_tuple(GL_R32I, GL_RED_INTEGER, GL_INT),
++        std::make_tuple(GL_RG8, GL_RG, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RG8_SNORM, GL_RG, GL_BYTE),
++        std::make_tuple(GL_RG16F, GL_RG, GL_HALF_FLOAT),
++        std::make_tuple(GL_RG16F, GL_RG, GL_FLOAT),
++        std::make_tuple(GL_RG32F, GL_RG, GL_FLOAT),
++        std::make_tuple(GL_RG8UI, GL_RG_INTEGER, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RG8I, GL_RG_INTEGER, GL_BYTE),
++        std::make_tuple(GL_RG16UI, GL_RG_INTEGER, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_RG16I, GL_RG_INTEGER, GL_SHORT),
++        std::make_tuple(GL_RG32UI, GL_RG_INTEGER, GL_UNSIGNED_INT),
++        std::make_tuple(GL_RG32I, GL_RG_INTEGER, GL_INT),
++        std::make_tuple(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_SRGB8, GL_RGB, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGB565, GL_RGB, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5),
++        std::make_tuple(GL_RGB8_SNORM, GL_RGB, GL_BYTE),
++        std::make_tuple(GL_R11F_G11F_B10F, GL_RGB, GL_UNSIGNED_INT_10F_11F_11F_REV),
++        std::make_tuple(GL_R11F_G11F_B10F, GL_RGB, GL_HALF_FLOAT),
++        std::make_tuple(GL_R11F_G11F_B10F, GL_RGB, GL_FLOAT),
++        std::make_tuple(GL_RGB9_E5, GL_RGB, GL_UNSIGNED_INT_5_9_9_9_REV),
++        std::make_tuple(GL_RGB9_E5, GL_RGB, GL_HALF_FLOAT),
++        std::make_tuple(GL_RGB9_E5, GL_RGB, GL_FLOAT),
++        std::make_tuple(GL_RGB16F, GL_RGB, GL_HALF_FLOAT),
++        std::make_tuple(GL_RGB16F, GL_RGB, GL_FLOAT),
++        std::make_tuple(GL_RGB32F, GL_RGB, GL_FLOAT),
++        std::make_tuple(GL_RGB8UI, GL_RGB_INTEGER, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGB8I, GL_RGB_INTEGER, GL_BYTE),
++        std::make_tuple(GL_RGB16UI, GL_RGB_INTEGER, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_RGB16I, GL_RGB_INTEGER, GL_SHORT),
++        std::make_tuple(GL_RGB32UI, GL_RGB_INTEGER, GL_UNSIGNED_INT),
++        std::make_tuple(GL_RGB32I, GL_RGB_INTEGER, GL_INT),
++        std::make_tuple(GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_SRGB8_ALPHA8, GL_RGBA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGBA8_SNORM, GL_RGBA, GL_BYTE),
++        std::make_tuple(GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1),
++        std::make_tuple(GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV),
++        std::make_tuple(GL_RGBA4, GL_RGBA, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGBA4, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4),
++        std::make_tuple(GL_RGB10_A2, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV),
++        std::make_tuple(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT),
++        std::make_tuple(GL_RGBA16F, GL_RGBA, GL_FLOAT),
++        std::make_tuple(GL_RGBA32F, GL_RGBA, GL_FLOAT),
++        std::make_tuple(GL_RGBA8UI, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE),
++        std::make_tuple(GL_RGB10_A2UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV),
++        std::make_tuple(GL_RGBA16UI, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_RGBA16I, GL_RGBA_INTEGER, GL_SHORT),
++        std::make_tuple(GL_RGBA32I, GL_RGBA_INTEGER, GL_INT),
++        std::make_tuple(GL_RGBA32UI, GL_RGBA_INTEGER, GL_UNSIGNED_INT),
++        std::make_tuple(GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT),
++        std::make_tuple(GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT),
++        std::make_tuple(GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT),
++        std::make_tuple(GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8),
++        std::make_tuple(GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL,
++         GL_FLOAT_32_UNSIGNED_INT_24_8_REV),
+ 
+         // Exposed by GL_APPLE_texture_format_BGRA8888 for TexStorage*
+         // TODO(kainino): this actually exposes it for (Copy)TexImage* as well,
+         // which is incorrect. crbug.com/663086
+-        {GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
++        std::make_tuple(GL_BGRA8_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE),
+ 
+         // Exposed by GL_APPLE_texture_format_BGRA8888 and
+         // GL_EXT_texture_format_BGRA8888
+-        {GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE},
++        std::make_tuple(GL_BGRA_EXT, GL_BGRA_EXT, GL_UNSIGNED_BYTE),
+ 
+         // Exposed by GL_EXT_texture_norm16
+-        {GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT},
++        std::make_tuple(GL_R16_EXT, GL_RED, GL_UNSIGNED_SHORT),
+     };
+ 
+     static const FormatType kSupportedFormatTypesES2Only[] = {
+         // Exposed by GL_OES_texture_float and GL_OES_texture_half_float
+-        {GL_RGB, GL_RGB, GL_FLOAT},
+-        {GL_RGBA, GL_RGBA, GL_FLOAT},
+-        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT},
+-        {GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT},
+-        {GL_ALPHA, GL_ALPHA, GL_FLOAT},
+-        {GL_RGB, GL_RGB, GL_HALF_FLOAT_OES},
+-        {GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES},
+-        {GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES},
+-        {GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES},
+-        {GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES},
++        std::make_tuple(GL_RGB, GL_RGB, GL_FLOAT),
++        std::make_tuple(GL_RGBA, GL_RGBA, GL_FLOAT),
++        std::make_tuple(GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_FLOAT),
++        std::make_tuple(GL_LUMINANCE, GL_LUMINANCE, GL_FLOAT),
++        std::make_tuple(GL_ALPHA, GL_ALPHA, GL_FLOAT),
++        std::make_tuple(GL_RGB, GL_RGB, GL_HALF_FLOAT_OES),
++        std::make_tuple(GL_RGBA, GL_RGBA, GL_HALF_FLOAT_OES),
++        std::make_tuple(GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES),
++        std::make_tuple(GL_LUMINANCE, GL_LUMINANCE, GL_HALF_FLOAT_OES),
++        std::make_tuple(GL_ALPHA, GL_ALPHA, GL_HALF_FLOAT_OES),
+ 
+         // Exposed by GL_ANGLE_depth_texture
+-        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT},
+-        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT},
+-        {GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8},
++        std::make_tuple(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT),
++        std::make_tuple(GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT),
++        std::make_tuple(GL_DEPTH_STENCIL, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8),
+ 
+         // Exposed by GL_EXT_sRGB
+-        {GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE},
+-        {GL_SRGB_ALPHA, GL_SRGB_ALPHA, GL_UNSIGNED_BYTE},
++        std::make_tuple(GL_SRGB, GL_SRGB, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_SRGB_ALPHA, GL_SRGB_ALPHA, GL_UNSIGNED_BYTE),
+ 
+         // Exposed by GL_EXT_texture_rg
+-        {GL_RED, GL_RED, GL_UNSIGNED_BYTE},
+-        {GL_RG, GL_RG, GL_UNSIGNED_BYTE},
+-        {GL_RED, GL_RED, GL_FLOAT},
+-        {GL_RG, GL_RG, GL_FLOAT},
+-        {GL_RED, GL_RED, GL_HALF_FLOAT_OES},
+-        {GL_RG, GL_RG, GL_HALF_FLOAT_OES},
++        std::make_tuple(GL_RED, GL_RED, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RG, GL_RG, GL_UNSIGNED_BYTE),
++        std::make_tuple(GL_RED, GL_RED, GL_FLOAT),
++        std::make_tuple(GL_RG, GL_RG, GL_FLOAT),
++        std::make_tuple(GL_RED, GL_RED, GL_HALF_FLOAT_OES),
++        std::make_tuple(GL_RG, GL_RG, GL_HALF_FLOAT_OES),
+ 
+         // Exposed by GL_EXT_texture_norm16
+-        {GL_RED, GL_RED, GL_UNSIGNED_SHORT},
++        std::make_tuple(GL_RED, GL_RED, GL_UNSIGNED_SHORT),
+     };
+ 
+     for (size_t ii = 0; ii < arraysize(kSupportedFormatTypes); ++ii) {
+@@ -269,7 +269,7 @@ class FormatTypeValidator {
+   // This may be accessed from multiple threads.
+   bool IsValid(ContextType context_type, GLenum internal_format, GLenum format,
+                GLenum type) const {
+-    FormatType query = { internal_format, format, type };
++    FormatType query(internal_format, format, type);
+     if (supported_combinations_.find(query) != supported_combinations_.end()) {
+       return true;
+     }
+
 --- a/gpu/ipc/common/mailbox_struct_traits.h
 +++ b/gpu/ipc/common/mailbox_struct_traits.h
 @@ -15,7 +15,7 @@ namespace mojo {
@@ -47,3 +347,41 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
    }
  
    static bool y_flipped(const viz::DrawQuad& input) {
+--- a/third_party/WebKit/Source/modules/accessibility/AXNodeObject.cpp
++++ b/third_party/WebKit/Source/modules/accessibility/AXNodeObject.cpp
+@@ -1533,7 +1533,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
+ 
+   if (IsNativeSlider() || IsNativeSpinButton()) {
+     *out_value = ToHTMLInputElement(*GetNode()).valueAsNumber();
+-    return isfinite(*out_value);
++    return std::isfinite(*out_value);
+   }
+ 
+   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+@@ -1579,7 +1579,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
+ 
+   if (IsNativeSlider() || IsNativeSpinButton()) {
+     *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Maximum());
+-    return isfinite(*out_value);
++    return std::isfinite(*out_value);
+   }
+ 
+   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+@@ -1612,7 +1612,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
+ 
+   if (IsNativeSlider() || IsNativeSpinButton()) {
+     *out_value = static_cast<float>(ToHTMLInputElement(*GetNode()).Minimum());
+-    return isfinite(*out_value);
++    return std::isfinite(*out_value);
+   }
+ 
+   if (auto* meter = ToHTMLMeterElementOrNull(GetNode())) {
+@@ -1641,7 +1641,7 @@ bool AXNodeObject::StepValueForRange(float* out_value) const {
+     Decimal step =
+         ToHTMLInputElement(*GetNode()).CreateStepRange(kRejectAny).Step();
+     *out_value = step.ToString().ToFloat();
+-    return isfinite(*out_value);
++    return std::isfinite(*out_value);
+   }
+ 
+   switch (AriaRoleAttribute()) {

@@ -1,0 +1,44 @@
+Upstream-Status: Inappropriate
+
+GCC (tested rocko's 7.3.0) cannot find these intrinsics and the build fails:
+
+../../third_party/skia/src/jumper/SkJumper_stages.cpp: In function 'F from_half(U16)':
+../../third_party/skia/src/jumper/SkJumper_stages.cpp:670:12: error: 'vcvt_f32_f16' was not declared in this scope
+     return vcvt_f32_f16(h);
+            ^~~~~~~~~~~~
+../../third_party/skia/src/jumper/SkJumper_stages.cpp: In function 'U16 to_half(F)':
+../../third_party/skia/src/jumper/SkJumper_stages.cpp:690:12: error: 'vcvt_f16_f32' was not declared in this scope
+     return vcvt_f16_f32(f);
+            ^~~~~~~~~~~~
+
+Upstream seems to have had similar issues according to
+https://skia-review.googlesource.com/c/skia/+/84222, but the whole file was
+later removed in https://skia-review.googlesource.com/112744
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+--- a/third_party/skia/src/jumper/SkJumper_stages.cpp
++++ b/third_party/skia/src/jumper/SkJumper_stages.cpp
+@@ -666,10 +666,7 @@ SI F approx_powf(F x, F y) {
+ }
+ 
+ SI F from_half(U16 h) {
+-#if defined(__aarch64__) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
+-    return vcvt_f32_f16(h);
+-
+-#elif defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
++#if defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
+     return _mm256_cvtph_ps(h);
+ 
+ #else
+@@ -686,10 +683,7 @@ SI F from_half(U16 h) {
+ }
+ 
+ SI U16 to_half(F f) {
+-#if defined(__aarch64__) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
+-    return vcvt_f16_f32(f);
+-
+-#elif defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
++#if defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
+     return _mm256_cvtps_ph(f, _MM_FROUND_CUR_DIRECTION);
+ 
+ #else
