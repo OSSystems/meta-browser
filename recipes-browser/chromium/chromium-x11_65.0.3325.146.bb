@@ -2,12 +2,19 @@ require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += "\
-        file://0001-IWYU-Include-math.h-for-round-3.patch \
-        file://0001-Mark-StaticType-related-functions-as-constexpr.patch \
-        file://0001-memcpy-used-without-including-string.h.patch \
-        file://0001-Fix-use_cups-false-build.patch \
+        file://0001-Add-missing-stdint-include.patch \
+        file://0001-Fix-build-with-glibc-2.27.patch \
+        file://0001-GCC-IDB-methods-String-renamed-to-GetString.patch \
+        file://0001-GCC-PlaybackImageProvider-Settings-explicitely-set-c.patch \
+        file://0001-GCC-build-fix-base-Optional-T-requires-the-full-decl.patch \
+        file://0001-GCC-build-fix-mark-is_trivially_copy_constructible-f.patch \
+        file://0001-GCC-fully-declare-ConfigurationPolicyProvider.patch \
+        file://0001-Implement-conditional-copy-move-ctors-assign-operato.patch \
+        file://0001-Workaround-for-g-7-is_trivially_copy_constructible-f.patch \
+        file://aarch64-skia-build-fix.patch \
         file://chromium-gcc5-cxx14-workaround.patch \
         file://chromium-gcc5-workarounds.patch \
+        file://chromium-gcc6-workarounds.patch \
 "
 SRC_URI_append_libc-musl = "\
         file://musl-support/0001-sandbox-Define-TEMP_FAILURE_RETRY-if-not-defined.patch \

@@ -1,0 +1,70 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 0235c2b657d936f3cdb09053776e5929fc84704b Mon Sep 17 00:00:00 2001
+From: Tomas Popela <tomas.popela@gmail.com>
+Date: Wed, 31 Jan 2018 18:57:07 +0000
+Subject: [PATCH] Add missing stdint include
+
+In file included from ../../chrome/browser/vr/sample_queue.cc:5:
+../../chrome/browser/vr/sample_queue.h:22:3: error: unknown type name 'int64_t'
+  int64_t GetSum() const { return sum_; }
+  ^
+../../chrome/browser/vr/sample_queue.h:24:18: error: unknown type name 'int64_t'
+  void AddSample(int64_t value);
+                 ^
+../../chrome/browser/vr/sample_queue.h:32:3: error: unknown type name 'int64_t'
+  int64_t sum_ = 0;
+  ^
+../../chrome/browser/vr/sample_queue.h:35:15: error: use of undeclared identifier 'int64_t'
+
+  std::vector<int64_t> samples_;
+              ^
+../../chrome/browser/vr/sample_queue.cc:17:19: error: out-of-line definition of 'AddSample' does not match any declaration in 'vr::SampleQueue'
+void SampleQueue::AddSample(int64_t value) {
+                  ^~~~~~~~~
+
+[choco@choco-rhel6-vm chromium-65.0.3325.31]$ /opt/rh/llvm-toolset-7/root/usr/bin/clang++ -v
+clang version 4.0.1 (tags/RELEASE_401/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /opt/rh/llvm-toolset-7/root/usr/bin
+Found candidate GCC installation: /opt/rh/devtoolset-6/root/usr/lib/gcc/x86_64-redhat-linux/6.3.1
+Found candidate GCC installation: /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7
+Found candidate GCC installation: /usr/lib/gcc/x86_64-redhat-linux/4.4.4
+Found candidate GCC installation: /usr/lib/gcc/x86_64-redhat-linux/4.4.7
+Selected GCC installation: /opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7
+Candidate multilib: .;@m64
+Candidate multilib: 32;@m32
+Selected multilib: .;@m64
+Cq-Include-Trybots: master.tryserver.chromium.android:android_optional_gpu_tests_rel;master.tryserver.chromium.linux:linux_optional_gpu_tests_rel;master.tryserver.chromium.linux:linux_vr;master.tryserver.chromium.mac:mac_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Change-Id: Icb4db046d907eb0dde94201d8b5bd8082e10337e
+
+TBR=bajones@chromium.org
+
+Change-Id: Icb4db046d907eb0dde94201d8b5bd8082e10337e
+Reviewed-on: https://chromium-review.googlesource.com/895583
+Reviewed-by: Thomas Anderson <thomasanderson@chromium.org>
+Commit-Queue: Thomas Anderson <thomasanderson@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#533343}
+---
+ chrome/browser/vr/sample_queue.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/chrome/browser/vr/sample_queue.cc b/chrome/browser/vr/sample_queue.cc
+index c2ca777ce90c..53cb3aab1576 100644
+--- a/chrome/browser/vr/sample_queue.cc
++++ b/chrome/browser/vr/sample_queue.cc
+@@ -2,6 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include <stdint.h>
++
+ #include "chrome/browser/vr/sample_queue.h"
+ 
+ namespace vr {
+-- 
+2.14.3
+
