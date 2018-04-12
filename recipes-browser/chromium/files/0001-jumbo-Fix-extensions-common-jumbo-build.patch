@@ -1,0 +1,71 @@
+Upstream-Status: Backport
+
+Fixes the build with the "jumbo-build" PACKAGECONFIG option.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 45706c34ca4f52d00af443d43dfa86b178aa1fe9 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jose.dapena@lge.com>
+Date: Wed, 7 Mar 2018 18:04:05 +0000
+Subject: [PATCH] [jumbo] Fix extensions/common jumbo build.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The helper namespace declarations for manifest_keys,
+manifest_errors are declared both inside anonymous namespace
+and extensions namespace. This is ambiguous and makes
+compilation fail.
+
+So move all the helper declarations out of the anonymous
+namespace.
+
+Change-Id: I778b81c8094b12842fd47ae982b6cf620d208671
+Reviewed-on: https://chromium-review.googlesource.com/944407
+Commit-Queue: José Dapena Paz <jose.dapena@lge.com>
+Reviewed-by: Devlin <rdevlin.cronin@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#541497}
+---
+ extensions/common/manifest_handlers/permissions_parser.cc  | 4 ++--
+ extensions/common/manifest_handlers/sandboxed_page_info.cc | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/extensions/common/manifest_handlers/permissions_parser.cc b/extensions/common/manifest_handlers/permissions_parser.cc
+index 1bd9a1dc80df..d119aff3edec 100644
+--- a/extensions/common/manifest_handlers/permissions_parser.cc
++++ b/extensions/common/manifest_handlers/permissions_parser.cc
+@@ -29,11 +29,11 @@
+ 
+ namespace extensions {
+ 
+-namespace {
+-
+ namespace keys = manifest_keys;
+ namespace errors = manifest_errors;
+ 
++namespace {
++
+ struct ManifestPermissions : public Extension::ManifestData {
+   ManifestPermissions(std::unique_ptr<const PermissionSet> permissions);
+   ~ManifestPermissions() override;
+diff --git a/extensions/common/manifest_handlers/sandboxed_page_info.cc b/extensions/common/manifest_handlers/sandboxed_page_info.cc
+index 9574d31c8569..ea3c2f2d2918 100644
+--- a/extensions/common/manifest_handlers/sandboxed_page_info.cc
++++ b/extensions/common/manifest_handlers/sandboxed_page_info.cc
+@@ -19,11 +19,11 @@
+ 
+ namespace extensions {
+ 
+-namespace {
+-
+ namespace keys = extensions::manifest_keys;
+ namespace errors = manifest_errors;
+ 
++namespace {
++
+ const char kDefaultSandboxedPageContentSecurityPolicy[] =
+     "sandbox allow-scripts allow-forms allow-popups allow-modals; "
+     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';";
+-- 
+2.14.3
+

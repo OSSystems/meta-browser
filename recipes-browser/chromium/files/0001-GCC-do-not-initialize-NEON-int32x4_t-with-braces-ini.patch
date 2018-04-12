@@ -1,0 +1,48 @@
+Upstream-Status: Backport
+
+This fixes the ARM build with GCC 6 (at least).
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From b84682f31dc99b9c90f5a04947075815697c68d9 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jose.dapena@lge.com>
+Date: Wed, 7 Mar 2018 20:07:48 +0000
+Subject: [PATCH] GCC: do not initialize NEON int32x4_t with braces initializer
+
+GCC does not support int32x4_t loading using braces wrapping 4 ints.
+Instead we should use the NEON intrinsic to load from an array of
+ints.
+
+Bug: 819294
+Change-Id: I13b877405273e4ebcc944d50c155ee29ff31cc99
+Reviewed-on: https://chromium-review.googlesource.com/951773
+Commit-Queue: Mike Klein <mtklein@chromium.org>
+Reviewed-by: Mike Klein <mtklein@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#541544}
+---
+ skia/ext/convolver_neon.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/skia/ext/convolver_neon.cc b/skia/ext/convolver_neon.cc
+index 26b91b9c88c4..cae6bc2f833f 100644
+--- a/skia/ext/convolver_neon.cc
++++ b/skia/ext/convolver_neon.cc
+@@ -23,7 +23,7 @@ AccumRemainder(const unsigned char* pixels_left,
+     remainder[2] += coeff * pixels_left[i * 4 + 2];
+     remainder[3] += coeff * pixels_left[i * 4 + 3];
+   }
+-  return {remainder[0], remainder[1], remainder[2], remainder[3]};
++  return vld1q_s32(remainder);
+ }
+ 
+ // Convolves horizontally along a single row. The row data is given in
+@@ -336,4 +336,4 @@ void ConvolveVertically_Neon(const ConvolutionFilter1D::Fixed* filter_values,
+   }
+ }
+ 
+-}  // namespace skia
+\ No newline at end of file
++}  // namespace skia
+-- 
+2.14.3
+
