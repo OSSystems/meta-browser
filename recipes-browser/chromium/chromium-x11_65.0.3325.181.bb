@@ -12,8 +12,6 @@ SRC_URI += "\
         file://0001-Implement-conditional-copy-move-ctors-assign-operato.patch \
         file://0001-Workaround-for-g-7-is_trivially_copy_constructible-f.patch \
         file://aarch64-skia-build-fix.patch \
-        file://chromium-gcc5-cxx14-workaround.patch \
-        file://chromium-gcc5-workarounds.patch \
         file://chromium-gcc6-workarounds.patch \
 "
 
