@@ -1,0 +1,63 @@
+Upstream-Status: Backport
+
+Fixes the following build error:
+./../../chrome/browser/supervised_user/supervised_user_url_filter.cc: In member function 'SupervisedUserURLFilter::FilteringBehavior SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL&, bool, supervised_user_error_page::FilteringBehaviorReason*) const':
+./../../chrome/browser/supervised_user/supervised_user_url_filter.cc:371:39: error: call of overloaded 'NoDestructor(<brace-enclosed initializer list>)' is ambiguous
+       {GURL(kFamiliesUrl).GetOrigin()});
+                                       ^
+In file included from ./../../chrome/browser/supervised_user/supervised_user_url_filter.cc:19:0,
+                 from gen/chrome/browser/browser_jumbo_23.cc:26:
+../../base/no_destructor.h:63:3: note: candidate: base::NoDestructor<T>::NoDestructor(const base::NoDestructor<T>&) [with T = base::internal::flat_tree<GURL, GURL, base::internal::GetKeyFromValueIdentity<GURL>, std::less<void> >] <deleted>
+   NoDestructor(const NoDestructor&) = delete;
+   ^~~~~~~~~~~~
+../../base/no_destructor.h:61:12: note: candidate: base::NoDestructor<T>::NoDestructor(T&&) [with T = base::internal::flat_tree<GURL, GURL, base::internal::GetKeyFromValueIdentity<GURL>, std::less<void> >]
+   explicit NoDestructor(T&& x) { new (storage_) T(std::move(x)); }
+            ^~~~~~~~~~~~
+../../base/no_destructor.h:60:12: note: candidate: base::NoDestructor<T>::NoDestructor(const T&) [with T = base::internal::flat_tree<GURL, GURL, base::internal::GetKeyFromValueIdentity<GURL>, std::less<void> >]
+   explicit NoDestructor(const T& x) { new (storage_) T(x); }
+            ^~~~~~~~~~~~
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From b34ed1e6524479d61ee944ebf6ca7389ea47e563 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jose.dapena@lge.com>
+Date: Mon, 5 Mar 2018 15:59:12 +0000
+Subject: [PATCH] GCC: do not use initializer list for NoDestructor of a
+ flat_set.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Compilation in GCC 7.x fails in SupervisedURLFilter, creating a
+base::NoDestructor of a flat_set initialized with braces initializer
+list syntax, as it fails to retrieve the right constructor (it states
+the constructors are ambiguous).
+
+Workaround the problem explicitely declaring flat_set constructor.
+
+Change-Id: Icff5021685a6cbc727d5f4fb5fc6d2ce94fe9921
+Reviewed-on: https://chromium-review.googlesource.com/944405
+Commit-Queue: José Dapena Paz <jose.dapena@lge.com>
+Reviewed-by: Bernhard Bauer <bauerb@chromium.org>
+Reviewed-by: Marc Treib <treib@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#540828}
+---
+ chrome/browser/supervised_user/supervised_user_url_filter.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/chrome/browser/supervised_user/supervised_user_url_filter.cc b/chrome/browser/supervised_user/supervised_user_url_filter.cc
+index 64d6569088d1..a3a81d77f0a3 100644
+--- a/chrome/browser/supervised_user/supervised_user_url_filter.cc
++++ b/chrome/browser/supervised_user/supervised_user_url_filter.cc
+@@ -368,7 +368,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
+ 
+   // Allow navigations to whitelisted origins (currently families.google.com).
+   static const base::NoDestructor<base::flat_set<GURL>> kWhitelistedOrigins(
+-      {GURL(kFamiliesUrl).GetOrigin()});
++      base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin()}));
+   if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
+     return ALLOW;
+ 
+-- 
+2.14.3
+

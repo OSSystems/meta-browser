@@ -1,0 +1,52 @@
+Upstream-Status: Backport
+
+Fixes the build with at least GCC 6:
+
+../../third_party/WebKit/Source/core/loader/IdlenessDetector.cpp:18:35: error: 'constexpr' needed for in-class initialization of static data member 'const TimeDelta blink::IdlenessDetector::kNetworkQuietWindow' of non-integral type [-fpermissive]
+ const TimeDelta IdlenessDetector::kNetworkQuietWindow;
+                                   ^~~~~~~~~~~~~~~~~~~
+../../third_party/WebKit/Source/core/loader/IdlenessDetector.cpp:19:35: error: 'constexpr' needed for in-class initialization of static data member 'const TimeDelta blink::IdlenessDetector::kNetworkQuietWatchdog' of non-integral type [-fpermissive]
+ const TimeDelta IdlenessDetector::kNetworkQuietWatchdog;
+                                   ^~~~~~~~~~~~~~~~~~~~~
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 6a95de244dbba0c596541fa88597f34e2160d648 Mon Sep 17 00:00:00 2001
+From: Jani Hautakangas <jani.hautakangas@lge.com>
+Date: Wed, 7 Mar 2018 12:08:09 +0000
+Subject: [PATCH] GCC build fix: constexpr static data member must be
+ initialized
+
+static constexpr member data is incorrectly initialized as
+static const data.
+
+Bug: 819294
+
+Change-Id: I96f06032e00b6bd4d2b5df0ed9b466028453912b
+Reviewed-on: https://chromium-review.googlesource.com/945997
+Reviewed-by: Nate Chapin <japhet@chromium.org>
+Reviewed-by: Taiju Tsuiki <tzik@chromium.org>
+Commit-Queue: Jani Hautakangas <jani.hautakangas@lge.com>
+Cr-Commit-Position: refs/heads/master@{#541412}
+---
+ third_party/WebKit/Source/core/loader/IdlenessDetector.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/WebKit/Source/core/loader/IdlenessDetector.cpp b/third_party/WebKit/Source/core/loader/IdlenessDetector.cpp
+index 32cadd389da7..58e140a634da 100644
+--- a/third_party/WebKit/Source/core/loader/IdlenessDetector.cpp
++++ b/third_party/WebKit/Source/core/loader/IdlenessDetector.cpp
+@@ -15,8 +15,8 @@
+ 
+ namespace blink {
+ 
+-const TimeDelta IdlenessDetector::kNetworkQuietWindow;
+-const TimeDelta IdlenessDetector::kNetworkQuietWatchdog;
++constexpr TimeDelta IdlenessDetector::kNetworkQuietWindow;
++constexpr TimeDelta IdlenessDetector::kNetworkQuietWatchdog;
+ 
+ void IdlenessDetector::Shutdown() {
+   Stop();
+-- 
+2.14.3
+

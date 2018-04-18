@@ -1,0 +1,45 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 7316014f3fa309982ebfede4ac73d251ec16739e Mon Sep 17 00:00:00 2001
+From: Jani Hautakangas <jani.hautakangas@lge.com>
+Date: Tue, 6 Mar 2018 21:53:01 +0000
+Subject: [PATCH] GCC build fix: cannot call member function without object
+
+This CL fixes issue with anonymous function calling
+a member function without object in GCC version < 6.4.
+
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61636
+
+Bug: 819294
+
+Change-Id: I29a9e14a5160a3c9c658dc76f7f167c74e1c2b41
+Reviewed-on: https://chromium-review.googlesource.com/945995
+Commit-Queue: Jani Hautakangas <jani.hautakangas@lge.com>
+Commit-Queue: Dominic Mazzoni <dmazzoni@chromium.org>
+Reviewed-by: Dominic Mazzoni <dmazzoni@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#541208}
+---
+ ui/accessibility/ax_event_generator.cc | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/ui/accessibility/ax_event_generator.cc b/ui/accessibility/ax_event_generator.cc
+index 52747b1632ba..9d0b644a35db 100644
+--- a/ui/accessibility/ax_event_generator.cc
++++ b/ui/accessibility/ax_event_generator.cc
+@@ -411,7 +411,10 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
+         return;
+ 
+       source_nodes.insert(source_node);
+-      AddEvent(source_node, Event::RELATED_NODE_CHANGED);
++
++      // GCC < 6.4 requires this pointer when calling a member
++      // function in anonymous function
++      this->AddEvent(source_node, Event::RELATED_NODE_CHANGED);
+     });
+   };
+ 
+-- 
+2.14.3
+
