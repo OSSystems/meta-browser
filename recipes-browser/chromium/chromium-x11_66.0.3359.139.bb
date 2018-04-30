@@ -17,7 +17,6 @@ SRC_URI += "\
         file://0001-jumbo-Fix-extensions-common-jumbo-build.patch \
         file://aarch64-skia-build-fix.patch \
         file://chromium-gcc6-workarounds.patch \
-        file://m66-add-missing-files.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "x11"
