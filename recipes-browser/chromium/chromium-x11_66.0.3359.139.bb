@@ -3,7 +3,6 @@ require chromium-gn.inc
 
 SRC_URI += "\
         file://0001-Add-missing-stdint-include.patch \
-        file://0001-Fix-build-with-glibc-2.27.patch \
         file://0001-GCC-IDB-methods-String-renamed-to-GetString.patch \
         file://0001-GCC-PlaybackImageProvider-Settings-explicitely-set-c.patch \
         file://0001-GCC-build-fix-base-Optional-T-requires-the-full-decl.patch \
