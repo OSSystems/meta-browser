@@ -24,10 +24,9 @@ Reviewed-by: David Reveman <reveman@chromium.org>
 Commit-Queue: José Dapena Paz <jose.dapena@lge.com>
 Cr-Commit-Position: refs/heads/master@{#541827}
 ---
- cc/raster/playback_image_provider.cc          |  7 +++++--
- cc/raster/playback_image_provider.h           |  6 ++++--
- cc/raster/playback_image_provider_unittest.cc | 15 ++++++++++-----
- 3 files changed, 19 insertions(+), 9 deletions(-)
+ cc/raster/playback_image_provider.cc | 7 +++++--
+ cc/raster/playback_image_provider.h  | 6 ++++--
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/cc/raster/playback_image_provider.cc b/cc/raster/playback_image_provider.cc
 index 557b421bbaef..b2ace4dc4fa8 100644
@@ -58,7 +57,7 @@ diff --git a/cc/raster/playback_image_provider.h b/cc/raster/playback_image_prov
 index 67974f3f341d..a33092d2b5b4 100644
 --- a/cc/raster/playback_image_provider.h
 +++ b/cc/raster/playback_image_provider.h
-@@ -20,8 +20,10 @@
+@@ -20,8 +20,10 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
   public:
    struct CC_EXPORT Settings {
      Settings();
@@ -70,7 +69,7 @@ index 67974f3f341d..a33092d2b5b4 100644
  
      // The set of image ids to skip during raster.
      PaintImageIdFlatSet images_to_skip;
-@@ -39,7 +41,7 @@
+@@ -34,7 +36,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
    // If no settings are provided, all images are skipped during rasterization.
    PlaybackImageProvider(ImageDecodeCache* cache,
                          const gfx::ColorSpace& target_color_space,
@@ -78,6 +77,4 @@ index 67974f3f341d..a33092d2b5b4 100644
 +                        base::Optional<Settings>&& settings);
    ~PlaybackImageProvider() override;
  
-   void BeginRaster() override;
--- 
-2.14.3
+   PlaybackImageProvider(PlaybackImageProvider&& other);
