@@ -33,7 +33,6 @@ DEPENDS += "\
         libxscrnsaver \
         libxtst \
 "
-DEPENDS_append_libc-musl = " libexecinfo"
 
 # Compatibility glue while we have both chromium-x11 and
 # chromium-ozone-wayland recipes, and the former used to be called just
