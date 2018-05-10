@@ -45,20 +45,6 @@ SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/source/firefox
            file://gcc7.patch \
            file://add-libresolv.patch \
 "
-SRC_URI_append_libc-musl = "\
-           file://0001-mallinfo-is-glibc-specific-API.patch \
-           file://0002-disable-hunspell-hooks.patch \
-           file://0003-define-TEMP_FAILURE_RETRY.patch \
-           file://0004-Fix-mozilla-arm-builds.patch \
-           file://0005-original-patch-fix_off64_t.patch.patch \
-           file://0006-original-patch-getcontext.patch.patch \
-           file://0007-original-patch-basename.patch.patch \
-           file://0008-original-patch-musl-missing-headers.patch.patch \
-           file://0009-original-patch-stab.h.patch.patch \
-           file://0010-Define-N_UNDF.patch \
-           file://0011-Don-t-build-libav-with-sysctl-on-Unix-it-s-not-used-.patch \
-           file://0012-musl-libc-calls-siginfo_t-member-__si_fields-instead.patch \
-"
 
 SRC_URI[archive.md5sum] = "f4d83c5150fc5085db20d71862497eb8"
 SRC_URI[archive.sha256sum] = "2afb02029e115fae65dbe1d9c562cbfeb761a6807338bbd30dbffba616cb2d20"
