@@ -7,7 +7,10 @@ inherit gettext pkgconfig
 
 EXTRA_OEMAKE += "SHELL=/bin/sh"
 EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
-                --build=${BUILD_SYS} --prefix=${prefix} --disable-elf-hack"
+                --build=${BUILD_SYS} --prefix=${prefix}"
+EXTRA_OECONF_arm_append = " --disable-elf-hack"
+EXTRA_OECONF_x86_append = " --disable-elf-hack"
+EXTRA_OECONF_x86-64_append = " --disable-elf-hack"
 SELECTED_OPTIMIZATION = "-Os -fsigned-char -fno-strict-aliasing"
 
 export CROSS_COMPILE = "1"
