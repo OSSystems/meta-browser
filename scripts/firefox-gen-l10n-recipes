@@ -21,7 +21,7 @@ for f in $TMPDIR/*.xpi; do
 	lang_code=$(echo $f | sed "s,$TMPDIR/\([^\.]*\).xpi,\1,g" | tr '[A-Z]' '[a-z]')
 
 cat > firefox-l10n-${lang_code}_$1.bb <<EOF
-# Copyright (C) 2009-2016, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2018, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 require firefox-l10n.inc
