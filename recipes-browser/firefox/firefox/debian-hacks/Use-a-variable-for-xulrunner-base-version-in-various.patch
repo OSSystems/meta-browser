@@ -7,7 +7,7 @@ Subject: Use a variable for xulrunner base version in various places
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/config/baseconfig.mk b/config/baseconfig.mk
-index 86920aa..7149f41 100644
+index 47a12b16e4ee..902c68d3880b 100644
 --- a/config/baseconfig.mk
 +++ b/config/baseconfig.mk
 @@ -2,10 +2,11 @@

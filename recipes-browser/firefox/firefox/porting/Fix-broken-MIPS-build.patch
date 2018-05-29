@@ -1,0 +1,24 @@
+From: DRC <information@libjpeg-turbo.org>
+Date: Mon, 26 Sep 2016 17:59:14 -0500
+Subject: Fix broken MIPS build
+
+Regression introduced by 9055fb408dcb585ce9392d395e16630d51002152
+
+Fixes #104
+---
+ media/libjpeg/simd/jsimd_mips.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/media/libjpeg/simd/jsimd_mips.c b/media/libjpeg/simd/jsimd_mips.c
+index 63b8115d16d4..02e90cd9f0c0 100644
+--- a/media/libjpeg/simd/jsimd_mips.c
++++ b/media/libjpeg/simd/jsimd_mips.c
+@@ -63,6 +63,8 @@ parse_proc_cpuinfo(const char* search_string)
+ LOCAL(void)
+ init_simd (void)
+ {
++  char *env = NULL;
++
+   if (simd_support != ~0U)
+     return;
+ 

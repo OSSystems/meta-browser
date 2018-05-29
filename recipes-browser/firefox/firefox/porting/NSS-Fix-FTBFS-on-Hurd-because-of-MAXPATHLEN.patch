@@ -8,21 +8,21 @@ Subject: [NSS] Fix FTBFS on Hurd because of MAXPATHLEN
  2 files changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/security/nss/cmd/shlibsign/shlibsign.c b/security/nss/cmd/shlibsign/shlibsign.c
-index 7ddbf34..48e1aae 100644
+index d93fc422d54f..2ec752bd3176 100644
 --- a/security/nss/cmd/shlibsign/shlibsign.c
 +++ b/security/nss/cmd/shlibsign/shlibsign.c
-@@ -716,7 +716,6 @@ int main(int argc, char **argv)
+@@ -725,7 +725,6 @@ main(int argc, char **argv)
  #ifdef USES_LINKS
      int ret;
      struct stat stat_buf;
--    char link_buf[MAXPATHLEN+1];
+-    char link_buf[MAXPATHLEN + 1];
      char *link_file = NULL;
  #endif
  
-@@ -1044,10 +1043,22 @@ int main(int argc, char **argv)
+@@ -1068,10 +1067,22 @@ main(int argc, char **argv)
      }
      if (S_ISLNK(stat_buf.st_mode)) {
-         char *dirpath,*dirend;
+         char *dirpath, *dirend;
 -        ret = readlink(input_file, link_buf, sizeof(link_buf) - 1);
 -        if (ret < 0) {
 -            perror(input_file);
@@ -47,10 +47,10 @@ index 7ddbf34..48e1aae 100644
          link_buf[ret] = 0;
          link_file = mkoutput(input_file);
 diff --git a/security/nss/lib/freebl/unix_rand.c b/security/nss/lib/freebl/unix_rand.c
-index 579040ee..b4fef7a 100644
+index ea3b6af3de5e..3f625bf979bd 100644
 --- a/security/nss/lib/freebl/unix_rand.c
 +++ b/security/nss/lib/freebl/unix_rand.c
-@@ -1031,6 +1031,10 @@ void ReadSingleFile(const char *fileName)
+@@ -1039,6 +1039,10 @@ ReadSingleFile(const char *fileName)
  #define _POSIX_PTHREAD_SEMANTICS
  #include <dirent.h>
  

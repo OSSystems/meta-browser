@@ -3,10 +3,11 @@ DEPENDS += "gnu-config-native virtual/libintl libxt libxi zip-native gtk+"
 
 SRC_URI += "file://mozconfig"
 
-inherit gettext pkgconfig
+inherit pkgconfig
 
 EXTRA_OEMAKE += "SHELL=/bin/sh"
 EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
+                --with-toolchain-prefix=${TARGET_SYS}- \
                 --build=${BUILD_SYS} --prefix=${prefix}"
 EXTRA_OECONF_arm_append = " --disable-elf-hack"
 EXTRA_OECONF_x86_append = " --disable-elf-hack"

@@ -3,37 +3,39 @@ Date: Sat, 21 Jun 2008 02:48:46 +0200
 Subject: Allow .js preference files to set locked prefs with lockPref()
 
 ---
- modules/libpref/prefapi.cpp  |  5 ++++-
+ modules/libpref/prefapi.cpp  |  6 ++++--
  modules/libpref/prefapi.h    |  3 ++-
- modules/libpref/prefread.cpp | 12 +++++++++---
+ modules/libpref/prefread.cpp | 13 ++++++++++---
  modules/libpref/prefread.h   |  4 +++-
- 4 files changed, 18 insertions(+), 6 deletions(-)
+ 4 files changed, 19 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/prefapi.cpp b/modules/libpref/prefapi.cpp
-index dd27769..bd3f8ea 100644
+index 046a6941903d..649965070df2 100644
 --- a/modules/libpref/prefapi.cpp
 +++ b/modules/libpref/prefapi.cpp
-@@ -967,11 +967,14 @@ void PREF_ReaderCallback(void       *closure,
+@@ -997,8 +997,8 @@ void PREF_ReaderCallback(void       *closure,
                           PrefValue   value,
                           PrefType    type,
                           bool        isDefault,
 -                         bool        isStickyDefault)
+-
 +                         bool        isStickyDefault,
 +                         bool        isLocked)
  {
-     uint32_t flags = isDefault ? kPrefSetDefault : kPrefForceSet;
-     if (isDefault && isStickyDefault) {
-         flags |= kPrefStickyDefault;
+     uint32_t flags = 0;
+     if (isDefault) {
+@@ -1010,4 +1010,6 @@ void PREF_ReaderCallback(void       *closure,
+         flags |= kPrefForceSet;
      }
      pref_HashPref(pref, value, type, flags);
 +    if (isLocked)
 +        PREF_LockPref(pref, true);
  }
 diff --git a/modules/libpref/prefapi.h b/modules/libpref/prefapi.h
-index 5bd8c43..0ab0d7c 100644
+index 9ef014adaf13..1c74a7045b94 100644
 --- a/modules/libpref/prefapi.h
 +++ b/modules/libpref/prefapi.h
-@@ -186,7 +186,8 @@ void PREF_ReaderCallback( void *closure,
+@@ -243,7 +243,8 @@ void PREF_ReaderCallback( void *closure,
                            PrefValue   value,
                            PrefType    type,
                            bool        isDefault,
@@ -41,10 +43,10 @@ index 5bd8c43..0ab0d7c 100644
 +                          bool        isStickyDefault,
 +                          bool        isLocked);
  
- #ifdef __cplusplus
- }
+ 
+ /*
 diff --git a/modules/libpref/prefread.cpp b/modules/libpref/prefread.cpp
-index 6c4d339..16c5057 100644
+index 605dcaac6308..421cc694bdef 100644
 --- a/modules/libpref/prefread.cpp
 +++ b/modules/libpref/prefread.cpp
 @@ -43,6 +43,7 @@ enum {
@@ -55,7 +57,7 @@ index 6c4d339..16c5057 100644
  static const char kPref[] = "pref";
  static const char kPrefSticky[] = "sticky_pref";
  static const char kTrue[] = "true";
-@@ -131,7 +132,7 @@ pref_DoCallback(PrefParseState *ps)
+@@ -146,7 +147,7 @@ pref_DoCallback(PrefParseState *ps)
          break;
      }
      (*ps->reader)(ps->closure, ps->lb, value, ps->vtype, ps->fdefault,
@@ -64,27 +66,32 @@ index 6c4d339..16c5057 100644
      return true;
  }
  
-@@ -191,6 +192,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
-                 ps->vtype = PREF_INVALID;
+@@ -215,6 +216,7 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+                 ps->vtype = PrefType::Invalid;
                  ps->fdefault = false;
                  ps->fstickydefault = false;
 +                ps->flock = false;
              }
              switch (c) {
              case '/':       /* begin comment block or line? */
-@@ -202,8 +204,10 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+@@ -226,12 +228,15 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
              case 'u':       /* indicating user_pref */
-             case 'p':       /* indicating pref */
              case 's':       /* indicating sticky_pref */
+             case 'p':       /* indicating pref */
 +            case 'l':       /* indicating lockPref */
-                 ps->smatch = (c == 'u' ? kUserPref :
--                             (c == 's' ? kPrefSticky : kPref));
-+                             (c == 's' ? kPrefSticky :
-+                             (c == 'p' ? kPref : kLockPref)));
+                 if (c == 'u') {
+                   ps->smatch = kUserPref;
+                 } else if (c == 's') {
+                   ps->smatch = kPrefSticky;
+-                } else {
++                } else if (c == 'p') {
+                   ps->smatch = kPref;
++                } else {
++                  ps->smatch = kLockPref;
+                 }
                  ps->sindex = 1;
                  ps->nextstate = PREF_PARSE_UNTIL_OPEN_PAREN;
-                 state = PREF_PARSE_MATCH_STRING;
-@@ -247,8 +251,10 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
+@@ -277,8 +282,10 @@ PREF_ParseBuf(PrefParseState *ps, const char *buf, int bufLen)
          /* name parsing */
          case PREF_PARSE_UNTIL_NAME:
              if (c == '\"' || c == '\'') {
@@ -97,7 +104,7 @@ index 6c4d339..16c5057 100644
                  ps->nextstate = PREF_PARSE_UNTIL_COMMA; /* return here when done */
                  state = PREF_PARSE_QUOTED_STRING;
 diff --git a/modules/libpref/prefread.h b/modules/libpref/prefread.h
-index 3c317ff..0c13057 100644
+index 2a09b30b6e31..a2dac02f8db9 100644
 --- a/modules/libpref/prefread.h
 +++ b/modules/libpref/prefread.h
 @@ -34,7 +34,8 @@ typedef void (*PrefReader)(void       *closure,
@@ -108,11 +115,11 @@ index 3c317ff..0c13057 100644
 +                           bool        stickyPref,
 +                           bool        lockPref);
  
- /* structure fields are private */
- typedef struct PrefParseState {
-@@ -56,6 +57,7 @@ typedef struct PrefParseState {
+ /**
+  * Report any errors or warnings we encounter during parsing.
+@@ -62,6 +63,7 @@ typedef struct PrefParseState {
      PrefType    vtype;      /* PREF_STRING,INT,BOOL          */
-     bool        fdefault;   /* true if (default) pref     */
+     bool        fdefault;   /* true if (default) pref        */
      bool        fstickydefault; /* true if (sticky) pref     */
 +    bool        flock;      /* true if pref to be locked     */
  } PrefParseState;
