@@ -1,0 +1,94 @@
+
+# HG changeset patch
+# User Mike Hommey <mh+mozilla@glandium.org>
+# Date 1496389195 -32400
+# Node ID 2255d01b9d6b681eec312fa5db4fb0c8d6f01600
+# Parent  b138d2f271fdb598bf8a66c2dcb7fe391ca2a96f
+Bug 1369292 - Avoid running config.status in js/src. r?mshal
+
+
+diff --git a/build/subconfigure.py b/build/subconfigure.py
+--- a/build/subconfigure.py
++++ b/build/subconfigure.py
+@@ -145,16 +145,20 @@
+     """Given a "file:template" string, returns "file", "template". If the string
+     is of the form "file" (without a template), returns "file", "file.in"."""
+     if ':' in s:
+         return s.split(':', 1)
+     return s, '%s.in' % s
+ 
+ 
+ def get_config_files(data):
++    # config.status in js/src never contains the output we try to scan here.
++    if data['relobjdir'] == 'js/src':
++        return [], []
++
+     config_status = mozpath.join(data['objdir'], 'config.status')
+     if not os.path.exists(config_status):
+         return [], []
+ 
+     configure = mozpath.join(data['srcdir'], 'configure')
+     config_files = []
+     command_files = []
+ 
+@@ -261,16 +265,17 @@
+ def run(objdir):
+     ret = 0
+     output = ''
+ 
+     with open(os.path.join(objdir, CONFIGURE_DATA), 'rb') as f:
+         data = pickle.load(f)
+ 
+     data['objdir'] = objdir
++    relobjdir = data['relobjdir'] = os.path.relpath(objdir, os.getcwd())
+ 
+     cache_file = data['cache-file']
+     cleared_cache = True
+     if os.path.exists(cache_file):
+         cleared_cache = maybe_clear_cache(data)
+ 
+     config_files, command_files = get_config_files(data)
+     contents = []
+@@ -298,18 +303,16 @@
+         config_status = None
+     else:
+         config_status = File(config_status_path)
+         if config_status.mtime < os.path.getmtime(configure) or \
+                 data.get('previous-args', data['args']) != data['args'] or \
+                 cleared_cache:
+             skip_configure = False
+ 
+-    relobjdir = os.path.relpath(objdir, os.getcwd())
+-
+     if not skip_configure:
+         if mozpath.normsep(relobjdir) == 'js/src':
+             # Because configure is a shell script calling a python script
+             # calling a shell script, on Windows, with msys screwing the
+             # environment, we lose the benefits from our own efforts in this
+             # script to get past the msys problems. So manually call the python
+             # script instead, so that we don't do a native->msys transition
+             # here. Then the python configure will still have the right
+@@ -347,17 +350,21 @@
+         if config_status and os.path.getmtime(configure) <= config_status.mtime:
+             config_status.update_time()
+ 
+     # Only run config.status if one of the following is true:
+     # - config.status changed or did not exist
+     # - one of the templates for config files is newer than the corresponding
+     #   config file.
+     skip_config_status = True
+-    if not config_status or config_status.modified:
++    if mozpath.normsep(relobjdir) == 'js/src':
++        # Running config.status in js/src actually does nothing, so we just
++        # skip it.
++        pass
++    elif not config_status or config_status.modified:
+         # If config.status doesn't exist after configure (because it's not
+         # an autoconf configure), skip it.
+         if os.path.exists(config_status_path):
+             skip_config_status = False
+     else:
+         # config.status changed or was created, so we need to update the
+         # list of config and command files.
+         config_files, command_files = get_config_files(data)
+

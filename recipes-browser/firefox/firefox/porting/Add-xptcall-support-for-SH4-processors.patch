@@ -13,7 +13,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index 3dad5e6..2dca257 100644
+index 1d182bbd6f06..067a6ad69898 100644
 --- a/xpcom/reflect/xptcall/md/unix/moz.build
 +++ b/xpcom/reflect/xptcall/md/unix/moz.build
 @@ -316,6 +316,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
@@ -30,7 +30,7 @@ index 3dad5e6..2dca257 100644
  
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 new file mode 100644
-index 0000000..ca4807d
+index 000000000000..ca4807daca89
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 @@ -0,0 +1,203 @@
@@ -239,7 +239,7 @@ index 0000000..ca4807d
 +
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 new file mode 100644
-index 0000000..cf9fcea
+index 000000000000..cf9fceabd81c
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 @@ -0,0 +1,271 @@
