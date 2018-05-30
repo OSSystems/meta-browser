@@ -2,8 +2,8 @@
 # User Martin Stransky <stransky@redhat.com>
 # Date 1522937803 -7200
 #      Thu Apr 05 16:16:43 2018 +0200
-# Branch dnd-patches
-# Node ID 50429c89a97c19904714387e42c1d03d2a43e06d
+# Branch dnd-patches-2
+# Node ID 4882e2ee742629fb12d2fc3f59b0d523b0626c71
 # Parent  aabfe960ab59fea2e85896b1f8050786e16ab23b
 Bug 1438131 - Implement Drop on Wayland, r?jhorak
 
@@ -15,7 +15,7 @@ which we route to nsDragService module.
 
 MozReview-Commit-ID: 9uGYPg9YF6P
 
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsClipboardWayland.cpp
 --- a/widget/gtk/nsClipboardWayland.cpp	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsClipboardWayland.cpp	Thu Apr 05 16:16:43 2018 +0200
 @@ -23,6 +23,7 @@
@@ -26,7 +26,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  
  #include "imgIContainer.h"
  
-@@ -46,6 +47,48 @@
+@@ -46,6 +47,44 @@
      "COMPOUND_TEXT"
  };
  
@@ -39,8 +39,6 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +    actions = GdkDragAction(actions|GDK_ACTION_COPY);
 +  if (dnd_actions & WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE)
 +    actions = GdkDragAction(actions|GDK_ACTION_MOVE);
-+  if (dnd_actions & WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK)
-+    actions = GdkDragAction(actions|GDK_ACTION_ASK);
 +
 +  return actions;
 +}
@@ -54,8 +52,6 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +    dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
 +  if (action & GDK_ACTION_MOVE)
 +    dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
-+  if (action & GDK_ACTION_ASK)
-+    dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK;
 +
 +  return dnd_actions;
 +}
@@ -75,7 +71,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  void
  DataOffer::AddMIMEType(const char *aMimeType)
  {
-@@ -155,6 +198,40 @@
+@@ -155,6 +194,57 @@
      return false;
  }
  
@@ -86,14 +82,18 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +}
 +
 +void
-+WaylandDataOffer::SetDragAction(GdkDragAction aAction, uint32_t aTime)
++WaylandDataOffer::SetDragStatus(GdkDragAction aAction, uint32_t aTime)
 +{
-+    uint32_t wl_action = gdk_to_wl_actions(aAction);
 +    wl_data_offer_set_actions(mWaylandDataOffer,
-+                              mAvailableDragActions,
-+                              wl_action);
++                              mSourceDragActions,
++                              gdk_to_wl_actions(aAction));
++
 +    /* Workaround Wayland D&D architecture here. To get the data_device_drop()
-+       signal we need to accept any mime type before data_device_leave().
++       signal (which routes to nsDragService::GetData() call) we need to
++       accept at least one mime type before data_device_leave().
++
++       Real wl_data_offer_accept() for actualy requested data mime type is
++       called from nsDragService::GetData().
 +    */
 +    if (mTargetMIMETypes[0]) {
 +        wl_data_offer_accept(mWaylandDataOffer, aTime,
@@ -102,51 +102,82 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +}
 +
 +void
-+WaylandDataOffer::SetAvailableDragActions(uint32_t aWaylandActions)
++WaylandDataOffer::SetSourceDragActions(uint32_t aWaylandActions)
 +{
-+    mAvailableDragActions = aWaylandActions;
++    // We don't support DND_ACTION_ASK so remove it from selection.
++    mSourceDragActions = aWaylandActions&~WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK;
 +}
 +
 +GdkDragAction
-+WaylandDataOffer::GetAvailableDragActions(void)
++WaylandDataOffer::GetSourceDragActions(void)
 +{
-+    return wl_to_gdk_actions(mAvailableDragActions);
++    return wl_to_gdk_actions(mSourceDragActions);
++}
++
++void
++WaylandDataOffer::SetSelectedDragAction(uint32_t aWaylandAction)
++{
++    mSelectedDragAction = aWaylandAction;
++}
++
++GdkDragAction
++WaylandDataOffer::GetSelectedDragAction()
++{
++    return wl_to_gdk_actions(mSelectedDragAction);
 +}
 +
  static void
  data_offer_offer (void                 *data,
                    struct wl_data_offer *wl_data_offer,
-@@ -164,13 +241,21 @@
+@@ -164,25 +254,37 @@
      offer->AddMIMEType(type);
  }
  
-+/* Advertise all available drag and drop actions.
++/* Advertise all available drag and drop actions from source.
 +*/
  static void
  data_offer_source_actions(void *data,
                            struct wl_data_offer *wl_data_offer,
                            uint32_t source_actions)
  {
-+    auto *offer = static_cast<DataOffer*>(data);
-+    offer->SetAvailableDragActions(source_actions);
++    auto *offer = static_cast<WaylandDataOffer*>(data);
++    offer->SetSourceDragActions(source_actions);
  }
  
-+/* Advertise recently selected drag and drop action.
-+   We don't need that as we set the drag action explicitly
-+   by nsDataOffer::SetDragAction().
-+*/
++/* Advertise recently selected drag and drop action by compositor, based
++ * on source actions and user choice (key modifiers, etc.).
++ */
  static void
  data_offer_action(void *data,
                    struct wl_data_offer *wl_data_offer,
-@@ -192,6 +277,7 @@
+                   uint32_t dnd_action)
+ {
++    auto *offer = static_cast<WaylandDataOffer*>(data);
++    offer->SetSelectedDragAction(dnd_action);
+ }
+ 
+ /* wl_data_offer callback description:
+  *
+  * data_offer_offer - Is called for each MIME type available at wl_data_offer.
+- * data_offer_source_actions - Exposes all available D&D actions.
+- * data_offer_action - Expose one actually selected D&D action.
++ * data_offer_source_actions - This event indicates the actions offered by
++ *                             the data source.
++ * data_offer_action - This event indicates the action selected by
++ *                     the compositor after matching the source/destination
++ *                     side actions.
+  */
+ static const struct wl_data_offer_listener data_offer_listener = {
+     data_offer_offer,
+@@ -192,6 +294,7 @@
  
  WaylandDataOffer::WaylandDataOffer(wl_data_offer* aWaylandDataOffer)
    : mWaylandDataOffer(aWaylandDataOffer)
-+  , mAvailableDragActions(0)
++  , mSourceDragActions(0)
  {
      wl_data_offer_add_listener(mWaylandDataOffer, &data_offer_listener, this);
  }
-@@ -246,12 +332,89 @@
+@@ -246,12 +349,87 @@
      }
  }
  
@@ -156,7 +187,6 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +                                           wl_display *aDisplay)
 +  : mDataOffer(aDataOffer)
 +  , mDisplay(aDisplay)
-+  , mWaylandSurface(nullptr)
 +  , mTime(0)
 +  , mGtkWidget(nullptr)
 +  , mX(0)
@@ -166,10 +196,9 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +
  void
 -nsRetrievalContextWayland::RegisterDataOffer(wl_data_offer *aWaylandDataOffer)
-+nsWaylandDragContext::DropBegin(wl_surface *aSurface, uint32_t aTime,
-+                                GtkWidget* aGtkWidget, nscoord aX, nscoord aY)
++nsWaylandDragContext::DropDataEnter(GtkWidget* aGtkWidget, uint32_t aTime,
++                                    nscoord aX, nscoord aY)
 +{
-+    mWaylandSurface = aSurface;
 +    mTime = aTime;
 +    mGtkWidget = aGtkWidget;
 +    mX = aX;
@@ -193,15 +222,15 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +}
 +
 +void
-+nsWaylandDragContext::SetDragAction(GdkDragAction aAction)
++nsWaylandDragContext::SetDragStatus(GdkDragAction aAction)
 +{
-+    mDataOffer->SetDragAction(aAction, mTime);
++    mDataOffer->SetDragStatus(aAction, mTime);
 +}
 +
 +GdkDragAction
-+nsWaylandDragContext::GetAvailableDragActions()
++nsWaylandDragContext::GetSelectedDragAction()
 +{
-+    return mDataOffer->GetAvailableDragActions();
++    return mDataOffer->GetSelectedDragAction();
 +}
 +
 +GList*
@@ -237,7 +266,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
    if (!dataOffer) {
        dataOffer = new WaylandDataOffer(aWaylandDataOffer);
        g_hash_table_insert(mActiveOffers, aWaylandDataOffer, dataOffer);
-@@ -259,12 +422,15 @@
+@@ -259,12 +437,15 @@
  }
  
  void
@@ -254,7 +283,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
    if (!dataOffer) {
        dataOffer = new PrimaryDataOffer(aPrimaryDataOffer);
        g_hash_table_insert(mActiveOffers, aPrimaryDataOffer, dataOffer);
-@@ -274,6 +440,9 @@
+@@ -274,6 +455,9 @@
  void
  nsRetrievalContextWayland::SetClipboardDataOffer(wl_data_offer *aWaylandDataOffer)
  {
@@ -264,7 +293,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
      DataOffer* dataOffer =
          static_cast<DataOffer*>(g_hash_table_lookup(mActiveOffers,
                                                      aWaylandDataOffer));
-@@ -288,10 +457,12 @@
+@@ -288,10 +472,12 @@
  nsRetrievalContextWayland::SetPrimaryDataOffer(
        gtk_primary_selection_offer *aPrimaryDataOffer)
  {
@@ -281,12 +310,12 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
          DataOffer* dataOffer =
              static_cast<DataOffer*>(g_hash_table_lookup(mActiveOffers,
                                                          aPrimaryDataOffer));
-@@ -304,7 +475,29 @@
+@@ -304,7 +490,29 @@
  }
  
  void
 -nsRetrievalContextWayland::ClearDataOffers(void)
-+nsRetrievalContextWayland::SetDragAndDropDataOffer(wl_data_offer *aDropDataOffer)
++nsRetrievalContextWayland::AddDragAndDropDataOffer(wl_data_offer *aDropDataOffer)
 +{
 +    // Remove any existing D&D contexts.
 +    mDragContext = nullptr;
@@ -294,7 +323,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +    WaylandDataOffer* dataOffer =
 +        static_cast<WaylandDataOffer*>(g_hash_table_lookup(mActiveOffers,
 +                                                           aDropDataOffer));
-+    NS_ASSERTION(dataOffer, "We're missing drag and drop dat offer!");
++    NS_ASSERTION(dataOffer, "We're missing drag and drop data offer!");
 +    if (dataOffer) {
 +        g_hash_table_remove(mActiveOffers, aDropDataOffer);
 +        mDragContext = new nsWaylandDragContext(dataOffer, mDisplay);
@@ -312,7 +341,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  {
      if (mClipboardOffer)
          mClipboardOffer = nullptr;
-@@ -312,6 +505,12 @@
+@@ -312,6 +520,12 @@
          mPrimaryOffer = nullptr;
  }
  
@@ -325,7 +354,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  // We have a new fresh data content.
  // We should attach listeners to it and save for further use.
  static void
-@@ -321,7 +520,7 @@
+@@ -321,7 +535,7 @@
  {
      nsRetrievalContextWayland *context =
          static_cast<nsRetrievalContextWayland*>(data);
@@ -334,7 +363,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  }
  
  // The new fresh data content is clipboard.
-@@ -341,31 +540,78 @@
+@@ -341,31 +555,78 @@
                     struct wl_data_device *data_device,
                     uint32_t               time,
                     struct wl_surface     *surface,
@@ -346,7 +375,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  {
 +    nsRetrievalContextWayland *context =
 +        static_cast<nsRetrievalContextWayland*>(data);
-+    context->SetDragAndDropDataOffer(offer);
++    context->AddDragAndDropDataOffer(offer);
 +
 +    nsWaylandDragContext* dragContext = context->GetDragContext();
 +
@@ -359,9 +388,9 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
 +    LOGDRAG(("nsWindow data_device_enter for GtkWidget %p\n",
 +             (void*)gtkWidget));
 +
-+    dragContext->DropBegin(surface, time, gtkWidget,
-+                           wl_fixed_to_int(x_fixed),
-+                           wl_fixed_to_int(y_fixed));
++    dragContext->DropDataEnter(gtkWidget, time,
++                               wl_fixed_to_int(x_fixed),
++                               wl_fixed_to_int(y_fixed));
  }
  
  static void
@@ -417,7 +446,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  }
  
  /* wl_data_device callback description:
-@@ -405,7 +651,7 @@
+@@ -405,7 +666,7 @@
      // create and add listener
      nsRetrievalContextWayland *context =
          static_cast<nsRetrievalContextWayland*>(data);
@@ -426,7 +455,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  }
  
  static void
-@@ -418,6 +664,18 @@
+@@ -418,6 +679,18 @@
      context->SetPrimaryDataOffer(gtk_primary_offer);
  }
  
@@ -445,7 +474,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  static const struct
  gtk_primary_selection_device_listener primary_selection_device_listener = {
      primary_selection_data_offer,
-@@ -451,7 +709,7 @@
+@@ -451,7 +724,7 @@
      nsRetrievalContextWayland *context =
          static_cast<nsRetrievalContextWayland*>(data);
  
@@ -454,7 +483,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
  }
  
  static void
-@@ -573,6 +831,7 @@
+@@ -573,6 +846,7 @@
    , mActiveOffers(g_hash_table_new(NULL, NULL))
    , mClipboardOffer(nullptr)
    , mPrimaryOffer(nullptr)
@@ -462,7 +491,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
    , mClipboardRequestNumber(0)
    , mClipboardData(nullptr)
    , mClipboardDataLength(0)
-@@ -616,8 +875,21 @@
+@@ -616,8 +890,21 @@
      mInitialized = true;
  }
  
@@ -484,19 +513,10 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.cpp
      g_hash_table_destroy(mActiveOffers);
  }
  
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsClipboardWayland.h
 --- a/widget/gtk/nsClipboardWayland.h	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsClipboardWayland.h	Thu Apr 05 16:16:43 2018 +0200
-@@ -25,6 +25,8 @@
-     GdkAtom* GetTargets(int* aTargetNum);
-     bool  HasTarget(const char *aMimeType);
- 
-+    virtual void SetAvailableDragActions(uint32_t aWaylandActions) = 0;
-+
-     char* GetData(wl_display* aDisplay, const char* aMimeType,
-                   uint32_t* aContentLength);
- 
-@@ -32,6 +34,7 @@
+@@ -32,6 +32,7 @@
  private:
      virtual bool RequestDataTransfer(const char* aMimeType, int fd) = 0;
  
@@ -504,22 +524,27 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
      nsTArray<GdkAtom> mTargetMIMETypes;
  };
  
-@@ -40,25 +43,62 @@
+@@ -40,25 +41,66 @@
  public:
      WaylandDataOffer(wl_data_offer* aWaylandDataOffer);
  
 +    void DragOfferAccept(const char* aMimeType, uint32_t aTime);
-+    void SetDragAction(GdkDragAction aAction, uint32_t aTime);
-+    GdkDragAction GetAvailableDragActions();
++    void SetDragStatus(GdkDragAction aAction, uint32_t aTime);
 +
-+    void SetAvailableDragActions(uint32_t aWaylandActions);
++    GdkDragAction GetSelectedDragAction();
++    void SetSelectedDragAction(uint32_t aWaylandAction);
++
++    GdkDragAction GetSourceDragActions();
++    void SetSourceDragActions(uint32_t aWaylandActions);
++
 +    virtual ~WaylandDataOffer();
  private:
 -    virtual ~WaylandDataOffer();
      bool RequestDataTransfer(const char* aMimeType, int fd) override;
  
      wl_data_offer* mWaylandDataOffer;
-+    uint32_t       mAvailableDragActions;
++    uint32_t       mSourceDragActions;
++    uint32_t       mSelectedDragAction;
  };
  
  class PrimaryDataOffer : public DataOffer
@@ -541,26 +566,25 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
 +    NS_DECL_ISUPPORTS
 +
 +public:
-+    void DropBegin(wl_surface *aSurface, uint32_t aTime, GtkWidget* aGtkWidget,
-+                   nscoord aX, nscoord aY);
++    nsWaylandDragContext(WaylandDataOffer* aWaylandDataOffer,
++                         wl_display *aDisplay);
++
++    void DropDataEnter(GtkWidget* aGtkWidget, uint32_t aTime,
++                       nscoord aX, nscoord aY);
 +    void DropMotion(uint32_t aTime, nscoord aX, nscoord aY);
 +    void GetLastDropInfo(uint32_t *aTime, nscoord *aX, nscoord *aY);
 +
-+    GdkDragAction GetAvailableDragActions();
-+    void SetDragAction(GdkDragAction action);
++    void SetDragStatus(GdkDragAction action);
++    GdkDragAction GetSelectedDragAction();
 +
 +    GtkWidget* GetWidget() { return mGtkWidget; }
 +    GList* GetTargets();
 +    char* GetData(const char* aMimeType, uint32_t* aContentLength);
-+
-+    nsWaylandDragContext(WaylandDataOffer* aWaylandDataOffer,
-+                         wl_display *aDisplay);
 +private:
 +    virtual ~nsWaylandDragContext() {};
 +
 +    nsAutoPtr<WaylandDataOffer> mDataOffer;
 +    wl_display* mDisplay;
-+    wl_surface* mWaylandSurface;
 +    uint32_t    mTime;
 +    GtkWidget*  mGtkWidget;
 +    nscoord     mX, mY;
@@ -569,7 +593,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
  class nsRetrievalContextWayland : public nsRetrievalContext
  {
  public:
-@@ -74,13 +114,16 @@
+@@ -74,13 +116,16 @@
                                  int* aTargetNum) override;
      virtual bool HasSelectionSupport(void) override;
  
@@ -580,7 +604,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
  
      void SetClipboardDataOffer(wl_data_offer *aWaylandDataOffer);
      void SetPrimaryDataOffer(gtk_primary_selection_offer *aPrimaryDataOffer);
-+    void SetDragAndDropDataOffer(wl_data_offer *aWaylandDataOffer);
++    void AddDragAndDropDataOffer(wl_data_offer *aWaylandDataOffer);
 +    nsWaylandDragContext* GetDragContext();
  
 -    void ClearDataOffers();
@@ -589,7 +613,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
  
      void ConfigureKeyboard(wl_seat_capability caps);
      void TransferFastTrackClipboard(int aClipboardRequestNumber,
-@@ -103,6 +146,7 @@
+@@ -103,6 +148,7 @@
      GHashTable*                 mActiveOffers;
      nsAutoPtr<DataOffer>        mClipboardOffer;
      nsAutoPtr<DataOffer>        mPrimaryOffer;
@@ -597,7 +621,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsClipboardWayland.h
  
      int                         mClipboardRequestNumber;
      char*                       mClipboardData;
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.cpp
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsDragService.cpp
 --- a/widget/gtk/nsDragService.cpp	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsDragService.cpp	Thu Apr 05 16:16:43 2018 +0200
 @@ -42,6 +42,9 @@
@@ -708,7 +732,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.cpp
 +        }
 +    }
 +
-+    aDragContext->SetDragAction(action);
++    aDragContext->SetDragStatus(action);
 +}
 +
 +void
@@ -898,7 +922,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.cpp
  
      // If we got another drag signal while running the sheduled task, that
      // must have happened while running a nested event loop.  Leave the task
-@@ -2014,7 +2122,15 @@
+@@ -2014,7 +2122,16 @@
  
      // default is to do nothing
      int action = nsIDragService::DRAGDROP_ACTION_NONE;
@@ -909,13 +933,14 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.cpp
 +    }
 +#ifdef MOZ_WAYLAND
 +    else {
-+        gdkAction = mTargetWaylandDragContext->GetAvailableDragActions();
++        // We get the selected D&D action from compositor on Wayland.
++        gdkAction = mTargetWaylandDragContext->GetSelectedDragAction();
 +    }
 +#endif
  
      // set the default just in case nothing matches below
      if (gdkAction & GDK_ACTION_DEFAULT)
-@@ -2043,6 +2159,12 @@
+@@ -2043,6 +2160,12 @@
      ReplyToDragMotion(mTargetDragContextForRemote);
      mTargetDragContextForRemote = nullptr;
    }
@@ -928,7 +953,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.cpp
    return NS_OK;
  }
  
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.h
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsDragService.h
 --- a/widget/gtk/nsDragService.h	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsDragService.h	Thu Apr 05 16:16:43 2018 +0200
 @@ -14,6 +14,7 @@
@@ -1000,7 +1025,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsDragService.h
  
  #endif // nsDragService_h__
 -
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsWindow.cpp
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsWindow.cpp
 --- a/widget/gtk/nsWindow.cpp	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsWindow.cpp	Thu Apr 05 16:16:43 2018 +0200
 @@ -6067,13 +6067,13 @@
@@ -1109,7 +1134,7 @@ diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsWindow.cpp
  static void
  drag_data_received_event_cb(GtkWidget *aWidget,
                              GdkDragContext *aDragContext,
-diff -r aabfe960ab59 -r 50429c89a97c widget/gtk/nsWindow.h
+diff -r aabfe960ab59 -r 4882e2ee7426 widget/gtk/nsWindow.h
 --- a/widget/gtk/nsWindow.h	Fri May 11 00:59:14 2018 +0300
 +++ b/widget/gtk/nsWindow.h	Thu Apr 05 16:16:43 2018 +0200
 @@ -66,6 +66,21 @@
