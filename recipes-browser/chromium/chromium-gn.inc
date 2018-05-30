@@ -221,11 +221,11 @@ def get_compiler_flag(params, param_name, d):
       if param.startswith(param_name):
         return param.split('=')[1]
     return ''
-ARM_ARCH = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-march', d)}"
+ARM_ARCH = "${@get_compiler_flag(d.getVar('TUNE_CCARGS', True).split(), '-march', d)}"
 ARM_FLOAT_ABI = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hard', 'softfp', d)}"
-ARM_FPU = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mfpu', d)}"
-ARM_TUNE = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mcpu', d)}"
-ARM_VERSION = "${@get_arm_version(d.getVar('ARM_ARCH'))}"
+ARM_FPU = "${@get_compiler_flag(d.getVar('TUNE_CCARGS', True).split(), '-mfpu', d)}"
+ARM_TUNE = "${@get_compiler_flag(d.getVar('TUNE_CCARGS', True).split(), '-mcpu', d)}"
+ARM_VERSION = "${@get_arm_version(d.getVar('ARM_ARCH', True))}"
 GN_ARGS_append_arm = ' \
         arm_arch="${ARM_ARCH}" \
         arm_float_abi="${ARM_FLOAT_ABI}" \
