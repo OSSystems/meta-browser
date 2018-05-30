@@ -1,0 +1,27 @@
+From 7bbaa1058767c8a1131254baa96b341a136ac52c Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Wed, 16 May 2018 15:54:39 +0900
+Subject: [PATCH] Enable elf-hack option for aarch64
+
+But this option should not expose on aarch64.
+This fix is not a real fix.
+---
+ toolkit/moz.configure | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/moz.configure b/toolkit/moz.configure
+index 80b58da1c9d9..9f2fe9d45550 100644
+--- a/toolkit/moz.configure
++++ b/toolkit/moz.configure
+@@ -1194,7 +1194,7 @@ set_define('MOZ_ASAN_REPORTER', enable_asan_reporter)
+ @depends(host, target)
+ def has_elfhack(host, target):
+     return target.kernel == 'Linux' and host.kernel == 'Linux' and \
+-           target.cpu in ('arm', 'x86', 'x86_64')
++           target.cpu in ('arm', 'aarch64', 'x86', 'x86_64')
+ 
+ with only_when(has_elfhack):
+     option('--disable-elf-hack', help='Disable elf hacks')
+-- 
+2.11.0
+
