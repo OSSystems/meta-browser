@@ -27,7 +27,6 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://fixes/fix-camera-permission-dialg-doesnot-close.patch \
            file://fixes/0001-Add-generating-cflags-for-bindgen-mechanism.patch \
            file://fixes/arm64-skia.patch \
-           file://fixes/0001-Enable-elf-hack-option-for-aarch64.patch \
            file://gn-configs/ \
            "
 
@@ -67,6 +66,7 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'wayland', \
             file://wayland/bug1438136.patch \
             file://wayland/bug1461306.patch \
             file://wayland/bug1462622.patch \
+            file://wayland/bug1462640.patch \
            ', \
            '', d)}"
 
@@ -123,7 +123,10 @@ do_configure() {
 
     export RUST_TARGET="${RUST_TARGET_SYS}"
 
-    ./mach configure ${CONFIGURE_ARGS}
+    # We still need to support Yocto 2.1.
+    # After migrating Yocto 2.4, it can be removed.
+    export FALLBACK_CONFIGURE_ARGS="${CONFIGURE_ARGS}"
+    ./mach configure ${PACKAGECONFIG_CONFARGS} ${FALLBACK_CONFIGURE_ARGS}
     cp ${WORKDIR}/gn-configs/*.json ${S}/media/webrtc/gn-configs/
     ./mach build-backend -b GnMozbuildWriter
 }
