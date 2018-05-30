@@ -62,6 +62,7 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'wayland', \
             file://wayland/0001-Add-ad-hoc-solution-to-enable-Alt-modifier-on-Waylan.patch \
             file://wayland/bug1438131.patch \
             file://wayland/bug1460810.patch \
+            file://wayland/bug1438136.patch \
            ', \
            '', d)}"
 
