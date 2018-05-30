@@ -1,24 +1,22 @@
-From 3d0c818d2d512768792fd879d8706924e482afc9 Mon Sep 17 00:00:00 2001
-From: Takuro Ashie <ashie@homa.ne.jp>
-Date: Mon, 10 Apr 2017 17:03:35 +0900
-Subject: [PATCH 1/4] GLLibraryEGL: Use wl_display to get EGLDisplay on Wayland
+# HG changeset patch
+# User Martin Stransky <stransky@redhat.com>
+# Date 1525872375 -7200
+#      Wed May 09 15:26:15 2018 +0200
+# Branch egl-patches
+# Node ID 1d3bce4fa4d43d52d14dc191d93aa372790e9892
+# Parent  aabfe960ab59fea2e85896b1f8050786e16ab23b
+Bug 1460603 - GLLibraryEGL: Use wl_display to get EGLDisplay on Wayland r?jgilbert
 
-Because some drivers doesn't support EGL_DEFAULT_DISPLAY.
+Patch author is Takuro Ashie <ashie@clear-code.com>
 
-Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
+Use wl_display to get EGLDisplay on Wayland because some drivers doesn't support EGL_DEFAULT_DISPLAY.
+For example Intel's driver causes crash without this patch.
 
-This patch is partially imported from
-109766aa316cc3b2261bd7eac81efc823af1da82.
+MozReview-Commit-ID: ILtRJrW6MDs
 
-Signed-off-by: Takuro Ashie <ashie@clear-code.com>
----
- gfx/gl/GLLibraryEGL.cpp | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
-
-diff --git a/gfx/gl/GLLibraryEGL.cpp b/gfx/gl/GLLibraryEGL.cpp
-index e1d59786bc3a..16c399af651a 100644
---- a/gfx/gl/GLLibraryEGL.cpp
-+++ b/gfx/gl/GLLibraryEGL.cpp
+diff -r aabfe960ab59 -r 1d3bce4fa4d4 gfx/gl/GLLibraryEGL.cpp
+--- a/gfx/gl/GLLibraryEGL.cpp	Fri May 11 00:59:14 2018 +0300
++++ b/gfx/gl/GLLibraryEGL.cpp	Wed May 09 15:26:15 2018 +0200
 @@ -31,6 +31,13 @@
  #include "GLContextProvider.h"
  #include "gfxPrefs.h"
@@ -33,7 +31,7 @@ index e1d59786bc3a..16c399af651a 100644
  
  namespace mozilla {
  namespace gl {
-@@ -570,7 +577,22 @@ GLLibraryEGL::EnsureInitialized(bool forceAccel, nsACString* const out_failureId
+@@ -718,7 +725,22 @@
              mIsWARP = true;
          }
      } else {
@@ -57,6 +55,8 @@ index e1d59786bc3a..16c399af651a 100644
      }
  
      if (!chosenDisplay) {
--- 
-2.14.1
-
+@@ -887,4 +909,3 @@
+ 
+ } /* namespace gl */
+ } /* namespace mozilla */
+-

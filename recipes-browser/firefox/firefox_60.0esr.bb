@@ -69,9 +69,10 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'wayland', \
 # Thus, e10s should be disabled when EGL is enabled.
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'wayland egl', \
            ' \
-            file://wayland/egl/0001-GLLibraryEGL-Use-wl_display-to-get-EGLDisplay-on-Way.patch \
+            file://wayland/egl/bug1460603-GLLibraryEGL-Use-wl_display-to-get-EGLDisplay-on-Way.patch \
             file://wayland/egl/0002-Disable-query-EGL_EXTENSIONS.patch \
-            file://wayland/egl/0003-Use-wl_egl_window-as-a-native-EGL-window-on-Wayland.patch \
+            file://wayland/egl/bug1460605-Provide-NS_NATIVE_EGL_WINDOW-to-get-a-native-EGL-window-on-wa.patch \
+            file://wayland/egl/bug1460605-Use-NS_NATIVE_EGL_WINDOW-instead-of-NS_NATIVE_WINDOW-on-GTK.patch \
             file://wayland/egl/0004-Repaint-on-resize-asynchronously.patch \
             file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
             file://wayland/egl/0001-Enable-sharing-SharedSurface_EGLImage.patch \
