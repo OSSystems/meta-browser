@@ -2,9 +2,16 @@
 
 ac_add_options --target=${TARGET_SYS}
 ac_add_options --prefix=${prefix}
+ac_add_options --with-toolchain-prefix="${TARGET_SYS}-"
 
 ac_add_options --enable-application=browser
-ac_add_options --enable-official-branding
+#ac_add_options --enable-official-branding
+
+# for ESR60
+ac_add_options --enable-release
+ac_add_options --enable-webrtc
+ac_add_options --disable-av1
+ac_add_options --enable-default-toolkit=cairo-gtk3-wayland
 
 ac_add_options --disable-elf-hack
 ac_add_options --disable-gold
@@ -12,19 +19,19 @@ ac_add_options --disable-strip
 ac_add_options --disable-install-strip
 
 # System libraries
-ac_add_options --with-system-nss
-ac_add_options --with-system-nspr
+#ac_add_options --with-system-nss # your version is too old
 #ac_add_options --with-system-jpeg # Insufficient JPEG library version
 ac_add_options --with-system-zlib
 ac_add_options --with-system-bz2
 #ac_add_options --with-system-png # system's libpng doesn't have APNG support
 ac_add_options --with-system-libevent
-ac_add_options --with-system-libvpx
-ac_add_options --with-system-icu
+#ac_add_options --with-system-libvpx # probably too old
+#ac_add_options --with-system-icu
 ac_add_options --enable-system-ffi
 ac_add_options --enable-system-pixman
 
 # Features
+ac_add_options --enable-mobile-optimize
 ac_add_options --enable-startup-notification
 ac_add_options --enable-pulseaudio
 ac_add_options --disable-tests

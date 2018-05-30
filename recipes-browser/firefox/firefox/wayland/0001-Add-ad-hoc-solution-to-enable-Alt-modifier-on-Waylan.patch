@@ -1,0 +1,26 @@
+From 7411f5055a172a30f9c89276974caf1db7b6bae2 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Thu, 13 Jul 2017 15:32:03 +0900
+Subject: [PATCH] Add ad-hoc solution to enable Alt modifier on Wayland
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ widget/gtk/nsGtkKeyUtils.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/widget/gtk/nsGtkKeyUtils.cpp b/widget/gtk/nsGtkKeyUtils.cpp
+index ce55cf18ea2f..55e5600e6c0a 100644
+--- a/widget/gtk/nsGtkKeyUtils.cpp
++++ b/widget/gtk/nsGtkKeyUtils.cpp
+@@ -196,6 +196,8 @@ KeymapWrapper::Init()
+ 
+     if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
+         InitBySystemSettings();
++    else
++        mModifierMasks[INDEX_ALT] = 1 << 3;
+ 
+     gdk_window_add_filter(nullptr, FilterEvents, this);
+ 
+-- 
+2.11.0
+

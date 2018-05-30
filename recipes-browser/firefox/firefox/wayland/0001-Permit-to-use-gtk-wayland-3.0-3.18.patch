@@ -1,0 +1,25 @@
+From f044dc4f91eb234727102cd64489037de3aded54 Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Wed, 19 Apr 2017 14:20:45 +0900
+Subject: [PATCH] Permit to use gtk+-wayland-3.0 3.18
+
+---
+ toolkit/moz.configure | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/moz.configure b/toolkit/moz.configure
+index 88606a1586a4..9ded33fc758b 100644
+--- a/toolkit/moz.configure
++++ b/toolkit/moz.configure
+@@ -201,7 +201,7 @@ add_old_configure_assignment('MOZ_X11', x11)
+ 
+ # Wayland support
+ # ==============================================================
+-wayland_headers = pkg_check_modules('MOZ_WAYLAND', 'gtk+-wayland-3.0 >= 3.22',
++wayland_headers = pkg_check_modules('MOZ_WAYLAND', 'gtk+-wayland-3.0 >= 3.18',
+                                     when=wayland)
+ 
+ set_config('MOZ_WAYLAND', depends_if(wayland_headers)(lambda _: True))
+-- 
+2.11.0
+

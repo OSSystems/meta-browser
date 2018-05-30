@@ -1,0 +1,72 @@
+# HG changeset patch
+# User Takuro Ashie <ashie@clear-code.com>
+# Date 1522136241 -32400
+#      Tue Mar 27 16:37:21 2018 +0900
+# Node ID eb0a2bb44f95f195343fed284efcdd524a7bb868
+# Parent  5dd153432affe684c4eda339fea603b694e7bfbd
+Bug 1306529 - OmxDataDecoder: Fix a stall issue on shutting down r?jya
+
+Because the shutdown closure awaits finishing itself by
+TaskQueue::AwaitShutdownAndIdle(), the function blocks infinitely.
+
+The code is wrongly introduced at the following commit:
+
+  * https://bugzilla.mozilla.org/show_bug.cgi?id=1319987
+    * https://hg.mozilla.org/mozilla-central/rev/b2171e3e8b69
+
+This patch calls it on mTaskQueue intead of mOmxTaskQueue to
+avoid the issue.
+
+MozReview-Commit-ID: 4qmX2QlniEG
+
+diff --git a/dom/media/platforms/omx/OmxDataDecoder.cpp b/dom/media/platforms/omx/OmxDataDecoder.cpp
+--- a/dom/media/platforms/omx/OmxDataDecoder.cpp
++++ b/dom/media/platforms/omx/OmxDataDecoder.cpp
+@@ -268,35 +268,39 @@ OmxDataDecoder::DoAsyncShutdown()
+ 
+              return p;
+            },
+            [self] (const OmxCommandFailureHolder& aError) {
+              self->mOmxLayer->Shutdown();
+              return OmxCommandPromise::CreateAndReject(aError, __func__);
+            })
+     ->Then(mOmxTaskQueue, __func__,
+-           [self] () {
++           [self] () -> RefPtr<ShutdownPromise> {
+              LOGL("DoAsyncShutdown: OMX_StateLoaded, it is safe to shutdown omx");
+              self->mOmxLayer->Shutdown();
+              self->mWatchManager.Shutdown();
+              self->mOmxLayer = nullptr;
+              self->mMediaDataHelper = nullptr;
+-
+              self->mShuttingDown = false;
++             return ShutdownPromise::CreateAndResolve(true, __func__);
++           },
++           [self] () -> RefPtr<ShutdownPromise> {
++             self->mOmxLayer->Shutdown();
++             self->mWatchManager.Shutdown();
++             self->mOmxLayer = nullptr;
++             self->mMediaDataHelper = nullptr;
++             return ShutdownPromise::CreateAndReject(false, __func__);
++           })
++    ->Then(mTaskQueue, __func__,
++           [self] () {
+              self->mOmxTaskQueue->BeginShutdown();
+              self->mOmxTaskQueue->AwaitShutdownAndIdle();
+              self->mShutdownPromise.Resolve(true, __func__);
+            },
+            [self] () {
+-             self->mOmxLayer->Shutdown();
+-             self->mWatchManager.Shutdown();
+-             self->mOmxLayer = nullptr;
+-             self->mMediaDataHelper = nullptr;
+-
+-             self->mShuttingDown = false;
+              self->mOmxTaskQueue->BeginShutdown();
+              self->mOmxTaskQueue->AwaitShutdownAndIdle();
+              self->mShutdownPromise.Resolve(true, __func__);
+            });
+   return mShutdownPromise.Ensure(__func__);
+ }
+ 
+ void

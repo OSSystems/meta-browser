@@ -1,0 +1,50 @@
+From 49db574bc2cb927f6a8267c883b707659bebf1eb Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Tue, 6 Jun 2017 15:43:34 +0900
+Subject: [PATCH] Create workaround to use BasicCompositor to prevent crash in
+ eglSwapBuffers
+
+---
+ widget/nsBaseWidget.cpp | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/widget/nsBaseWidget.cpp b/widget/nsBaseWidget.cpp
+index b820fed3ccb0..32bfa0371ec2 100644
+--- a/widget/nsBaseWidget.cpp
++++ b/widget/nsBaseWidget.cpp
+@@ -1409,6 +1409,14 @@ bool nsBaseWidget::ShouldUseOffMainThreadCompositing()
+   return gfxPlatform::UsesOffMainThreadCompositing();
+ }
+ 
++static bool ShouldUseBasicCompositorWorkaround() {
++#if defined(MOZ_WAYLAND_EGL)
++  return true;
++#else
++  return false;
++#endif
++}
++
+ LayerManager* nsBaseWidget::GetLayerManager(PLayerTransactionChild* aShadowManager,
+                                             LayersBackend aBackendHint,
+                                             LayerManagerPersistence aPersistence)
+@@ -1418,13 +1426,16 @@ LayerManager* nsBaseWidget::GetLayerManager(PLayerTransactionChild* aShadowManag
+       // We are shutting down, do not try to re-create a LayerManager
+       return nullptr;
+     }
++
++    static bool workaroundFlag = true;
+     // Try to use an async compositor first, if possible
+-    if (ShouldUseOffMainThreadCompositing()) {
++    if (workaroundFlag && ShouldUseOffMainThreadCompositing()) {
+       // e10s uses the parameter to pass in the shadow manager from the TabChild
+       // so we don't expect to see it there since this doesn't support e10s.
+       NS_ASSERTION(aShadowManager == nullptr, "Async Compositor not supported with e10s");
+       CreateCompositor();
+     }
++    workaroundFlag = !ShouldUseBasicCompositorWorkaround();
+ 
+     if (!mLayerManager) {
+       mLayerManager = CreateBasicLayerManager();
+-- 
+2.11.0
+

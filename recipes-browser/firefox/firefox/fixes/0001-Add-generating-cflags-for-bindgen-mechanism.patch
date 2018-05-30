@@ -1,0 +1,104 @@
+From a8587e5936edac97d2aa73492904ca6a2b3f81de Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Wed, 28 Mar 2018 17:01:25 +0900
+Subject: [PATCH] Add generating cflags for bindgen mechanism
+
+---
+ build/moz.configure/toolchain.configure | 73 +++++++++++++++++++++++++++++++--
+ 1 file changed, 70 insertions(+), 3 deletions(-)
+
+diff --git a/build/moz.configure/toolchain.configure b/build/moz.configure/toolchain.configure
+index fa066d5a9e35..f5e53e21e5da 100755
+--- a/build/moz.configure/toolchain.configure
++++ b/build/moz.configure/toolchain.configure
+@@ -1070,6 +1070,13 @@ def check_have_64_bit(have_64_bit, compiler_have_64_bit):
+         configure_error('The target compiler does not agree with configure '
+                         'about the target bitness.')
+ 
++option(env='BINDGEN_INCCPP',
++       nargs=1,
++       help='Options bindgen for headers should pass to the C/C++ parser')
++
++option(env='BINDGEN_LLVM_BASE',
++       nargs=1,
++       help='Options bindgen for llvm prefix should pass to the C/C++ parser')
+ 
+ option(env='BINDGEN_CFLAGS',
+        nargs=1,
+@@ -1077,10 +1084,70 @@ option(env='BINDGEN_CFLAGS',
+        help='Options bindgen should pass to the C/C++ parser')
+ 
+ 
+-@depends('BINDGEN_CFLAGS')
++@depends('BINDGEN_INCCPP')
++def bindgen_inccpp(inc_cpp):
++    return inc_cpp
++
++
++@depends('BINDGEN_LLVM_BASE')
++def bindgen_llvm_base(llvm_base):
++    return llvm_base
++
++
++@imports('os')
++@imports('string')
++@imports('re')
++@imports('glob')
++@imports(_from='__builtin__', _import='sorted')
++@imports(_from='__builtin__', _import='reversed')
++@imports(_from='__builtin__', _import='map')
++def bindgen_cflags_cross_compiling(value, inc_dir, llvm_base, target):
++    def path_ver_cmp(ver_path):
++        ver_path        = os.path.abspath(ver_path)
++        parse           = string.split(ver_path, "/")
++        var             = []
++        var_pattern     = re.compile(r"\bv?(\d+(?:.\d+)*)$")
++        for seg in reversed(parse):     #Find version no from the bottom of the path
++            var_seg     = var_pattern.findall(seg)
++            if len(var_seg) > 0:
++                var = map(int, var_seg[len(var_seg) - 1].split("."))
++                break
++
++            return (var, os.path.dirname(ver_path), os.path.basename(ver_path))
++
++
++    def search_path(pattern):
++        result  = sorted(glob.glob(pattern), key=path_ver_cmp, reverse=True)
++
++        #result = "" if len(result) == 0 else result[0]
++        result = result[0]      #XXX: Raise exception here if no target found
++
++        return result
++
++    inc_cpp = search_path("%s/c++/*" % inc_dir)
++    inc_llvm = search_path("%s/llvm-*/**/clang/*/include" % llvm_base)
++    if value:
++        default_cflags = value[0].split()
++    else:
++        default_cflags = ""
++
++    cflags_format = "%s --target=%s \
++                     -I%s \
++                     -I%s/%s \
++                     -I%s"
++    # We should pass target as arm-poky-linux-gnueabi instead of arm-linux-gnueabi.
++    # target.alias returns this.
++    return cflags_format % (default_cflags, target.alias, inc_cpp,
++                            inc_cpp, target.alias, inc_llvm)
++
++
++@depends('BINDGEN_CFLAGS', bindgen_inccpp, bindgen_llvm_base, target, cross_compiling)
+ @checking('bindgen cflags', lambda s: s if s else 'no')
+-def bindgen_cflags(value):
+-    if value and len(value):
++def bindgen_cflags(value, bindgen_inccpp, bindgen_llvm_base, target, cross_compiling):
++    if cross_compiling and bindgen_inccpp:
++        return bindgen_cflags_cross_compiling(value, bindgen_inccpp, bindgen_llvm_base,
++                                              target)
++    elif value and len(value):
+         return value[0].split()
+ 
+ 
+-- 
+2.11.0
+

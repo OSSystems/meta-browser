@@ -1,0 +1,29 @@
+From 638796e436896e50bf4b84bb63f7289ec8086efd Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Tue, 13 Jun 2017 17:15:45 +0900
+Subject: [PATCH] Add a preference to force enable touch events without APZ
+
+It may be useful for touch devices.
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ widget/gtk/nsWindow.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/widget/gtk/nsWindow.cpp b/widget/gtk/nsWindow.cpp
+index d97b35002c56..f0320c1cae3f 100644
+--- a/widget/gtk/nsWindow.cpp
++++ b/widget/gtk/nsWindow.cpp
+@@ -480,6 +480,9 @@ nsWindow::nsWindow()
+ 
+ #if GTK_CHECK_VERSION(3,4,0)
+     mLastScrollEventTime = GDK_CURRENT_TIME;
++
++    if (Preferences::GetInt("dom.w3c_touch_events.enabled", 0) == 3)
++        RegisterTouchWindow();
+ #endif
+     mPendingConfigures = 0;
+ }
+-- 
+2.11.0
+

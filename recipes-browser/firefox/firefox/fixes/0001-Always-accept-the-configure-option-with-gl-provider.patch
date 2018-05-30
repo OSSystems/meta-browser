@@ -1,0 +1,36 @@
+From 1de47da4d415c64aaebd383c711e1017c84e6b70 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Thu, 22 Feb 2018 11:10:34 +0900
+Subject: [PATCH] Always accept the configure option "--with-gl-provider"
+
+When a GLContextProvider which is specified by "--with-gl-provider"
+is already enabled on the platform, the compilation will be failed
+by the duplicate definitions of GLContextProvider*. This patch
+avoids it.
+---
+ gfx/gl/GLContextProvider.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/gfx/gl/GLContextProvider.h b/gfx/gl/GLContextProvider.h
+index fae33f333264..f47f5d59d53f 100644
+--- a/gfx/gl/GLContextProvider.h
++++ b/gfx/gl/GLContextProvider.h
+@@ -26,6 +26,7 @@ namespace gl {
+ #include "GLContextProviderImpl.h"
+ #undef GL_CONTEXT_PROVIDER_NAME
+ 
++#ifndef MOZ_GL_PROVIDER
+ #ifdef XP_WIN
+   #define GL_CONTEXT_PROVIDER_NAME GLContextProviderWGL
+   #include "GLContextProviderImpl.h"
+@@ -63,6 +64,7 @@ namespace gl {
+ #define GL_CONTEXT_PROVIDER_DEFAULT GLContextProviderEAGL
+ #endif
+ #endif
++#endif // MOZ_GL_PROVIDER
+ 
+ #ifdef MOZ_GL_PROVIDER
+   #define GL_CONTEXT_PROVIDER_NAME MOZ_GL_PROVIDER
+-- 
+2.14.1
+
