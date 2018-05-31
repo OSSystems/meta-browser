@@ -1,0 +1,48 @@
+Upstream-Status: Submitted
+
+GCC refuses to translate X31 to XZR and bails out.
+
+Submitted as https://chromium-review.googlesource.com/c/crashpad/crashpad/+/1078818
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 26ef5c910fc7e2edb441f1d2b39944195342dee9 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 30 May 2018 18:34:14 +0200
+Subject: [PATCH] aarch64: Use xzr instead of x31 in the ASM code
+
+Officially, register X31 does not exist. The code is zeroing out a location
+and thus actually needs XZR.
+
+LLVM seems to automatically translate X31 into XZR when compiling the code,
+but GCC (tested 7.3.0) refuses to accept the instruction:
+
+    ../../third_party/crashpad/crashpad/util/misc/capture_context_linux.S: Assembler messages:
+    ../../third_party/crashpad/crashpad/util/misc/capture_context_linux.S:291: Error: operand 1 must be an integer register -- `str x31,[x0,#0xb0]'
+
+Bug: chromium:819294
+Change-Id: I85be3923ac56fca6e3ec59d7e22b2223cfc8fa63
+Reviewed-on: https://chromium-review.googlesource.com/1078818
+Reviewed-by: Joshua Peraza <jperaza@chromium.org>
+Commit-Queue: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+ AUTHORS                           | 1 +
+ util/misc/capture_context_linux.S | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/util/misc/capture_context_linux.S b/util/misc/capture_context_linux.S
+index 6ec72454..b8d6238b 100644
+--- a/third_party/crashpad/crashpad/util/misc/capture_context_linux.S
++++ b/third_party/crashpad/crashpad/util/misc/capture_context_linux.S
+@@ -288,7 +288,7 @@ CAPTURECONTEXT_SYMBOL2:
+ #elif defined(__aarch64__)
+ 
+   // Zero out fault_address, which is unused.
+-  str x31, [x0, #0xb0]  // context->uc_mcontext.fault_address
++  str xzr, [x0, #0xb0]  // context->uc_mcontext.fault_address
+ 
+   // Save general purpose registers in context->uc_mcontext.regs[i].
+   // The original x0 can't be recovered.
+-- 
+2.14.3
+

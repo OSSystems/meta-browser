@@ -2,23 +2,25 @@ Upstream-Status: Inappropriate
 
 GCC (tested rocko's 7.3.0) cannot find these intrinsics and the build fails:
 
-../../third_party/skia/src/jumper/SkJumper_stages.cpp: In function 'F from_half(U16)':
-../../third_party/skia/src/jumper/SkJumper_stages.cpp:670:12: error: 'vcvt_f32_f16' was not declared in this scope
+../../third_party/skia/src/opts/SkRasterPipeline_opts.h: In function 'neon::F neon::from_half(neon::U16)':
+../../third_party/skia/src/opts/SkRasterPipeline_opts.h:657:26: error: cannot convert 'neon::U16 {aka short unsigned int}' to 'float16x4_t {aka __vector(4) __fp16}' for argument '1' to '
+float32x4_t vcvt_f32_f16(float16x4_t)'
      return vcvt_f32_f16(h);
-            ^~~~~~~~~~~~
-../../third_party/skia/src/jumper/SkJumper_stages.cpp: In function 'U16 to_half(F)':
-../../third_party/skia/src/jumper/SkJumper_stages.cpp:690:12: error: 'vcvt_f16_f32' was not declared in this scope
+                          ^
+../../third_party/skia/src/opts/SkRasterPipeline_opts.h: In function 'neon::U16 neon::to_half(neon::F)':
+../../third_party/skia/src/opts/SkRasterPipeline_opts.h:677:26: error: cannot convert 'neon::F {aka float}' to 'float32x4_t {aka __vector(4) float}' for argument '1' to 'float16x4_t vcvt
+_f16_f32(float32x4_t)'
      return vcvt_f16_f32(f);
-            ^~~~~~~~~~~~
+                          ^
 
 Upstream seems to have had similar issues according to
-https://skia-review.googlesource.com/c/skia/+/84222, but the whole file was
-later removed in https://skia-review.googlesource.com/112744
+https://skia-review.googlesource.com/c/skia/+/84222, but there is no fix at the
+moment.
 
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
---- a/third_party/skia/src/jumper/SkJumper_stages.cpp
-+++ b/third_party/skia/src/jumper/SkJumper_stages.cpp
-@@ -666,10 +666,7 @@ SI F approx_powf(F x, F y) {
+--- a/third_party/skia/src/opts/SkRasterPipeline_opts.h
++++ b/third_party/skia/src/opts/SkRasterPipeline_opts.h
+@@ -653,10 +653,7 @@ SI F approx_powf(F x, F y) {
  }
  
  SI F from_half(U16 h) {
@@ -30,7 +32,7 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
      return _mm256_cvtph_ps(h);
  
  #else
-@@ -686,10 +683,7 @@ SI F from_half(U16 h) {
+@@ -673,10 +670,7 @@ SI F from_half(U16 h) {
  }
  
  SI U16 to_half(F f) {
