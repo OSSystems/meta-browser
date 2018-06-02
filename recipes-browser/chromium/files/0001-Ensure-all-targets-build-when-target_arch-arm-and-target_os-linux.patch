@@ -1,0 +1,37 @@
+From 0ae1244194778385d5fa100c3ebb537b1dfa99f4 Mon Sep 17 00:00:00 2001
+From: Tom Anderson <thomasanderson@chromium.org>
+Date: Wed, 16 May 2018 03:23:04 +0000
+Subject: [PATCH] Ensure all targets build when target_arch="arm" and target_os="linux"
+
+Also requires these third party changes:
+https://chromium-review.googlesource.com/c/crashpad/crashpad/+/1060155
+https://chromium-review.googlesource.com/c/native_client/src/native_client/+/1060158
+
+BUG=843240
+R=thakis
+TBR=wfh
+
+Change-Id: I9288967e238ab5319e1c963fffd58b9fe4be3692
+Reviewed-on: https://chromium-review.googlesource.com/1060129
+Commit-Queue: Thomas Anderson <thomasanderson@chromium.org>
+Reviewed-by: Nico Weber <thakis@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#558953}
+
+Upstream-Status: Pending [1]
+
+[1] https://chromium-review.googlesource.com/c/chromium/src/+/1060129/4/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
+---
+
+diff --git a/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h b/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
+index 73861576..e5c95c7 100644
+--- a/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
++++ b/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
+@@ -34,7 +34,7 @@
+ #endif  // !PTRACE_GET_THREAD_AREA && !PT_GET_THREAD_AREA && defined(__GLIBC__)
+ 
+ // https://sourceware.org/bugzilla/show_bug.cgi?id=22433
+-#if !defined(PTRACE_GETVFPREGS) && \
++#if !defined(PTRACE_GETVFPREGS) && !defined(PT_GETVFPREGS) && \
+     defined(__GLIBC__) && (defined(__arm__) || defined(__arm64__))
+ static constexpr __ptrace_request PTRACE_GETVFPREGS =
+     static_cast<__ptrace_request>(27);
