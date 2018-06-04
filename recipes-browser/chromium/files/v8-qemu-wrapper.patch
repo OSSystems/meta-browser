@@ -23,7 +23,7 @@ index dcefe37..e6a8c8f 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
 @@ -810,6 +810,7 @@ if (v8_use_snapshot) {
-     ]
+     data = []
  
      args = [
 +      "./v8-qemu-wrapper.sh",
