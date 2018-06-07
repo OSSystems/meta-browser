@@ -1,16 +1,25 @@
-diff -Nur firefox-52.1.0esr-bak/old-configure firefox-52.1.0esr/old-configure
---- firefox-52.1.0esr-bak/old-configure	2017-04-18 03:33:03.000000000 +0900
-+++ firefox-52.1.0esr/old-configure	2017-05-17 17:14:09.684432744 +0900
-@@ -10638,6 +10638,8 @@
+From ba6d42aff5c66a42fa9e1b685b58bd342adf62a0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@googlemail.com>
+Date: Thu, 12 Jan 2017 08:44:26 +0100
+
+---
+ old-configure | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/old-configure b/old-configure
+index bd7299504..30ec9e111 100644
+--- a/old-configure
++++ b/old-configure
+@@ -10639,6 +10639,8 @@ fi
  	echo $ac_n "checking for NSS - version >= $min_nss_version""... $ac_c" 1>&6
- echo "configure:10640: checking for NSS - version >= $min_nss_version" >&5
+ echo "configure:10641: checking for NSS - version >= $min_nss_version" >&5
  
 +        NSS_CONFIG="pkg-config nss"
 +        nss_config_args=
  	no_nss=""
  	if test "$NSS_CONFIG" = "no"; then
  		no_nss="yes"
-@@ -10645,11 +10647,11 @@
+@@ -10646,11 +10648,11 @@ echo "configure:10641: checking for NSS - version >= $min_nss_version" >&5
  		NSS_CFLAGS=`$NSS_CONFIG $nss_config_args --cflags`
  		NSS_LIBS=`$NSS_CONFIG $nss_config_args --libs`
  
