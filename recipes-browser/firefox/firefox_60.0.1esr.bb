@@ -30,12 +30,12 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://gn-configs/ \
            "
 
-SRC_URI[archive.md5sum] = "4bba81e30486a2d1bb181b9fb34d8735"
-SRC_URI[archive.sha256sum] = "d3df941612fce7c89755d63a5afe46ed60414dbb47bc9c18bddfb1ae429d5322"
+SRC_URI[archive.md5sum] = "83368b7d7101543413452d10124289db"
+SRC_URI[archive.sha256sum] = "a98dfc16173039f3bd604049e1533991e23ef89bb56eb6fc03116a701e7594a2"
 
 PR = "r0"
-S = "${WORKDIR}/firefox-60.0"
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
+S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 
 inherit mozilla rust-common
 
