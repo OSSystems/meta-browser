@@ -1,0 +1,30 @@
+diff -r 874dedd55599 widget/gtk/nsWindow.cpp
+--- a/widget/gtk/nsWindow.cpp   Sun Jun 10 01:04:17 2018 +0300
++++ b/widget/gtk/nsWindow.cpp   Sun Jun 10 18:32:48 2018 +0900
+@@ -3811,17 +3811,26 @@
+             else {
+                 switch (aInitData->mPopupHint) {
+                     case ePopupTypeMenu:
++#if 0
+                         // Use GDK_WINDOW_TYPE_HINT_UTILITY on Wayland which
+                         // guides Gtk to create the popup as subsurface
+                         // instead of xdg_shell popup (see Bug 1423598).
+                         gtkTypeHint = mIsX11Display ? GDK_WINDOW_TYPE_HINT_POPUP_MENU :
+                                                       GDK_WINDOW_TYPE_HINT_UTILITY;
++#else
++                        gtkTypeHint = GDK_WINDOW_TYPE_HINT_POPUP_MENU;
++#endif
+                         break;
+                     case ePopupTypeTooltip:
+                         gtkTypeHint = GDK_WINDOW_TYPE_HINT_TOOLTIP;
+                         break;
+                     default:
++#if 0
+                         gtkTypeHint = GDK_WINDOW_TYPE_HINT_UTILITY;
++#else
++                        gtkTypeHint = mIsX11Display ? GDK_WINDOW_TYPE_HINT_UTILITY :
++                                                      GDK_WINDOW_TYPE_HINT_POPUP_MENU;
++#endif
+                         break;
+                 }
+             }
