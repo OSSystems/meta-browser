@@ -97,6 +97,7 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'openmax', \
            ' \
             file://openmax/0001-Add-initial-implementation-of-PureOmxPlatformLayer.patch \
             file://openmax/0002-OmxDataDecoder-Fix-a-stall-issue-on-shutting-down.patch \
+            file://prefs/openmax.js \
            ', \
            '', d)}"
 
@@ -160,6 +161,9 @@ do_install_append() {
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'wayland', '1', '', d)}" ]; then
         install -m 0644 ${WORKDIR}/wayland/wayland-hacks.js ${D}${libdir}/${PN}/defaults/pref/
+    fi
+    if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'openmax', '1', '', d)}" ]; then
+        install -m 0644 ${WORKDIR}/prefs/openmax.js ${D}${libdir}/${PN}/defaults/pref/
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'webgl', '1', '', d)}" ]; then
         install -m 0644 ${WORKDIR}/prefs/webgl.js ${D}${libdir}/${PN}/defaults/pref/
