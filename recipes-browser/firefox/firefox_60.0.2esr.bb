@@ -30,8 +30,8 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://gn-configs/ \
            "
 
-SRC_URI[archive.md5sum] = "83368b7d7101543413452d10124289db"
-SRC_URI[archive.sha256sum] = "a98dfc16173039f3bd604049e1533991e23ef89bb56eb6fc03116a701e7594a2"
+SRC_URI[archive.md5sum] = "cfb8e63d58bcf1827df4ed4cee1803ad"
+SRC_URI[archive.sha256sum] = "4c629edac14e15c41b04320b0f66a46f25537661324cdc0ed30dc0799d7708a0"
 
 PR = "r0"
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
