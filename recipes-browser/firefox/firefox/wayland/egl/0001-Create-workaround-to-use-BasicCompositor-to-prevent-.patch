@@ -17,7 +17,7 @@ index b820fed3ccb0..32bfa0371ec2 100644
  }
  
 +static bool ShouldUseBasicCompositorWorkaround() {
-+#if defined(MOZ_WAYLAND_EGL)
++#if defined(MOZ_WAYLAND)
 +  return true;
 +#else
 +  return false;
