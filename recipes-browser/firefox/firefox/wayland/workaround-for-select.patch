@@ -1,0 +1,47 @@
+diff --git a/widget/gtk/nsWindow.cpp b/widget/gtk/nsWindow.cpp
+index dcbff364916b..9cbeb7edebe7 100644
+--- a/widget/gtk/nsWindow.cpp
++++ b/widget/gtk/nsWindow.cpp
+@@ -140,6 +140,10 @@ using namespace mozilla::widget;
+ using namespace mozilla::layers;
+ using mozilla::gl::GLContext;
+ 
++#ifdef MOZ_WAYLAND
++static bool gPointerGrabbed = false;
++#endif
++
+ // Don't put more than this many rects in the dirty region, just fluff
+ // out to the bounding-box if there are more
+ #define MAX_RECTS_IN_REGION 100
+@@ -2876,6 +2880,11 @@ nsWindow::OnContainerFocusOutEvent(GdkEventFocus *aEvent)
+ {
+     LOGFOCUS(("OnContainerFocusOutEvent [%p]\n", (void *)this));
+ 
++#ifdef MOZ_WAYLAND
++    if (gPointerGrabbed)
++        return;
++#endif
++
+     if (mWindowType == eWindowType_toplevel || mWindowType == eWindowType_dialog) {
+         nsCOMPtr<nsIDragService> dragService = do_GetService(kCDragServiceCID);
+         nsCOMPtr<nsIDragSession> dragSession;
+@@ -4750,6 +4759,9 @@ nsWindow::GrabPointer(guint32 aTime)
+     if (!mIsX11Display) {
+         // Don't to the grab on Wayland as it causes a regression
+         // from Bug 1377084.
++#ifdef MOZ_WAYLAND
++        gPointerGrabbed = true;
++#endif
+         return;
+     }
+ 
+@@ -4790,6 +4802,9 @@ nsWindow::ReleaseGrabs(void)
+     if (!mIsX11Display) {
+         // Don't to the ungrab on Wayland as it causes a regression
+         // from Bug 1377084.
++#ifdef MOZ_WAYLAND
++        gPointerGrabbed = false;
++#endif
+         return;
+     }
+ 
