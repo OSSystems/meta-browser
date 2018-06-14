@@ -1,0 +1,34 @@
+From a5ddb42fd657a6803725354e0cae93fc832e21f4 Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Thu, 14 Jun 2018 13:33:18 +0900
+Subject: [PATCH] Add workarround to reduce unexpected window resize on Wayland
+
+Original patch author is Takuro Ashie <ashie@clear-code.com>.
+
+Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
+---
+ widget/gtk/nsWindow.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/widget/gtk/nsWindow.cpp b/widget/gtk/nsWindow.cpp
+index dcbff364916b..5c502c3b4620 100644
+--- a/widget/gtk/nsWindow.cpp
++++ b/widget/gtk/nsWindow.cpp
+@@ -4228,6 +4228,14 @@ nsWindow::NativeShow(bool aAction)
+                 SetUserTimeAndStartupIDForActivatedWindow(mShell);
+             }
+ 
++            // Ensure to resize the window before showing the window.
++            // Resizing GdkWindow is required before resizing GtkWindow.
++            // See the implementation of gtk_window_get_remembered_size() and
++            // gtk_window_compute_configure_request_size() for more detail.
++            GdkRectangle size = DevicePixelsToGdkSizeRoundUp(mBounds.Size());
++            gdk_window_resize(gtk_widget_get_window(mShell), size.width, size.height);
++            gtk_window_resize(GTK_WINDOW(mShell), size.width, size.height);
++
+             gtk_widget_show(mShell);
+         }
+         else if (mContainer) {
+-- 
+2.11.0
+
