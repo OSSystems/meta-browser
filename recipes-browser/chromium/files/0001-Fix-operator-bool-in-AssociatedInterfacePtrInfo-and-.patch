@@ -1,0 +1,53 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From b65488bce5e804e97acb64ccb696195699a26b8a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?J=C3=BCri=20Valdmann?= <juri.valdmann@qt.io>
+Date: Wed, 16 May 2018 02:27:40 +0000
+Subject: [PATCH] Fix operator bool in AssociatedInterfacePtrInfo and
+ AssociatedInterfaceRequest
+
+Current version does not compile with GCC 8.1 and for good reason: there's no
+operator bool defined in ScopedInterfaceEndpointHandle.
+
+Bug: 795173, 819294
+Change-Id: Ia0677af3160fb24c376c66863956ee6d171d7caf
+Reviewed-on: https://chromium-review.googlesource.com/1059153
+Commit-Queue: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Reviewed-by: Ken Rockot <rockot@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#558931}
+---
+ mojo/public/cpp/bindings/associated_interface_ptr_info.h | 2 +-
+ mojo/public/cpp/bindings/associated_interface_request.h  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mojo/public/cpp/bindings/associated_interface_ptr_info.h b/mojo/public/cpp/bindings/associated_interface_ptr_info.h
+index 1f79662bd794..cc3f62716795 100644
+--- a/mojo/public/cpp/bindings/associated_interface_ptr_info.h
++++ b/mojo/public/cpp/bindings/associated_interface_ptr_info.h
+@@ -45,7 +45,7 @@ class AssociatedInterfacePtrInfo {
+ 
+   bool is_valid() const { return handle_.is_valid(); }
+ 
+-  explicit operator bool() const { return handle_; }
++  explicit operator bool() const { return handle_.is_valid(); }
+ 
+   ScopedInterfaceEndpointHandle PassHandle() {
+     return std::move(handle_);
+diff --git a/mojo/public/cpp/bindings/associated_interface_request.h b/mojo/public/cpp/bindings/associated_interface_request.h
+index 12d2f3ce1df1..0926f3df92f8 100644
+--- a/mojo/public/cpp/bindings/associated_interface_request.h
++++ b/mojo/public/cpp/bindings/associated_interface_request.h
+@@ -50,7 +50,7 @@ class AssociatedInterfaceRequest {
+   // handle.
+   bool is_pending() const { return handle_.is_valid(); }
+ 
+-  explicit operator bool() const { return handle_; }
++  explicit operator bool() const { return handle_.is_valid(); }
+ 
+   ScopedInterfaceEndpointHandle PassHandle() { return std::move(handle_); }
+ 
+-- 
+2.14.3
+
