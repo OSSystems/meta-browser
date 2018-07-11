@@ -22,7 +22,15 @@ diff --git a/v8/BUILD.gn b/v8/BUILD.gn
 index dcefe37..e6a8c8f 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -810,6 +810,7 @@ if (v8_use_snapshot) {
+@@ -893,6 +893,7 @@ action("run_torque") {
+   }
+ 
+   args = [
++    "./v8-qemu-wrapper.sh",
+     "./" + rebase_path(get_label_info(":torque($v8_torque_toolchain)",
+                                       "root_out_dir") + "/torque",
+                        root_build_dir),
+@@ -970,6 +971,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
