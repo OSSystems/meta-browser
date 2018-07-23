@@ -1,0 +1,85 @@
+Chromium build system currently, mixes the paths for native and
+cross builds, where it detects glib-2.0 on target system using
+pkg-config but then tries to use the same for native portions of
+the build as well. In all it is expecting a non-empty sysroot for
+target and empty-one for native, in OE case, we have native-sysroot
+but we do not pass it using --sysroot option via BUILD_CFLAGS
+instead only include paths are passed using -isystem to precede
+the standard system include paths from build host.
+
+As a result the native build ends up using headers from target sysroot
+or atleast have it used on compiler cmdline, which actually is exposed
+when using newer pkgconf to provide pkg-config and ends up in various
+errors during build.
+
+The patch here replaces -isystem with -I, this is because OE already
+passes --sysroot so standard paths are taken care during cross build
+original intent was to avoid compiler errors due to system headers
+secondly, it also ensures that these include and library paths are
+only used during cross compilation.
+
+To aid native portions of the build system, include paths are passed
+via BUILD_CPPFLAGS from recipe
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+Index: chromium-67.0.3396.99/build/config/linux/pkg_config.gni
+===================================================================
+--- chromium-67.0.3396.99.orig/build/config/linux/pkg_config.gni
++++ chromium-67.0.3396.99/build/config/linux/pkg_config.gni
+@@ -106,14 +106,18 @@ template("pkg_config") {
+     # We want the system include paths to use -isystem instead of -I to suppress
+     # warnings in those headers.
+     foreach(include, pkgresult[0]) {
+-      include_relativized = rebase_path(include, root_build_dir)
+-      cflags += [ "-isystem$include_relativized" ]
++      if (host_toolchain != current_toolchain) {
++        include_relativized = rebase_path(include, root_build_dir)
++        cflags += [ "-I$include_relativized" ]
++      }
+     }
+ 
+     if (!defined(invoker.ignore_libs) || !invoker.ignore_libs) {
+-      libs = pkgresult[2]
+-      lib_dirs = pkgresult[3]
+-      ldflags = pkgresult[4]
++      if (host_toolchain != current_toolchain) {
++        libs = pkgresult[2]
++        lib_dirs = pkgresult[3]
++        ldflags = pkgresult[4]
++      }
+     }
+ 
+     forward_variables_from(invoker,
+Index: chromium-67.0.3396.99/build/linux/rewrite_dirs.py
+===================================================================
+--- chromium-67.0.3396.99.orig/build/linux/rewrite_dirs.py
++++ chromium-67.0.3396.99/build/linux/rewrite_dirs.py
+@@ -42,16 +42,25 @@ def RewriteLine(line, opts):
+       # The option can be either in the form "-I /path/to/dir" or
+       # "-I/path/to/dir" so handle both.
+       if args[i] == prefix:
++        if prefix == "-isystem":
++          args[i] = "-I"
+         i += 1
+         try:
+           args[i] = RewritePath(args[i], opts)
+         except IndexError:
+           sys.stderr.write('Missing argument following %s\n' % prefix)
+           break
++        if args[i] == opts.sysroot:
++          args[i] = ""
++          args[i-1] = ""
+       elif args[i].startswith(prefix):
+         args[i] = prefix + RewritePath(args[i][len(prefix):], opts)
++        if prefix == "-isystem":
++          args[i].replace("-isystem", "-I")
++        if args[i][len(prefix):] == opts.sysroot:
++          args[i] = ""
++          break;
+     i += 1
+-
+   return ' '.join(args)
+ 
+ 
