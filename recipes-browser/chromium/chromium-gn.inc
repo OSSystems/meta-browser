@@ -91,6 +91,11 @@ GN_ARGS = " \
         use_system_libjpeg=true \
 "
 
+# Make sure pkg-config, when used with the host's toolchain to build the
+# binaries we need to run on the host, uses the right pkg-config to avoid
+# passing include directories belonging to the target.
+GN_ARGS += 'host_pkg_config="pkg-config-native"'
+
 # From Chromium's BUILDCONFIG.gn:
 # Set to enable the official build level of optimization. This has nothing
 # to do with branding, but enables an additional level of optimization above
