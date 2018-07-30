@@ -1,0 +1,42 @@
+From 87054a675e7168652f65471b4f91ab7bc8da7d32 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 1 Aug 2018 14:08:39 +0300
+Subject: [PATCH] Add memory header when unique_ptr is used.
+
+This fixes the following error:
+error: 'unique_ptr' in namespace 'std' does not name a template type
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ extensions/browser/verified_contents.h             | 1 +
+ ui/message_center/views/message_popup_collection.h | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/extensions/browser/verified_contents.h b/extensions/browser/verified_contents.h
+index cf24d3c1eff3..6af1e5dd8e18 100644
+--- a/extensions/browser/verified_contents.h
++++ b/extensions/browser/verified_contents.h
+@@ -8,6 +8,7 @@
+ #include <stdint.h>
+ 
+ #include <map>
++#include <memory>
+ #include <string>
+ #include <vector>
+ 
+diff --git a/ui/message_center/views/message_popup_collection.h b/ui/message_center/views/message_popup_collection.h
+index 4d6faa82f7b4..c6f576ba3af5 100644
+--- a/ui/message_center/views/message_popup_collection.h
++++ b/ui/message_center/views/message_popup_collection.h
+@@ -5,6 +5,8 @@
+ #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
+ #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
+ 
++#include <memory>
++
+ #include "ui/gfx/animation/animation_delegate.h"
+ #include "ui/gfx/geometry/rect.h"
+ #include "ui/message_center/message_center_export.h"
+-- 
+2.11.0
+

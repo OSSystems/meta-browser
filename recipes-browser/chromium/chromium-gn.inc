@@ -9,7 +9,6 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
 "
 
@@ -27,6 +26,7 @@ DEPENDS += " \
     glib-2.0 \
     gn-native \
     gperf-native \
+    gtk+3 \
     jpeg \
     libdrm \
     libwebp \

@@ -1,0 +1,56 @@
+From 8b10822d71f0e53483bf06b8232b804a3323a170 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 1 Aug 2018 13:44:05 +0300
+Subject: [PATCH] Use explicitly defined move constructor with noexcept
+
+Fixes error: error: function
+'media_router::DialSinkExtraData::DialSinkExtraData(media_router::DialSinkExtraData&&)'
+defaulted on its redeclaration with an exception-specification that
+differs from the implicit exception-specification
+
+Fixes error: error: function
+'media_router::CastSinkExtraData::CastSinkExtraData(media_router::CastSinkExtraData&&)'
+defaulted on its redeclaration with an exception-specification that
+differs from the implicit exception-specification
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ .../common/media_router/discovery/media_sink_internal.cc  | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/chrome/common/media_router/discovery/media_sink_internal.cc b/chrome/common/media_router/discovery/media_sink_internal.cc
+index 17e423350f5d..79e54e863cb2 100644
+--- a/chrome/common/media_router/discovery/media_sink_internal.cc
++++ b/chrome/common/media_router/discovery/media_sink_internal.cc
+@@ -188,8 +188,10 @@ void MediaSinkInternal::InternalCleanup() {
+ 
+ DialSinkExtraData::DialSinkExtraData() = default;
+ DialSinkExtraData::DialSinkExtraData(const DialSinkExtraData& other) = default;
+-DialSinkExtraData::DialSinkExtraData(DialSinkExtraData&& other) noexcept =
+-    default;
++DialSinkExtraData::DialSinkExtraData(DialSinkExtraData&& other) noexcept
++    : ip_address(other.ip_address),
++      model_name(std::move(other.model_name)),
++      app_url(other.app_url) {}
+ DialSinkExtraData::~DialSinkExtraData() = default;
+ 
+ bool DialSinkExtraData::operator==(const DialSinkExtraData& other) const {
+@@ -199,8 +201,13 @@ bool DialSinkExtraData::operator==(const DialSinkExtraData& other) const {
+ 
+ CastSinkExtraData::CastSinkExtraData() = default;
+ CastSinkExtraData::CastSinkExtraData(const CastSinkExtraData& other) = default;
+-CastSinkExtraData::CastSinkExtraData(CastSinkExtraData&& other) noexcept =
+-    default;
++CastSinkExtraData::CastSinkExtraData(CastSinkExtraData&& other) noexcept
++    : ip_endpoint(other.ip_endpoint),
++      port(other.port),
++      model_name(std::move(other.model_name)),
++      capabilities(other.capabilities),
++      cast_channel_id(other.cast_channel_id),
++      discovered_by_dial(other.discovered_by_dial) {}
+ CastSinkExtraData::~CastSinkExtraData() = default;
+ 
+ bool CastSinkExtraData::operator==(const CastSinkExtraData& other) const {
+-- 
+2.11.0
+

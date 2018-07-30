@@ -1,0 +1,25 @@
+From a79fd2c1e4b6e53bbe63d6839a45a4d4cb9e7277 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 30 Jul 2018 11:54:10 +0300
+Subject: [PATCH] v8-qemu-wrapper-tools
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ tools/v8_context_snapshot/BUILD.gn | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
+index b119ec095c7b..c161e17e371f 100644
+--- a/tools/v8_context_snapshot/BUILD.gn
++++ b/tools/v8_context_snapshot/BUILD.gn
+@@ -62,6 +62,7 @@ if (use_v8_context_snapshot) {
+     output_path = rebase_path(output_file, root_build_dir)
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(
+                       ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
+-- 
+2.11.0
+
