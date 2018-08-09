@@ -1,0 +1,1468 @@
+From 5a63b71d5ae9b73d59d6ba944e78d4aaef070b7f Mon Sep 17 00:00:00 2001
+From: Jani Hautakangas <jani.hautakangas@lge.com>
+Date: Wed, 17 Jan 2018 00:19:44 +0200
+Subject: [PATCH 2/2] IME for Wayland: Ozone Wayland IME integration
+
+Introduce Ozone Wayland IME integration.
+
+This CL:
+- Implements Ozone wayland specific Linux input method
+  context service interface and integrates it with
+  zwp_text_input_v1 protocol.
+- Introduces new runtime flag --enable-wayland-ime to
+  enable this feature (by default false).
+- Fixes surrounding text deletion.
+- Makes Wayland IME working with InputMethodAuraLinux
+---
+ ui/base/ime/input_method_auralinux.cc              |  21 +++
+ ui/base/ime/input_method_auralinux.h               |   1 +
+ ui/base/ime/input_method_factory.cc                |   4 +-
+ ui/base/ime/linux/linux_input_method_context.h     |  12 +-
+ ui/ozone/platform/wayland/BUILD.gn                 |  12 ++
+ ui/ozone/platform/wayland/fake_server.cc           |  99 ++++++++++
+ ui/ozone/platform/wayland/fake_server.h            |  34 ++++
+ .../platform/wayland/ozone_platform_wayland.cc     |   6 +
+ ui/ozone/platform/wayland/wayland_connection.cc    |  18 ++
+ ui/ozone/platform/wayland/wayland_connection.h     |   7 +-
+ .../wayland/wayland_input_method_context.cc        | 139 ++++++++++++++
+ .../wayland/wayland_input_method_context.h         |  56 ++++++
+ .../wayland_input_method_context_factory.cc        |  30 ++++
+ .../wayland/wayland_input_method_context_factory.h |  32 ++++
+ .../wayland_input_method_context_unittest.cc       | 138 ++++++++++++++
+ ui/ozone/platform/wayland/wayland_object.cc        |  11 ++
+ ui/ozone/platform/wayland/wayland_object.h         |  14 ++
+ ui/ozone/platform/wayland/wayland_window.cc        |   3 +
+ ui/ozone/platform/wayland/wayland_window.h         |   2 +
+ ui/ozone/platform/wayland/zwp_text_input_wrapper.h |  56 ++++++
+ .../platform/wayland/zwp_text_input_wrapper_v1.cc  | 200 +++++++++++++++++++++
+ .../platform/wayland/zwp_text_input_wrapper_v1.h   | 106 +++++++++++
+ ui/ozone/public/ozone_switches.cc                  |   3 +
+ ui/ozone/public/ozone_switches.h                   |   2 +
+ 24 files changed, 1002 insertions(+), 4 deletions(-)
+ create mode 100644 ui/ozone/platform/wayland/wayland_input_method_context.cc
+ create mode 100644 ui/ozone/platform/wayland/wayland_input_method_context.h
+ create mode 100644 ui/ozone/platform/wayland/wayland_input_method_context_factory.cc
+ create mode 100644 ui/ozone/platform/wayland/wayland_input_method_context_factory.h
+ create mode 100644 ui/ozone/platform/wayland/wayland_input_method_context_unittest.cc
+ create mode 100644 ui/ozone/platform/wayland/zwp_text_input_wrapper.h
+ create mode 100644 ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.cc
+ create mode 100644 ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h
+
+diff --git a/ui/base/ime/input_method_auralinux.cc b/ui/base/ime/input_method_auralinux.cc
+index 699792009be0..51e064005070 100644
+--- a/ui/base/ime/input_method_auralinux.cc
++++ b/ui/base/ime/input_method_auralinux.cc
+@@ -274,6 +274,15 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
+     return;
+   NotifyTextInputCaretBoundsChanged(client);
+   context_->SetCursorLocation(GetTextInputClient()->GetCaretBounds());
++#if defined(USE_OZONE)
++  gfx::Range text_range, selection_range;
++  base::string16 text;
++  if (client->GetTextRange(&text_range) &&
++      client->GetTextFromRange(text_range, &text) &&
++      client->GetSelectionRange(&selection_range)) {
++    context_->SetSurroundingText(text, selection_range);
++  }
++#endif
+ 
+   if (!IsTextInputTypeNone() && text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
+       GetEngine())
+@@ -309,10 +318,12 @@ void InputMethodAuraLinux::ResetContext() {
+ 
+   // Some input methods may not honour the reset call. Focusing out/in the
+   // |context_| to make sure it gets reset correctly.
++#if !defined(USE_OZONE)
+   if (text_input_type_ != TEXT_INPUT_TYPE_NONE) {
+     context_->Blur();
+     context_->Focus();
+   }
++#endif
+ 
+   composition_ = CompositionText();
+   result_text_.clear();
+@@ -353,6 +364,16 @@ void InputMethodAuraLinux::OnCommit(const base::string16& text) {
+   }
+ }
+ 
++void InputMethodAuraLinux::OnDeleteSurroundingText(int32_t index,
++                                                   uint32_t length) {
++  if (!composition_.text.empty())
++    return;
++  if (GetTextInputClient()) {
++    uint32_t before = index >= 0 ? 0U : static_cast<uint32_t>(-1 * index);
++    GetTextInputClient()->ExtendSelectionAndDelete(before, length - before);
++  }
++}
++
+ void InputMethodAuraLinux::OnPreeditChanged(
+     const CompositionText& composition_text) {
+   if (IgnoringNonKeyInput() || IsTextInputTypeNone())
+diff --git a/ui/base/ime/input_method_auralinux.h b/ui/base/ime/input_method_auralinux.h
+index ef4985b95c68..8963ab945ad8 100644
+--- a/ui/base/ime/input_method_auralinux.h
++++ b/ui/base/ime/input_method_auralinux.h
+@@ -35,6 +35,7 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
+ 
+   // Overriden from ui::LinuxInputMethodContextDelegate
+   void OnCommit(const base::string16& text) override;
++  void OnDeleteSurroundingText(int32_t index, uint32_t length) override;
+   void OnPreeditChanged(const CompositionText& composition_text) override;
+   void OnPreeditEnd() override;
+   void OnPreeditStart() override {}
+diff --git a/ui/base/ime/input_method_factory.cc b/ui/base/ime/input_method_factory.cc
+index d93dd27f82fa..7160fcacb2eb 100644
+--- a/ui/base/ime/input_method_factory.cc
++++ b/ui/base/ime/input_method_factory.cc
+@@ -18,7 +18,7 @@
+ #include "ui/base/ime/input_method_win_tsf.h"
+ #elif defined(OS_MACOSX)
+ #include "ui/base/ime/input_method_mac.h"
+-#elif defined(USE_AURA) && defined(USE_X11)
++#elif defined(USE_AURA) && (defined(USE_X11) || defined(USE_OZONE))
+ #include "ui/base/ime/input_method_auralinux.h"
+ #else
+ #include "ui/base/ime/input_method_minimal.h"
+@@ -62,7 +62,7 @@ std::unique_ptr<InputMethod> CreateInputMethod(
+   return std::make_unique<InputMethodWin>(delegate, widget);
+ #elif defined(OS_MACOSX)
+   return std::make_unique<InputMethodMac>(delegate);
+-#elif defined(USE_AURA) && defined(USE_X11)
++#elif defined(USE_AURA) && (defined(USE_X11) || defined(USE_OZONE))
+   return std::make_unique<InputMethodAuraLinux>(delegate);
+ #else
+   return std::make_unique<InputMethodMinimal>(delegate);
+diff --git a/ui/base/ime/linux/linux_input_method_context.h b/ui/base/ime/linux/linux_input_method_context.h
+index 4611501d0629..a0f581dca11b 100644
+--- a/ui/base/ime/linux/linux_input_method_context.h
++++ b/ui/base/ime/linux/linux_input_method_context.h
+@@ -11,7 +11,8 @@
+ 
+ namespace gfx {
+ class Rect;
+-}
++class Range;
++}  // namespace gfx
+ 
+ namespace ui {
+ 
+@@ -33,6 +34,11 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContext {
+   // client window rect.
+   virtual void SetCursorLocation(const gfx::Rect& rect) = 0;
+ 
++  // Tells the system IME the surrounding text around the cursor location.
++  // TODO(jani, msisov): make it pure virtual when upstreaming.
++  virtual void SetSurroundingText(const base::string16& text,
++                                  const gfx::Range& selection_range) {}
++
+   // Resets the context.  A client needs to call OnTextInputTypeChanged() again
+   // before calling DispatchKeyEvent().
+   virtual void Reset() = 0;
+@@ -52,6 +58,10 @@ class UI_BASE_IME_EXPORT LinuxInputMethodContextDelegate {
+   // Commits the |text| to the text input client.
+   virtual void OnCommit(const base::string16& text) = 0;
+ 
++  // Deletes the surrounding text at |index| for given |length|.
++  // TODO(jani, msisov): make it pure virtual when upstreaming.
++  virtual void OnDeleteSurroundingText(int32_t index, uint32_t length) {}
++
+   // Sets the composition text to the text input client.
+   virtual void OnPreeditChanged(const CompositionText& composition_text) = 0;
+ 
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index 2fd06c612b22..3357f97d1cd7 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -35,6 +35,10 @@ source_set("wayland") {
+     "wayland_data_offer.h",
+     "wayland_data_source.cc",
+     "wayland_data_source.h",
++    "wayland_input_method_context.cc",
++    "wayland_input_method_context.h",
++    "wayland_input_method_context_factory.cc",
++    "wayland_input_method_context_factory.h",
+     "wayland_keyboard.cc",
+     "wayland_keyboard.h",
+     "wayland_native_display_delegate.cc",
+@@ -62,6 +66,9 @@ source_set("wayland") {
+     "xdg_surface_wrapper_v5.h",
+     "xdg_surface_wrapper_v6.cc",
+     "xdg_surface_wrapper_v6.h",
++    "zwp_text_input_wrapper.h",
++    "zwp_text_input_wrapper_v1.cc",
++    "zwp_text_input_wrapper_v1.h",
+   ]
+ 
+   import("//ui/base/ui_features.gni")
+@@ -80,12 +87,16 @@ source_set("wayland") {
+     "//third_party/minigbm",
+     "//third_party/wayland:wayland_client",
+     "//third_party/wayland-protocols:linux_dmabuf_protocol",
++    "//third_party/wayland-protocols:text_input_protocol",
+     "//third_party/wayland-protocols:xdg_shell_protocol",
+     "//ui/base",
+     "//ui/base:ui_features",
++    "//ui/base/ime:ime",
++    "//ui/base/ime:ime_types",
+     "//ui/display/manager",
+     "//ui/events",
+     "//ui/events:dom_keycode_converter",
++    "//ui/events/keycodes:xkb",
+     "//ui/events/ozone:events_ozone",
+     "//ui/events/ozone:events_ozone_evdev",
+     "//ui/events/ozone:events_ozone_layout",
+@@ -138,6 +149,7 @@ source_set("wayland_unittests") {
+     "fake_server.h",
+     "wayland_connection_unittest.cc",
+     "wayland_data_device_unittest.cc",
++    "wayland_input_method_context_unittest.cc",
+     "wayland_keyboard_unittest.cc",
+     "wayland_pointer_unittest.cc",
+     "wayland_surface_factory_unittest.cc",
+diff --git a/ui/ozone/platform/wayland/fake_server.cc b/ui/ozone/platform/wayland/fake_server.cc
+index 6a63f3a7cf67..db447fbf1ee9 100644
+--- a/ui/ozone/platform/wayland/fake_server.cc
++++ b/ui/ozone/platform/wayland/fake_server.cc
+@@ -3,7 +3,9 @@
+ // found in the LICENSE file.
+ 
+ #include "ui/ozone/platform/wayland/fake_server.h"
++
+ #include <sys/socket.h>
++#include <text-input-unstable-v1-server-protocol.h>
+ #include <wayland-server.h>
+ #include <xdg-shell-unstable-v5-server-protocol.h>
+ #include <xdg-shell-unstable-v6-server-protocol.h>
+@@ -26,6 +28,7 @@ const uint32_t kOutputVersion = 2;
+ const uint32_t kDataDeviceManagerVersion = 3;
+ const uint32_t kSeatVersion = 4;
+ const uint32_t kXdgShellVersion = 1;
++const uint32_t kTextInputManagerVersion = 1;
+ 
+ bool ResourceHasImplementation(wl_resource* resource,
+                                const wl_interface* interface,
+@@ -440,6 +443,84 @@ const struct wl_touch_interface touch_impl = {
+     &DestroyResource,  // release
+ };
+ 
++// zwp_text_input_v1
++
++void TextInputV1Activate(wl_client* client,
++                         wl_resource* resource,
++                         wl_resource* seat,
++                         wl_resource* surface) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
++      ->Activate(surface);
++}
++
++void TextInputV1Deactivate(wl_client* client,
++                           wl_resource* resource,
++                           wl_resource* seat) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
++      ->Deactivate();
++}
++
++void TextInputV1ShowInputPanel(wl_client* client, wl_resource* resource) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
++      ->ShowInputPanel();
++}
++
++void TextInputV1HideInputPanel(wl_client* client, wl_resource* resource) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
++      ->HideInputPanel();
++}
++
++void TextInputV1Reset(wl_client* client, wl_resource* resource) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))->Reset();
++}
++
++void TextInputV1SetCursorRectangle(wl_client* client,
++                                   wl_resource* resource,
++                                   int32_t x,
++                                   int32_t y,
++                                   int32_t width,
++                                   int32_t height) {
++  static_cast<MockZwpTextInput*>(wl_resource_get_user_data(resource))
++      ->SetCursorRect(x, y, width, height);
++}
++
++const struct zwp_text_input_v1_interface zwp_text_input_v1_impl = {
++    &TextInputV1Activate,            // activate
++    &TextInputV1Deactivate,          // deactivate
++    &TextInputV1ShowInputPanel,      // show_input_panel
++    &TextInputV1HideInputPanel,      // hide_input_panel
++    &TextInputV1Reset,               // reset
++    nullptr,                         // set_surrounding_text
++    nullptr,                         // set_content_type
++    &TextInputV1SetCursorRectangle,  // set_cursor_rectangle
++    nullptr,                         // set_preferred_language
++    nullptr,                         // commit_state
++    nullptr,                         // invoke_action
++};
++
++// zwp_text_input_manager_v1
++
++void CreateTextInput(struct wl_client* client,
++                     struct wl_resource* resource,
++                     uint32_t id) {
++  auto* im =
++      static_cast<MockTextInputManagerV1*>(wl_resource_get_user_data(resource));
++  wl_resource* text_resource =
++      wl_resource_create(client, &zwp_text_input_v1_interface,
++                         wl_resource_get_version(resource), id);
++  if (!text_resource) {
++    wl_client_post_no_memory(client);
++    return;
++  }
++  im->text_input.reset(
++      new MockZwpTextInput(text_resource, &zwp_text_input_v1_impl));
++}
++
++const struct zwp_text_input_manager_v1_interface
++    zwp_text_input_manager_v1_impl = {
++        &CreateTextInput,  // create_text_input
++};
++
+ // xdg_surface, zxdg_surface_v6 and zxdg_toplevel shared methods.
+ 
+ void SetTitle(wl_client* client, wl_resource* resource, const char* title) {
+@@ -769,6 +850,15 @@ MockTouch::MockTouch(wl_resource* resource) : ServerObject(resource) {
+ 
+ MockTouch::~MockTouch() {}
+ 
++MockZwpTextInput::MockZwpTextInput(wl_resource* resource,
++                                   const void* implementation)
++    : ServerObject(resource) {
++  wl_resource_set_implementation(resource, implementation, this,
++                                 &ServerObject::OnResourceDestroyed);
++}
++
++MockZwpTextInput::~MockZwpTextInput() {}
++
+ MockDataOffer::MockDataOffer(wl_resource* resource)
+     : ServerObject(resource),
+       io_thread_("Worker thread"),
+@@ -949,6 +1039,13 @@ MockXdgShellV6::MockXdgShellV6()
+ 
+ MockXdgShellV6::~MockXdgShellV6() {}
+ 
++MockTextInputManagerV1::MockTextInputManagerV1()
++    : Global(&zwp_text_input_manager_v1_interface,
++             &zwp_text_input_manager_v1_impl,
++             kTextInputManagerVersion) {}
++
++MockTextInputManagerV1::~MockTextInputManagerV1() {}
++
+ void DisplayDeleter::operator()(wl_display* display) {
+   wl_display_destroy(display);
+ }
+@@ -995,6 +1092,8 @@ bool FakeServer::Start(uint32_t shell_version) {
+     if (!zxdg_shell_v6_.Initialize(display_.get()))
+       return false;
+   }
++  if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
++    return false;
+ 
+   client_ = wl_client_create(display_.get(), server_fd.get());
+   if (!client_)
+diff --git a/ui/ozone/platform/wayland/fake_server.h b/ui/ozone/platform/wayland/fake_server.h
+index 7739e6d62f26..03de5c0d6cfb 100644
+--- a/ui/ozone/platform/wayland/fake_server.h
++++ b/ui/ozone/platform/wayland/fake_server.h
+@@ -179,6 +179,24 @@ class MockTouch : public ServerObject {
+   DISALLOW_COPY_AND_ASSIGN(MockTouch);
+ };
+ 
++// Manage zwp_text_input_v1.
++class MockZwpTextInput : public ServerObject {
++ public:
++  MockZwpTextInput(wl_resource* resource, const void* implementation);
++  ~MockZwpTextInput() override;
++
++  MOCK_METHOD0(Reset, void());
++  MOCK_METHOD1(Activate, void(wl_resource* window));
++  MOCK_METHOD0(Deactivate, void());
++  MOCK_METHOD0(ShowInputPanel, void());
++  MOCK_METHOD0(HideInputPanel, void());
++  MOCK_METHOD4(SetCursorRect,
++               void(int32_t x, int32_t y, int32_t width, int32_t height));
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(MockZwpTextInput);
++};
++
+ class MockDataOffer : public ServerObject {
+  public:
+   explicit MockDataOffer(wl_resource* resource);
+@@ -381,6 +399,18 @@ class MockXdgShellV6 : public Global {
+   DISALLOW_COPY_AND_ASSIGN(MockXdgShellV6);
+ };
+ 
++// Manage zwp_text_input_manager_v1 object.
++class MockTextInputManagerV1 : public Global {
++ public:
++  MockTextInputManagerV1();
++  ~MockTextInputManagerV1() override;
++
++  std::unique_ptr<MockZwpTextInput> text_input;
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(MockTextInputManagerV1);
++};
++
+ struct DisplayDeleter {
+   void operator()(wl_display* display);
+ };
+@@ -414,6 +444,9 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
+   MockSeat* seat() { return &seat_; }
+   MockXdgShell* xdg_shell() { return &xdg_shell_; }
+   MockOutput* output() { return &output_; }
++  MockTextInputManagerV1* text_input_manager_v1() {
++    return &zwp_text_input_manager_v1_;
++  }
+ 
+  private:
+   void DoPause();
+@@ -438,6 +471,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
+   MockSeat seat_;
+   MockXdgShell xdg_shell_;
+   MockXdgShellV6 zxdg_shell_v6_;
++  MockTextInputManagerV1 zwp_text_input_manager_v1_;
+ 
+   base::MessagePumpLibevent::FdWatchController controller_;
+ 
+diff --git a/ui/ozone/platform/wayland/ozone_platform_wayland.cc b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+index dbe5528c3781..cf46ea166b95 100644
+--- a/ui/ozone/platform/wayland/ozone_platform_wayland.cc
++++ b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+@@ -14,6 +14,7 @@
+ #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
+ #include "ui/ozone/platform/wayland/wayland_connection.h"
+ #include "ui/ozone/platform/wayland/wayland_connection_connector.h"
++#include "ui/ozone/platform/wayland/wayland_input_method_context_factory.h"
+ #include "ui/ozone/platform/wayland/wayland_native_display_delegate.h"
+ #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+ #include "ui/ozone/platform/wayland/wayland_window.h"
+@@ -105,6 +106,9 @@ class OzonePlatformWayland : public OzonePlatform {
+     overlay_manager_.reset(new StubOverlayManager);
+     input_controller_ = CreateStubInputController();
+     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
++
++    wayland_input_method_context_factory_.reset(
++        new WaylandInputMethodContextFactory(connection_.get()));
+   }
+ 
+   void InitializeGPU(const InitParams& args) override {
+@@ -161,6 +165,8 @@ class OzonePlatformWayland : public OzonePlatform {
+   std::unique_ptr<StubOverlayManager> overlay_manager_;
+   std::unique_ptr<InputController> input_controller_;
+   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
++  std::unique_ptr<WaylandInputMethodContextFactory>
++      wayland_input_method_context_factory_;
+ 
+ #if BUILDFLAG(USE_XKBCOMMON)
+   XkbEvdevCodes xkb_evdev_code_converter_;
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index 942d9b68357b..0a50a6d7d867 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -31,6 +31,7 @@ const uint32_t kMaxLinuxDmabufVersion = 1;
+ const uint32_t kMaxSeatVersion = 4;
+ const uint32_t kMaxShmVersion = 1;
+ const uint32_t kMaxXdgShellVersion = 1;
++const uint32_t kMaxTextInputManagerVersion = 1;
+ }  // namespace
+ 
+ WaylandConnection::WaylandConnection()
+@@ -124,6 +125,15 @@ WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() {
+   return nullptr;
+ }
+ 
++WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() {
++  for (auto entry : window_map_) {
++    WaylandWindow* window = entry.second;
++    if (window->has_keyboard_focus())
++      return window;
++  }
++  return nullptr;
++}
++
+ void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
+                                   WaylandWindow* window) {
+   window_map_[widget] = window;
+@@ -518,6 +528,14 @@ void WaylandConnection::Global(void* data,
+     // A roundtrip after binding guarantees that the client has received all
+     // supported formats.
+     wl_display_roundtrip(connection->display_.get());
++  } else if (!connection->text_input_manager_v1_ &&
++             strcmp(interface, "zwp_text_input_manager_v1") == 0) {
++    connection->text_input_manager_v1_ = wl::Bind<zwp_text_input_manager_v1>(
++        registry, name, std::min(version, kMaxTextInputManagerVersion));
++    if (!connection->text_input_manager_v1_) {
++      LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
++      return;
++    }
+   }
+ 
+   connection->ScheduleFlush();
+diff --git a/ui/ozone/platform/wayland/wayland_connection.h b/ui/ozone/platform/wayland/wayland_connection.h
+index c4895a5d7835..847cab39f1d8 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.h
++++ b/ui/ozone/platform/wayland/wayland_connection.h
+@@ -77,9 +77,13 @@ class WaylandConnection : public PlatformEventSource,
+   wl_seat* seat() { return seat_.get(); }
+   wl_data_device* data_device() { return data_device_->data_device(); }
+   zwp_linux_dmabuf_v1* zwp_linux_dmabuf() { return zwp_linux_dmabuf_.get(); }
++  zwp_text_input_manager_v1* text_input_manager_v1() {
++    return text_input_manager_v1_.get();
++  }
+ 
+   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
+   WaylandWindow* GetCurrentFocusedWindow();
++  WaylandWindow* GetCurrentKeyboardFocusedWindow();
+   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
+   void RemoveWindow(gfx::AcceleratedWidget widget);
+ 
+@@ -94,6 +98,7 @@ class WaylandConnection : public PlatformEventSource,
+                        const gfx::Point& location);
+ 
+   int GetKeyboardModifiers();
++  void DispatchUiEvent(Event* event);
+ 
+   // Returns the current pointer, which may be null.
+   WaylandPointer* pointer() { return pointer_.get(); }
+@@ -130,7 +135,6 @@ class WaylandConnection : public PlatformEventSource,
+ 
+  private:
+   void Flush();
+-  void DispatchUiEvent(Event* event);
+ 
+   // PlatformEventSource
+   void OnDispatcherListChanged() override;
+@@ -184,6 +188,7 @@ class WaylandConnection : public PlatformEventSource,
+   wl::Object<xdg_shell> shell_;
+   wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf_;
+   wl::Object<zxdg_shell_v6> shell_v6_;
++  wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
+ 
+   // Stores a wl_buffer and it's id provided by the GbmBuffer object on the
+   // GPU process side.
+diff --git a/ui/ozone/platform/wayland/wayland_input_method_context.cc b/ui/ozone/platform/wayland/wayland_input_method_context.cc
+new file mode 100644
+index 000000000000..79832444245e
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_input_method_context.cc
+@@ -0,0 +1,139 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/wayland_input_method_context.h"
++
++#include "base/bind.h"
++#include "base/command_line.h"
++#include "base/memory/ptr_util.h"
++#include "base/strings/string_util.h"
++#include "base/strings/utf_string_conversions.h"
++#include "ui/base/ime/composition_text.h"
++#include "ui/events/base_event_utils.h"
++#include "ui/events/event.h"
++#include "ui/events/keycodes/dom/dom_code.h"
++#include "ui/events/keycodes/dom/keycode_converter.h"
++#include "ui/events/keycodes/keyboard_code_conversion.h"
++#include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
++#include "ui/events/ozone/layout/keyboard_layout_engine.h"
++#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
++#include "ui/gfx/range/range.h"
++#include "ui/ozone/platform/wayland/wayland_connection.h"
++#include "ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h"
++#include "ui/ozone/public/ozone_switches.h"
++
++namespace ui {
++
++namespace {
++
++constexpr int kXkbKeycodeOffset = 8;
++
++}  // namespace
++
++WaylandInputMethodContext::WaylandInputMethodContext(
++    WaylandConnection* connection,
++    LinuxInputMethodContextDelegate* delegate,
++    bool is_simple)
++    : connection_(connection), text_input_(nullptr), delegate_(delegate) {
++  use_ozone_wayland_vkb_ = getenv("ENABLE_WAYLAND_IME") ||
++                           base::CommandLine::ForCurrentProcess()->HasSwitch(
++                               switches::kEnableWaylandIme);
++  if (use_ozone_wayland_vkb_ && !is_simple &&
++      connection_->text_input_manager_v1()) {
++    text_input_ = std::make_unique<ZWPTextInputWrapperV1>(
++        connection_->text_input_manager_v1());
++    text_input_->Initialize(connection_, this);
++  }
++}
++
++WaylandInputMethodContext::~WaylandInputMethodContext() {
++  if (text_input_) {
++    text_input_->Deactivate();
++    text_input_->HideInputPanel();
++  }
++}
++
++bool WaylandInputMethodContext::DispatchKeyEvent(
++    const ui::KeyEvent& key_event) {
++  return false;
++}
++
++void WaylandInputMethodContext::Reset() {
++  if (text_input_)
++    text_input_->Reset();
++}
++
++void WaylandInputMethodContext::Focus() {
++  WaylandWindow* window = connection_->GetCurrentKeyboardFocusedWindow();
++  if (!text_input_ || !window)
++    return;
++
++  text_input_->Activate(window);
++  text_input_->ShowInputPanel();
++}
++
++void WaylandInputMethodContext::Blur() {
++  if (text_input_) {
++    text_input_->Deactivate();
++    text_input_->HideInputPanel();
++  }
++}
++
++void WaylandInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
++  if (text_input_)
++    text_input_->SetCursorRect(rect);
++}
++
++void WaylandInputMethodContext::SetSurroundingText(
++    const base::string16& text,
++    const gfx::Range& selection_range) {
++  if (text_input_)
++    text_input_->SetSurroundingText(text, selection_range);
++}
++
++void WaylandInputMethodContext::OnPreeditString(const std::string& text,
++                                                int preedit_cursor) {
++  gfx::Range selection_range = gfx::Range::InvalidRange();
++
++  // TODO(jani): Handle selection range
++
++  if (!selection_range.IsValid()) {
++    int cursor_pos = (preedit_cursor) ? text.length() : preedit_cursor;
++    selection_range.set_start(cursor_pos);
++    selection_range.set_end(cursor_pos);
++  }
++
++  ui::CompositionText composition_text;
++  composition_text.text = base::UTF8ToUTF16(text);
++  composition_text.selection = selection_range;
++  delegate_->OnPreeditChanged(composition_text);
++}
++
++void WaylandInputMethodContext::OnCommitString(const std::string& text) {
++  delegate_->OnCommit(base::UTF8ToUTF16(text));
++}
++
++void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
++                                                        uint32_t length) {
++  delegate_->OnDeleteSurroundingText(index, length);
++}
++
++void WaylandInputMethodContext::OnKeysym(uint32_t key,
++                                         uint32_t state,
++                                         uint32_t modifiers) {
++  uint8_t flags = 0;  // for now ignore modifiers
++  DomKey dom_key = NonPrintableXKeySymToDomKey(key);
++  KeyboardCode key_code = NonPrintableDomKeyToKeyboardCode(dom_key);
++  DomCode dom_code =
++      KeycodeConverter::NativeKeycodeToDomCode(key_code + kXkbKeycodeOffset);
++  if (dom_code == ui::DomCode::NONE)
++    return;
++
++  bool down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
++  ui::KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code,
++                     dom_code, flags, dom_key, EventTimeForNow());
++  connection_->DispatchUiEvent(&event);
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_input_method_context.h b/ui/ozone/platform/wayland/wayland_input_method_context.h
+new file mode 100644
+index 000000000000..525b5cf23547
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_input_method_context.h
+@@ -0,0 +1,56 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_H_
++#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_H_
++
++#include "base/macros.h"
++#include "ui/base/ime/linux/linux_input_method_context.h"
++#include "ui/events/ozone/evdev/event_dispatch_callback.h"
++#include "ui/ozone/platform/wayland/zwp_text_input_wrapper.h"
++
++namespace ui {
++
++class WaylandConnection;
++class WaylandWindow;
++class ZWPTextInputWrapper;
++
++class WaylandInputMethodContext : public LinuxInputMethodContext,
++                                  public ZWPTextInputWrapperClient {
++ public:
++  WaylandInputMethodContext(WaylandConnection* connection,
++                            LinuxInputMethodContextDelegate* delegate,
++                            bool is_simple);
++  ~WaylandInputMethodContext() override;
++
++  // LinuxInputMethodContext overrides:
++  bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
++  void SetCursorLocation(const gfx::Rect& rect) override;
++  void SetSurroundingText(const base::string16& text,
++                          const gfx::Range& selection_range) override;
++  void Reset() override;
++  void Focus() override;
++  void Blur() override;
++
++  // ui::ZWPTextInputWrapperClient
++  void OnPreeditString(const std::string& text, int preedit_cursor) override;
++  void OnCommitString(const std::string& text) override;
++  void OnDeleteSurroundingText(int32_t index, uint32_t length) override;
++  void OnKeysym(uint32_t key, uint32_t state, uint32_t modifiers) override;
++
++ private:
++  WaylandConnection* connection_ = nullptr;
++  bool use_ozone_wayland_vkb_;
++
++  std::unique_ptr<ZWPTextInputWrapper> text_input_;
++
++  // Delegate interface back to IME code in ui.
++  LinuxInputMethodContextDelegate* delegate_;
++
++  DISALLOW_COPY_AND_ASSIGN(WaylandInputMethodContext);
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_H_
+diff --git a/ui/ozone/platform/wayland/wayland_input_method_context_factory.cc b/ui/ozone/platform/wayland/wayland_input_method_context_factory.cc
+new file mode 100644
+index 000000000000..431749ce1bc9
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_input_method_context_factory.cc
+@@ -0,0 +1,30 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/wayland_input_method_context_factory.h"
++
++#include "ui/ozone/platform/wayland/wayland_input_method_context.h"
++
++namespace ui {
++
++WaylandInputMethodContextFactory::WaylandInputMethodContextFactory(
++    WaylandConnection* connection)
++    : connection_(connection) {
++  LinuxInputMethodContextFactory::SetInstance(this);
++}
++
++WaylandInputMethodContextFactory::~WaylandInputMethodContextFactory() {
++  LinuxInputMethodContextFactory::SetInstance(nullptr);
++}
++
++std::unique_ptr<LinuxInputMethodContext>
++WaylandInputMethodContextFactory::CreateInputMethodContext(
++    LinuxInputMethodContextDelegate* delegate,
++    bool is_simple) const {
++  auto context = std::make_unique<WaylandInputMethodContext>(
++      connection_, delegate, is_simple);
++  return std::move(context);
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_input_method_context_factory.h b/ui/ozone/platform/wayland/wayland_input_method_context_factory.h
+new file mode 100644
+index 000000000000..d5ee7d4c7a61
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_input_method_context_factory.h
+@@ -0,0 +1,32 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_FACTORY_H_
++#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_FACTORY_H_
++
++#include "base/macros.h"
++#include "ui/base/ime/linux/linux_input_method_context_factory.h"
++
++namespace ui {
++
++class WaylandConnection;
++
++class WaylandInputMethodContextFactory : public LinuxInputMethodContextFactory {
++ public:
++  explicit WaylandInputMethodContextFactory(WaylandConnection* connection);
++  ~WaylandInputMethodContextFactory() override;
++
++  std::unique_ptr<LinuxInputMethodContext> CreateInputMethodContext(
++      ui::LinuxInputMethodContextDelegate* delegate,
++      bool is_simple) const override;
++
++ private:
++  WaylandConnection* connection_;
++
++  DISALLOW_COPY_AND_ASSIGN(WaylandInputMethodContextFactory);
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_WAYLAND_INPUT_METHOD_CONTEXT_FACTORY_H_
+diff --git a/ui/ozone/platform/wayland/wayland_input_method_context_unittest.cc b/ui/ozone/platform/wayland/wayland_input_method_context_unittest.cc
+new file mode 100644
+index 000000000000..e398fe7709f6
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_input_method_context_unittest.cc
+@@ -0,0 +1,138 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include <text-input-unstable-v1-server-protocol.h>
++#include <wayland-server.h>
++
++#include "mojo/public/cpp/bindings/binding.h"
++#include "testing/gmock/include/gmock/gmock.h"
++#include "testing/gtest/include/gtest/gtest.h"
++#include "ui/base/ime/linux/linux_input_method_context.h"
++#include "ui/events/event.h"
++#include "ui/ozone/platform/wayland/fake_server.h"
++#include "ui/ozone/platform/wayland/wayland_input_method_context.h"
++#include "ui/ozone/platform/wayland/wayland_test.h"
++#include "ui/ozone/platform/wayland/wayland_window.h"
++
++using ::testing::SaveArg;
++using ::testing::_;
++
++namespace ui {
++
++class TestInputMethodContextDelegate : public LinuxInputMethodContextDelegate {
++ public:
++  TestInputMethodContextDelegate() {}
++  ~TestInputMethodContextDelegate() override {}
++
++  void OnCommit(const base::string16& text) override {
++    was_on_commit_called_ = true;
++  }
++  void OnPreeditChanged(const ui::CompositionText& composition_text) override {
++    was_on_preedit_changed_called_ = true;
++  }
++  void OnPreeditEnd() override {}
++  void OnPreeditStart() override {}
++
++  bool was_on_commit_called() { return was_on_commit_called_; }
++
++  bool was_on_preedit_changed_called() {
++    return was_on_preedit_changed_called_;
++  }
++
++ private:
++  bool was_on_commit_called_ = false;
++  bool was_on_preedit_changed_called_ = false;
++
++  DISALLOW_COPY_AND_ASSIGN(TestInputMethodContextDelegate);
++};
++
++class WaylandInputMethodContextTest : public WaylandTest {
++ public:
++  WaylandInputMethodContextTest() {}
++
++  void SetUp() override {
++    WaylandTest::SetUp();
++
++    Sync();
++
++    setenv("ENABLE_WAYLAND_IME", "true", 0);
++
++    input_method_context_delegate_ =
++        std::make_unique<TestInputMethodContextDelegate>();
++
++    input_method_context_ = std::make_unique<WaylandInputMethodContext>(
++        connection_.get(), input_method_context_delegate_.get(), false);
++    connection_->ScheduleFlush();
++
++    Sync();
++
++    zwp_text_input_ = server_.text_input_manager_v1()->text_input.get();
++    window_->set_keyboard_focus(true);
++
++    ASSERT_TRUE(connection_->text_input_manager_v1());
++    ASSERT_TRUE(zwp_text_input_);
++  }
++
++ protected:
++  std::unique_ptr<TestInputMethodContextDelegate>
++      input_method_context_delegate_;
++  std::unique_ptr<WaylandInputMethodContext> input_method_context_;
++  wl::MockZwpTextInput* zwp_text_input_ = nullptr;
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(WaylandInputMethodContextTest);
++};
++
++TEST_P(WaylandInputMethodContextTest, Focus) {
++  EXPECT_CALL(*zwp_text_input_, Activate(surface_->resource()));
++  EXPECT_CALL(*zwp_text_input_, ShowInputPanel());
++  input_method_context_->Focus();
++  connection_->ScheduleFlush();
++  Sync();
++}
++
++TEST_P(WaylandInputMethodContextTest, Blur) {
++  EXPECT_CALL(*zwp_text_input_, Deactivate());
++  EXPECT_CALL(*zwp_text_input_, HideInputPanel());
++  input_method_context_->Blur();
++  connection_->ScheduleFlush();
++  Sync();
++}
++
++TEST_P(WaylandInputMethodContextTest, Reset) {
++  EXPECT_CALL(*zwp_text_input_, Reset());
++  input_method_context_->Reset();
++  connection_->ScheduleFlush();
++  Sync();
++}
++
++TEST_P(WaylandInputMethodContextTest, SetCursorLocation) {
++  EXPECT_CALL(*zwp_text_input_, SetCursorRect(50, 0, 1, 1));
++  input_method_context_->SetCursorLocation(gfx::Rect(50, 0, 1, 1));
++  connection_->ScheduleFlush();
++  Sync();
++}
++
++TEST_P(WaylandInputMethodContextTest, OnPreeditChanged) {
++  zwp_text_input_v1_send_preedit_string(zwp_text_input_->resource(), 0,
++                                        "PreeditString", "");
++  Sync();
++  EXPECT_TRUE(input_method_context_delegate_->was_on_preedit_changed_called());
++}
++
++TEST_P(WaylandInputMethodContextTest, OnCommit) {
++  zwp_text_input_v1_send_commit_string(zwp_text_input_->resource(), 0,
++                                       "CommitString");
++  Sync();
++  EXPECT_TRUE(input_method_context_delegate_->was_on_commit_called());
++}
++
++INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
++                        WaylandInputMethodContextTest,
++                        ::testing::Values(kXdgShellV5));
++INSTANTIATE_TEST_CASE_P(XdgVersionV6Test,
++                        WaylandInputMethodContextTest,
++                        ::testing::Values(kXdgShellV6));
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_object.cc b/ui/ozone/platform/wayland/wayland_object.cc
+index ec41d326824e..9292a279cd1f 100644
+--- a/ui/ozone/platform/wayland/wayland_object.cc
++++ b/ui/ozone/platform/wayland/wayland_object.cc
+@@ -5,6 +5,7 @@
+ #include "ui/ozone/platform/wayland/wayland_object.h"
+ 
+ #include <linux-dmabuf-unstable-v1-client-protocol.h>
++#include <text-input-unstable-v1-client-protocol.h>
+ #include <wayland-client.h>
+ #include <xdg-shell-unstable-v5-client-protocol.h>
+ #include <xdg-shell-unstable-v6-client-protocol.h>
+@@ -157,4 +158,14 @@ const wl_interface* ObjectTraits<zxdg_positioner_v6>::interface =
+ void (*ObjectTraits<zxdg_positioner_v6>::deleter)(zxdg_positioner_v6*) =
+     &zxdg_positioner_v6_destroy;
+ 
++const wl_interface* ObjectTraits<zwp_text_input_manager_v1>::interface =
++    &zwp_text_input_manager_v1_interface;
++void (*ObjectTraits<zwp_text_input_manager_v1>::deleter)(
++    zwp_text_input_manager_v1*) = &zwp_text_input_manager_v1_destroy;
++
++const wl_interface* ObjectTraits<zwp_text_input_v1>::interface =
++    &zwp_text_input_v1_interface;
++void (*ObjectTraits<zwp_text_input_v1>::deleter)(zwp_text_input_v1*) =
++    &zwp_text_input_v1_destroy;
++
+ }  // namespace wl
+diff --git a/ui/ozone/platform/wayland/wayland_object.h b/ui/ozone/platform/wayland/wayland_object.h
+index df3f16e62f34..7dfc968bd4f2 100644
+--- a/ui/ozone/platform/wayland/wayland_object.h
++++ b/ui/ozone/platform/wayland/wayland_object.h
+@@ -36,6 +36,8 @@ struct zxdg_surface_v6;
+ struct zxdg_toplevel_v6;
+ struct zxdg_popup_v6;
+ struct zxdg_positioner_v6;
++struct zwp_text_input_manager_v1;
++struct zwp_text_input_v1;
+ 
+ namespace wl {
+ 
+@@ -210,6 +212,18 @@ struct ObjectTraits<zxdg_positioner_v6> {
+   static void (*deleter)(zxdg_positioner_v6*);
+ };
+ 
++template <>
++struct ObjectTraits<zwp_text_input_manager_v1> {
++  static const wl_interface* interface;
++  static void (*deleter)(zwp_text_input_manager_v1*);
++};
++
++template <>
++struct ObjectTraits<zwp_text_input_v1> {
++  static const wl_interface* interface;
++  static void (*deleter)(zwp_text_input_v1*);
++};
++
+ struct Deleter {
+   template <typename T>
+   void operator()(T* obj) {
+diff --git a/ui/ozone/platform/wayland/wayland_window.cc b/ui/ozone/platform/wayland/wayland_window.cc
+index 3c765e7faa1b..66fe2eb0efc7 100644
+--- a/ui/ozone/platform/wayland/wayland_window.cc
++++ b/ui/ozone/platform/wayland/wayland_window.cc
+@@ -196,6 +196,9 @@ void WaylandWindow::ApplyPendingBounds() {
+ }
+ 
+ void WaylandWindow::Show() {
++  if (!is_tooltip_)
++    set_keyboard_focus(true);
++
+   if (xdg_surface_)
+     return;
+   if (is_tooltip_) {
+diff --git a/ui/ozone/platform/wayland/wayland_window.h b/ui/ozone/platform/wayland/wayland_window.h
+index abaccda7a61a..b8381f5449b1 100644
+--- a/ui/ozone/platform/wayland/wayland_window.h
++++ b/ui/ozone/platform/wayland/wayland_window.h
+@@ -52,6 +52,8 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
+   // Set whether this window has keyboard focus and should dispatch key events.
+   void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
+ 
++  bool has_keyboard_focus() { return has_keyboard_focus_; }
++
+   // Set whether this window has touch focus and should dispatch touch events.
+   void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
+ 
+diff --git a/ui/ozone/platform/wayland/zwp_text_input_wrapper.h b/ui/ozone/platform/wayland/zwp_text_input_wrapper.h
+new file mode 100644
+index 000000000000..b81d6a602504
+--- /dev/null
++++ b/ui/ozone/platform/wayland/zwp_text_input_wrapper.h
+@@ -0,0 +1,56 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_H_
++#define UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_H_
++
++#include "ui/ozone/platform/wayland/wayland_object.h"
++
++#include "base/strings/string16.h"
++
++namespace gfx {
++class Rect;
++class Range;
++}  // namespace gfx
++
++namespace ui {
++
++class WaylandConnection;
++class WaylandWindow;
++
++class ZWPTextInputWrapperClient {
++ public:
++  virtual ~ZWPTextInputWrapperClient() {}
++
++  virtual void OnPreeditString(const std::string& text,
++                               int32_t preedit_cursor) = 0;
++  virtual void OnCommitString(const std::string& text) = 0;
++  virtual void OnDeleteSurroundingText(int32_t index, uint32_t length) = 0;
++  virtual void OnKeysym(uint32_t key, uint32_t state, uint32_t modifiers) = 0;
++};
++
++// A wrapper around different versions of zwp text inputs.
++class ZWPTextInputWrapper {
++ public:
++  virtual ~ZWPTextInputWrapper() {}
++
++  virtual void Initialize(WaylandConnection* connection,
++                          ZWPTextInputWrapperClient* client) = 0;
++
++  virtual void Reset() = 0;
++
++  virtual void Activate(WaylandWindow* window) = 0;
++  virtual void Deactivate() = 0;
++
++  virtual void ShowInputPanel() = 0;
++  virtual void HideInputPanel() = 0;
++
++  virtual void SetCursorRect(const gfx::Rect& rect) = 0;
++  virtual void SetSurroundingText(const base::string16& text,
++                                  const gfx::Range& selection_range) = 0;
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_H_
+diff --git a/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.cc b/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.cc
+new file mode 100644
+index 000000000000..30aacea57410
+--- /dev/null
++++ b/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.cc
+@@ -0,0 +1,200 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h"
++
++#include "base/memory/ptr_util.h"
++#include "base/strings/string16.h"
++#include "base/strings/utf_string_conversions.h"
++#include "ui/gfx/range/range.h"
++#include "ui/ozone/platform/wayland/wayland_connection.h"
++#include "ui/ozone/platform/wayland/wayland_window.h"
++
++namespace ui {
++
++ZWPTextInputWrapperV1::ZWPTextInputWrapperV1(
++    zwp_text_input_manager_v1* text_input_manager)
++    : client_(0) {
++  static const zwp_text_input_v1_listener text_input_listener = {
++      &ZWPTextInputWrapperV1::OnEnter,         // text_input_enter,
++      &ZWPTextInputWrapperV1::OnLeave,         // text_input_leave,
++      &ZWPTextInputWrapperV1::OnModifiersMap,  // text_input_modifiers_map,
++      &ZWPTextInputWrapperV1::
++          OnInputPanelState,                    // text_input_input_panel_state,
++      &ZWPTextInputWrapperV1::OnPreeditString,  // text_input_preedit_string,
++      &ZWPTextInputWrapperV1::OnPreeditStyling,  // text_input_preedit_styling,
++      &ZWPTextInputWrapperV1::OnPreeditCursor,   // text_input_preedit_cursor,
++      &ZWPTextInputWrapperV1::OnCommitString,    // text_input_commit_string,
++      &ZWPTextInputWrapperV1::OnCursorPosition,  // text_input_cursor_position,
++      &ZWPTextInputWrapperV1::
++          OnDeleteSurroundingText,       // text_input_delete_surrounding_text,
++      &ZWPTextInputWrapperV1::OnKeysym,  // text_input_keysym,
++      &ZWPTextInputWrapperV1::OnLanguage,       // text_input_language,
++      &ZWPTextInputWrapperV1::OnTextDirection,  // text_input_text_direction
++  };
++  ResetInputEventState();
++
++  zwp_text_input_v1* text_input =
++      zwp_text_input_manager_v1_create_text_input(text_input_manager);
++  obj_ = wl::Object<zwp_text_input_v1>(text_input);
++
++  zwp_text_input_v1_add_listener(text_input, &text_input_listener, this);
++}
++
++ZWPTextInputWrapperV1::~ZWPTextInputWrapperV1() {}
++
++void ZWPTextInputWrapperV1::Initialize(WaylandConnection* connection,
++                                       ZWPTextInputWrapperClient* client) {
++  connection_ = connection;
++  client_ = client;
++}
++
++void ZWPTextInputWrapperV1::Reset() {
++  ResetInputEventState();
++  zwp_text_input_v1_reset(obj_.get());
++}
++
++void ZWPTextInputWrapperV1::Activate(WaylandWindow* window) {
++  zwp_text_input_v1_activate(obj_.get(), connection_->seat(),
++                             window->surface());
++}
++
++void ZWPTextInputWrapperV1::Deactivate() {
++  zwp_text_input_v1_deactivate(obj_.get(), connection_->seat());
++}
++
++void ZWPTextInputWrapperV1::ShowInputPanel() {
++  zwp_text_input_v1_show_input_panel(obj_.get());
++}
++
++void ZWPTextInputWrapperV1::HideInputPanel() {
++  zwp_text_input_v1_hide_input_panel(obj_.get());
++}
++
++void ZWPTextInputWrapperV1::SetCursorRect(const gfx::Rect& rect) {
++  zwp_text_input_v1_set_cursor_rectangle(obj_.get(), rect.x(), rect.y(),
++                                         rect.width(), rect.height());
++}
++
++void ZWPTextInputWrapperV1::SetSurroundingText(
++    const base::string16& text,
++    const gfx::Range& selection_range) {
++  const std::string text_utf8 = base::UTF16ToUTF8(text);
++  zwp_text_input_v1_set_surrounding_text(obj_.get(), text_utf8.c_str(),
++                                         selection_range.start(),
++                                         selection_range.end());
++}
++
++void ZWPTextInputWrapperV1::ResetInputEventState() {
++  preedit_cursor_ = -1;
++}
++
++// zwp_text_input_v1_listener
++
++void ZWPTextInputWrapperV1::OnEnter(void* data,
++                                    struct zwp_text_input_v1* text_input,
++                                    struct wl_surface* surface) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnLeave(void* data,
++                                    struct zwp_text_input_v1* text_input) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnModifiersMap(void* data,
++                                           struct zwp_text_input_v1* text_input,
++                                           struct wl_array* map) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnInputPanelState(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    uint32_t state) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnPreeditString(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    uint32_t serial,
++    const char* text,
++    const char* commit) {
++  ZWPTextInputWrapperV1* wti = static_cast<ZWPTextInputWrapperV1*>(data);
++  wti->ResetInputEventState();
++  wti->client_->OnPreeditString(std::string(text), wti->preedit_cursor_);
++}
++
++void ZWPTextInputWrapperV1::OnPreeditStyling(
++    void* data,
++
++    struct zwp_text_input_v1* text_input,
++    uint32_t index,
++    uint32_t length,
++    uint32_t style) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnPreeditCursor(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    int32_t index) {
++  ZWPTextInputWrapperV1* wti = static_cast<ZWPTextInputWrapperV1*>(data);
++  wti->preedit_cursor_ = index;
++}
++
++void ZWPTextInputWrapperV1::OnCommitString(void* data,
++                                           struct zwp_text_input_v1* text_input,
++                                           uint32_t serial,
++                                           const char* text) {
++  ZWPTextInputWrapperV1* wti = static_cast<ZWPTextInputWrapperV1*>(data);
++  wti->ResetInputEventState();
++  wti->client_->OnCommitString(std::string(text));
++}
++
++void ZWPTextInputWrapperV1::OnCursorPosition(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    int32_t index,
++    int32_t anchor) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnDeleteSurroundingText(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    int32_t index,
++    uint32_t length) {
++  ZWPTextInputWrapperV1* wti = static_cast<ZWPTextInputWrapperV1*>(data);
++  wti->client_->OnDeleteSurroundingText(index, length);
++}
++
++void ZWPTextInputWrapperV1::OnKeysym(void* data,
++                                     struct zwp_text_input_v1* text_input,
++                                     uint32_t serial,
++                                     uint32_t time,
++                                     uint32_t key,
++                                     uint32_t state,
++                                     uint32_t modifiers) {
++  ZWPTextInputWrapperV1* wti = static_cast<ZWPTextInputWrapperV1*>(data);
++  wti->client_->OnKeysym(key, state, modifiers);
++}
++
++void ZWPTextInputWrapperV1::OnLanguage(void* data,
++                                       struct zwp_text_input_v1* text_input,
++                                       uint32_t serial,
++                                       const char* language) {
++  NOTIMPLEMENTED_LOG_ONCE();
++}
++
++void ZWPTextInputWrapperV1::OnTextDirection(
++    void* data,
++    struct zwp_text_input_v1* text_input,
++    uint32_t serial,
++    uint32_t direction) {
++  // Not implemented
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h b/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h
+new file mode 100644
+index 000000000000..33c6a287141c
+--- /dev/null
++++ b/ui/ozone/platform/wayland/zwp_text_input_wrapper_v1.h
+@@ -0,0 +1,106 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_V1_H_
++#define UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_V1_H_
++
++#include <text-input-unstable-v1-client-protocol.h>
++#include <string>
++
++#include "ui/ozone/platform/wayland/zwp_text_input_wrapper.h"
++
++namespace gfx {
++class Rect;
++}
++
++namespace ui {
++
++class WaylandConnection;
++class WaylandWindow;
++
++class ZWPTextInputWrapperV1 : public ZWPTextInputWrapper {
++ public:
++  ZWPTextInputWrapperV1(zwp_text_input_manager_v1* text_input_manager);
++  ~ZWPTextInputWrapperV1() override;
++
++  void Initialize(WaylandConnection* connection,
++                  ZWPTextInputWrapperClient* client) override;
++
++  void Reset() override;
++
++  void Activate(WaylandWindow* window) override;
++  void Deactivate() override;
++
++  void ShowInputPanel() override;
++  void HideInputPanel() override;
++
++  void SetCursorRect(const gfx::Rect& rect) override;
++  void SetSurroundingText(const base::string16& text,
++                          const gfx::Range& selection_range) override;
++
++ private:
++  void ResetInputEventState();
++
++  // zwp_text_input_v1_listener
++  static void OnEnter(void* data,
++                      struct zwp_text_input_v1* text_input,
++                      struct wl_surface* surface);
++  static void OnLeave(void* data, struct zwp_text_input_v1* text_input);
++  static void OnModifiersMap(void* data,
++                             struct zwp_text_input_v1* text_input,
++                             struct wl_array* map);
++  static void OnInputPanelState(void* data,
++                                struct zwp_text_input_v1* text_input,
++                                uint32_t state);
++  static void OnPreeditString(void* data,
++                              struct zwp_text_input_v1* text_input,
++                              uint32_t serial,
++                              const char* text,
++                              const char* commit);
++  static void OnPreeditStyling(void* data,
++                               struct zwp_text_input_v1* text_input,
++                               uint32_t index,
++                               uint32_t length,
++                               uint32_t style);
++  static void OnPreeditCursor(void* data,
++                              struct zwp_text_input_v1* text_input,
++                              int32_t index);
++  static void OnCommitString(void* data,
++                             struct zwp_text_input_v1* text_input,
++                             uint32_t serial,
++                             const char* text);
++  static void OnCursorPosition(void* data,
++                               struct zwp_text_input_v1* text_input,
++                               int32_t index,
++                               int32_t anchor);
++  static void OnDeleteSurroundingText(void* data,
++                                      struct zwp_text_input_v1* text_input,
++                                      int32_t index,
++                                      uint32_t length);
++  static void OnKeysym(void* data,
++                       struct zwp_text_input_v1* text_input,
++                       uint32_t serial,
++                       uint32_t time,
++                       uint32_t key,
++                       uint32_t state,
++                       uint32_t modifiers);
++  static void OnLanguage(void* data,
++                         struct zwp_text_input_v1* text_input,
++                         uint32_t serial,
++                         const char* language);
++  static void OnTextDirection(void* data,
++                              struct zwp_text_input_v1* text_input,
++                              uint32_t serial,
++                              uint32_t direction);
++
++  WaylandConnection* connection_ = nullptr;
++  wl::Object<zwp_text_input_v1> obj_;
++  ZWPTextInputWrapperClient* client_;
++
++  int32_t preedit_cursor_;
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_ZWP_TEXT_INPUT_WRAPPER_V1_H_
+diff --git a/ui/ozone/public/ozone_switches.cc b/ui/ozone/public/ozone_switches.cc
+index 0a9b3ab32a04..7bec0b7ef22c 100644
+--- a/ui/ozone/public/ozone_switches.cc
++++ b/ui/ozone/public/ozone_switches.cc
+@@ -12,4 +12,7 @@ const char kOzonePlatform[] = "ozone-platform";
+ // Specify location for image dumps.
+ const char kOzoneDumpFile[] = "ozone-dump-file";
+ 
++// Try to enable wayland input method editor.
++const char kEnableWaylandIme[] = "enable-wayland-ime";
++
+ }  // namespace switches
+diff --git a/ui/ozone/public/ozone_switches.h b/ui/ozone/public/ozone_switches.h
+index b062e67fcfb2..d7e7d8a9256a 100644
+--- a/ui/ozone/public/ozone_switches.h
++++ b/ui/ozone/public/ozone_switches.h
+@@ -14,6 +14,8 @@ OZONE_BASE_EXPORT extern const char kOzonePlatform[];
+ 
+ OZONE_BASE_EXPORT extern const char kOzoneDumpFile[];
+ 
++OZONE_BASE_EXPORT extern const char kEnableWaylandIme[];
++
+ }  // namespace switches
+ 
+ #endif  // UI_OZONE_PUBLIC_OZONE_SWITCHES_H_
+-- 
+2.11.0
+

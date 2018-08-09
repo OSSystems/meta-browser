@@ -1,0 +1,33 @@
+From 9d5d08fc1113359f0bd0262ae160f50a762e2cd6 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 30 Jul 2018 11:51:57 +0300
+Subject: [PATCH] V8-v7.0.85-qemu-wrapper
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ BUILD.gn | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/BUILD.gn b/BUILD.gn
+index 74084b63e3..df3e2acdce 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -920,6 +920,7 @@ action("run_torque") {
+   }
+ 
+   args = [
++    "./v8-qemu-wrapper.sh",
+     "./" + rebase_path(get_label_info(":torque($v8_torque_toolchain)",
+                                       "root_out_dir") + "/torque",
+                        root_build_dir),
+@@ -1003,6 +1004,7 @@ template("run_mksnapshot") {
+     data = []
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
+                                         "root_out_dir") + "/mksnapshot",
+                          root_build_dir),
+-- 
+2.11.0
+

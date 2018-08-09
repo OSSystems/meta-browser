@@ -1,0 +1,291 @@
+From a92527ed86280c666cb74b5cec1823d50fd807dc Mon Sep 17 00:00:00 2001
+From: Jani Hautakangas <jani.hautakangas@lge.com>
+Date: Mon, 15 Jan 2018 22:15:10 +0200
+Subject: [PATCH 1/2] IME for Platform integration: remove chromeos deps
+
+- Groups ui/base/ime common types into their own GN component
+  (ime_types) to break a dependency cycle on ChromeOS that
+  this CL would cause otherwise.
+- Move chromeos source files under is_chromeos flag to avoid
+  depending them when chromeos is not used, but ime is needed.
+---
+ ui/base/ime/BUILD.gn                   | 98 +++++++++++++++++++++-------------
+ ui/base/ime/candidate_window.h         |  8 +--
+ ui/base/ime/composition_text.h         |  4 +-
+ ui/base/ime/ime_text_span.h            |  4 +-
+ ui/base/ime/infolist_entry.h           |  4 +-
+ ui/base/ime/ui_base_ime_types_export.h | 34 ++++++++++++
+ 6 files changed, 104 insertions(+), 48 deletions(-)
+ create mode 100644 ui/base/ime/ui_base_ime_types_export.h
+
+diff --git a/ui/base/ime/BUILD.gn b/ui/base/ime/BUILD.gn
+index 72a6781c68e6..d2190bd00671 100644
+--- a/ui/base/ime/BUILD.gn
++++ b/ui/base/ime/BUILD.gn
+@@ -15,51 +15,39 @@ source_set("text_input_types") {
+   ]
+ }
+ 
+-jumbo_component("ime") {
+-  output_name = "ui_base_ime"
++jumbo_component("ime_types") {
++  output_name = "ui_base_ime_types"
+   sources = [
+     "candidate_window.cc",
+     "candidate_window.h",
+-    "chromeos/character_composer.cc",
+-    "chromeos/character_composer.h",
+-    "chromeos/component_extension_ime_manager.cc",
+-    "chromeos/component_extension_ime_manager.h",
+-    "chromeos/extension_ime_util.cc",
+-    "chromeos/extension_ime_util.h",
+-    "chromeos/fake_ime_keyboard.cc",
+-    "chromeos/fake_ime_keyboard.h",
+-    "chromeos/fake_input_method_delegate.cc",
+-    "chromeos/fake_input_method_delegate.h",
+-    "chromeos/ime_candidate_window_handler_interface.h",
+-    "chromeos/ime_keyboard.cc",
+-    "chromeos/ime_keyboard.h",
+-    "chromeos/ime_keymap.cc",
+-    "chromeos/ime_keymap.h",
+-    "chromeos/input_method_delegate.h",
+-    "chromeos/input_method_descriptor.cc",
+-    "chromeos/input_method_descriptor.h",
+-    "chromeos/input_method_manager.cc",
+-    "chromeos/input_method_manager.h",
+-    "chromeos/input_method_util.cc",
+-    "chromeos/input_method_util.h",
+-    "chromeos/mock_component_extension_ime_manager.cc",
+-    "chromeos/mock_component_extension_ime_manager.h",
+-    "chromeos/mock_component_extension_ime_manager_delegate.cc",
+-    "chromeos/mock_component_extension_ime_manager_delegate.h",
+-    "chromeos/mock_ime_candidate_window_handler.cc",
+-    "chromeos/mock_ime_candidate_window_handler.h",
+-    "chromeos/mock_ime_engine_handler.cc",
+-    "chromeos/mock_ime_engine_handler.h",
+     "composition_text.cc",
+     "composition_text.h",
+-    "ime_bridge.cc",
+-    "ime_bridge.h",
+-    "ime_engine_handler_interface.h",
+-    "ime_input_context_handler_interface.h",
+     "ime_text_span.cc",
+     "ime_text_span.h",
+     "infolist_entry.cc",
+     "infolist_entry.h",
++    "ui_base_ime_types_export.h",
++  ]
++
++  defines = [ "UI_BASE_IME_TYPES_IMPLEMENTATION" ]
++
++  deps = [
++    "//base",
++  ]
++
++  public_deps = [
++    ":text_input_types",
++    "//skia",
++  ]
++}
++
++jumbo_component("ime") {
++  output_name = "ui_base_ime"
++  sources = [
++    "ime_bridge.cc",
++    "ime_bridge.h",
++    "ime_engine_handler_interface.h",
++    "ime_input_context_handler_interface.h",
+     "input_method.h",
+     "input_method_base.cc",
+     "input_method_base.h",
+@@ -110,6 +98,41 @@ jumbo_component("ime") {
+     "win/tsf_text_store.h",
+   ]
+ 
++  if (is_chromeos) {
++    sources += [
++      "chromeos/character_composer.cc",
++      "chromeos/character_composer.h",
++      "chromeos/component_extension_ime_manager.cc",
++      "chromeos/component_extension_ime_manager.h",
++      "chromeos/extension_ime_util.cc",
++      "chromeos/extension_ime_util.h",
++      "chromeos/fake_ime_keyboard.cc",
++      "chromeos/fake_ime_keyboard.h",
++      "chromeos/fake_input_method_delegate.cc",
++      "chromeos/fake_input_method_delegate.h",
++      "chromeos/ime_candidate_window_handler_interface.h",
++      "chromeos/ime_keyboard.cc",
++      "chromeos/ime_keyboard.h",
++      "chromeos/ime_keymap.cc",
++      "chromeos/ime_keymap.h",
++      "chromeos/input_method_delegate.h",
++      "chromeos/input_method_descriptor.cc",
++      "chromeos/input_method_descriptor.h",
++      "chromeos/input_method_manager.cc",
++      "chromeos/input_method_manager.h",
++      "chromeos/input_method_util.cc",
++      "chromeos/input_method_util.h",
++      "chromeos/mock_component_extension_ime_manager.cc",
++      "chromeos/mock_component_extension_ime_manager.h",
++      "chromeos/mock_component_extension_ime_manager_delegate.cc",
++      "chromeos/mock_component_extension_ime_manager_delegate.h",
++      "chromeos/mock_ime_candidate_window_handler.cc",
++      "chromeos/mock_ime_candidate_window_handler.h",
++      "chromeos/mock_ime_engine_handler.cc",
++      "chromeos/mock_ime_engine_handler.h",
++    ]
++  }
++
+   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+ 
+@@ -132,8 +155,7 @@ jumbo_component("ime") {
+   ]
+ 
+   public_deps = [
+-    ":text_input_types",
+-    "//skia",
++    ":ime_types",
+   ]
+ 
+   if (is_desktop_linux) {
+diff --git a/ui/base/ime/candidate_window.h b/ui/base/ime/candidate_window.h
+index f27bfe29b702..60b8f68e409d 100644
+--- a/ui/base/ime/candidate_window.h
++++ b/ui/base/ime/candidate_window.h
+@@ -13,19 +13,19 @@
+ 
+ #include "base/macros.h"
+ #include "ui/base/ime/infolist_entry.h"
+-#include "ui/base/ime/ui_base_ime_export.h"
++#include "ui/base/ime/ui_base_ime_types_export.h"
+ 
+ namespace ui {
+ 
+ // CandidateWindow represents the structure of candidates generated from IME.
+-class UI_BASE_IME_EXPORT CandidateWindow {
++class UI_BASE_IME_TYPES_EXPORT CandidateWindow {
+  public:
+   enum Orientation {
+     HORIZONTAL = 0,
+     VERTICAL = 1,
+   };
+ 
+-  struct UI_BASE_IME_EXPORT CandidateWindowProperty {
++  struct UI_BASE_IME_TYPES_EXPORT CandidateWindowProperty {
+     CandidateWindowProperty();
+     virtual ~CandidateWindowProperty();
+     int page_size;
+@@ -41,7 +41,7 @@ class UI_BASE_IME_EXPORT CandidateWindow {
+   };
+ 
+   // Represents a candidate entry.
+-  struct UI_BASE_IME_EXPORT Entry {
++  struct UI_BASE_IME_TYPES_EXPORT Entry {
+     Entry();
+     Entry(const Entry& other);
+     virtual ~Entry();
+diff --git a/ui/base/ime/composition_text.h b/ui/base/ime/composition_text.h
+index 272535ba3e66..6d05f15bce54 100644
+--- a/ui/base/ime/composition_text.h
++++ b/ui/base/ime/composition_text.h
+@@ -9,13 +9,13 @@
+ 
+ #include "base/strings/string16.h"
+ #include "ui/base/ime/ime_text_span.h"
+-#include "ui/base/ime/ui_base_ime_export.h"
++#include "ui/base/ime/ui_base_ime_types_export.h"
+ #include "ui/gfx/range/range.h"
+ 
+ namespace ui {
+ 
+ // A struct represents the status of an ongoing composition text.
+-struct UI_BASE_IME_EXPORT CompositionText {
++struct UI_BASE_IME_TYPES_EXPORT CompositionText {
+   CompositionText();
+   CompositionText(const CompositionText& other);
+   ~CompositionText();
+diff --git a/ui/base/ime/ime_text_span.h b/ui/base/ime/ime_text_span.h
+index e47064a1a63c..52011f3c0675 100644
+--- a/ui/base/ime/ime_text_span.h
++++ b/ui/base/ime/ime_text_span.h
+@@ -11,14 +11,14 @@
+ #include <vector>
+ 
+ #include "third_party/skia/include/core/SkColor.h"
+-#include "ui/base/ime/ui_base_ime_export.h"
++#include "ui/base/ime/ui_base_ime_types_export.h"
+ 
+ namespace ui {
+ 
+ // Intentionally keep sync with blink::WebImeTextSpan defined in:
+ // third_party/WebKit/public/web/WebImeTextSpan.h
+ 
+-struct UI_BASE_IME_EXPORT ImeTextSpan {
++struct UI_BASE_IME_TYPES_EXPORT ImeTextSpan {
+   enum class Type {
+     // Creates a composition marker.
+     kComposition,
+diff --git a/ui/base/ime/infolist_entry.h b/ui/base/ime/infolist_entry.h
+index a19d85410771..1e16e5e938f2 100644
+--- a/ui/base/ime/infolist_entry.h
++++ b/ui/base/ime/infolist_entry.h
+@@ -6,12 +6,12 @@
+ #define UI_BASE_IME_INFOLIST_ENTRY_H_
+ 
+ #include "base/strings/string16.h"
+-#include "ui/base/ime/ui_base_ime_export.h"
++#include "ui/base/ime/ui_base_ime_types_export.h"
+ 
+ namespace ui {
+ 
+ // The data model of infolist window.
+-struct UI_BASE_IME_EXPORT InfolistEntry {
++struct UI_BASE_IME_TYPES_EXPORT InfolistEntry {
+   base::string16 title;
+   base::string16 body;
+   bool highlighted;
+diff --git a/ui/base/ime/ui_base_ime_types_export.h b/ui/base/ime/ui_base_ime_types_export.h
+new file mode 100644
+index 000000000000..354a8adc3f06
+--- /dev/null
++++ b/ui/base/ime/ui_base_ime_types_export.h
+@@ -0,0 +1,34 @@
++// Copyright 2018 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_BASE_IME_UI_BASE_IME_TYPES_EXPORT_H_
++#define UI_BASE_IME_UI_BASE_IME_TYPES_EXPORT_H_
++
++#if defined(COMPONENT_BUILD)
++
++#if defined(WIN32)
++
++#if defined(UI_BASE_IME_TYPES_IMPLEMENTATION)
++#define UI_BASE_IME_TYPES_EXPORT __declspec(dllexport)
++#else
++#define UI_BASE_IME_TYPES_EXPORT __declspec(dllimport)
++#endif
++
++#else  // !defined(WIN32)
++
++#if defined(UI_BASE_IME_TYPES_IMPLEMENTATION)
++#define UI_BASE_IME_TYPES_EXPORT __attribute__((visibility("default")))
++#else
++#define UI_BASE_IME_TYPES_EXPORT
++#endif
++
++#endif
++
++#else  // !defined(COMPONENT_BUILD)
++
++#define UI_BASE_IME_TYPES_EXPORT
++
++#endif
++
++#endif  // UI_BASE_IME_UI_BASE_IME_TYPES_EXPORT_H_
+-- 
+2.11.0
+

@@ -1,0 +1,32 @@
+From 96bd6714a410fed0fe4a0b563dab8dd1e7cf238b Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Fri, 3 Aug 2018 09:34:12 +0300
+Subject: [PATCH] Fix internal compiler error: in convert_move.
+
+../../third_party/skia/third_party/skcms/src/Transform_inl.h:433:23:
+internal compiler error: in convert_move, at expr.c:299
+     v = (U16)( ((v<<8)|(v>>8)) & 0xffff );
+                ~~~~~~~^~~~~~~~
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ third_party/skcms/src/Transform_inl.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/skcms/src/Transform_inl.h b/third_party/skcms/src/Transform_inl.h
+index 8cb39e1f69..2ae8652d03 100644
+--- a/third_party/skcms/src/Transform_inl.h
++++ b/third_party/skcms/src/Transform_inl.h
+@@ -430,7 +430,9 @@ SI ATTR F F_from_U8(U8 v) {
+ SI ATTR F F_from_U16_BE(U16 v) {
+     // All 16-bit ICC values are big-endian, so we byte swap before converting to float.
+     // MSVC catches the "loss" of data here in the portable path, so we also make sure to mask.
+-    v = (U16)( ((v<<8)|(v>>8)) & 0xffff );
++    auto v1 = v<<8;
++    auto v2 = v>>8;
++    v = (U16)( (v1|v2) & 0xffff );
+     return cast<F>(v) * (1/65535.0f);
+ }
+ 
+-- 
+2.11.0
+
