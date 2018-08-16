@@ -7,8 +7,7 @@ DEPENDS = "mozilla-devscripts-native unzip-native zip-native"
 
 LICENSE = "MPLv2"
 
-# Ugly hack for now; we need to check license per recipe later
-LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=4d92cd373abda3937c2bc47fbc49d690"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MPL-2.0;md5=815ca599c9df247a0c7f619bab123dad"
 
 LANGUAGE = "${@get_language_name('${PN}')}"
 PR = "r3"
