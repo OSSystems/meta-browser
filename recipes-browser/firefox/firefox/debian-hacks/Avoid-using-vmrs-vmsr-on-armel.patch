@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Tue, 22 May 2018 07:51:56 +0900
+Subject: Avoid using vmrs/vmsr on armel
+
+---
+ dom/media/webaudio/blink/DenormalDisabler.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dom/media/webaudio/blink/DenormalDisabler.h b/dom/media/webaudio/blink/DenormalDisabler.h
+index ffdd14ef0de0..e1c749c2cdd6 100644
+--- a/dom/media/webaudio/blink/DenormalDisabler.h
++++ b/dom/media/webaudio/blink/DenormalDisabler.h
+@@ -44,7 +44,7 @@ namespace WebCore {
+ #define HAVE_DENORMAL 1
+ #endif
+ 
+-#if defined(__arm__) || defined(__aarch64__)
++#if (defined(__arm__) && !defined(__SOFTFP__)) || defined(__aarch64__)
+ #define HAVE_DENORMAL 1
+ #endif
+ 

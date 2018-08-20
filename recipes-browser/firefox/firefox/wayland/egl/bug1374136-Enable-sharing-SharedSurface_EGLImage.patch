@@ -1,0 +1,50 @@
+From 73932d207c4e580e12f9225992c016493242de62 Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Thu, 8 Jun 2017 15:20:45 +0900
+Subject: [PATCH 1/2] Enable sharing SharedSurface_EGLImage
+
+---
+ gfx/gl/SharedSurfaceEGL.cpp | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/gfx/gl/SharedSurfaceEGL.cpp b/gfx/gl/SharedSurfaceEGL.cpp
+index 5538138e4599..76ae7bc1cccd 100644
+--- a/gfx/gl/SharedSurfaceEGL.cpp
++++ b/gfx/gl/SharedSurfaceEGL.cpp
+@@ -62,6 +62,12 @@ SharedSurface_EGLImage::HasExtensions(GLLibraryEGL* egl, GLContext* gl)
+             gl->IsExtensionSupported(GLContext::OES_EGL_image));
+ }
+ 
++static bool IsSyncExtensionSupported(GLContext* aGL, GLLibraryEGL* aEGL)
++{
++    return aEGL->IsExtensionSupported(GLLibraryEGL::KHR_fence_sync) &&
++        aGL->IsExtensionSupported(GLContext::OES_EGL_sync);
++}
++
+ SharedSurface_EGLImage::SharedSurface_EGLImage(GLContext* gl,
+                                                GLLibraryEGL* egl,
+                                                const gfx::IntSize& size,
+@@ -74,7 +80,9 @@ SharedSurface_EGLImage::SharedSurface_EGLImage(GLContext* gl,
+                     gl,
+                     size,
+                     hasAlpha,
+-                    false) // Can't recycle, as mSync changes never update TextureHost.
++                    // Can't recycle, as mSync changes never update TextureHost,
++                    // if sync extensions supported.
++                    !IsSyncExtensionSupported(gl, egl))
+     , mMutex("SharedSurface_EGLImage mutex")
+     , mEGL(egl)
+     , mFormats(formats)
+@@ -113,8 +121,7 @@ SharedSurface_EGLImage::ProducerReleaseImpl()
+     MutexAutoLock lock(mMutex);
+     mGL->MakeCurrent();
+ 
+-    if (mEGL->IsExtensionSupported(GLLibraryEGL::KHR_fence_sync) &&
+-        mGL->IsExtensionSupported(GLContext::OES_EGL_sync))
++    if (IsSyncExtensionSupported(mGL, mEGL))
+     {
+         if (mSync) {
+             MOZ_RELEASE_ASSERT(false, "GFX: Non-recycleable should not Fence twice.");
+-- 
+2.11.0
+

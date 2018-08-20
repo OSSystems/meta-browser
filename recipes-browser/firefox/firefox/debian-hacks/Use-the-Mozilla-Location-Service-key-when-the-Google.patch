@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 2 Apr 2017 06:33:19 +0900
+Subject: Use the Mozilla Location Service key when the Google Key is not there
+
+---
+ browser/app/profile/firefox.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
+index 45389ca98854..ab6a0742aaba 100644
+--- a/browser/app/profile/firefox.js
++++ b/browser/app/profile/firefox.js
+@@ -1346,7 +1346,7 @@ pref("dom.debug.propagate_gesture_events_through_content", false);
+ // Geolocation preferences for the RELEASE and "later" Beta channels.
+ // Some of these prefs are specified even though they are redundant; they are
+ // here for clarity and end-user experiments.
+-#ifndef EARLY_BETA_OR_EARLIER
++#if !defined(EARLY_BETA_OR_EARLIER) && defined(GOOGLE_API_KEY)
+ pref("geo.wifi.uri", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_API_KEY%");
+ 
+ #ifdef XP_MACOSX

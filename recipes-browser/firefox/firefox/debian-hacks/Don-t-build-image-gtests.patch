@@ -1,0 +1,23 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Thu, 9 Jun 2016 14:45:44 +0900
+Subject: Don't build image/ gtests
+
+Building them causes an ICE with GCC 4.7. As they are not part of what
+is shipped, and not currently run either, just skip building them.
+---
+ image/moz.build | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/image/moz.build b/image/moz.build
+index 609c38dd877e..04d08899c6d1 100644
+--- a/image/moz.build
++++ b/image/moz.build
+@@ -5,8 +5,6 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ DIRS += ['build', 'decoders', 'encoders']
+-if CONFIG['ENABLE_TESTS']:
+-    DIRS += ['test/gtest']
+ 
+ if CONFIG['FUZZING_INTERFACES']:
+     DIRS += ['test/fuzzing']

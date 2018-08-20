@@ -1,0 +1,10 @@
+--- a/toolkit/modules/PopupNotifications.jsm	2018-03-27 14:47:00.282046040 +0900
++++ b/toolkit/modules/PopupNotifications.jsm	2018-03-27 14:48:21.830046040 +0900
+@@ -1512,7 +1512,6 @@
+         Services.console.logStringMessage("PopupNotifications._onButtonEvent: " +
+                                           "Button click happened before the window was focused");
+         this.window.focus();
+-        return;
+       }
+ 
+       let timeSinceShown = this.window.performance.now() - notification.timeShown;

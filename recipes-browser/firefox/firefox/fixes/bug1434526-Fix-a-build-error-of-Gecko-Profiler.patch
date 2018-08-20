@@ -1,0 +1,30 @@
+From 755bf27ff26e5e7c8a6d4f20fb3d61f55be0e94e Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Wed, 31 Jan 2018 16:11:03 +0900
+Subject: [PATCH] Fix a build error of Gecko Profiler for Linux/ARM
+
+Don't use SignalTrampoline. It's not needed against recent Linux
+kernel. See https://bugzilla.mozilla.org/show_bug.cgi?id=1238661
+for more details.
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ tools/profiler/core/platform-linux-android.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/profiler/core/platform-linux-android.cpp b/tools/profiler/core/platform-linux-android.cpp
+index f40f3ab159e1..bc6722d986b7 100644
+--- a/tools/profiler/core/platform-linux-android.cpp
++++ b/tools/profiler/core/platform-linux-android.cpp
+@@ -277,7 +277,7 @@ Sampler::Sampler(PSLockRef aLock)
+ 
+   // Request profiling signals.
+   struct sigaction sa;
+-  sa.sa_sigaction = MOZ_SIGNAL_TRAMPOLINE(SigprofHandler);
++  sa.sa_sigaction = SigprofHandler;
+   sigemptyset(&sa.sa_mask);
+   sa.sa_flags = SA_RESTART | SA_SIGINFO;
+   if (sigaction(SIGPROF, &sa, &mOldSigprofHandler) != 0) {
+-- 
+2.14.1
+

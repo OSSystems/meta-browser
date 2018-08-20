@@ -1,0 +1,144 @@
+From 06767e3c8204481c24081ffc4e372a5795f83f77 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Wed, 7 Mar 2018 17:40:14 +0900
+Subject: [PATCH] Enable to specify RUST_TARGET via enviroment variable
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ build/moz.configure/rust.configure | 106 +++++++++++++++++++++----------------
+ 1 file changed, 61 insertions(+), 45 deletions(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index 749085744738..3b030dfd9eee 100644
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -151,12 +151,6 @@ def rust_triple_alias(host_or_target):
+ 
+     @depends(rustc, host_or_target, building_with_gcc, rust_supported_targets,
+              when=rust_compiler)
+-    @imports('os')
+-    @imports('subprocess')
+-    @imports(_from='mozbuild.configure.util', _import='LineIO')
+-    @imports(_from='mozbuild.shellutil', _import='quote')
+-    @imports(_from='tempfile', _import='mkstemp')
+-    @imports(_from='textwrap', _import='dedent')
+     def rust_target(rustc, host_or_target, building_with_gcc,
+                     rust_supported_targets):
+         # Rust's --target options are similar to, but not exactly the same
+@@ -190,45 +184,6 @@ def rust_triple_alias(host_or_target):
+             die("Don't know how to translate {} for rustc".format(
+                 host_or_target.alias))
+ 
+-        # Check to see whether our rustc has a reasonably functional stdlib
+-        # for our chosen target.
+-        target_arg = '--target=' + rustc_target.alias
+-        in_fd, in_path = mkstemp(prefix='conftest', suffix='.rs')
+-        out_fd, out_path = mkstemp(prefix='conftest', suffix='.rlib')
+-        os.close(out_fd)
+-        try:
+-            source = 'pub extern fn hello() { println!("Hello world"); }'
+-            log.debug('Creating `%s` with content:', in_path)
+-            with LineIO(lambda l: log.debug('| %s', l)) as out:
+-                out.write(source)
+-
+-            os.write(in_fd, source)
+-            os.close(in_fd)
+-
+-            cmd = [
+-                rustc,
+-                '--crate-type', 'staticlib',
+-                target_arg,
+-                '-o', out_path,
+-                in_path,
+-            ]
+-
+-            def failed():
+-                die(dedent('''\
+-                Cannot compile for {} with {}
+-                The target may be unsupported, or you may not have
+-                a rust std library for that target installed. Try:
+-
+-                  rustup target add {}
+-                '''.format(host_or_target.alias, rustc, rustc_target.alias)))
+-            check_cmd_output(*cmd, onerror=failed)
+-            if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
+-                failed()
+-        finally:
+-            os.remove(in_path)
+-            os.remove(out_path)
+-
+-        # This target is usable.
+         return rustc_target.alias
+ 
+     return rust_target
+@@ -237,6 +192,67 @@ def rust_triple_alias(host_or_target):
+ rust_target_triple = rust_triple_alias(target)
+ rust_host_triple = rust_triple_alias(host)
+ 
++option(env='RUST_TARGET',
++       nargs=1,
++       default=rust_target_triple,
++       help='Rust target')
++
++@depends('RUST_TARGET')
++@checking('rust target', lambda target: target)
++def rust_target(value):
++    return value[0]
++
++@depends(target, rustc, rust_target, when=rust_compiler)
++@imports('os')
++@imports('subprocess')
++@imports(_from='mozbuild.configure.util', _import='LineIO')
++@imports(_from='mozbuild.shellutil', _import='quote')
++@imports(_from='tempfile', _import='mkstemp')
++@imports(_from='textwrap', _import='dedent')
++def available_rust_target(target, rustc, rust_target):
++    # Check to see whether our rustc has a reasonably functional stdlib
++    # for our chosen target.
++    target_arg = '--target=' + rust_target
++    in_fd, in_path = mkstemp(prefix='conftest', suffix='.rs')
++    out_fd, out_path = mkstemp(prefix='conftest', suffix='.rlib')
++    os.close(out_fd)
++    try:
++        source = 'pub extern fn hello() { println!("Hello world"); }'
++        log.debug('Creating `%s` with content:', in_path)
++        with LineIO(lambda l: log.debug('| %s', l)) as out:
++            out.write(source)
++
++        os.write(in_fd, source)
++        os.close(in_fd)
++
++        cmd = [
++            rustc,
++            '--crate-type', 'staticlib',
++            target_arg,
++            '-o', out_path,
++            in_path,
++        ]
++
++        def failed():
++            die(dedent('''\
++            Cannot compile for {} with {}
++            The target may be unsupported, or you may not have
++            a rust std library for that target installed. Try:
++
++            rustup target add {}
++            '''.format(target.alias, rustc, rust_target)))
++        check_cmd_output(*cmd, onerror=failed)
++        if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
++            failed()
++    finally:
++        os.remove(in_path)
++        os.remove(out_path)
++
++    # This target is usable.
++    return rust_target
++
++rust_target_triple = available_rust_target
++
+ set_config('RUST_TARGET', rust_target_triple)
+ set_config('RUST_HOST_TARGET', rust_host_triple)
+ 
+-- 
+2.14.1
+

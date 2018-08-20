@@ -1,0 +1,32 @@
+From cdc1ff03454b4aea7921a26cdc1f5a09f2b64484 Mon Sep 17 00:00:00 2001
+From: Jed Davis <jld@mozilla.com>
+Date: Mon, 21 May 2018 15:38:05 +0900
+Subject: [PATCH] Bug 1462640 - Allow content processes to mincore() individual
+ pages.
+
+---
+ security/sandbox/linux/SandboxFilter.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/security/sandbox/linux/SandboxFilter.cpp b/security/sandbox/linux/SandboxFilter.cpp
+index 574daf02dd57..d9efb303d66d 100644
+--- a/security/sandbox/linux/SandboxFilter.cpp
++++ b/security/sandbox/linux/SandboxFilter.cpp
+@@ -1053,6 +1053,14 @@ public:
+     case __NR_mremap:
+       return Allow();
+ 
++      // Bug 1462640: Mesa libEGL uses mincore to test whether values
++      // are pointers, for reasons.
++    case __NR_mincore: {
++      Arg<size_t> length(1);
++      return If(length == getpagesize(), Allow())
++             .Else(SandboxPolicyCommon::EvaluateSyscall(sysno));
++    }
++
+     case __NR_sigaltstack:
+       return Allow();
+ 
+-- 
+2.11.0
+

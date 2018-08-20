@@ -1,0 +1,22 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 25 Feb 2015 10:41:37 +0900
+Subject: Make powerpc not use static page sizes in mozjemalloc
+
+Closes: #763900
+---
+ memory/build/mozjemalloc.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/memory/build/mozjemalloc.cpp b/memory/build/mozjemalloc.cpp
+index a80d033087d9..50c47da11c7d 100644
+--- a/memory/build/mozjemalloc.cpp
++++ b/memory/build/mozjemalloc.cpp
+@@ -180,7 +180,7 @@ using namespace mozilla;
+ // Debug builds are opted out too, for test coverage.
+ #ifndef MOZ_DEBUG
+ #if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) &&         \
+-  !defined(__aarch64__)
++  !defined(__aarch64__) && !defined(__powerpc__)
+ #define MALLOC_STATIC_PAGESIZE 1
+ #endif
+ #endif

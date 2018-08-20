@@ -1,0 +1,62 @@
+# HG changeset patch
+# User Martin Stransky <stransky@redhat.com>
+# Date 1525872375 -7200
+#      Wed May 09 15:26:15 2018 +0200
+# Branch egl-patches
+# Node ID 1d3bce4fa4d43d52d14dc191d93aa372790e9892
+# Parent  aabfe960ab59fea2e85896b1f8050786e16ab23b
+Bug 1460603 - GLLibraryEGL: Use wl_display to get EGLDisplay on Wayland r?jgilbert
+
+Patch author is Takuro Ashie <ashie@clear-code.com>
+
+Use wl_display to get EGLDisplay on Wayland because some drivers doesn't support EGL_DEFAULT_DISPLAY.
+For example Intel's driver causes crash without this patch.
+
+MozReview-Commit-ID: ILtRJrW6MDs
+
+diff -r aabfe960ab59 -r 1d3bce4fa4d4 gfx/gl/GLLibraryEGL.cpp
+--- a/gfx/gl/GLLibraryEGL.cpp	Fri May 11 00:59:14 2018 +0300
++++ b/gfx/gl/GLLibraryEGL.cpp	Wed May 09 15:26:15 2018 +0200
+@@ -31,6 +31,13 @@
+ #include "GLContextProvider.h"
+ #include "gfxPrefs.h"
+ #include "ScopedGLHelpers.h"
++#ifdef MOZ_WIDGET_GTK
++#include <gdk/gdk.h>
++#ifdef MOZ_WAYLAND
++#include <gdk/gdkwayland.h>
++#include <dlfcn.h>
++#endif // MOZ_WIDGET_GTK
++#endif // MOZ_WAYLAND
+ 
+ namespace mozilla {
+ namespace gl {
+@@ -718,7 +725,22 @@
+             mIsWARP = true;
+         }
+     } else {
+-        chosenDisplay = GetAndInitDisplay(*this, EGL_DEFAULT_DISPLAY);
++        void *nativeDisplay = EGL_DEFAULT_DISPLAY;
++#ifdef MOZ_WAYLAND
++        // Some drivers doesn't support EGL_DEFAULT_DISPLAY
++        GdkDisplay *gdkDisplay = gdk_display_get_default();
++        if (GDK_IS_WAYLAND_DISPLAY(gdkDisplay)) {
++            static auto sGdkWaylandDisplayGetWlDisplay =
++                (wl_display *(*)(GdkDisplay *))
++                dlsym(RTLD_DEFAULT, "gdk_wayland_display_get_wl_display");
++            nativeDisplay = sGdkWaylandDisplayGetWlDisplay(gdkDisplay);
++            if (!nativeDisplay) {
++              NS_WARNING("Failed to get wl_display.");
++              return false;
++            }
++        }
++#endif
++        chosenDisplay = GetAndInitDisplay(*this, nativeDisplay);
+     }
+ 
+     if (!chosenDisplay) {
+@@ -887,4 +909,3 @@
+ 
+ } /* namespace gl */
+ } /* namespace mozilla */
+-
