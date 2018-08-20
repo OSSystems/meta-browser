@@ -1,0 +1,49 @@
+# HG changeset patch
+# User Martin Stransky <stransky@redhat.com>
+# Date 1517345274 -3600
+#      Tue Jan 30 21:47:54 2018 +0100
+# Node ID 9bec0ddc0208f169e91bec59b0a08fd18903c255
+# Parent  38b3c1d03a594664c6b32c35533734283c258f43
+Bug 1433081 - Don't try to build different GL backends when MOZ_GL_PROVIDER is set, r?jgilbert
+
+--with-gl-provider build option is recently broken as we try to build different GL backends
+regardless the MOZ_GL_PROVIDER variable. With this patch when --with-gl-provider is gived we build
+the specified GL backend only.
+
+It aims primary to Wayland on Gtk/Linux where GLX is default and we need to explicitly
+build against EGL.
+
+MozReview-Commit-ID: KhzY2Ahldcm
+
+diff -r 38b3c1d03a59 -r 9bec0ddc0208 gfx/gl/GLContextProvider.h
+--- a/gfx/gl/GLContextProvider.h	Tue Feb 13 11:39:36 2018 +0200
++++ b/gfx/gl/GLContextProvider.h	Tue Jan 30 21:47:54 2018 +0100
+@@ -26,6 +26,14 @@
+ #include "GLContextProviderImpl.h"
+ #undef GL_CONTEXT_PROVIDER_NAME
+ 
++#ifdef MOZ_GL_PROVIDER
++  #define GL_CONTEXT_PROVIDER_NAME MOZ_GL_PROVIDER
++  #include "GLContextProviderImpl.h"
++  #undef GL_CONTEXT_PROVIDER_NAME
++  #define GL_CONTEXT_PROVIDER_DEFAULT MOZ_GL_PROVIDER
++
++#else // MOZ_GL_PROVIDER
++
+ #ifdef XP_WIN
+   #define GL_CONTEXT_PROVIDER_NAME GLContextProviderWGL
+   #include "GLContextProviderImpl.h"
+@@ -64,12 +72,7 @@
+ #endif
+ #endif
+ 
+-#ifdef MOZ_GL_PROVIDER
+-  #define GL_CONTEXT_PROVIDER_NAME MOZ_GL_PROVIDER
+-  #include "GLContextProviderImpl.h"
+-  #undef GL_CONTEXT_PROVIDER_NAME
+-  #define GL_CONTEXT_PROVIDER_DEFAULT MOZ_GL_PROVIDER
+-#endif
++#endif // MOZ_GL_PROVIDER
+ 
+ #ifdef GL_CONTEXT_PROVIDER_DEFAULT
+   typedef GL_CONTEXT_PROVIDER_DEFAULT GLContextProvider;

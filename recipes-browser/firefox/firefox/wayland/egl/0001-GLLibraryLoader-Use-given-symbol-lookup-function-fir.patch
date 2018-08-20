@@ -1,0 +1,37 @@
+From 6a71b7fd576e0fbfef73421fb75d92f48132f3c2 Mon Sep 17 00:00:00 2001
+From: KSR_Yasuda <yasuda@kyoto-sr.co.jp>
+Date: Wed, 23 Aug 2017 15:39:07 +0900
+Subject: [PATCH] GLLibraryLoader: Use given symbol lookup function first
+
+---
+ gfx/gl/GLLibraryLoader.cpp | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/gfx/gl/GLLibraryLoader.cpp b/gfx/gl/GLLibraryLoader.cpp
+index 801ffe3..8004ff5 100644
+--- a/gfx/gl/GLLibraryLoader.cpp
++++ b/gfx/gl/GLLibraryLoader.cpp
+@@ -47,14 +47,14 @@ GLLibraryLoader::LookupSymbol(PRLibrary* lib,
+ {
+     PRFuncPtr res = 0;
+ 
+-    // try finding it in the library directly, if we have one
+-    if (lib) {
+-        res = PR_FindFunctionSymbol(lib, sym);
++    // try looking it up via the lookup symbol
++    if (lookupFunction) {
++        res = lookupFunction(sym);
+     }
+ 
+-    // then try looking it up via the lookup symbol
+-    if (!res && lookupFunction) {
+-        res = lookupFunction(sym);
++    // then try finding it in the library directly, if we have one
++    if (!res && lib) {
++        res = PR_FindFunctionSymbol(lib, sym);
+     }
+ 
+     // finally just try finding it in the process
+-- 
+2.7.4
+

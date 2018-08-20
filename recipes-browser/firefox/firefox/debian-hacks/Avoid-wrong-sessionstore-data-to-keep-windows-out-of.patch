@@ -1,0 +1,35 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Thu, 12 Nov 2009 17:18:31 +0100
+Subject: Avoid wrong sessionstore data to keep windows out of user sight
+
+It happens that sessionstore can keep wrong information for the window
+position or minimized state. Workaround this until the real bug is found
+and fixed (probably in xulrunner).
+
+Closes: #552426, #553453
+---
+ browser/components/sessionstore/SessionStore.jsm | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/browser/components/sessionstore/SessionStore.jsm b/browser/components/sessionstore/SessionStore.jsm
+index 88de8a64f0fc..6543f3c70799 100644
+--- a/browser/components/sessionstore/SessionStore.jsm
++++ b/browser/components/sessionstore/SessionStore.jsm
+@@ -4106,7 +4106,7 @@ var SessionStoreInternal = {
+     try {
+       // only modify those aspects which aren't correct yet
+       if (!isNaN(aLeft) && !isNaN(aTop) && (aLeft != win_("screenX") || aTop != win_("screenY"))) {
+-        aWindow.moveTo(aLeft, aTop);
++        aWindow.moveTo((aLeft < -aWidth) ? 0 : aLeft, (aTop < -aHeight) ? 0 : aTop);
+       }
+       if (aWidth && aHeight && (aWidth != win_("width") || aHeight != win_("height")) && !gResistFingerprintingEnabled) {
+         // Don't resize the window if it's currently maximized and we would
+@@ -4121,8 +4121,6 @@ var SessionStoreInternal = {
+           aWindow.maximize();
+           break;
+         case "minimized":
+-          aWindow.minimize();
+-          break;
+         case "normal":
+           aWindow.restore();
+           break;

@@ -1,0 +1,47 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 27 Dec 2010 10:44:28 +0100
+Subject: Add a 2 minutes timeout on xpcshell tests
+
+---
+ testing/xpcshell/runxpcshelltests.py | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/testing/xpcshell/runxpcshelltests.py b/testing/xpcshell/runxpcshelltests.py
+index eb33eb1af448..6ba86337c0d0 100755
+--- a/testing/xpcshell/runxpcshelltests.py
++++ b/testing/xpcshell/runxpcshelltests.py
+@@ -12,6 +12,7 @@ import mozdebug
+ import os
+ import random
+ import re
++import select
+ import shutil
+ import signal
+ import sys
+@@ -695,9 +696,23 @@ class XPCShellTestThread(Thread):
+             if self.interactive:
+                 self.log.info("%s | Process ID: %d" % (name, self.proc_ident))
+ 
+-            # Communicate returns a tuple of (stdout, stderr), however we always
+-            # redirect stderr to stdout, so the second element is ignored.
+-            process_output, _ = self.communicate(proc)
++            if self.pStdout == PIPE:
++                process_stdout = ""
++                while True:
++                    (r, w, e) = select.select([proc.stdout], [], [], 120)
++                    if len(r) == 0:
++                        process_stdout += "TEST-UNEXPECTED-FAIL | %s | application timed out after 120 seconds with no output" % (test)
++                        proc.kill()
++                        break
++                    line = proc.stdout.read(1)
++                    if line == "":
++                        break
++                    process_stdout += line
++                proc.wait()
++            else:
++                # Communicate returns a tuple of (stdout, stderr), however we always
++                # redirect stderr to stdout, so the second element is ignored.
++                process_output, _ = self.communicate(proc)
+ 
+             if self.interactive:
+                 # Not sure what else to do here...

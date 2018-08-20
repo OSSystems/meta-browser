@@ -1,0 +1,63 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 13 Jan 2014 12:00:25 +0900
+Subject: [NSS] Fix FTBFS on Hurd because of MAXPATHLEN
+
+---
+ security/nss/cmd/shlibsign/shlibsign.c | 21 ++++++++++++++++-----
+ security/nss/lib/freebl/unix_rand.c    |  4 ++++
+ 2 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/security/nss/cmd/shlibsign/shlibsign.c b/security/nss/cmd/shlibsign/shlibsign.c
+index d93fc422d54f..2ec752bd3176 100644
+--- a/security/nss/cmd/shlibsign/shlibsign.c
++++ b/security/nss/cmd/shlibsign/shlibsign.c
+@@ -725,7 +725,6 @@ main(int argc, char **argv)
+ #ifdef USES_LINKS
+     int ret;
+     struct stat stat_buf;
+-    char link_buf[MAXPATHLEN + 1];
+     char *link_file = NULL;
+ #endif
+ 
+@@ -1068,10 +1067,22 @@ main(int argc, char **argv)
+     }
+     if (S_ISLNK(stat_buf.st_mode)) {
+         char *dirpath, *dirend;
+-        ret = readlink(input_file, link_buf, sizeof(link_buf) - 1);
+-        if (ret < 0) {
+-            perror(input_file);
+-            goto cleanup;
++        char *link_buf = NULL;
++        size_t size = 64;
++        while (1) {
++            link_buf = realloc(link_buf, size);
++            if (!link_buf) {
++                perror(input_file);
++                goto cleanup;
++            }
++            ret = readlink(input_file, link_buf, size - 1);
++            if (ret < 0) {
++                perror(input_file);
++                goto cleanup;
++            }
++            if (ret < size - 1)
++                break;
++            size *= 2;
+         }
+         link_buf[ret] = 0;
+         link_file = mkoutput(input_file);
+diff --git a/security/nss/lib/freebl/unix_rand.c b/security/nss/lib/freebl/unix_rand.c
+index 24381cb26ed0..f5520f08b01d 100644
+--- a/security/nss/lib/freebl/unix_rand.c
++++ b/security/nss/lib/freebl/unix_rand.c
+@@ -843,6 +843,10 @@ RNG_FileForRNG(const char *fileName)
+ #define _POSIX_PTHREAD_SEMANTICS
+ #include <dirent.h>
+ 
++#ifndef PATH_MAX
++#define PATH_MAX 1024
++#endif
++
+ PRBool
+ ReadFileOK(char *dir, char *file)
+ {

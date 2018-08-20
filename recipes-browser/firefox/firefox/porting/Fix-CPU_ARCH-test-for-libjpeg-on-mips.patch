@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 25 Sep 2016 09:43:17 +0900
+Subject: Fix CPU_ARCH test for libjpeg on mips
+
+---
+ media/libjpeg/moz.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/libjpeg/moz.build b/media/libjpeg/moz.build
+index 910d89ddef0e..aaa41d6f758c 100644
+--- a/media/libjpeg/moz.build
++++ b/media/libjpeg/moz.build
+@@ -83,7 +83,7 @@ if CONFIG['LIBJPEG_TURBO_ASFLAGS']:
+             'simd/jsimd_arm64.c',
+             'simd/jsimd_arm64_neon.S',
+         ]
+-    elif CONFIG['CPU_ARCH'] == 'mips':
++    elif CONFIG['CPU_ARCH'] == 'mips32':
+         SOURCES += [
+             'simd/jsimd_mips.c',
+             'simd/jsimd_mips_dspr2.S',

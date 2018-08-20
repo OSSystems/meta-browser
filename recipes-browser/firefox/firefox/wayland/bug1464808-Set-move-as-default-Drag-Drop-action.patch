@@ -1,0 +1,32 @@
+# HG changeset patch
+# User Martin Stransky <stransky@redhat.com>
+# Date 1527596194 -7200
+#      Tue May 29 14:16:34 2018 +0200
+# Branch dnd-patches3
+# Node ID 8c6c46d9169844d7e1b8f6fdf661c351abfb04e2
+# Parent  35aa0dde259f5f51c0aaf86935a54b8087c2e8c6
+Bug 1464808 - [Wayland] Set move as default Drag & Drop action, r?jhorak
+
+MozReview-Commit-ID: 8srCe5HEhaA
+
+diff -r 35aa0dde259f -r 8c6c46d91698 widget/gtk/nsClipboardWayland.cpp
+--- a/widget/gtk/nsClipboardWayland.cpp	Tue May 29 00:53:52 2018 +0300
++++ b/widget/gtk/nsClipboardWayland.cpp	Tue May 29 14:16:34 2018 +0200
+@@ -206,11 +206,15 @@
+ void
+ WaylandDataOffer::SetDragStatus(GdkDragAction aAction, uint32_t aTime)
+ {
+-    uint32_t dnd_actions = gdk_to_wl_actions(aAction);
+     uint32_t all_actions = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY |
+                            WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
+ 
+-    wl_data_offer_set_actions(mWaylandDataOffer, all_actions, dnd_actions);
++    /* Default Firefox D&D action is move so set it here as a preferred one.
++       Actual D&D action will be select by Wayland compositor and reported
++       at data_offer_action() callback.
++    */
++    wl_data_offer_set_actions(mWaylandDataOffer, all_actions,
++                              WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE);
+ 
+     /* Workaround Wayland D&D architecture here. To get the data_device_drop()
+        signal (which routes to nsDragService::GetData() call) we need to

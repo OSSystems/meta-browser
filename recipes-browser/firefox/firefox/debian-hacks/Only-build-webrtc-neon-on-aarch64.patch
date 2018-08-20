@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 20 May 2018 10:09:33 +0900
+Subject: Only build webrtc neon on aarch64
+
+---
+ media/webrtc/trunk/moz.build | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/webrtc/trunk/moz.build b/media/webrtc/trunk/moz.build
+index f409f0df70c0..13fecda09761 100644
+--- a/media/webrtc/trunk/moz.build
++++ b/media/webrtc/trunk/moz.build
+@@ -107,7 +107,7 @@ if CONFIG["CPU_ARCH"] in ("x86", "x86_64"):
+         "/media/webrtc/trunk/webrtc/modules/video_processing/video_processing_sse2_gn"
+     ]
+ 
+-if CONFIG["CPU_ARCH"] in ("aarch64", "arm"):
++if CONFIG["CPU_ARCH"] == "aarch64":
+     DIRS += [
+         "/media/webrtc/trunk/webrtc/common_audio/common_audio_neon_c_gn",
+         "/media/webrtc/trunk/webrtc/common_audio/common_audio_neon_gn",

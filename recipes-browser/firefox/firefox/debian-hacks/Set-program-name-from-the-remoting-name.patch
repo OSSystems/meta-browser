@@ -1,0 +1,21 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 5 Feb 2017 08:41:22 +0900
+Subject: Set program name from the remoting name
+
+---
+ toolkit/xre/nsAppRunner.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/toolkit/xre/nsAppRunner.cpp b/toolkit/xre/nsAppRunner.cpp
+index 56c76f512431..d58bb02c3e41 100644
+--- a/toolkit/xre/nsAppRunner.cpp
++++ b/toolkit/xre/nsAppRunner.cpp
+@@ -3990,7 +3990,7 @@ XREMain::XRE_mainStartup(bool* aExitFlag)
+ 
+   // Set program name to the one defined in application.ini.
+   {
+-    nsAutoCString program(gAppData->name);
++    nsAutoCString program(gAppData->remotingName);
+     ToLowerCase(program);
+     g_set_prgname(program.get());
+   }

@@ -1,0 +1,32 @@
+From 626043183552bd5ee221626d8d5b7263c6b74b25 Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Mon, 25 Jun 2018 11:41:19 +0900
+Subject: [PATCH] Mark GLFeature::framebuffer_multisample as unsupported
+
+---
+ gfx/gl/GLContext.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/gfx/gl/GLContext.cpp b/gfx/gl/GLContext.cpp
+index f60ebcaed82e..1186d5efea20 100644
+--- a/gfx/gl/GLContext.cpp
++++ b/gfx/gl/GLContext.cpp
+@@ -743,6 +743,15 @@ GLContext::InitWithPrefixImpl(const char* prefix, bool trygl)
+             MarkUnsupported(GLFeature::framebuffer_multisample);
+         }
+ 
++#ifdef MOZ_WAYLAND
++        if (Vendor() == GLVendor::Imagination &&
++            Renderer() == GLRenderer::SGX544MP) {
++            // PowerVR SGX544MP's EGL does not have valid
++            // glRenderbufferStorageMultisampleANGLE implementation, which breaks WebGL.
++            MarkUnsupported(GLFeature::framebuffer_multisample);
++        }
++#endif
++
+ #ifdef XP_MACOSX
+         // The Mac Nvidia driver, for versions up to and including 10.8,
+         // don't seem to properly support this.  See 814839
+-- 
+2.11.0
+

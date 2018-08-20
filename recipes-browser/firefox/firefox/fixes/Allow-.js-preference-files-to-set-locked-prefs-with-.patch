@@ -1,0 +1,70 @@
+From: Mike Hommey <glandium@debian.org>
+Date: Sat, 21 Jun 2008 02:48:46 +0200
+Subject: Allow .js preference files to set locked prefs with lockPref()
+
+---
+ modules/libpref/parser/src/lib.rs | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/modules/libpref/parser/src/lib.rs b/modules/libpref/parser/src/lib.rs
+index 8d8b9a6125e4..797c330f9f0a 100644
+--- a/modules/libpref/parser/src/lib.rs
++++ b/modules/libpref/parser/src/lib.rs
+@@ -10,7 +10,7 @@
+ //!
+ //! <pref-file>   = <pref>*
+ //! <pref>        = <pref-spec> "(" <pref-name> "," <pref-value> <pref-attrs> ")" ";"
+-//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref"
++//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref | lockPref"
+ //! <pref-name>   = <string-literal>
+ //! <pref-value>  = <string-literal> | "true" | "false" | <int-value>
+ //! <int-value>   = <sign>? <int-literal>
+@@ -159,6 +159,7 @@ enum Token {
+     // Keywords
+     Pref,       // pref
+     StickyPref, // sticky_pref
++    LockPref,   // lockPref
+     UserPref,   // user_pref
+     True,       // true
+     False,      // false
+@@ -279,7 +280,7 @@ struct KeywordInfo {
+   token: Token,
+ }
+ 
+-const KEYWORD_INFOS: [KeywordInfo; 7] = [
++const KEYWORD_INFOS: [KeywordInfo; 8] = [
+   // These are ordered by frequency.
+   KeywordInfo { string: b"pref",        token: Token::Pref },
+   KeywordInfo { string: b"true",        token: Token::True },
+@@ -288,6 +289,7 @@ const KEYWORD_INFOS: [KeywordInfo; 7] = [
+   KeywordInfo { string: b"sticky",      token: Token::Sticky },
+   KeywordInfo { string: b"locked",      token: Token::Locked },
+   KeywordInfo { string: b"sticky_pref", token: Token::StickyPref },
++  KeywordInfo { string: b"lockPref",    token: Token::LockPref },
+ ];
+ 
+ struct Parser<'t> {
+@@ -335,10 +337,11 @@ impl<'t> Parser<'t> {
+         // this will be either the first token of a new pref, or EOF.
+         loop {
+             // <pref-spec>
+-            let (pref_value_kind, mut is_sticky) = match token {
+-                Token::Pref => (PrefValueKind::Default, false),
+-                Token::StickyPref => (PrefValueKind::Default, true),
+-                Token::UserPref => (PrefValueKind::User, false),
++            let (pref_value_kind, mut is_sticky, mut is_locked) = match token {
++                Token::Pref => (PrefValueKind::Default, false, false),
++                Token::StickyPref => (PrefValueKind::Default, true, false),
++                Token::LockPref => (PrefValueKind::Default, false, true),
++                Token::UserPref => (PrefValueKind::User, false, false),
+                 Token::SingleChar(EOF) => return !self.has_errors,
+                 _ => {
+                     token = self.error_and_recover(
+@@ -437,7 +440,6 @@ impl<'t> Parser<'t> {
+             };
+ 
+             // ("," <pref-attr>)*   // default pref files only
+-            let mut is_locked = false;
+             let mut has_attrs = false;
+             if self.kind == PrefValueKind::Default {
+                 let ok = loop {

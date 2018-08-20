@@ -1,0 +1,32 @@
+# HG changeset patch
+# User Martin Stransky <stransky@redhat.com>
+# Date 1525961643 -7200
+#      Thu May 10 16:14:03 2018 +0200
+# Branch egl-patches
+# Node ID 485901e905f95d1181098d2a34156a5b917d87de
+# Parent  818139202893c0d773233dd988d7abe58e60f9ff
+Bug 1460605 - Use NS_NATIVE_EGL_WINDOW instead of NS_NATIVE_WINDOW on GTK r?jgilbert
+
+Original patch author is Takuro Ashie <ashie@clear-code.com>
+
+NS_NATIVE_EGL_WINDOW is exported by Gtk toolkit code and provides both X11 window
+handle for X11 Gtk backend and EGL window handle for Wayland backend.
+
+MozReview-Commit-ID: DEmlaLL7zGY
+
+diff -r 818139202893 -r 485901e905f9 gfx/gl/GLContextProviderEGL.cpp
+--- a/gfx/gl/GLContextProviderEGL.cpp	Thu May 10 16:04:20 2018 +0200
++++ b/gfx/gl/GLContextProviderEGL.cpp	Thu May 10 16:14:03 2018 +0200
+@@ -4,10 +4,8 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #if defined(MOZ_WIDGET_GTK)
+-    #include <gdk/gdkx.h>
+-    // we're using default display for now
+-    #define GET_NATIVE_WINDOW_FROM_REAL_WIDGET(aWidget) ((EGLNativeWindowType)GDK_WINDOW_XID((GdkWindow*)aWidget->GetNativeData(NS_NATIVE_WINDOW)))
+-    #define GET_NATIVE_WINDOW_FROM_COMPOSITOR_WIDGET(aWidget) ((EGLNativeWindowType)GDK_WINDOW_XID((GdkWindow*)aWidget->RealWidget()->GetNativeData(NS_NATIVE_WINDOW)))
++    #define GET_NATIVE_WINDOW_FROM_REAL_WIDGET(aWidget) ((EGLNativeWindowType)aWidget->GetNativeData(NS_NATIVE_EGL_WINDOW))
++    #define GET_NATIVE_WINDOW_FROM_COMPOSITOR_WIDGET(aWidget) ((EGLNativeWindowType)aWidget->RealWidget()->GetNativeData(NS_NATIVE_EGL_WINDOW))
+ #elif defined(MOZ_WIDGET_ANDROID)
+     #define GET_NATIVE_WINDOW_FROM_REAL_WIDGET(aWidget) ((EGLNativeWindowType)aWidget->GetNativeData(NS_JAVA_SURFACE))
+     #define GET_NATIVE_WINDOW_FROM_COMPOSITOR_WIDGET(aWidget) (aWidget->AsAndroid()->GetEGLNativeWindow())
