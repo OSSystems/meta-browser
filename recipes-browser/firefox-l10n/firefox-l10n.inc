@@ -34,7 +34,7 @@ do_configure() {
 }
 
 do_install() {
-    EXTENSION=`sed --posix '/em:id=/!d;s/[ ]*em:id="//;s/".*//' ${LANGUAGE}/install.rdf`
+    EXTENSION=`sed --posix '/"id"/!d;s/[ ]*"id": "//;s/".*//' ${LANGUAGE}/manifest.json`
 
     xpi-pack ${LANGUAGE} ${EXTENSION}.xpi
 
