@@ -94,3 +94,6 @@ PRIVATE_LIBS = "libmozjs.so \
                 libmozsqlite3.so \
                 libbrowsercomps.so \
                 libclearkey.so"
+
+# http://errors.yoctoproject.org/Errors/Details/186965/
+EXCLUDE_FROM_WORLD_libc-musl = "1"
