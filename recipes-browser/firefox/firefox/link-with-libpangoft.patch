@@ -1,0 +1,38 @@
+link with pango libs especially with libpangoft2-1.0.so.0
+otherwise it pokes at the build host and if build host has
+this package installed then it tries to link with it
+
+
+/mnt/a/oe/build/tmp/work/core2-64-bec-linux/firefox/52.9.0esr-r0/recipe-sysroot-native/usr/bin/x86_64-bec-linux/../../libexec/x86_64-bec-linux/gcc/x86_64-bec-linux/8.2.0/ld:
+/usr/lib/libpangoft2-1.0.so.0: undefined reference to `pango_font_description_set_variations'
+
+/mnt/a/oe/build/tmp/work/core2-64-bec-linux/firefox/52.9.0esr-r0/recipe-sysroot-native/usr/bin/x86_64-bec-linux/../../libexec/x86_64-bec-linux/gcc/x86_64-bec-linux/8.2.0/ld:
+/usr/lib/libpangoft2-1.0.so.0: undefined reference to `pango_font_description_get_variations'
+| collect2: error: ld returned 1 exit status
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+Index: firefox-52.9.0esr/js/xpconnect/shell/moz.build
+===================================================================
+--- firefox-52.9.0esr.orig/js/xpconnect/shell/moz.build
++++ firefox-52.9.0esr/js/xpconnect/shell/moz.build
+@@ -58,3 +58,4 @@ if CONFIG['OS_ARCH'] == 'WINNT':
+ CFLAGS += CONFIG['TK_CFLAGS']
+ CXXFLAGS += CONFIG['TK_CFLAGS']
+ OS_LIBS += CONFIG['TK_LIBS']
++OS_LIBS += CONFIG['MOZ_PANGO_LIBS']
+Index: firefox-52.9.0esr/gfx/cairo/cairo/src/moz.build
+===================================================================
+--- firefox-52.9.0esr.orig/gfx/cairo/cairo/src/moz.build
++++ firefox-52.9.0esr/gfx/cairo/cairo/src/moz.build
+@@ -243,9 +243,6 @@ if CONFIG['GNU_CC'] and CONFIG['OS_TARGE
+     CFLAGS += ['-O2']
+     CXXFLAGS += ['-O2']
+ 
+-if CONFIG['MOZ_X11']:
+-    CFLAGS += CONFIG['XCFLAGS']
+-
+ if CONFIG['MOZ_ENABLE_CAIRO_FT']:
+     CFLAGS += CONFIG['CAIRO_FT_CFLAGS']
+     CXXFLAGS += CONFIG['CAIRO_FT_CFLAGS']
