@@ -11,11 +11,11 @@ Upstream-Status: Inappropriate [OE-Specific]
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
-Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
+Index: chromium-ozone-wayland-dev-64.0.3274.0.r517731.igalia.1/build/config/compiler/BUILD.gn
 ===================================================================
---- chromium-68.0.3440.106.orig/build/config/compiler/BUILD.gn
-+++ chromium-68.0.3440.106/build/config/compiler/BUILD.gn
-@@ -532,9 +532,6 @@ config("compiler") {
+--- chromium-ozone-wayland-dev-64.0.3274.0.r517731.igalia.1.orig/build/config/compiler/BUILD.gn
++++ chromium-ozone-wayland-dev-64.0.3274.0.r517731.igalia.1/build/config/compiler/BUILD.gn
+@@ -457,9 +457,6 @@ config("compiler") {
    #
    # TODO(thakis): Figure out if this should be the default, and expose in
    # clang-cl if not.
@@ -25,7 +25,7 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
  
    # C11/C++11 compiler flags setup.
    # ---------------------------
-@@ -720,10 +717,6 @@ config("compiler_cpu_abi") {
+@@ -626,10 +623,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -36,7 +36,7 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -734,19 +727,12 @@ config("compiler_cpu_abi") {
+@@ -640,19 +633,12 @@ config("compiler_cpu_abi") {
          cflags += [ "-mtune=$arm_tune" ]
        }
      } else if (current_cpu == "arm64") {
@@ -56,7 +56,7 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
            }
          } else {
            cflags += [ "-EL" ]
-@@ -824,10 +810,7 @@ config("compiler_cpu_abi") {
+@@ -739,10 +725,7 @@ config("compiler_cpu_abi") {
        cflags += [ "-m${mips_float_abi}-float" ]
      } else if (current_cpu == "mips" && !is_nacl) {
        if (custom_toolchain == "") {
@@ -68,7 +68,7 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
          }
-@@ -872,9 +855,6 @@ config("compiler_cpu_abi") {
+@@ -787,9 +770,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -78,7 +78,7 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
            }
          } else {
            cflags += [
-@@ -930,10 +910,7 @@ config("compiler_cpu_abi") {
+@@ -837,10 +817,7 @@ config("compiler_cpu_abi") {
        }
      } else if (current_cpu == "mips64") {
        if (custom_toolchain == "") {
@@ -90,19 +90,3 @@ Index: chromium-68.0.3440.106/build/config/compiler/BUILD.gn
            cflags += [
              "-EB",
              "-mabi=64",
-Index: chromium-68.0.3440.106/third_party/zlib/BUILD.gn
-===================================================================
---- chromium-68.0.3440.106.orig/third_party/zlib/BUILD.gn
-+++ chromium-68.0.3440.106/third_party/zlib/BUILD.gn
-@@ -64,7 +64,10 @@ config("zlib_arm_crc32_config") {
-     #  - Fuchsia just added a syscall for feature detection.
-     # TODO(cavalcantii): crbug.com/810125.
-     if (!is_ios && !is_chromeos && !is_fuchsia) {
--      defines = [ "CRC32_ARMV8_CRC32" ]
-+      defines = []
-+      if (current_cpu == "arm64") {
-+        defines = [ "CRC32_ARMV8_CRC32" ]
-+      }
-       if (is_android) {
-         defines += [ "ARMV8_OS_ANDROID" ]
-       } else if (is_linux || is_chromeos) {

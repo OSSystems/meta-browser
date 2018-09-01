@@ -1,0 +1,24 @@
+Remove the GN settings done for clang that conflict with OE
+
+CRC32_ARMV8_CRC32 is aarch64 so enable it only for arm64
+
+Upstream-Status: Pending
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+Index: chromium-68.0.3440.106/third_party/zlib/BUILD.gn
+===================================================================
+--- chromium-68.0.3440.106.orig/third_party/zlib/BUILD.gn
++++ chromium-68.0.3440.106/third_party/zlib/BUILD.gn
+@@ -64,7 +64,10 @@ config("zlib_arm_crc32_config") {
+     #  - Fuchsia just added a syscall for feature detection.
+     # TODO(cavalcantii): crbug.com/810125.
+     if (!is_ios && !is_chromeos && !is_fuchsia) {
+-      defines = [ "CRC32_ARMV8_CRC32" ]
++      defines = []
++      if (current_cpu == "arm64") {
++        defines = [ "CRC32_ARMV8_CRC32" ]
++      }
+       if (is_android) {
+         defines += [ "ARMV8_OS_ANDROID" ]
+       } else if (is_linux || is_chromeos) {

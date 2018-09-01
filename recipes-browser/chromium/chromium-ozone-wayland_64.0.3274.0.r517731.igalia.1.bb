@@ -5,6 +5,7 @@ SRC_URI += " \
  file://0001-Rotate-gcc-toolchain-s-build-flags.patch \
  file://0001-GCC-fix-lambda-expression-cannot-reach-this-scope.patch \
  file://0001-memcpy-used-without-including-string.h.patch \
+ file://oe-clang-fixes.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "wayland"
