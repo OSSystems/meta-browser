@@ -1,0 +1,38 @@
+Upstream-Status: Backport
+
+- Backported from the ToT: https://crrev.com/c/1213247
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From cfea1af190b5bd6027a888503a1c7ea45d72ee00 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 10 Sep 2018 06:45:24 +0000
+Subject: [PATCH] Fix a GCC error about undeclared std::unique_ptr
+
+The memory header was missing from this header. Adding it here.
+
+Change-Id: Ic52dc3a194fabb50dd6758e6b1af693358b408cc
+Reviewed-on: https://chromium-review.googlesource.com/1213247
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Sadrul Chowdhury <sadrul@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#589838}
+---
+ ui/aura/screen_ozone.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ui/aura/screen_ozone.h b/ui/aura/screen_ozone.h
+index 132ea5917026..7c26999f515c 100644
+--- a/ui/aura/screen_ozone.h
++++ b/ui/aura/screen_ozone.h
+@@ -5,6 +5,8 @@
+ #ifndef UI_AURA_SCREEN_OZONE_H_
+ #define UI_AURA_SCREEN_OZONE_H_
+ 
++#include <memory>
++
+ #include "base/macros.h"
+ #include "ui/aura/aura_export.h"
+ #include "ui/display/screen.h"
+-- 
+2.11.0
+

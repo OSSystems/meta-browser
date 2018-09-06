@@ -2,9 +2,11 @@ require chromium-ozone-wayland-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += " \
- file://0001-Rotate-gcc-toolchain-s-build-flags.patch \
- file://0001-GCC-fix-lambda-expression-cannot-reach-this-scope.patch \
- file://0001-memcpy-used-without-including-string.h.patch \
+ file://0001-Fix-GCC-build-remove-constexpr-for-non-resolved-comp.patch \
+ file://0001-OmniboxTextView-fix-gcc-error-for-structure-initiali.patch \
+ file://0001-ScrollPaintPropertyNode-Rename-SnapContainerData-to-.patch \
+ file://0001-Fix-a-GCC-error-about-undeclared-std-unique_ptr.patch \
+ file://0001-ozone-wayland-Fix-fpermissive-problem-for-GCC.patch \
  file://oe-clang-fixes.patch \
 "
 
@@ -17,17 +19,18 @@ DEPENDS += "\
 "
 
 GN_ARGS += "\
-        enable_mus=true \
         use_ozone=true \
         ozone_auto_platforms=false \
         ozone_platform_headless=true \
         ozone_platform_wayland=true \
         ozone_platform_x11=false \
         use_xkbcommon=true \
+        use_system_libwayland=true \
+        use_system_minigbm=true \
 "
 
 # The chromium binary must always be started with those arguments.
-CHROMIUM_EXTRA_ARGS_append = " --mus --ozone-platform=wayland"
+CHROMIUM_EXTRA_ARGS_append = " --ozone-platform=wayland --in-process-gpu"
 
 # http://errors.yoctoproject.org/Errors/Details/186958/
 EXCLUDE_FROM_WORLD_libc-musl = "1"

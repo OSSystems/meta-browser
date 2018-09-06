@@ -11,6 +11,7 @@ B = "${S}/${OUTPUT_DIR}"
 SRC_URI += " \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
+        file://zlib-aarch64.patch \
 "
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
@@ -27,6 +28,7 @@ DEPENDS += " \
     glib-2.0 \
     gn-native \
     gperf-native \
+    gtk+3 \
     jpeg \
     libdrm \
     libwebp \

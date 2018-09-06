@@ -1,0 +1,72 @@
+Upstream-Status: Submitted [https://crrev.com/c/1213248]
+
+- Waiting approval.
+
+This patch fixes such errors as:
+../../content/browser/appcache/appcache_manifest_parser.cc:78:26: error:
+call to non-constexpr function 'base::BasicStringPiece<STRING_TYPE>
+base::BasicStringPiece<STRING_TYPE>::substr(base::BasicStringPiece<STRING_TYPE>::size_type,
+base::BasicStringPiece<STRING_TYPE>::size_type) const [with STRING_TYPE
+= std::__cxx11::basic_string<char>;
+base::BasicStringPiece<STRING_TYPE>::size_type = unsigned int]'
+   return data.substr(skip);
+                          ^
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From d781b42fea804b5c0b9440dfb671a1274f8f9585 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Fri, 7 Sep 2018 19:48:45 +0300
+Subject: [PATCH] Fix GCC build: remove constexpr for non-resolved compile time
+ methods
+
+This fixes: error: call to non-constexpr function
+
+Change-Id: I9ae23d03535db80ad42c1f5040933334874d6a2a
+---
+ content/browser/appcache/appcache_manifest_parser.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/content/browser/appcache/appcache_manifest_parser.cc b/content/browser/appcache/appcache_manifest_parser.cc
+index 2b8cd3e6f4e8..d07cabf28fb8 100644
+--- a/content/browser/appcache/appcache_manifest_parser.cc
++++ b/content/browser/appcache/appcache_manifest_parser.cc
+@@ -71,7 +71,7 @@ constexpr bool IsTokenSeparator(char character) {
+ }
+ 
+ // Removes the characters at the beginning of the string up to a newline.
+-constexpr base::StringPiece TrimToFirstNewLine(base::StringPiece data) {
++base::StringPiece TrimToFirstNewLine(base::StringPiece data) {
+   size_t skip = 0;
+   while (skip < data.length() && !IsNewLine(data[skip]))
+     ++skip;
+@@ -79,7 +79,7 @@ constexpr base::StringPiece TrimToFirstNewLine(base::StringPiece data) {
+ }
+ 
+ // Removes whitespace characters at the beginning of the string.
+-constexpr base::StringPiece TrimStartingWhiteSpace(base::StringPiece data) {
++base::StringPiece TrimStartingWhiteSpace(base::StringPiece data) {
+   size_t skip = 0;
+   while (skip < data.length() && IsWhiteSpace(data[skip]))
+     ++skip;
+@@ -87,7 +87,7 @@ constexpr base::StringPiece TrimStartingWhiteSpace(base::StringPiece data) {
+ }
+ 
+ // Removes whitespace characters at the end of the string.
+-constexpr base::StringPiece TrimTrailingWhiteSpace(base::StringPiece data) {
++base::StringPiece TrimTrailingWhiteSpace(base::StringPiece data) {
+   size_t length = data.size();
+ 
+   while (length != 0) {
+@@ -104,7 +104,7 @@ constexpr base::StringPiece TrimTrailingWhiteSpace(base::StringPiece data) {
+ //
+ // Returns the first line, which is guaranteed not to include a newline, and the
+ // rest of the string, which may be empty.
+-constexpr std::pair<base::StringPiece, base::StringPiece> SplitOnNewLine(
++std::pair<base::StringPiece, base::StringPiece> SplitOnNewLine(
+     base::StringPiece data) {
+   size_t split = 0;
+   while (split < data.length() && !IsNewLine(data[split]))
+-- 
+2.11.0
+
