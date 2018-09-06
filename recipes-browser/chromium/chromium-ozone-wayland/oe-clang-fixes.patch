@@ -1,0 +1,110 @@
+Upstream-Status: Inappropriate [OE-Specific]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From d904c92841fe3147e8052f552c5580184169698b Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 11 Sep 2018 15:50:52 +0300
+Subject: [PATCH] Remove the GN settings done for clang that conflict with OE
+
+clang cross compiler that is build with meta-clang has lot of these
+settings built-in and specifying them here confuses the compiler
+
+--target option and -no-canonical-prefixes options result in clang
+
+finding the headers in target sysroot
+
+Upstream-Status: Inappropriate [OE-Specific]
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+Rebased-by: Maksim Sisov <msisov@igalia.com>
+---
+ build/config/compiler/BUILD.gn | 30 +-----------------------------
+ 1 file changed, 1 insertion(+), 29 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index d586ebc4a925..c5aeba2c7533 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -543,13 +543,6 @@ config("compiler") {
+     }
+   }
+ 
+-  # Tells the compiler not to use absolute paths when passing the default
+-  # paths to the tools it invokes. We don't want this because we don't
+-  # really need it and it can mess up the goma cache entries.
+-  if (is_clang && !is_nacl) {
+-    cflags += [ "-no-canonical-prefixes" ]
+-  }
+-
+   # C11/C++11 compiler flags setup.
+   # ---------------------------
+   if (is_linux || is_android || (is_nacl && is_clang) || current_os == "aix") {
+@@ -779,10 +772,6 @@ config("compiler_cpu_abi") {
+         ]
+       }
+     } else if (current_cpu == "arm") {
+-      if (is_clang && !is_android && !is_nacl) {
+-        cflags += [ "--target=arm-linux-gnueabihf" ]
+-        ldflags += [ "--target=arm-linux-gnueabihf" ]
+-      }
+       if (!is_nacl) {
+         cflags += [
+           "-march=$arm_arch",
+@@ -792,11 +781,6 @@ config("compiler_cpu_abi") {
+       if (arm_tune != "") {
+         cflags += [ "-mtune=$arm_tune" ]
+       }
+-    } else if (current_cpu == "arm64") {
+-      if (is_clang && !is_android && !is_nacl && !is_fuchsia) {
+-        cflags += [ "--target=aarch64-linux-gnu" ]
+-        ldflags += [ "--target=aarch64-linux-gnu" ]
+-      }
+     } else if (current_cpu == "mipsel" && !is_nacl) {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {
+@@ -804,9 +788,6 @@ config("compiler_cpu_abi") {
+           if (is_android) {
+             cflags += [ "--target=mipsel-linux-android" ]
+             ldflags += [ "--target=mipsel-linux-android" ]
+-          } else {
+-            cflags += [ "--target=mipsel-linux-gnu" ]
+-            ldflags += [ "--target=mipsel-linux-gnu" ]
+           }
+         } else {
+           cflags += [ "-EL" ]
+@@ -886,9 +867,6 @@ config("compiler_cpu_abi") {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {
+         if (is_clang) {
+-          cflags += [ "--target=mips-linux-gnu" ]
+-          ldflags += [ "--target=mips-linux-gnu" ]
+-        } else {
+           cflags += [ "-EB" ]
+           ldflags += [ "-EB" ]
+         }
+@@ -935,9 +913,6 @@ config("compiler_cpu_abi") {
+           if (is_android) {
+             cflags += [ "--target=mips64el-linux-android" ]
+             ldflags += [ "--target=mips64el-linux-android" ]
+-          } else {
+-            cflags += [ "--target=mips64el-linux-gnuabi64" ]
+-            ldflags += [ "--target=mips64el-linux-gnuabi64" ]
+           }
+         } else {
+           cflags += [
+@@ -994,10 +969,7 @@ config("compiler_cpu_abi") {
+     } else if (current_cpu == "mips64") {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {
+-        if (is_clang) {
+-          cflags += [ "--target=mips64-linux-gnuabi64" ]
+-          ldflags += [ "--target=mips64-linux-gnuabi64" ]
+-        } else {
++        if (!is_clang) {
+           cflags += [
+             "-EB",
+             "-mabi=64",
+-- 
+2.11.0
+

@@ -11,13 +11,11 @@ SRC_URI += "\
         file://0001-vpx_sum_squares_2d_i16_neon-Make-s2-a-uint64x1_t.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
-        file://zlib-aarch64.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "x11"
 
 DEPENDS += "\
-        gtk+3 \
         libx11 \
         libxcomposite \
         libxcursor \

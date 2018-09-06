@@ -1,0 +1,64 @@
+Upstream-Status: Backport
+
+- Backported from the ToT: https://crrev.com/c/1213179
+
+This patch fixes such errors as:
+../../ui/ozone/platform/wayland/wayland_buffer_manager.h:110:27: error:
+declaration of 'wl::Object<wl_buffer>
+ui::WaylandBufferManager::Buffer::wl_buffer' [-fpermissive]
+     wl::Object<wl_buffer> wl_buffer;
+                           ^~~~~~~~~
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From dc28ed789da7a2b3710d8af7e9fd9d8fc070e861 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 10 Sep 2018 06:53:32 +0000
+Subject: [PATCH] [ozone/wayland] Fix fpermissive problem for GCC.
+
+This fixes the following error:
+
+wl::Object<wl_buffer> wl_buffer;
+                      ^~~~~~~~~
+In file included from ../../ui/ozone/platform/wayland/wayland_buffer_manager.h:18:0, from
+ ../../ui/ozone/platform/wayland/wayland_buffer_manager.cc:5:
+ ../../ui/ozone/platform/wayland/wayland_object.h:12:8: error: changes meaning
+ of 'wl_buffer' from 'struct wl_buffer' [-fpermissive]  struct wl_buffer;
+     ^~~~~~~~~
+
+TBR=rjkroege@chromium.org
+
+Change-Id: I326abd95fec4d26a4d0497e5570ae4e9f0637afb
+Reviewed-on: https://chromium-review.googlesource.com/1213179
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#589841}
+---
+ ui/ozone/platform/wayland/wayland_buffer_manager.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/wayland_buffer_manager.h b/ui/ozone/platform/wayland/wayland_buffer_manager.h
+index cf2d9720df17..763e0d236977 100644
+--- a/ui/ozone/platform/wayland/wayland_buffer_manager.h
++++ b/ui/ozone/platform/wayland/wayland_buffer_manager.h
+@@ -107,7 +107,7 @@ class WaylandBufferManager {
+     zwp_linux_buffer_params_v1* params = nullptr;
+ 
+     // A wl_buffer backed by a dmabuf created on the GPU side.
+-    wl::Object<wl_buffer> wl_buffer;
++    wl::Object<struct wl_buffer> wl_buffer;
+ 
+     // A callback, which is called once the |wl_frame_callback| from the server
+     // is received.
+@@ -120,7 +120,7 @@ class WaylandBufferManager {
+ 
+     // A presentation feedback provided by the Wayland server once frame is
+     // shown.
+-    wl::Object<wp_presentation_feedback> wp_presentation_feedback;
++    wl::Object<struct wp_presentation_feedback> wp_presentation_feedback;
+ 
+     DISALLOW_COPY_AND_ASSIGN(Buffer);
+   };
+-- 
+2.11.0
+
