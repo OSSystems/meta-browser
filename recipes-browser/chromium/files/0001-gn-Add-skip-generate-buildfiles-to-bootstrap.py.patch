@@ -1,0 +1,69 @@
+Upstream-Status: Backport
+
+Stops trying to run 'gn gen', which is part of Chromium's
+do_configure, not gn-native's, when building the latter.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 79c741fd88a1cab596a38afde628c52f21dbe4a2 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 19 Sep 2018 18:16:40 +0000
+Subject: [PATCH] gn: Add --skip-generate-buildfiles to bootstrap.py
+
+This restores part of --no-rebuild's behavior: we only build GN but do not
+run it afterwards when the option is specified. It's particularly useful
+when GN is built in a different machine or sysroot than the one where
+Chromium itself will be built (often with different dependencies installed
+on the system).
+
+Bug: 885139
+Change-Id: If9f3386db8324b47b52864bccc685578fd40a689
+Reviewed-on: https://chromium-review.googlesource.com/1233708
+Reviewed-by: Thomas Anderson <thomasanderson@chromium.org>
+Commit-Queue: Raphael Kubo da Costa (CET) <raphael.kubo.da.costa@intel.com>
+Cr-Commit-Position: refs/heads/master@{#592479}
+---
+ tools/gn/bootstrap/bootstrap.py | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/tools/gn/bootstrap/bootstrap.py b/tools/gn/bootstrap/bootstrap.py
+index 29f10494b63d..261fddde7801 100755
+--- a/tools/gn/bootstrap/bootstrap.py
++++ b/tools/gn/bootstrap/bootstrap.py
+@@ -51,6 +51,11 @@ def main(argv):
+       action='store_true',
+       help='Download and build with the Debian sysroot.')
+   parser.add_option('-v', '--verbose', help='ignored')
++  parser.add_option(
++      '--skip-generate-buildfiles',
++      action='store_true',
++      help='Do not run GN after building it. Causes --gn-gen-args '
++      'to have no effect.')
+   options, args = parser.parse_args(argv)
+   if args:
+     parser.error('Unrecognized command line arguments: %s.' % ', '.join(args))
+@@ -83,13 +88,14 @@ def main(argv):
+       ['ninja', '-C', gn_build_dir, 'gn', '-w', 'dupbuild=err'])
+   shutil.copy2(os.path.join(gn_build_dir, 'gn'), gn_path)
+ 
+-  gn_gen_args = options.gn_gen_args or ''
+-  if not options.debug:
+-    gn_gen_args += ' is_debug=false'
+-  subprocess.check_call([
+-      gn_path, 'gen', out_dir,
+-      '--args=%s' % gn_gen_args, "--root=" + SRC_ROOT
+-  ])
++  if not options.skip_generate_buildfiles:
++    gn_gen_args = options.gn_gen_args or ''
++    if not options.debug:
++      gn_gen_args += ' is_debug=false'
++    subprocess.check_call([
++        gn_path, 'gen', out_dir,
++        '--args=%s' % gn_gen_args, "--root=" + SRC_ROOT
++    ])
+ 
+ 
+ if __name__ == '__main__':
+-- 
+2.14.4
+

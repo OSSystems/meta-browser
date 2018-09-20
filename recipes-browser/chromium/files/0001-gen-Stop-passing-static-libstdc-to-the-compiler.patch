@@ -1,0 +1,32 @@
+Upstream-Status: Pending
+
+This requires libstdc++.a to be installed on host systems, which is
+often not very common, for no particular reason. Still investigating
+how to best approach this upstream.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From af8028b7da98866870d97d965d1e4e85e7db7b1b Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Mon, 17 Sep 2018 16:44:36 +0200
+Subject: [PATCH] gen: Stop passing -static-libstdc++ to the compiler
+
+---
+ build/gen.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/build/gen.py b/build/gen.py
+index 11c92460..bc294643 100755
+--- a/tools/gn/build/gen.py
++++ b/tools/gn/build/gen.py
+@@ -369,7 +369,6 @@ def WriteGNNinja(path, platform, host, options, linux_sysroot):
+         cflags.append('--sysroot=' + linux_sysroot)
+         ldflags.append('--sysroot=' + linux_sysroot)
+       ldflags.extend([
+-          '-static-libstdc++',
+           '-Wl,--as-needed',
+       ])
+       libs.extend([
+-- 
+2.17.1
+

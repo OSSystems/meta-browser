@@ -15,6 +15,11 @@ S = "${WORKDIR}/chromium-${PV}"
 # evils.
 B = "${S}/out_bootstrap"
 
+SRC_URI += "\
+        file://0001-gen-Stop-passing-static-libstdc-to-the-compiler.patch \
+        file://0001-gn-Add-skip-generate-buildfiles-to-bootstrap.py.patch \
+"
+
 # The build system expects the linker to be invoked via the compiler. If we use
 # the default value for BUILD_LD, it will fail because it does not recognize
 # some of the arguments passed to it.
@@ -25,7 +30,7 @@ DEPENDS = "ninja-native"
 do_configure[noexec] = "1"
 
 do_compile() {
-	python ${S}/tools/gn/bootstrap/bootstrap.py --verbose --no-clean --no-rebuild
+	python ${S}/tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
 }
 
 do_install() {
