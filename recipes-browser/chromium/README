@@ -24,9 +24,8 @@ capable of building C++11 (preferably C++14) code, which for GCC means at least
 version 5.4.0.
 
 For building most of the code for your target, a C++14-compliant compiler is
-required. For GCC, at least version 6.4.0 is required. ARM-based targets using
-GCC 6 need the following patch as of M68:
-<http://lists.openembedded.org/pipermail/openembedded-core/2018-July/153052.html>
+required. For GCC, at least version 7.3.1 (and thus the "rocko" branch) is
+required.
 
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
