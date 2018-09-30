@@ -3,7 +3,7 @@
 
 DESCRIPTION ?= "Browser made by mozilla"
 DEPENDS += "alsa-lib curl startup-notification libevent libnotify libvpx \
-            virtual/libgl nss nspr pango pulseaudio nasm-native icu unzip-native"
+            virtual/libgl nss nspr pango pulseaudio yasm-native icu unzip-native"
 
 LICENSE = "MPLv2"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=39;md5=f7e14664a6dca6a06efe93d70f711c0e"
