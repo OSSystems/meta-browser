@@ -42,7 +42,8 @@ BUILD_LD_toolchain-clang = "clang"
 def is_default_cc_clang(d):
     """Return true if clang is default cross compiler."""
     toolchain = d.getVar("TOOLCHAIN")
-    if toolchain == "clang":
+    overrides = d.getVar("OVERRIDES")
+    if toolchain == "clang" and "toolchain-clang" in overrides.split(":"):
         return "true"
     return "false"
 
