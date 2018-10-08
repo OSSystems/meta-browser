@@ -8,6 +8,7 @@ SRC_URI += " \
  file://0001-Fix-a-GCC-error-about-undeclared-std-unique_ptr.patch \
  file://0001-ozone-wayland-Fix-fpermissive-problem-for-GCC.patch \
  file://oe-clang-fixes.patch \
+ file://aarch64-skia-build-fix.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "wayland"
