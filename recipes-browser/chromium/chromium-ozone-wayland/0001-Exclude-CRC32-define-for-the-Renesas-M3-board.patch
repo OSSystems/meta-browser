@@ -1,0 +1,30 @@
+Upstream-status: Inappropriate [embedded specific]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From f59799ef353e4221e61ec565b4b03c1fc1ea127b Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 17 Sep 2018 09:54:31 +0300
+Subject: [PATCH] Exclude CRC32 define for the Renesas M3 board
+
+The CRC32 APIs are optional for armv8-a. They became mandatory since
+armv8.1-a. The Renesas board doesn't have them implemented. Thus,
+just disable them.
+---
+ third_party/zlib/BUILD.gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/zlib/BUILD.gn
+===================================================================
+--- chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1.orig/third_party/zlib/BUILD.gn
++++ chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/zlib/BUILD.gn
+@@ -65,9 +65,6 @@ config("zlib_arm_crc32_config") {
+     # TODO(cavalcantii): crbug.com/810125.
+     if (!is_ios && !is_chromeos && !is_fuchsia) {
+       defines = []
+-      if (current_cpu == "arm64") {
+-        defines = [ "CRC32_ARMV8_CRC32" ]
+-      }
+       if (is_android) {
+         defines += [ "ARMV8_OS_ANDROID" ]
+       } else if (is_linux || is_chromeos) {
