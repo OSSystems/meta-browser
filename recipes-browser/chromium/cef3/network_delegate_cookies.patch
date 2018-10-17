@@ -1,0 +1,47 @@
+Upstream-Status: Backport
+
+- Compile compatiblity with chromium-69.0.3497.100, original version was for chromium-69.0.3497.0
+
+--- chromium-69.0.3497.100/cef/libcef/browser/net/network_delegate.h.org	2018-10-08 10:03:24.577115270 +0200
++++ chromium-69.0.3497.100/cef/libcef/browser/net/network_delegate.h	2018-10-08 10:03:42.818914741 +0200
+@@ -41,12 +41,10 @@
+                    bool started,
+                    int net_error) override;
+   bool OnCanGetCookies(const net::URLRequest& request,
+-                       const net::CookieList& cookie_list,
+-                       bool allowed_from_caller) override;
++                       const net::CookieList& cookie_list) override;
+   bool OnCanSetCookie(const net::URLRequest& request,
+                       const net::CanonicalCookie& cookie,
+-                      net::CookieOptions* options,
+-                      bool allowed_from_caller) override;
++                      net::CookieOptions* options) override;
+   bool OnCanAccessFile(const net::URLRequest& request,
+                        const base::FilePath& original_path,
+                        const base::FilePath& absolute_path) const override;
+--- chromium-69.0.3497.100/cef/libcef/browser/net/network_delegate.cc.org	2018-10-08 10:02:46.129442186 +0200
++++ chromium-69.0.3497.100/cef/libcef/browser/net/network_delegate.cc	2018-10-08 10:03:13.980067286 +0200
+@@ -445,10 +445,7 @@
+ }
+ 
+ bool CefNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
+-                                         const net::CookieList& cookie_list,
+-                                         bool allowed_from_caller) {
+-  if (!allowed_from_caller)
+-    return false;
++                                         const net::CookieList& cookie_list) {
+   if (net_util::IsInternalRequest(&request))
+     return true;
+ 
+@@ -475,10 +472,7 @@
+ 
+ bool CefNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
+                                         const net::CanonicalCookie& cookie,
+-                                        net::CookieOptions* options,
+-                                        bool allowed_from_caller) {
+-  if (!allowed_from_caller)
+-    return false;
++                                        net::CookieOptions* options) {
+   if (net_util::IsInternalRequest(&request))
+     return true;
+ 

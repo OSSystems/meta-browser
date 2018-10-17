@@ -1,0 +1,16 @@
+Upstream-Status: Backport
+
+- Compile compatiblity with chromium-69.0.3497.100, original version was for chromium-69.0.3497.0
+
+--- chromium-69.0.3497.100/cef/libcef/renderer/render_urlrequest_impl.cc.org	2018-10-08 10:11:50.993509351 +0200
++++ chromium-69.0.3497.100/cef/libcef/renderer/render_urlrequest_impl.cc	2018-10-08 10:12:25.612733024 +0200
+@@ -117,7 +117,8 @@
+ 
+     loader_ =
+         CefContentRendererClient::Get()->url_loader_factory()->CreateURLLoader(
+-            urlRequest, task_runner_.get());
++            urlRequest, blink::scheduler::WebResourceLoadingTaskRunnerHandle::
++                            CreateUnprioritized(task_runner_.get()));
+     loader_->LoadAsynchronously(urlRequest, url_client_.get());
+     return true;
+   }

@@ -1,0 +1,66 @@
+Upstream-Status: Inappropriate [OE-Specific]
+
+- Apply patch using patch command instead of git apply,
+  because on OE build whe do not have git info about chromium 
+
+diff --git a/cef/tools/patcher.py b/cef/tools/patcher.py
+index 942d2116..5b11af02 100644
+--- a/cef/tools/patcher.py
++++ b/cef/tools/patcher.py
+@@ -7,7 +7,8 @@ from optparse import OptionParser
+ import os
+ import sys
+ from file_util import *
+-from git_util import git_apply_patch_file
++#from git_util import git_apply_patch_file
++from exec_util import exec_cmd
+ 
+ # Cannot be loaded as a module.
+ if __name__ != "__main__":
+@@ -26,6 +27,37 @@ def write_note(type, note):
+   sys.stdout.write('!!!! %s: %s\n' % (type, note))
+   sys.stdout.write(separator)
+ 
++def write_indented_output(output):
++  """ Apply a fixed amount of intent to lines before printing. """
++  if output == '':
++    return
++  for line in output.split('\n'):
++    line = line.strip()
++    if len(line) == 0:
++      continue
++    sys.stdout.write('\t%s\n' % line)
++
++def patch_apply_patch_file(patch_path, patch_dir):
++  """ Apply |patch_path| to files in |patch_dir|. """
++  patch_name = os.path.basename(patch_path)
++  sys.stdout.write('\nApply %s in %s\n' % (patch_name, patch_dir))
++
++  if not os.path.isfile(patch_path):
++    sys.stdout.write('... patch file does not exist.\n')
++    return 'fail'
++
++  config = '-p0 --ignore-whitespace'
++
++  # Apply the patch file. This should always succeed because the previous
++  # command succeeded.
++  cmd = 'patch %s -i %s' % (config, patch_path)
++  result = exec_cmd(cmd, patch_dir)
++  if result['err'] == '':
++    sys.stdout.write('... successfully applied.\n')
++  else:
++    sys.stdout.write('... successfully applied (with warnings):\n')
++    write_indented_output(result['err'].replace('<stdin>', patch_name))
++  return 'apply'
+ 
+ def apply_patch_file(patch_file, patch_dir):
+   ''' Apply a specific patch file in optional patch directory. '''
+@@ -39,7 +71,7 @@ def apply_patch_file(patch_file, patch_dir):
+       patch_dir = os.path.join(src_dir, patch_dir)
+     patch_dir = os.path.abspath(patch_dir)
+ 
+-  result = git_apply_patch_file(patch_path, patch_dir)
++  result = patch_apply_patch_file(patch_path, patch_dir)
+   if result == 'fail':
+     write_note('ERROR',
+                'This patch failed to apply. Your build will not be correct.')

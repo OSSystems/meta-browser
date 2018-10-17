@@ -1,0 +1,36 @@
+Upstream-Status: Inappropriate [OE-Specific]
+
+- Disable gtkglext missing OE dependency needed by cefclient
+
+diff --git a/cef/BUILD.gn b/cef/BUILD.gn
+index 46f5698a..dbc0b8a1 100644
+--- a/cef/BUILD.gn
++++ b/cef/BUILD.gn
+@@ -140,7 +140,6 @@ if (is_win) {
+ 
+ # Set ENABLE_PRINTING=1 ENABLE_BASIC_PRINTING=1.
+ assert(enable_basic_printing)
+-assert(!enable_print_preview)
+ 
+ # Enable support for Widevine CDM.
+ assert(enable_widevine)
+@@ -1894,11 +1893,6 @@ if (is_mac) {
+       ]
+     }
+ 
+-    pkg_config("gtkglext") {
+-      packages = [
+-        "gtkglext-1.0",
+-      ]
+-    }
+   }
+ 
+   if (is_linux) {
+@@ -1982,7 +1976,6 @@ if (is_mac) {
+       if (!use_sysroot) {
+         configs += [
+           ":gtk",
+-          ":gtkglext",
+         ]
+       }
+ 

@@ -1,0 +1,26 @@
+Upstream-Status: Backport
+
+- Compile compatiblity with chromium-69.0.3497.100, original version was for chromium-69.0.3497.0
+
+--- a/cef/patch/patches/linux_build.patch	2018-10-05 15:09:02.769739700 +0200
++++ b/cef/patch/patches/linux_build.patch	2018-10-05 15:09:17.491119649 +0200
+@@ -60,19 +60,6 @@
+  
+    ScopedStyleContext child_context(gtk_style_context_new());
+    gtk_style_context_set_path(child_context, path);
+-diff --git chrome/browser/ui/libgtkui/native_theme_gtk2.cc chrome/browser/ui/libgtkui/native_theme_gtk2.cc
+-index b24ff4b95f97..49e80717b1d6 100644
+---- chrome/browser/ui/libgtkui/native_theme_gtk2.cc
+-+++ chrome/browser/ui/libgtkui/native_theme_gtk2.cc
+-@@ -163,6 +163,8 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
+-       return GetBgColor(GetMenu(), NORMAL);
+- 
+-     // Label
+-+    case kColorId_ActionableSubmenuVerticalSeparatorColor:
+-+    case kColorId_TouchableMenuItemLabelColor:
+-     case kColorId_LabelEnabledColor:
+-       return GetTextColor(GetEntry(), NORMAL);
+-     case kColorId_LabelDisabledColor:
+ diff --git ui/accessibility/platform/atk_util_auralinux_gtk2.cc ui/accessibility/platform/atk_util_auralinux_gtk2.cc
+ index ac11b5626f67..6355d0283de1 100644
+ --- ui/accessibility/platform/atk_util_auralinux_gtk2.cc
