@@ -1,0 +1,15 @@
+This ensures that major/minor is picked from correct header in glibc 2.24+ onwards
+Index: chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/libdrm/BUILD.gn
+===================================================================
+--- chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1.orig/third_party/libdrm/BUILD.gn
++++ chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/libdrm/BUILD.gn
+@@ -58,6 +58,9 @@ if (!use_system_libdrm) {
+       # glibc-2.24.  This causes a build error when using the Debian
+       # Stretch sysroot.
+       "-Wno-deprecated-declarations",
++      # This is a autoconf check in libdrm here we make sure that check is
++      # cached
++      "-DMAJOR_IN_SYSMACROS",
+     ]
+ 
+     public_configs = [ ":libdrm_config" ]
