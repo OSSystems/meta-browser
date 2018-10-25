@@ -16,17 +16,18 @@ Subject: [PATCH] gen: Stop passing -static-libstdc++ to the compiler
  1 file changed, 1 deletion(-)
 
 diff --git a/build/gen.py b/build/gen.py
-index 11c92460..bc294643 100755
+index fde6ced2..2a8dd25e 100755
 --- a/tools/gn/build/gen.py
 +++ b/tools/gn/build/gen.py
-@@ -369,7 +369,6 @@ def WriteGNNinja(path, platform, host, options, linux_sysroot):
-         cflags.append('--sysroot=' + linux_sysroot)
-         ldflags.append('--sysroot=' + linux_sysroot)
+@@ -312,7 +312,6 @@ def WriteGNNinja(path, platform, host, options):
+ 
+     if platform.is_linux():
        ldflags.extend([
 -          '-static-libstdc++',
            '-Wl,--as-needed',
        ])
        libs.extend([
+
 -- 
 2.17.1
 

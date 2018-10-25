@@ -11,8 +11,14 @@ B = "${S}/${OUTPUT_DIR}"
 SRC_URI += " \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
-        file://zlib-aarch64.patch \
 "
+
+# This patch could be enabled for clang builds, one just needs to make it work.
+# On sumo and MACHINE="raspberrypi3", the build fails with errors such as
+#   /tmp/crc32_simd-01be44.s:86: Error: selected processor does not support `crc32b r0,r0,r5' in Thumb mode
+# Enabling this on GCC requires more work, see the comments in the patch itself
+# for directions.
+SRC_URI += "file://0001-zlib-GCC-Disable-CRC32-optimizations-on-ARM.patch"
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
 # adds packages to DEPENDS.

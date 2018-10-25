@@ -1,0 +1,51 @@
+Upstream-Status: Inappropriate [embedder specific]
+
+GCC build fix on ARM and ARM64. This is embedder specific in the sense that
+someone needs to add proper support for GCC upstream.
+
+See the error message and related discussion in
+https://github.com/OSSystems/meta-browser/pull/181#issuecomment-430296441
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 8baabe6066bab1e5681d3fe156b29b6b4dd2182f Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 14 Nov 2018 10:50:07 +0100
+Subject: [PATCH] zlib: GCC: Disable CRC32 optimizations on ARM
+
+Starting with M70 and https://chromium-review.googlesource.com/c/1147867,
+the code which leverages ARMv8 instructions to speed up CRC32 calculations
+does not build correctly with GCC.
+
+The second hunk that removes the "is_clang" condition is necessary
+nonetheless, as the files included in the "zlib_arm_crc32" source set are
+always required.
+---
+ third_party/zlib/BUILD.gn | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/third_party/zlib/BUILD.gn b/third_party/zlib/BUILD.gn
+index b44bda66a1e0..ac15413771b0 100644
+--- a/third_party/zlib/BUILD.gn
++++ b/third_party/zlib/BUILD.gn
+@@ -64,7 +64,7 @@ config("zlib_arm_crc32_config") {
+     #  - Fuchsia just added a syscall for feature detection.
+     # TODO(cavalcantii): crbug.com/810125.
+     if (!is_ios && !is_chromeos && !is_fuchsia) {
+-      defines = [ "CRC32_ARMV8_CRC32" ]
++      defines = []
+       if (is_android) {
+         defines += [ "ARMV8_OS_ANDROID" ]
+       } else if (is_linux || is_chromeos) {
+@@ -78,7 +78,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
+   source_set("zlib_arm_crc32") {
+     visibility = [ ":*" ]
+ 
+-    if (is_clang && (!is_ios && !is_chromeos && !is_fuchsia)) {
++    if (!is_ios && !is_chromeos && !is_fuchsia) {
+       include_dirs = [ "." ]
+ 
+       if (is_android) {
+-- 
+2.19.1
+

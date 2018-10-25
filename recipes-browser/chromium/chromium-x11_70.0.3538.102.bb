@@ -2,7 +2,10 @@ require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += "\
-        file://0001-vpx_sum_squares_2d_i16_neon-Make-s2-a-uint64x1_t.patch \
+        file://0001-Fix-build-error-for-blink.patch \
+        file://0001-IWYU-stdint.h-in-pdfium_mem_buffer_file_write.h-for-.patch \
+        file://0001-OmniboxTextView-fix-gcc-error-for-structure-initiali.patch \
+        file://0001-ScrollPaintPropertyNode-Rename-SnapContainerData-to-.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
 "

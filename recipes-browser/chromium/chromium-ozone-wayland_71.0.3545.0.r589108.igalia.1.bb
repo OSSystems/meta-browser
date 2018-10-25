@@ -9,7 +9,6 @@ SRC_URI += " \
  file://0001-ozone-wayland-Fix-fpermissive-problem-for-GCC.patch \
  file://oe-clang-fixes.patch \
  file://aarch64-skia-build-fix.patch \
- file://0001-Exclude-CRC32-define-for-the-Renesas-M3-board.patch \
  file://libdrm-fixes.patch \
 "
 
