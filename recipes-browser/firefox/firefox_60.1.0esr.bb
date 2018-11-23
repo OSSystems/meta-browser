@@ -20,7 +20,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://fixes/link-with-libpangoft.patch \
            file://fixes/bug1433081-fix-with-gl-provider-option.patch \
            file://fixes/0001-Enable-to-specify-RUST_TARGET-via-enviroment-variabl.patch \
-           file://fixes/0001-Add-generating-cflags-for-bindgen-mechanism.patch \
+           file://fixes/0001-Add-clang-s-include-path-on-cross-compiling.patch \
            file://fixes/0001-Add-a-preference-to-force-enable-touch-events-withou.patch \
            file://fixes/fix-get-cpu-feature-definition-conflict.patch \
            file://fixes/fix-camera-permission-dialg-doesnot-close.patch \

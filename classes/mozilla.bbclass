@@ -27,11 +27,10 @@ export HOST_AR = "${BUILD_AR}"
 
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
-
 	export RUST_TARGET="${RUST_TARGET_SYS}"
 	export RUST_TARGET_PATH="${STAGING_LIBDIR_NATIVE}/rustlib"
-	export BINDGEN_INCCPP="${STAGING_INCDIR}"
-	export BINDGEN_LLVM_BASE="/usr/lib"
+	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
+	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
 
 	export INSTALL_SDK=0
 	export DESTDIR="${D}"
