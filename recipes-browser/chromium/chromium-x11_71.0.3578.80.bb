@@ -2,10 +2,8 @@ require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 SRC_URI += "\
-        file://0001-Fix-build-error-for-blink.patch \
-        file://0001-IWYU-stdint.h-in-pdfium_mem_buffer_file_write.h-for-.patch \
-        file://0001-OmniboxTextView-fix-gcc-error-for-structure-initiali.patch \
-        file://0001-ScrollPaintPropertyNode-Rename-SnapContainerData-to-.patch \
+        file://0001-Move-the-atspi2-target-to-a-separate-BUILD.gn-file.patch \
+        file://0001-google_util-Explicitly-use-std-initializer_list-with.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
 "
