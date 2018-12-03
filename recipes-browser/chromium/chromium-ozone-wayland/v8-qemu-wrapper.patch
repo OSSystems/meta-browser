@@ -20,26 +20,18 @@ index 771fc0df366c..389a93fabeda 100644
                        ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
 
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 83f1fdb0bf..1afe1d9465 100644
+index c6a58776cd..fa53571ae8 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -942,6 +942,7 @@ action("run_torque") {
+@@ -937,6 +937,7 @@ action("run_torque") {
    }
  
    args = [
 +    "./v8-qemu-wrapper.sh",
-     "./" + rebase_path(get_label_info(":torque($v8_generator_toolchain)",
+     "./" + rebase_path(get_label_info(":torque($v8_torque_toolchain)",
                                        "root_out_dir") + "/torque",
                         root_build_dir),
-@@ -1002,6 +1003,7 @@ action("generate_bytecode_builtins_list") {
-     ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-   ]
-   args = [
-+    "./v8-qemu-wrapper.sh",
-     "./" + rebase_path(
-             get_label_info(
-                     ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1044,6 +1046,7 @@ template("run_mksnapshot") {
+@@ -1020,6 +1021,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [

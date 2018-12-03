@@ -17,7 +17,6 @@ B = "${S}/out_bootstrap"
 
 SRC_URI += "\
         file://0001-gen-Stop-passing-static-libstdc-to-the-compiler.patch \
-        file://0001-gn-Add-skip-generate-buildfiles-to-bootstrap.py.patch \
         file://0001-gn-bootstrap-Remove-sysroot-related-options.patch \
 "
 

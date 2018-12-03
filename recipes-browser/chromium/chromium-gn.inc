@@ -25,6 +25,7 @@ SRC_URI += "file://0001-zlib-GCC-Disable-CRC32-optimizations-on-ARM.patch"
 # adds packages to DEPENDS.
 DEPENDS += " \
     alsa-lib \
+    at-spi2-core \
     atk \
     bison-native \
     cairo \

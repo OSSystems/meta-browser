@@ -18,13 +18,15 @@ https://skia-review.googlesource.com/c/skia/+/84222, but there is no fix at the
 moment.
 
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
---- a/third_party/skia/src/opts/SkRasterPipeline_opts.h
-+++ b/third_party/skia/src/opts/SkRasterPipeline_opts.h
-@@ -653,10 +653,7 @@ SI F approx_powf(F x, F y) {
+Index: chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/skia/src/opts/SkRasterPipeline_opts.h
+===================================================================
+--- chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1.orig/third_party/skia/src/opts/SkRasterPipeline_opts.h
++++ chromium-ozone-wayland-dev-71.0.3545.0.r589108.igalia.1/third_party/skia/src/opts/SkRasterPipeline_opts.h
+@@ -658,10 +658,7 @@ SI F approx_powf(F x, F y) {
  }
  
  SI F from_half(U16 h) {
--#if defined(__aarch64__) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
+-#if defined(SK_CPU_ARM64) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
 -    return vcvt_f32_f16(h);
 -
 -#elif defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
@@ -32,11 +34,11 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
      return _mm256_cvtph_ps(h);
  
  #else
-@@ -673,10 +670,7 @@ SI F from_half(U16 h) {
+@@ -678,10 +675,7 @@ SI F from_half(U16 h) {
  }
  
  SI U16 to_half(F f) {
--#if defined(__aarch64__) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
+-#if defined(SK_CPU_ARM64) && !defined(SK_BUILD_FOR_GOOGLE3)  // Temporary workaround for some Google3 builds.
 -    return vcvt_f16_f32(f);
 -
 -#elif defined(JUMPER_IS_HSW) || defined(JUMPER_IS_AVX512)
