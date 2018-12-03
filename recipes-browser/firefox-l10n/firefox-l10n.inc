@@ -33,13 +33,18 @@ do_configure() {
     xpi-unpack ${LANGUAGE}.xpi ${LANGUAGE}
 }
 
-do_install() {
-    EXTENSION=`sed --posix '/"id"/!d;s/[ ]*"id": "//;s/".*//' ${LANGUAGE}/manifest.json`
+python do_install() {
+    manifest = d.getVar("LANGUAGE") + "/manifest.json"
+    import json
+    with open(manifest) as f:
+        data = json.load(f)
+    d.setVar("EXTENSION", data["applications"]["gecko"]["id"])
+    bb.build.exec_func("do_install_xpi_pack", d)
+}
 
+do_install_xpi_pack() {
     xpi-pack ${LANGUAGE} ${EXTENSION}.xpi
-
-    mkdir -p ${D}${libdir}/firefox/browser/extensions/
-    install -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
+    install -D -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
 }
 
 FILES_${PN} += "${libdir}/firefox"
