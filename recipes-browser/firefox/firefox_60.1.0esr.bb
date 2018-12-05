@@ -4,7 +4,7 @@
 DESCRIPTION ?= "Browser made by mozilla"
 DEPENDS += "curl startup-notification libevent cairo libnotify \
             virtual/libgl pulseaudio yasm-native icu unzip-native \
-            rust-cross-${TARGET_ARCH} cargo-native \
+            virtual/${TARGET_PREFIX}rust cargo-native ${RUSTLIB_DEP} \
            "
 RDEPENDS_${PN}-dev = "dbus"
 
@@ -20,6 +20,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://fixes/link-with-libpangoft.patch \
            file://fixes/bug1433081-fix-with-gl-provider-option.patch \
            file://fixes/0001-Enable-to-specify-RUST_TARGET-via-enviroment-variabl.patch \
+           file://fixes/rustc_cross_flags.patch \
            file://fixes/0001-Add-clang-s-include-path-on-cross-compiling.patch \
            file://fixes/0001-Add-a-preference-to-force-enable-touch-events-withou.patch \
            file://fixes/fix-get-cpu-feature-definition-conflict.patch \
@@ -69,7 +70,7 @@ inherit mozilla rust-common
 DISABLE_STATIC=""
 EXTRA_OEMAKE += "installdir=${libdir}/${PN}"
 
-ARM_INSTRUCTION_SET = "arm"
+ARM_INSTRUCTION_SET_armv5 = "arm"
 
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \

@@ -27,7 +27,9 @@ export HOST_AR = "${BUILD_AR}"
 
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
-	export RUST_TARGET="${RUST_TARGET_SYS}"
+	export RUSTSTDLIB="${STAGING_LIBDIR}/rust"
+	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=unwind"
+	export RUST_TARGET="${TARGET_SYS}"
 	export RUST_TARGET_PATH="${STAGING_LIBDIR_NATIVE}/rustlib"
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
 	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
