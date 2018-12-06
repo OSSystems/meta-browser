@@ -57,11 +57,16 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
            file://debian-hacks/Bug-1464766-Allow-to-relax-the-addon-signature-requi.patch \
            "
+SRC_URI_append_libc-musl = "\
+           file://musl/musl-mutex.patch \
+           file://musl/musl_webrtc_glibcism.patch \
+           file://musl/fix-bug-1261392.patch \
+           file://musl/musl-tools-fix.patch \
+"
 
 SRC_URI[archive.md5sum] = "46deec3c581279f986a1abb2d42697ef"
 SRC_URI[archive.sha256sum] = "a4e7bb80e7ebab19769b2b8940966349136a99aabd497034662cffa54ea30e40"
 
-PR = "r0"
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 
