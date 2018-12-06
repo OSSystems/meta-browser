@@ -1,0 +1,27 @@
+Index: firefox-60.1.0/tools/profiler/core/platform.h
+===================================================================
+--- firefox-60.1.0.orig/tools/profiler/core/platform.h
++++ firefox-60.1.0/tools/profiler/core/platform.h
+@@ -42,10 +42,11 @@
+ #include "PlatformMacros.h"
+ #include <vector>
+ 
+-// We need a definition of gettid(), but glibc doesn't provide a
+-// wrapper for it.
+-#if defined(__GLIBC__)
++// We need a definition of gettid(), but Linux libc implementations don't
++// provide a wrapper for it (except for Bionic)
++#if defined(__linux__)
+ #include <unistd.h>
++#if !defined(__BIONIC__)
+ #include <sys/syscall.h>
+ static inline pid_t gettid()
+ {
+@@ -67,6 +68,7 @@ static inline pid_t gettid()
+ #define getpid _getpid
+ #endif
+ #endif
++#endif
+ 
+ extern mozilla::LazyLogModule gProfilerLog;
+ 
