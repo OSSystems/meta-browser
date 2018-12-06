@@ -1,3 +1,10 @@
+Upstream-Status: Backport
+
+This prevents a dependency on atspi2 from being added to the host
+system.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
 From 32c051ee1d76c33d389492b1cee23f0d1d752c55 Mon Sep 17 00:00:00 2001
 From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Date: Fri, 30 Nov 2018 23:10:19 +0000
