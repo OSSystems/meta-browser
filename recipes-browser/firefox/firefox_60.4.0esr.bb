@@ -64,6 +64,7 @@ SRC_URI_append_libc-musl = "\
            file://musl/musl_webrtc_glibcism.patch \
            file://musl/fix-bug-1261392.patch \
            file://musl/musl-tools-fix.patch \
+           file://musl/musl-cmsghdr.patch \
 "
 
 SRC_URI[archive.md5sum] = "7b8e233ef47f0d341eb1a903552ed9a3"
