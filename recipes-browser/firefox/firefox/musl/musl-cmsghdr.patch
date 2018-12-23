@@ -1,0 +1,24 @@
+ liblibc in rust for musl amd64 and in the musl amd64 C headers, struct cmsghdr is defined something like this:
+
+struct cmsghdr {
+	socklen_t cmsg_len;
+	int __pad1;
+	int cmsg_level;
+	int cmsg_type;
+};
+Unfortunately all other linux arches that use cmsghdr lack the __pad1 field.
+
+In firefox 60.0, media/audioipc/audioipc/src/cmsg.rs, the cmsghdr struct is initialized but it doesn't supply a default value for __pad1, so the build fails
+
+Upstream-Status: Inappropriate [musl specific]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+--- a/media/audioipc/audioipc/src/cmsg.rs
++++ b/media/audioipc/audioipc/src/cmsg.rs
+@@ -108,6 +108,7 @@ impl ControlMsgBuilder {
+ 
+             let cmsghdr = cmsghdr {
+                 cmsg_len: cmsg_len as _,
++                __pad1: 0,
+                 cmsg_level: level,
+                 cmsg_type: kind,
+             };
