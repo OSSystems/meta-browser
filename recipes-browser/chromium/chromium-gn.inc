@@ -9,7 +9,11 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
+        file://0001-google_util-Explicitly-use-std-initializer_list-with.patch \
+        file://0001-Move-the-atspi2-target-to-a-separate-BUILD.gn-file.patch \
         file://0001-Update-asserts-in-mojo-about-int64_t-s-alignment.patch \
+        file://aarch64-skia-build-fix.patch \
+        file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
 "
