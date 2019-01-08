@@ -1,0 +1,33 @@
+commit eec0d4f8714e6671402d41632232ef57348e65c4
+Author: Chris Manchester <cmanchester@mozilla.com>
+Date:   Tue Jul 31 11:58:08 2018 -0700
+
+    Bug 1479540 - Accept "triplet" strings with only two parts in moz.configure. r=froydnj
+    
+    MozReview-Commit-ID: 7pFhoJgBMhQ
+    
+    --HG--
+    extra : rebase_source : 99bac7d4780e5282f6f049963965d5f8ef00fe02
+
+diff --git a/build/moz.configure/init.configure b/build/moz.configure/init.configure
+index fa45ee4da4f5..c233722bc3cb 100644
+--- a/build/moz.configure/init.configure
++++ b/build/moz.configure/init.configure
+@@ -592,7 +592,16 @@ def split_triplet(triplet, allow_unknown=False):
+     # There is also a quartet form:
+     #   CPU_TYPE-MANUFACTURER-KERNEL-OPERATING_SYSTEM
+     # But we can consider the "KERNEL-OPERATING_SYSTEM" as one.
+-    cpu, manufacturer, os = triplet.split('-', 2)
++    # Additionally, some may omit "unknown" when the manufacturer
++    # is not specified and emit
++    #   CPU_TYPE-OPERATING_SYSTEM
++    parts = triplet.split('-', 2)
++    if len(parts) == 3:
++        cpu, _, os = parts
++    elif len(parts) == 2:
++        cpu, os = parts
++    else:
++        die("Unexpected triplet string: %s" % triplet)
+ 
+     # Autoconf uses config.sub to validate and canonicalize those triplets,
+     # but the granularity of its results has never been satisfying to our

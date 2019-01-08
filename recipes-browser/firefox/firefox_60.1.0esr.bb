@@ -30,6 +30,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://fixes/Bug-1470701-Use-run-time-page-size-when-changing-map.patch \
            file://fixes/Bug-1444834-MIPS-Stubout-MacroAssembler-speculationB.patch \
            file://fixes/Bug-1144632-fix-big-endian-Skia-builds.-r-rhunt.patch \
+           file://fixes/bug1479540-Accept-triplet-strings-with-only-two.patch \
            file://gn-configs/x64_False_arm64_linux.json \
            file://gn-configs/x64_False_arm_linux.json \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
