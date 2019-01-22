@@ -1,0 +1,29 @@
+Do not try to set the guessed values for march/mtune/float-abi
+OE config machinary has computed these values already and fed it
+via compiler cmdline to chromium build
+
+I think upstream should check for the values on compiler cmdline
+before overriding these
+
+Upstream-Status: Inappropriate [OE-Specific]
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -786,16 +786,6 @@ config("compiler_cpu_abi") {
+           "-mmmx",
+         ]
+       }
+-    } else if (current_cpu == "arm") {
+-      if (!is_nacl) {
+-        cflags += [
+-          "-march=$arm_arch",
+-          "-mfloat-abi=$arm_float_abi",
+-        ]
+-      }
+-      if (arm_tune != "") {
+-        cflags += [ "-mtune=$arm_tune" ]
+-      }
+     } else if (current_cpu == "mipsel" && !is_nacl) {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {
