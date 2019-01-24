@@ -29,7 +29,7 @@ SRC_URI += "file://0001-zlib-GCC-Disable-CRC32-optimizations-on-ARM.patch"
 # adds packages to DEPENDS.
 DEPENDS += " \
     alsa-lib \
-    at-spi2-core \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'at-spi2-core', '', d)} \
     atk \
     bison-native \
     cairo \
@@ -97,6 +97,7 @@ PACKAGECONFIG[proprietary-codecs] = ' \
 GN_ARGS = " \
         ${PACKAGECONFIG_CONFARGS} \
         is_component_build=${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'true', 'false', d)} \
+        use_atk=${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'true', 'false', d)} \
         use_gnome_keyring=false \
         use_jumbo_build=${@bb.utils.contains('PACKAGECONFIG', 'jumbo-build', 'true', 'false', d)} \
         use_kerberos=false \
