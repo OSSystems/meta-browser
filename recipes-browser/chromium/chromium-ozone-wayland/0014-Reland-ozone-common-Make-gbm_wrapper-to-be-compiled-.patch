@@ -4,13 +4,13 @@ Upstream-Status: Submitted [https://crrev.com/c/1273059]
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From 68aeafa367bcbf67486bf06477078f64013bfa71 Mon Sep 17 00:00:00 2001
+From 8343545c9c57eb3ace93799eab3b40d29d3c617a Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Tue, 4 Dec 2018 10:19:10 +0200
-Subject: [PATCH 15/17] Reland [ozone/common] Make gbm_wrapper to be compiled with
- system libgbm
+Subject: [PATCH 14/16] Reland [ozone/common] Make gbm_wrapper to be compiled
+ with system libgbm
 
-Now, it is based on the https://crrev.com/c/1397961 patch
+Now, it is based on the https://crrev.com/c/1273455 patch
 and is less divergent from the linux implementation.
 
 The previous CL's commit message:

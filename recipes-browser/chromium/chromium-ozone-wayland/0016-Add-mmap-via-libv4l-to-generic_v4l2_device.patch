@@ -10,26 +10,24 @@ try to upstream it.
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From 99195af8c41a7efac1527a267f32b23d9f274725 Mon Sep 17 00:00:00 2001
+From f06d438dec7f03038308ecfa7ac575e78d5a81ec Mon Sep 17 00:00:00 2001
 From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 Date: Wed, 21 Mar 2018 13:18:17 +0200
-Subject: [PATCH 17/17] Add mmap via libv4l to generic_v4l2_device
+Subject: [PATCH 16/16] Add mmap via libv4l to generic_v4l2_device
 
-This patch allows to use v4l2_mmap calls instead of mmap on v4l2
-device fd, when using with linux.
+Issue #437
 
-Change-Id: I3de518f7e3ea2fe8a60bc80b8afcece17f76f153
+Change-Id: I29b5cea457ebac95921f7c4227dbc7b5e2ca0123
 ---
- media/gpu/v4l2/generic_v4l2_device.cc           | 10 ++++++++++
- media/gpu/v4l2/v4l2.sig                         |  2 ++
- media/gpu/v4l2/v4l2_video_decode_accelerator.cc |  1 +
- 3 files changed, 13 insertions(+)
+ media/gpu/v4l2/generic_v4l2_device.cc | 10 ++++++++++
+ media/gpu/v4l2/v4l2.sig               |  2 ++
+ 2 files changed, 12 insertions(+)
 
 diff --git a/media/gpu/v4l2/generic_v4l2_device.cc b/media/gpu/v4l2/generic_v4l2_device.cc
-index a1772f3cb338..1a9231601d64 100644
+index b22e5a703f47..0b30732afa55 100644
 --- a/media/gpu/v4l2/generic_v4l2_device.cc
 +++ b/media/gpu/v4l2/generic_v4l2_device.cc
-@@ -103,10 +103,20 @@ void* GenericV4L2Device::Mmap(void* addr,
+@@ -100,10 +100,20 @@ void* GenericV4L2Device::Mmap(void* addr,
                                int flags,
                                unsigned int offset) {
    DCHECK(device_fd_.is_valid());
@@ -60,18 +58,6 @@ index 4269fb48d592..71b5b3787d56 100644
  LIBV4L_PUBLIC int v4l2_fd_open(int fd, int v4l2_flags);
 +LIBV4L_PUBLIC void *v4l2_mmap(void *start, size_t length, int prot, int flags, int fd, int64_t offset);
 +LIBV4L_PUBLIC int v4l2_munmap(void *_start, size_t length);
-diff --git a/media/gpu/v4l2/v4l2_video_decode_accelerator.cc b/media/gpu/v4l2/v4l2_video_decode_accelerator.cc
-index 11fc4620bfd7..9226a71184ac 100644
---- a/media/gpu/v4l2/v4l2_video_decode_accelerator.cc
-+++ b/media/gpu/v4l2/v4l2_video_decode_accelerator.cc
-@@ -27,6 +27,7 @@
- #include "media/base/scopedfd_helper.h"
- #include "media/base/unaligned_shared_memory.h"
- #include "media/base/video_types.h"
-+#include "media/gpu/buildflags.h"
- #include "media/gpu/v4l2/v4l2_image_processor.h"
- #include "media/video/h264_parser.h"
- #include "ui/gfx/geometry/rect.h"
 -- 
 2.17.1
 

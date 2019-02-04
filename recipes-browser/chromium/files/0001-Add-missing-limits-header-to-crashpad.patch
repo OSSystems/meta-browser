@@ -1,0 +1,43 @@
+Upstream-Status: Submitted [https://crrev.com/c/1454376]
+
+* Submitted to upstream, waiting approval
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 0200019b81a640d285327138739f3ad58d5610ea Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 5 Feb 2019 08:33:45 +0200
+Subject: [PATCH] Add missing limits header to crashpad/crashpad.
+
+This patch fixes the following error:
+
+../../third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc:246:12: error: 'numeric_limits' is not a member of 'std'
+       std::numeric_limits<decltype(context->spsr)>::max()) {
+            ^~~~~~~~~~~~~~
+../../third_party/crashpad/crashpad/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc:246:27: error: expected primary-expression before 'decltype'
+       std::numeric_limits<decltype(context->spsr)>::max()) {
+                           ^~~~~~~~
+../../third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc:246:27: error: expected ')' before 'decltype'
+
+Bug: chromium:819294
+Change-Id: I4f31a33fcdae9567c71a4d371d2e6afe68d2ef6a
+---
+ .../crashpad/crashpad/snapshot/linux/cpu_context_linux.cc       | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc b/third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc
+index 6ba52a8def14..50800bac9bef 100644
+--- a/third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc
++++ b/third_party/crashpad/crashpad/snapshot/linux/cpu_context_linux.cc
+@@ -14,6 +14,8 @@
+ 
+ #include "snapshot/linux/cpu_context_linux.h"
+ 
++#include <limits>
++
+ #include <stddef.h>
+ #include <string.h>
+ 
+-- 
+2.17.1
+

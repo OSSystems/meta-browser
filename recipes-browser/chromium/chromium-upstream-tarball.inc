@@ -1,8 +1,8 @@
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 S = "${WORKDIR}/chromium-${PV}"
 
-SRC_URI[md5sum] = "d0f3540a8d6966d7ec04892738060635"
-SRC_URI[sha256sum] = "1c56a9e30825774c83d568d194e9585625c6e90f81ee0ef09760fcedc86b9d45"
+SRC_URI[md5sum] = "ac57ccbec0aceee41101ac1255b3c14b"
+SRC_URI[sha256sum] = "dfe89fe389008e6d2098099948d10774989d2f3e8dca6ace78ea4ec636dd8006"
 
 LIC_FILES_CHKSUM = "\
     file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
@@ -17,8 +17,8 @@ LIC_FILES_CHKSUM = "\
     file://${S}/base/third_party/xdg_mime/LICENSE;md5=8e8261c342b33e06648483ac7f4862c9 \
     file://${S}/base/third_party/xdg_user_dirs/LICENSE;md5=d998f250c491c329a8254dd1ca62c647 \
     file://${S}/buildtools/third_party/libc++/trunk/LICENSE.TXT;md5=7b3a0e1b99822669d630011defe9bfd9 \
-    file://${S}/buildtools/third_party/libc++abi/trunk/LICENSE.TXT;md5=8ae94dd6195890583eee15a988b6ea79 \
-    file://${S}/buildtools/third_party/libunwind/trunk/LICENSE.TXT;md5=f1a6f38bb5a8dabe8e3ec33557112dc9 \
+    file://${S}/buildtools/third_party/libc++abi/trunk/LICENSE.TXT;md5=3600117b7c18121ab04c53e4615dc36e \
+    file://${S}/buildtools/third_party/libunwind/trunk/LICENSE.TXT;md5=7ea986af7f70eaea5a297dd2744c79a5 \
     file://${S}/chrome/android/third_party/compositor_animator/LICENSE;md5=90e2812358f341d6d34df8e852cffc15 \
     file://${S}/chrome/installer/mac/third_party/bsdiff/LICENSE;md5=0dbe7a50f028269750631fcbded3846a \
     file://${S}/chrome/installer/mac/third_party/xz/LICENSE;md5=8bbde65ae0523dc878ed1ac1252d2d14 \
@@ -41,7 +41,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/net/third_party/nss/LICENSE;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
     file://${S}/net/third_party/uri_template/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/SPIRV-Tools/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/WebKit/LICENSE_FOR_ABOUT_CREDITS;md5=11e90d553b211de885f245900c4ccf89 \
     file://${S}/third_party/abseil-cpp/LICENSE;md5=917cc5763a741e915bf7f2cc55830c17 \
     file://${S}/third_party/accessibility-audit/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/afl/src/docs/COPYING;md5=3b83ef96387f14655fc854ddc3c6bd57 \
@@ -226,7 +225,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/yara/src/COPYING;md5=541962f9dacf27c928f57e3a7ba9e1f2 \
     file://${S}/third_party/yasm/source/patched-yasm/COPYING;md5=a12d8903508fb6bfd49d8d82c6170dd9 \
     file://${S}/third_party/zlib/LICENSE;md5=f09575dbfb09420642318b413159496f \
-    file://${S}/tools/fuchsia/fidlgen_js/third_party/enum34/LICENSE;md5=0a97a53a514564c20efd7b2e8976c87e \
     file://${S}/url/third_party/mozilla/LICENSE.txt;md5=437ced1e9b232651b0912a9594da43b2 \
     file://${S}/v8/LICENSE;md5=bda6d3b7be87052ff181da3ed9fd5501 \
     file://${S}/v8/LICENSE.fdlibm;md5=b17367d6c97e638599071d99a3049dfe \

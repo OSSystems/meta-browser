@@ -4,11 +4,10 @@ Upstream-Status: Backport
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From ddf7861f328556483f537ee3d6b38ee28a237634 Mon Sep 17 00:00:00 2001
+From 903f3617968496b7300eba258dbc15dd9bd72aff Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 17 Dec 2018 22:38:55 +0000
-Subject: [PATCH 12/17] [ozone] Rename ClipboardDelegate to
- PlatformClipboard.
+Subject: [PATCH 02/16] [ozone] Rename ClipboardDelegate to PlatformClipboard.
 
 In order to comply with other interfaces, rename the ClipboardDelegate
 to PlatformClipboard, and add OzonePlatform::GetPlatformClipboard()
@@ -71,7 +70,7 @@ index 0bba90d5b5d4..a8aa25987772 100644
                                       gfx::BufferUsage usage) const override {
      if (std::find(supported_buffer_formats_.begin(),
 diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
-index ead0cf3ef4cb..3571173c7627 100644
+index 72c8d8b527db..12d029df644c 100644
 --- a/ui/ozone/platform/wayland/wayland_connection.cc
 +++ b/ui/ozone/platform/wayland/wayland_connection.cc
 @@ -203,13 +203,13 @@ void WaylandConnection::ScheduleBufferSwap(
