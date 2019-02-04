@@ -1,0 +1,168 @@
+Upstream-status: Backport
+
+* Backported from ToT - https://gn-review.googlesource.com/c/gn/+/3820
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5519dc2f197d41caa2117e858b9238007fbcf79f Mon Sep 17 00:00:00 2001
+From: Petr Hosek <phosek@google.com>
+Date: Fri, 25 Jan 2019 14:03:07 -0800
+Subject: [PATCH] Reintroduce the ICF flag, turn it on for bots
+
+This was brought up on https://gn-review.googlesource.com/c/gn/+/3741,
+some of GN users use linkers that don't support ICF so we need to
+provide an option to disable it rather than enabling it unconditionally.
+
+Change-Id: I8300f2b1883468a586ca26f358c6fdfc1c93afb5
+Reviewed-on: https://gn-review.googlesource.com/c/3820
+Reviewed-by: Scott Graham <scottmg@chromium.org>
+Commit-Queue: Petr Hosek <phosek@google.com>
+---
+
+diff --git a/tools/gn/build/gen.py b/tools/gn/build/gen.py
+index ee4f8e1..77fe5b5 100755
+--- a/tools/gn/build/gen.py
++++ b/tools/gn/build/gen.py
+@@ -83,6 +83,8 @@
+                     choices=Platform.known_platforms())
+   parser.add_option('--use-lto', action='store_true',
+                     help='Enable the use of LTO')
++  parser.add_option('--use-icf', action='store_true',
++                    help='Enable the use of Identical Code Folding')
+   parser.add_option('--no-last-commit-position', action='store_true',
+                     help='Do not generate last_commit_position.h.')
+   parser.add_option('--out-path',
+@@ -299,7 +301,7 @@
+           ldflags.append('-Wl,-strip-all')
+ 
+       # Enable identical code-folding.
+-      if not platform.is_darwin():
++      if options.use_icf and not platform.is_darwin():
+         ldflags.append('-Wl,--icf=all')
+ 
+     cflags.extend([
+diff --git a/tools/gn/infra/recipes/gn.expected/ci_linux.json b/tools/gn/infra/recipes/gn.expected/ci_linux.json
+index 7a91854..0179799 100644
+--- a/tools/gn/infra/recipes/gn.expected/ci_linux.json
++++ b/tools/gn/infra/recipes/gn.expected/ci_linux.json
+@@ -155,7 +155,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/ci_mac.json b/tools/gn/infra/recipes/gn.expected/ci_mac.json
+index 155a77e..bb30be4 100644
+--- a/tools/gn/infra/recipes/gn.expected/ci_mac.json
++++ b/tools/gn/infra/recipes/gn.expected/ci_mac.json
+@@ -212,7 +212,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/ci_win.json b/tools/gn/infra/recipes/gn.expected/ci_win.json
+index a565841..764f2fa 100644
+--- a/tools/gn/infra/recipes/gn.expected/ci_win.json
++++ b/tools/gn/infra/recipes/gn.expected/ci_win.json
+@@ -246,7 +246,8 @@
+       "python",
+       "-u",
+       "[START_DIR]\\gn\\build\\gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]\\gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/cipd_exists.json b/tools/gn/infra/recipes/gn.expected/cipd_exists.json
+index 4c2bd96..a1b32ae 100644
+--- a/tools/gn/infra/recipes/gn.expected/cipd_exists.json
++++ b/tools/gn/infra/recipes/gn.expected/cipd_exists.json
+@@ -155,7 +155,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/cipd_register.json b/tools/gn/infra/recipes/gn.expected/cipd_register.json
+index 4e562db..a626fa6 100644
+--- a/tools/gn/infra/recipes/gn.expected/cipd_register.json
++++ b/tools/gn/infra/recipes/gn.expected/cipd_register.json
+@@ -155,7 +155,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/cq_linux.json b/tools/gn/infra/recipes/gn.expected/cq_linux.json
+index 452b8fd..6c00b06 100644
+--- a/tools/gn/infra/recipes/gn.expected/cq_linux.json
++++ b/tools/gn/infra/recipes/gn.expected/cq_linux.json
+@@ -182,7 +182,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/cq_mac.json b/tools/gn/infra/recipes/gn.expected/cq_mac.json
+index fe4105c..7872a57 100644
+--- a/tools/gn/infra/recipes/gn.expected/cq_mac.json
++++ b/tools/gn/infra/recipes/gn.expected/cq_mac.json
+@@ -239,7 +239,8 @@
+       "python",
+       "-u",
+       "[START_DIR]/gn/build/gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]/gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.expected/cq_win.json b/tools/gn/infra/recipes/gn.expected/cq_win.json
+index 21f6dd2..92f665a 100644
+--- a/tools/gn/infra/recipes/gn.expected/cq_win.json
++++ b/tools/gn/infra/recipes/gn.expected/cq_win.json
+@@ -273,7 +273,8 @@
+       "python",
+       "-u",
+       "[START_DIR]\\gn\\build\\gen.py",
+-      "--use-lto"
++      "--use-lto",
++      "--use-icf"
+     ],
+     "cwd": "[START_DIR]\\gn",
+     "env": {
+diff --git a/tools/gn/infra/recipes/gn.py b/tools/gn/infra/recipes/gn.py
+index f3280c0..c19672e 100644
+--- a/tools/gn/infra/recipes/gn.py
++++ b/tools/gn/infra/recipes/gn.py
+@@ -69,7 +69,7 @@
+       },
+       {
+           'name': 'release',
+-          'args': ['--use-lto']
++          'args': ['--use-lto', '--use-icf']
+       },
+   ]
+ 

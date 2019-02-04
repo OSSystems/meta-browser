@@ -4,11 +4,11 @@ Upstream-Status: Backport
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From 13f835349975f4250724defeeef272371e2111af Mon Sep 17 00:00:00 2001
+From e96597372969dc31ae86f7d3e08af93be45ed617 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Tue, 4 Dec 2018 08:40:20 +0000
-Subject: [PATCH 11/17] fixup! [ozone] move gbm wrapper into a
- separate source set.
+Subject: [PATCH 01/16] fixup! [ozone] move gbm wrapper into a separate source
+ set.
 
 Add accidentelly removed libdrm dep.
 

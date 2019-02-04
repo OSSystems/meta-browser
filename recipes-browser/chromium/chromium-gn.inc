@@ -9,9 +9,9 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-google_util-Explicitly-use-std-initializer_list-with.patch \
+        file://0001-Add-missing-limits-header-to-crashpad.patch \
+        file://0001-GCC-use-Wno-errorheader-hygiene-only-with-clang.patch \
         file://0001-Move-the-atspi2-target-to-a-separate-BUILD.gn-file.patch \
-        file://0001-Update-asserts-in-mojo-about-int64_t-s-alignment.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
@@ -105,6 +105,10 @@ GN_ARGS = " \
         use_system_freetype=true \
         use_system_libjpeg=true \
 "
+
+# Closure_compile needs to be disabled to avoid pulling in java dependencies,
+# which are typicaly not wanted. It started to happen after https://crrev.com/c/1278470
+GN_ARGS += "closure_compile=false"
 
 # Make sure pkg-config, when used with the host's toolchain to build the
 # binaries we need to run on the host, uses the right pkg-config to avoid
