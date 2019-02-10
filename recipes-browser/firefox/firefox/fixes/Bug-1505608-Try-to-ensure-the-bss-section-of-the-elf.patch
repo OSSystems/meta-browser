@@ -1,0 +1,33 @@
+From: Mike Hommey <mh+mozilla@glandium.org>
+Date: Thu, 8 Nov 2018 14:50:22 +0000
+Subject: Bug 1505608 - Try to ensure the bss section of the elfhack testcase
+ stays large enough. r=froydnj
+
+In bug 1470701, we added a dummy global variable so that it ends up in
+the bss section, making it large enough for two pointers. Unfortunately,
+in some cases, the symbol is eliminated by the linker because it is
+unused. So we try to ensure it stays there.
+
+Differential Revision: https://phabricator.services.mozilla.com/D11257
+---
+ build/unix/elfhack/test.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/build/unix/elfhack/test.c b/build/unix/elfhack/test.c
+index 8c66c19631d1..e543b48fff46 100644
+--- a/build/unix/elfhack/test.c
++++ b/build/unix/elfhack/test.c
+@@ -136,8 +136,12 @@ size_t dummy;
+ void end_test() {
+     static size_t count = 0;
+     /* Only exit when both constructors have been called */
+-    if (++count == 2)
++    if (++count == 2) {
+         ret = 0;
++        // Avoid the dummy variable being stripped out at link time because
++        // it's unused.
++        dummy = 1;
++    }
+ }
+ 
+ void test() {

@@ -1,0 +1,220 @@
+From 7c210280dd9f00574d20ce9a1f1c4ecae8e92645 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Wed, 19 Dec 2018 15:23:06 +0900
+Subject: [PATCH] libloading: Use lazy_static instead of weak static
+
+This commit reverts the following change of libloading:
+
+  * https://github.com/nagisa/rust_libloading/commit/d870a3899d0f108ce9613d0c47d880161bebcc11
+
+to avoid a build issue on Yocto:
+
+ 0:01.78 Internal error occurred: Command "/build/ebisu-bsp/build/tmp/hosttools/gcc" "-std=gnu99" "-O2" "-ffunction-sections" "-fdata-sections
+" "-fPIC" "-MD" "-MP" "-MF" ".deps/force-cargo-library-build.pp" "-m64" "-o" "/build/ebisu-bsp/build/tmp/work/aarch64-poky-linux/firefox/60.4.
+0esr-r0/firefox-60.4.0/firefox-build-dir/toolkit/library/release/build/libloading-4bfcbe83545248d4/out/src/os/unix/global_static.o" "-c" "src/
+os/unix/global_static.c" with args "gcc" did not execute successfully (status code exit code: 1).
+ 0:01.78
+ 0:01.78 ', /build/ebisu-bsp/build/tmp/work/aarch64-poky-linux/firefox/60.4.0esr-r0/firefox-60.4.0/third_party/rust/cc/src/lib.rs:2260:5
+ 0:01.78 stack backtrace:
+ 0:01.78    0:     0x5605d756ef8e - std::sys::unix::backtrace::tracingimpunwind_backtrace::he02ced09d6ef9634
+ 0:01.78                                at libstd/sys/unix/backtrace/tracing/gcc_s.rs:49
+ 0:01.78    1:     0x5605d7577a26 - std::sys_common::backtrace::print::h899c99cf51528fce
+ 0:01.78                                at libstd/sys_common/backtrace.rs:71
+ 0:01.78                                at libstd/sys_common/backtrace.rs:59
+ 0:01.78    2:     0x5605d755d70b - std::panicking::default_hook::{{closure}}::h1293938f39991188
+ 0:01.78                                at libstd/panicking.rs:211
+ 0:01.78    3:     0x5605d755d3e3 - std::panicking::default_hook::h21d85e0fe60e7542
+ 0:01.78                                at libstd/panicking.rs:227
+ 0:01.78    4:     0x5605d755dd2e - std::panicking::rust_panic_with_hook::heef4f32e5b81276f
+ 0:01.78                                at libstd/panicking.rs:463
+ 0:01.78    5:     0x5605d755d8cc - std::panicking::begin_panic_fmt::h7b91617991a35914
+ 0:01.78                                at libstd/panicking.rs:350
+ 0:01.78    6:     0x5605d755a111 - cc::fail::hb8a3db7ae214ddd8
+ 0:01.78    7:     0x5605d754eb1e - cc::Build::compile::hec719bba1d1593cd
+ 0:01.78    8:     0x5605d7540c01 - build_script_build::main::h83038a714584dca2
+ 0:01.78    9:     0x5605d753fd92 - std::rt::lang_start::{{closure}}::hc8b1f864a05e672f
+ 0:01.78   10:     0x5605d755d812 - std::panicking::try::do_call::h9ce18ce7a2108605
+ 0:01.78                                at libstd/rt.rs:59
+ 0:01.78                                at libstd/panicking.rs:310
+ 0:01.78   11:     0x5605d757eab9 - __rust_maybe_catch_panic
+ 0:01.78                                at libpanic_unwind/lib.rs:105
+ 0:01.78   12:     0x5605d75666c5 - std::rt::lang_start_internal::h93415d3576bc8676
+ 0:01.78                                at libstd/panicking.rs:289
+ 0:01.78                                at libstd/panic.rs:374
+ 0:01.78                                at libstd/rt.rs:58
+ 0:01.78   13:     0x5605d7540d93 - main
+ 0:01.78   14:     0x7fbd1ab7e82f - __libc_start_main
+ 0:01.78   15:     0x5605d753f978 - _start
+ 0:01.78   16:                0x0 - <unknown>
+
+Although the best solution for it is fix the build issue but I don't
+know how to investivate the root cause at this momemnt.
+So we choose the plan B since we don't need this fix on our build
+environment.
+
+Upstream-Status: Inappropriate [OE-specific]
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ Cargo.lock                                         |  2 +-
+ third_party/rust/libloading/.cargo-checksum.json   |  2 +-
+ third_party/rust/libloading/Cargo.toml             |  4 ++--
+ third_party/rust/libloading/build.rs               |  8 -------
+ third_party/rust/libloading/src/lib.rs             |  4 ++++
+ .../rust/libloading/src/os/unix/global_static.c    | 20 ----------------
+ third_party/rust/libloading/src/os/unix/mod.rs     | 27 ++++------------------
+ 7 files changed, 12 insertions(+), 55 deletions(-)
+ delete mode 100644 third_party/rust/libloading/src/os/unix/global_static.c
+
+diff --git a/Cargo.lock b/Cargo.lock
+index eff696ab..ec49df0 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -896,7 +896,7 @@ name = "libloading"
+ version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ dependencies = [
+- "cc 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)",
++ "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "winapi 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ ]
+ 
+diff --git a/third_party/rust/libloading/.cargo-checksum.json b/third_party/rust/libloading/.cargo-checksum.json
+index 33b8d75..5be855b 100644
+--- a/third_party/rust/libloading/.cargo-checksum.json
++++ b/third_party/rust/libloading/.cargo-checksum.json
+@@ -1 +1 @@
+-{"files":{".travis.yml":"3c9d7103068d644d68f5d0f9dd6a9ba00eb86bfb4cfc2c2c14c8a853144fcf09","Cargo.toml":"5bc50b6714c71bebc3b616d276e3c73c34ebd375ec99fcaba76b29ac5685e696","LICENSE":"b29f8b01452350c20dd1af16ef83b598fea3053578ccc1c7a0ef40e57be2620f","README.mkd":"b4cd83f110d01dc5aa8fcaf3da34bdbe1478efdba767d73abc14d4d87e4775fa","appveyor.yml":"8382c7f1769f6cf78029a221058c4d73f35a48308b5dfc38d875facabec1c139","build.rs":"dd60f6fc4cef3f02f56b74b6f03ed665ee8ce47e4040e2919282289affa1aca8","src/changelog.rs":"1ac991741280fdd9c5268d617ae7279d08146cfb3222b86e32315ff90b392598","src/lib.rs":"c17a20b5b9125b5a6d7b0913c35448ee688795f3e03f7bf1bf0aaf3e7e4e729e","src/os/mod.rs":"51d733e5522dacd6069642ad66aa6d7acf6c82950c934eb040e8dfd112e6d610","src/os/unix/global_static.c":"b1096dedf7d4aed5c28b658fc917f6603339ffd92390c84e25cb543bdc9460ac","src/os/unix/mod.rs":"717c09d09c20b14b8b8344899ffc3448ef23cf230ec61536a9fd53e8900d05ee","src/os/windows/mod.rs":"0b648941117a1573501ce1be5fcd11416361e1fe9c19a49f0826569a6cbc400a","src/test_helpers.rs":"3a55052e8cd5231e97d9282b43398c2f144c57ced2d2df64bde7f482f5c778e7","src/util.rs":"0b0155448a26db4b00b2a6ca129e0e1f6f75870c56c9777d262941818c7581b7","tests/functions.rs":"4633f3673db6a5b3623ea8927b13314c25502c9fbb63bb17a5a35650ea489012","tests/markers.rs":"8e9c1b883404d9190e4f23ed39b3d6cbbccb3a07883f733b04aed4357b9c6aca","tests/nagisa32.dll":"5c69b2bd9c8a6ad04165c221075fc9fade1dd66ca697399ace528a5a62328e36","tests/nagisa64.dll":"e20b95e3036f3289421abd100760874d4f455afd33c3b5b64fec56b191f7d477","tests/windows.rs":"7711dfe19062d91356cd127546542b1b6e13aeef76ad3098f32c8a6ae319b66a"},"package":"9c3ad660d7cb8c5822cd83d10897b0f1f1526792737a179e73896152f85b88c2"}
+\ No newline at end of file
++{"files":{".travis.yml":"3c9d7103068d644d68f5d0f9dd6a9ba00eb86bfb4cfc2c2c14c8a853144fcf09","Cargo.toml":"d8001e8b4d0c2930492cfed9731395da77f495783d969b4fd9aaae43c2184dd0","LICENSE":"b29f8b01452350c20dd1af16ef83b598fea3053578ccc1c7a0ef40e57be2620f","README.mkd":"b4cd83f110d01dc5aa8fcaf3da34bdbe1478efdba767d73abc14d4d87e4775fa","appveyor.yml":"8382c7f1769f6cf78029a221058c4d73f35a48308b5dfc38d875facabec1c139","build.rs":"b0cab713feb1fa86fec27af607272f2964e79cca6637ae837a1dfd9d88b67dd4","src/changelog.rs":"1ac991741280fdd9c5268d617ae7279d08146cfb3222b86e32315ff90b392598","src/lib.rs":"1f2751c7978d45010da9fc97cf6fda1f8e439910ce55f814f8d0019ca388639c","src/os/mod.rs":"51d733e5522dacd6069642ad66aa6d7acf6c82950c934eb040e8dfd112e6d610","src/os/unix/mod.rs":"2af876458bf0012f7c0a06e8e976aff897410e22f3776c34ab1f2aa79fbd59aa","src/os/windows/mod.rs":"0b648941117a1573501ce1be5fcd11416361e1fe9c19a49f0826569a6cbc400a","src/test_helpers.rs":"3a55052e8cd5231e97d9282b43398c2f144c57ced2d2df64bde7f482f5c778e7","src/util.rs":"0b0155448a26db4b00b2a6ca129e0e1f6f75870c56c9777d262941818c7581b7","tests/functions.rs":"4633f3673db6a5b3623ea8927b13314c25502c9fbb63bb17a5a35650ea489012","tests/markers.rs":"8e9c1b883404d9190e4f23ed39b3d6cbbccb3a07883f733b04aed4357b9c6aca","tests/nagisa32.dll":"5c69b2bd9c8a6ad04165c221075fc9fade1dd66ca697399ace528a5a62328e36","tests/nagisa64.dll":"e20b95e3036f3289421abd100760874d4f455afd33c3b5b64fec56b191f7d477","tests/windows.rs":"7711dfe19062d91356cd127546542b1b6e13aeef76ad3098f32c8a6ae319b66a"},"package":"9c3ad660d7cb8c5822cd83d10897b0f1f1526792737a179e73896152f85b88c2"}
+diff --git a/third_party/rust/libloading/Cargo.toml b/third_party/rust/libloading/Cargo.toml
+index ccb1134..0831625 100644
+--- a/third_party/rust/libloading/Cargo.toml
++++ b/third_party/rust/libloading/Cargo.toml
+@@ -20,8 +20,8 @@ documentation = "https://docs.rs/libloading/"
+ keywords = ["dlopen", "load", "shared", "dylib"]
+ license = "ISC"
+ repository = "https://github.com/nagisa/rust_libloading/"
+-[build-dependencies.cc]
+-version = "1.0"
++[dependencies]
++lazy_static = "1"
+ [target."cfg(windows)".dependencies.winapi]
+ version = "0.3"
+ features = ["winerror", "errhandlingapi", "libloaderapi"]
+diff --git a/third_party/rust/libloading/build.rs b/third_party/rust/libloading/build.rs
+index 88c8c5f..be3afba 100644
+--- a/third_party/rust/libloading/build.rs
++++ b/third_party/rust/libloading/build.rs
+@@ -1,11 +1,8 @@
+-extern crate cc;
+-
+ use std::io::Write;
+ use std::env;
+ 
+ fn main(){
+     let target_os = env::var("CARGO_CFG_TARGET_OS");
+-    let is_unix = env::var_os("CARGO_CFG_UNIX").is_some();
+     match target_os.as_ref().map(|x| &**x) {
+         Ok("linux") | Ok("android") => println!("cargo:rustc-link-lib=dl"),
+         Ok("freebsd") | Ok("dragonfly") => println!("cargo:rustc-link-lib=c"),
+@@ -23,9 +20,4 @@ fn main(){
+             ::std::process::exit(0xfc);
+         }
+     }
+-    if is_unix {
+-        cc::Build::new()
+-            .file("src/os/unix/global_static.c")
+-            .compile("global_static");
+-    }
+ }
+diff --git a/third_party/rust/libloading/src/lib.rs b/third_party/rust/libloading/src/lib.rs
+index 75f5595..8ec7f2c 100644
+--- a/third_party/rust/libloading/src/lib.rs
++++ b/third_party/rust/libloading/src/lib.rs
+@@ -42,6 +42,10 @@ use std::ops;
+ use std::marker;
+ 
+ #[cfg(unix)]
++#[macro_use]
++extern crate lazy_static;
++
++#[cfg(unix)]
+ use self::os::unix as imp;
+ #[cfg(windows)]
+ use self::os::windows as imp;
+diff --git a/third_party/rust/libloading/src/os/unix/global_static.c b/third_party/rust/libloading/src/os/unix/global_static.c
+deleted file mode 100644
+index a905780..0000000
+--- a/third_party/rust/libloading/src/os/unix/global_static.c
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#include <pthread.h>
+-#include <stdlib.h>
+-
+-pthread_mutex_t __attribute__((weak)) rust_libloading_dlerror_mutex = PTHREAD_MUTEX_INITIALIZER;
+-
+-void __attribute__((weak))
+-rust_libloading_dlerror_mutex_lock(void)
+-{
+-    if (pthread_mutex_lock(&rust_libloading_dlerror_mutex) != 0) {
+-        abort();
+-    }
+-}
+-
+-void __attribute__((weak))
+-rust_libloading_dlerror_mutex_unlock(void)
+-{
+-    if (pthread_mutex_unlock(&rust_libloading_dlerror_mutex) != 0) {
+-        abort();
+-    }
+-}
+diff --git a/third_party/rust/libloading/src/os/unix/mod.rs b/third_party/rust/libloading/src/os/unix/mod.rs
+index a6f6f12..69398a6 100644
+--- a/third_party/rust/libloading/src/os/unix/mod.rs
++++ b/third_party/rust/libloading/src/os/unix/mod.rs
+@@ -4,29 +4,10 @@ use std::ffi::{CStr, OsStr};
+ use std::{fmt, io, marker, mem, ptr};
+ use std::os::raw;
+ use std::os::unix::ffi::OsStrExt;
++use std::sync::Mutex;
+ 
+-extern "C" {
+-    fn rust_libloading_dlerror_mutex_lock();
+-    fn rust_libloading_dlerror_mutex_unlock();
+-}
+-
+-struct DlerrorMutexGuard(());
+-
+-impl DlerrorMutexGuard {
+-    fn new() -> DlerrorMutexGuard {
+-        unsafe {
+-            rust_libloading_dlerror_mutex_lock();
+-        }
+-        DlerrorMutexGuard(())
+-    }
+-}
+-
+-impl Drop for DlerrorMutexGuard {
+-    fn drop(&mut self) {
+-        unsafe {
+-            rust_libloading_dlerror_mutex_unlock();
+-        }
+-    }
++lazy_static! {
++    static ref DLERROR_MUTEX: Mutex<()> = Mutex::new(());
+ }
+ 
+ // libdl is crazy.
+@@ -38,7 +19,7 @@ fn with_dlerror<T, F>(closure: F) -> Result<T, Option<io::Error>>
+ where F: FnOnce() -> Option<T> {
+     // We will guard all uses of libdl library with our own mutex. This makes libdl
+     // safe to use in MT programs provided the only way a program uses libdl is via this library.
+-    let _lock = DlerrorMutexGuard::new();
++    let _lock = DLERROR_MUTEX.lock();
+     // While we could could call libdl here to clear the previous error value, only the dlsym
+     // depends on it being cleared beforehand and only in some cases too. We will instead clear the
+     // error inside the dlsym binding instead.
+-- 
+2.7.4
+
