@@ -1,20 +1,20 @@
-From 06767e3c8204481c24081ffc4e372a5795f83f77 Mon Sep 17 00:00:00 2001
+From b4cc946319096381fc9bc66524d7e35c8646205d Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
-Date: Wed, 7 Mar 2018 17:40:14 +0900
+Date: Fri, 12 Oct 2018 13:44:01 +0900
 Subject: [PATCH] Enable to specify RUST_TARGET via enviroment variable
 
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
 ---
- build/moz.configure/rust.configure | 106 +++++++++++++++++++++----------------
+ build/moz.configure/rust.configure | 106 +++++++++++++++++------------
  1 file changed, 61 insertions(+), 45 deletions(-)
 
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index 749085744738..3b030dfd9eee 100644
+index 51bd1c59c59b..abd63cc59da4 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
 @@ -151,12 +151,6 @@ def rust_triple_alias(host_or_target):
  
-     @depends(rustc, host_or_target, building_with_gcc, rust_supported_targets,
+     @depends(rustc, host_or_target, c_compiler, rust_supported_targets,
               when=rust_compiler)
 -    @imports('os')
 -    @imports('subprocess')
@@ -22,7 +22,7 @@ index 749085744738..3b030dfd9eee 100644
 -    @imports(_from='mozbuild.shellutil', _import='quote')
 -    @imports(_from='tempfile', _import='mkstemp')
 -    @imports(_from='textwrap', _import='dedent')
-     def rust_target(rustc, host_or_target, building_with_gcc,
+     def rust_target(rustc, host_or_target, compiler_info,
                      rust_supported_targets):
          # Rust's --target options are similar to, but not exactly the same
 @@ -190,45 +184,6 @@ def rust_triple_alias(host_or_target):
@@ -140,5 +140,5 @@ index 749085744738..3b030dfd9eee 100644
  set_config('RUST_HOST_TARGET', rust_host_triple)
  
 -- 
-2.14.1
+2.17.1
 

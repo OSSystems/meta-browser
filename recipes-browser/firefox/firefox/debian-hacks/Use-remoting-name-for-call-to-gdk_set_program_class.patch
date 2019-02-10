@@ -1,0 +1,34 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Mon, 3 Sep 2018 07:37:40 +0900
+Subject: Use remoting name for call to gdk_set_program_class
+
+Closes: #907574
+---
+ widget/gtk/nsAppShell.cpp | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/widget/gtk/nsAppShell.cpp b/widget/gtk/nsAppShell.cpp
+index c81dac529b40..f460a9707555 100644
+--- a/widget/gtk/nsAppShell.cpp
++++ b/widget/gtk/nsAppShell.cpp
+@@ -23,6 +23,7 @@
+ #include "WakeLockListener.h"
+ #endif
+ #include "gfxPlatform.h"
++#include "nsAppRunner.h"
+ #include "ScreenHelperGTK.h"
+ #include "HeadlessScreenHelper.h"
+ #include "mozilla/widget/ScreenManager.h"
+@@ -182,10 +183,8 @@ nsAppShell::Init()
+         // option when program uses gdk_set_program_class().
+         //
+         // See https://bugzilla.gnome.org/show_bug.cgi?id=747634
+-        nsAutoString brandName;
+-        mozilla::widget::WidgetUtils::GetBrandShortName(brandName);
+-        if (!brandName.IsEmpty()) {
+-            gdk_set_program_class(NS_ConvertUTF16toUTF8(brandName).get());
++        if (gAppData) {
++            gdk_set_program_class(gAppData->remotingName);
+         }
+     }
+ 

@@ -30,7 +30,9 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://fixes/Bug-1470701-Use-run-time-page-size-when-changing-map.patch \
            file://fixes/Bug-1444834-MIPS-Stubout-MacroAssembler-speculationB.patch \
            file://fixes/Bug-1144632-fix-big-endian-Skia-builds.-r-rhunt.patch \
-           file://fixes/bug1479540-Accept-triplet-strings-with-only-two.patch \
+           file://fixes/Bug-1505608-Try-to-ensure-the-bss-section-of-the-elf.patch \
+           file://fixes/Bug-1500850-Wayland-Add-missing-dbus-header-dbus-gli.patch \
+           file://fixes/0001-libloading-Use-lazy_static-instead-of-weak-static.patch \
            file://gn-configs/x64_False_arm64_linux.json \
            file://gn-configs/x64_False_arm_linux.json \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
@@ -40,7 +42,6 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://porting/Fix-CPU_ARCH-test-for-libjpeg-on-mips.patch \
            file://porting/Work-around-Debian-bug-844357.patch \
            file://porting/Bug-1444303-MIPS-Fix-build-failures-after-Bug-142558.patch \
-           file://porting/Add-struct-ucred-for-Linux-on-MIPS.patch \
            file://prefs/Set-javascript.options.showInConsole.patch \
            file://prefs/Set-DPI-to-system-settings.patch \
            file://prefs/Don-t-auto-disable-extensions-in-system-directories.patch \
@@ -52,11 +53,11 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/${PN}-${PV}
            file://debian-hacks/Don-t-build-image-gtests.patch \
            file://debian-hacks/Allow-to-override-ICU_DATA_FILE-from-the-environment.patch \
            file://debian-hacks/Set-program-name-from-the-remoting-name.patch \
+           file://debian-hacks/Use-remoting-name-for-call-to-gdk_set_program_class.patch \
            file://debian-hacks/Use-the-Mozilla-Location-Service-key-when-the-Google.patch \
            file://debian-hacks/Attempt-to-fix-building-webrtc-on-non-x86.patch \
            file://debian-hacks/Only-build-webrtc-neon-on-aarch64.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
-           file://debian-hacks/Bug-1464766-Allow-to-relax-the-addon-signature-requi.patch \
            "
 SRC_URI_append_libc-musl = "\
            file://musl/musl-mutex.patch \
@@ -65,8 +66,8 @@ SRC_URI_append_libc-musl = "\
            file://musl/musl-tools-fix.patch \
 "
 
-SRC_URI[archive.md5sum] = "46deec3c581279f986a1abb2d42697ef"
-SRC_URI[archive.sha256sum] = "a4e7bb80e7ebab19769b2b8940966349136a99aabd497034662cffa54ea30e40"
+SRC_URI[archive.md5sum] = "7b8e233ef47f0d341eb1a903552ed9a3"
+SRC_URI[archive.sha256sum] = "205258548c3f245d42377b338f0db1272df39489d61305c39b83e52750ebff85"
 
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
