@@ -1,0 +1,25 @@
+include fcntl.h for loff_t
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/tcmalloc/gperftools-2.0/chromium/src/base/linux_syscall_support.h
++++ b/third_party/tcmalloc/gperftools-2.0/chromium/src/base/linux_syscall_support.h
+@@ -145,6 +145,7 @@ extern "C" {
+ #endif
+ 
+ #include <errno.h>
++#include <fcntl.h>
+ #include <signal.h>
+ #include <stdarg.h>
+ #include <stddef.h>
+--- a/third_party/tcmalloc/gperftools-2.0/vendor/src/base/linux_syscall_support.h
++++ b/third_party/tcmalloc/gperftools-2.0/vendor/src/base/linux_syscall_support.h
+@@ -146,6 +146,7 @@ extern "C" {
+ #endif
+ 
+ #include <errno.h>
++#include <fcntl.h>
+ #include <signal.h>
+ #include <stdarg.h>
+ #include <string.h>

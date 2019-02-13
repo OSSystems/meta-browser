@@ -1,0 +1,63 @@
+execinfo implementation is glibc specific
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/base/debug/stack_trace_posix.cc
++++ b/base/debug/stack_trace_posix.cc
+@@ -27,7 +27,7 @@
+ #if !defined(USE_SYMBOLIZE)
+ #include <cxxabi.h>
+ #endif
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+ #include <execinfo.h>
+ #endif
+ 
+@@ -825,7 +825,7 @@ StackTrace::StackTrace(size_t count) {
+ // NOTE: This code MUST be async-signal safe (it's used by in-process
+ // stack dumping signal handler). NO malloc or stdio is allowed here.
+ 
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+   count = std::min(arraysize(trace_), count);
+ 
+   // Though the backtrace API man page does not list any possible negative
+--- a/third_party/blink/renderer/platform/wtf/assertions.cc
++++ b/third_party/blink/renderer/platform/wtf/assertions.cc
+@@ -51,6 +51,8 @@
+ #if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(__UCLIBC__))
+ #include <cxxabi.h>
+ #include <dlfcn.h>
++#endif
++#if defined(OS_MACOSX) || (defined(__GLIBC__) && !defined(__UCLIBC__))
+ #include <execinfo.h>
+ #endif
+ 
+--- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
++++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
+@@ -8,13 +8,13 @@
+ #define BUG_REPORT_URL "http://llvm.org/bugs/"
+ 
+ /* Define to 1 to enable backtraces, and to 0 otherwise. */
+-#define ENABLE_BACKTRACES 1
++#define ENABLE_BACKTRACES 0
+ 
+ /* Define to 1 to enable crash overrides, and to 0 otherwise. */
+ #define ENABLE_CRASH_OVERRIDES 1
+ 
+ /* Define to 1 if you have the `backtrace' function. */
+-#define HAVE_BACKTRACE 1
++#define HAVE_BACKTRACE 0
+ 
+ /* Define to 1 if you have the <CrashReporterClient.h> header file. */
+ /* #undef HAVE_CRASHREPORTERCLIENT_H */
+@@ -55,7 +55,7 @@
+ #define HAVE_ERRNO_H 1
+ 
+ /* Define to 1 if you have the <execinfo.h> header file. */
+-#define HAVE_EXECINFO_H 1
++#define HAVE_EXECINFO_H 0
+ 
+ /* Define to 1 if you have the <fcntl.h> header file. */
+ #define HAVE_FCNTL_H 1

@@ -1,0 +1,17 @@
+alias secure_getenv to getenv when using linux and no glibc
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/angle/third_party/vulkan-loader/src/loader/loader.c
++++ b/third_party/angle/third_party/vulkan-loader/src/loader/loader.c
+@@ -60,6 +60,9 @@
+ #include <Devpkey.h>
+ #endif
+
++#if defined(__linux__) && !defined(__GLIBC__)
++#define secure_getenv(x) getenv(x)
++#endif
+ // This is a CMake generated file with #defines for any functions/includes
+ // that it found present.  This is currently necessary to properly determine
+ // if secure_getenv or __secure_getenv are present

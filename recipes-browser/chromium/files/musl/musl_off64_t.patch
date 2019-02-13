@@ -1,0 +1,52 @@
+__off64_t is not defined on non-glibc linux systems
+
+contain libc specific assumptions about mmap and __sbrk
+with glibc conditional
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/tcmalloc/gperftools-2.0/chromium/src/malloc_hook_mmap_linux.h
++++ b/third_party/tcmalloc/gperftools-2.0/chromium/src/malloc_hook_mmap_linux.h
+@@ -50,6 +50,10 @@
+ #include <errno.h>
+ #include "base/linux_syscall_support.h"
+ 
++#ifndef __GLIBC__
++typedef off64_t   __off64_t;
++#endif
++
+ // SYS_mmap2, SYS_munmap, SYS_mremap and __off64_t are not defined in Android.
+ #if defined(__ANDROID__)
+ #if defined(__NR_mmap) && !defined(SYS_mmap)
+@@ -189,7 +193,7 @@ extern "C" void* mmap64(void *start, siz
+   return result;
+ }
+ 
+-# if !defined(__USE_FILE_OFFSET64) || !defined(__REDIRECT_NTH)
++# if defined(__GLIBC__) && (!defined(__USE_FILE_OFFSET64) || !defined(__REDIRECT_NTH))
+ 
+ extern "C" void* mmap(void *start, size_t length, int prot, int flags,
+                       int fd, off_t offset) __THROW {
+@@ -233,7 +237,7 @@ extern "C" void* mremap(void* old_addr,
+ }
+ 
+ // Don't hook sbrk() in Android, since it doesn't expose __sbrk.
+-#if !defined(__ANDROID__)
++#if defined(__GLIBC__)
+ // libc's version:
+ extern "C" void* __sbrk(ptrdiff_t increment);
+ 
+--- a/third_party/tcmalloc/gperftools-2.0/chromium/src/base/linux_syscall_support.h
++++ b/third_party/tcmalloc/gperftools-2.0/chromium/src/base/linux_syscall_support.h
+@@ -172,6 +172,10 @@ extern "C" {
+ 
+ #endif
+ 
++#ifndef __GLIBC__
++typedef off64_t   __off64_t;
++#endif
++
+ /* As glibc often provides subtly incompatible data structures (and implicit
+  * wrapper functions that convert them), we provide our own kernel data
+  * structures for use by the system calls.

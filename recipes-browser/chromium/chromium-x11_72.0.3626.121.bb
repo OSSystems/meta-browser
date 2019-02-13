@@ -25,6 +25,3 @@ DEPENDS += "\
 # chromium-ozone-wayland recipes, and the former used to be called just
 # "chromium".
 PROVIDES = "chromium"
-
-# http://errors.yoctoproject.org/Errors/Details/186969/
-EXCLUDE_FROM_WORLD_libc-musl = "1"

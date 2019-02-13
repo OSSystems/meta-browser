@@ -59,6 +59,3 @@ GN_ARGS += "\
 
 # The chromium binary must always be started with those arguments.
 CHROMIUM_EXTRA_ARGS_append = " --ozone-platform=wayland"
-
-# http://errors.yoctoproject.org/Errors/Details/186958/
-EXCLUDE_FROM_WORLD_libc-musl = "1"
