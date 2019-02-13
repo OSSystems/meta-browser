@@ -1,0 +1,18 @@
+__libc_malloc is internal to glibc
+
+its better to use generic API so it remains portable
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/base/process/memory_linux.cc
++++ b/base/process/memory_linux.cc
+@@ -132,7 +132,7 @@ bool UncheckedMalloc(size_t size, void**
+     (!defined(LIBC_GLIBC) && !defined(USE_TCMALLOC))
+   *result = malloc(size);
+ #elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
+-  *result = __libc_malloc(size);
++  *result = malloc(size);
+ #elif defined(USE_TCMALLOC)
+   *result = tc_malloc_skip_new_handler(size);
+ #endif

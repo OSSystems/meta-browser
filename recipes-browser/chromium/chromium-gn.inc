@@ -19,6 +19,23 @@ SRC_URI += " \
         file://do-not-specify-march-on-arm.patch \
 "
 
+SRC_URI_append_libc-musl = "\
+        file://musl/musl-include-fcntl.h-for-loff_t.patch \
+        file://musl/musl_no_mallinfo.patch \
+        file://musl/musl_no_execinfo.patch \
+        file://musl/musl_TEMP_FAILURE_RETRY.patch \
+        file://musl/musl_fix-stack.patch \
+        file://musl/musl_breakpad.patch \
+        file://musl/musl_fontconfig.patch \
+        file://musl/musl_secure_getenv.patch \
+        file://musl/musl_libc_malloc.patch \
+        file://musl/musl_gnu_libc-version.patch \
+        file://musl/musl_resolver.patch \
+        file://musl/musl_off64_t.patch \
+        file://musl/musl_lss-match_syscalls.patch \
+        file://musl/musl_crashpad.patch \
+        file://musl/musl_replace_libc_fpstate.patch \
+"
 # This patch could be enabled for clang builds, one just needs to make it work.
 # On sumo and MACHINE="raspberrypi3", the build fails with errors such as
 #   /tmp/crc32_simd-01be44.s:86: Error: selected processor does not support `crc32b r0,r0,r5' in Thumb mode
@@ -257,6 +274,11 @@ ARM_VERSION_armv7a = "7"
 ARM_VERSION_armv7ve = "7"
 ARM_VERSION_armv6 = "6"
 
+# GN computes and defaults to it automatically where needed
+# forcing it from cmdline breaks build on places where it ends up
+# overriding what GN wants
+TUNE_CCARGS_remove = "-mthumb"
+
 GN_ARGS_append_arm = ' \
         arm_float_abi="${ARM_FLOAT_ABI}" \
         arm_fpu="${ARM_FPU}" \
@@ -269,6 +291,11 @@ GN_ARGS_append_armv6 += 'use_allocator="none"'
 # The WebRTC code fails to build on ARMv6 when NEON is enabled.
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
 GN_ARGS_append_armv6 += 'arm_use_neon=false'
+
+# Disable glibc shims on musl
+# tcmalloc does not play well with musl as of M62 (and possibly earlier).
+# https://github.com/gperftools/gperftools/issues/693
+GN_ARGS_append_libc-musl = ' use_allocator_shim=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \

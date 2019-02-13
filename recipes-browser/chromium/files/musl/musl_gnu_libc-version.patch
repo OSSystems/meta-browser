@@ -1,0 +1,47 @@
+gnu_libc_version API is glibc specific
+
+Do not assume it to be linux wide
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
++++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
+@@ -43,8 +43,9 @@
+ #endif  // defined(OS_ANDROID) && defined(__arm__)
+ 
+ #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
++#if defined(__GLIBC__)
+ #include <gnu/libc-version.h>
+-
++#endif
+ #include "base/linux_util.h"
+ #include "base/strings/string_split.h"
+ #include "base/strings/string_util.h"
+@@ -237,7 +238,7 @@ void RecordStartupMetrics() {
+                             shell_integration::NUM_DEFAULT_STATES);
+ }
+ 
+-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
++#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
+ void RecordLinuxDistro() {
+   UMALinuxDistro distro_result = UMA_LINUX_DISTRO_UNKNOWN;
+ 
+@@ -347,7 +348,7 @@ void RecordLinuxDistro() {
+ #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+ 
+ void RecordLinuxGlibcVersion() {
+-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
++#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
+   base::Version version(gnu_get_libc_version());
+ 
+   UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
+@@ -567,7 +568,7 @@ void ChromeBrowserMainExtraPartsMetrics:
+   constexpr base::TaskTraits background_task_traits = {
+       base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
++#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
+   base::PostTaskWithTraits(FROM_HERE, background_task_traits,
+                            base::BindOnce(&RecordLinuxDistro));
+ #endif
