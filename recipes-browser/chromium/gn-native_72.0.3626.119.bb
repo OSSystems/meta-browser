@@ -16,6 +16,9 @@ S = "${WORKDIR}/chromium-${PV}"
 B = "${S}/out_bootstrap"
 
 SRC_URI += "\
+        file://0001-For-proper-order-put-lpthreads-as-a-library-not-a-li.patch \
+        file://0002-gen.py-Pass-pthread-via-ldflags-not-libs.patch \
+        file://0003-gen.py-Pass-pthread-not-lpthread-in-ldflags.patch \
         file://0001-gen-Stop-passing-static-libstdc-to-the-compiler.patch \
 "
 
