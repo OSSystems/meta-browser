@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 4269fc2f389f7b79dfaabb9c957526b9880ce418 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 14 Jan 2019 16:49:52 +0000
-Subject: [PATCH 04/16] [ozone/wayland]: Switch to wl_output version 2.
+Subject: [PATCH 04/35] [ozone/wayland]: Switch to wl_output version 2.
 
 wl_output version 2 has some benefits over the previous
 version we used to bind to: support of scale values

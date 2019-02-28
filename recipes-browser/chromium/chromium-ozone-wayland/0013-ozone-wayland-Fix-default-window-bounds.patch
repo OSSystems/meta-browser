@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From c6737c4bcaf04545f1cc98d3b40c9c6436ebf5ea Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Thu, 31 Jan 2019 14:09:06 +0200
-Subject: [PATCH 13/16] [ozone/wayland] Fix default window bounds.
+Subject: [PATCH 13/35] [ozone/wayland] Fix default window bounds.
 
 If a previous browsing session is empty, WindowSizer calculates
 default window bounds by calling GetDisplayMatching with empty bounds.

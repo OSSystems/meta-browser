@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From c42eee720220fb5a6f09220b57a172bee373dcd8 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 14 Jan 2019 07:48:48 +0000
-Subject: [PATCH 03/16] [ozone/wayland]: WaylandScreen: return widget on screen
+Subject: [PATCH 03/35] [ozone/wayland]: WaylandScreen: return widget on screen
  point.
 
 This change implements a method, which returns a widget on

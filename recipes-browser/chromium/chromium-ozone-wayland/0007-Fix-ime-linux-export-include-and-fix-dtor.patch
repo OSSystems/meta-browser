@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 8e852c23a9a2770fc6601f85f59f805102d1681b Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Wed, 16 Jan 2019 07:14:29 +0000
-Subject: [PATCH 07/16] Fix ime linux export include and fix dtor.
+Subject: [PATCH 07/35] Fix ime linux export include and fix dtor.
 
 This fixes the following error:
 

@@ -1,13 +1,13 @@
-Upstream-Status: Submitted [https://crrev.com/c/1273059]
+Upstream-Status: Backport 
 
-* Submitted to upstream, waiting approval
+* Backported from https://crrev.com/c/1273059
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From 8343545c9c57eb3ace93799eab3b40d29d3c617a Mon Sep 17 00:00:00 2001
+From 9260c7b152118ac71ec0291125baa6f6569f3ded Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
-Date: Tue, 4 Dec 2018 10:19:10 +0200
-Subject: [PATCH 14/16] Reland [ozone/common] Make gbm_wrapper to be compiled
+Date: Fri, 22 Feb 2019 17:27:00 +0200
+Subject: [PATCH 14/35] Reland [ozone/common] Make gbm_wrapper to be compiled
  with system libgbm
 
 Now, it is based on the https://crrev.com/c/1273455 patch
@@ -39,28 +39,31 @@ The previous CL's commit message:
 Bug: 869206, 578890, 820047
 Change-Id: I7b21ea2c3fc3300823459e31b72c9304b4967bce
 ---
- ui/ozone/common/linux/gbm_wrapper.cc | 92 ++++++++++++++++++++++++----
- 1 file changed, 80 insertions(+), 12 deletions(-)
+ ui/ozone/common/linux/gbm_wrapper.cc | 114 +++++++++++++++++++++------
+ 1 file changed, 89 insertions(+), 25 deletions(-)
 
 diff --git a/ui/ozone/common/linux/gbm_wrapper.cc b/ui/ozone/common/linux/gbm_wrapper.cc
-index 15efd7bfeb32..fdf5aa62aa1a 100644
+index 15efd7bfeb32..00f381c902a4 100644
 --- a/ui/ozone/common/linux/gbm_wrapper.cc
 +++ b/ui/ozone/common/linux/gbm_wrapper.cc
-@@ -4,7 +4,10 @@
- 
+@@ -5,6 +5,10 @@
  #include "ui/ozone/common/linux/gbm_wrapper.h"
  
-+#include <drm_fourcc.h>
-+#include <fcntl.h>
  #include <gbm.h>
++#if !defined(MINIGBM)
++#include <fcntl.h>
 +#include <xf86drm.h>
++#endif
  
  #include "base/posix/eintr_wrapper.h"
  #include "third_party/skia/include/core/SkSurface.h"
-@@ -21,6 +24,48 @@ namespace {
- #define GBM_BO_IMPORT_FD_PLANAR_5504 0x5504
- #define GBM_BO_IMPORT_FD_PLANAR_5505 0x5505
+@@ -17,9 +21,57 @@ namespace gbm_wrapper {
  
+ namespace {
+ 
+-// Temporary defines while we migrate to GBM_BO_IMPORT_FD_MODIFIER.
+-#define GBM_BO_IMPORT_FD_PLANAR_5504 0x5504
+-#define GBM_BO_IMPORT_FD_PLANAR_5505 0x5505
 +int GetPlaneFdForBo(gbm_bo* bo, size_t plane) {
 +#if defined(MINIGBM)
 +  return gbm_bo_get_plane_fd(bo, plane);
@@ -90,23 +93,32 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
 +#endif
 +}
 +
-+size_t GetSizeOfPlane(gbm_bo* bo, size_t plane) {
++size_t GetSizeOfPlane(gbm_bo* bo,
++                      uint32_t format,
++                      const gfx::Size& size,
++                      size_t plane) {
 +#if defined(MINIGBM)
 +  return gbm_bo_get_plane_size(bo, plane);
 +#else
-+  // System linux gbm (or Mesa gbm) does not provide plane size. Thus, calculate
-+  // it by ourselves and avoid having two different branches for minigbm and
-+  // Mesa gbm here.
-+  //
-+  // TODO(msisov): Handle subsampled formats
-+  return gbm_bo_get_height(bo) * gbm_bo_get_stride_for_plane(bo, plane);
++  DCHECK(!size.IsEmpty());
++
++  // Get row size of the plane.
++  const gfx::BufferFormat buffer_format =
++      ui::GetBufferFormatFromFourCCFormat(format);
++  const size_t stride_for_plane =
++      static_cast<size_t>(gbm_bo_get_stride_for_plane(bo, plane));
++
++  // Apply subsampling factor to get size in bytes.
++  base::CheckedNumeric<size_t> checked_plane_size = stride_for_plane;
++  checked_plane_size *= size.height() / gfx::SubsamplingFactorForBufferFormat(
++                                            buffer_format, plane);
++  return checked_plane_size.ValueOrDie();
 +#endif
 +}
-+
+ 
  }  // namespace
  
- class Buffer final : public ui::GbmBuffer {
-@@ -84,7 +129,7 @@ class Buffer final : public ui::GbmBuffer {
+@@ -84,7 +136,7 @@ class Buffer final : public ui::GbmBuffer {
    }
    uint32_t GetPlaneHandle(size_t plane) const override {
      DCHECK_LT(plane, planes_.size());
@@ -115,7 +127,7 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
    }
    uint32_t GetHandle() const override { return gbm_bo_get_handle(bo_).u32; }
    gfx::NativePixmapHandle ExportHandle() const override {
-@@ -113,8 +158,14 @@ class Buffer final : public ui::GbmBuffer {
+@@ -113,8 +165,14 @@ class Buffer final : public ui::GbmBuffer {
      DCHECK(!mmap_data_);
      uint32_t stride;
      void* addr;
@@ -132,7 +144,7 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
  
      if (!addr)
        return nullptr;
-@@ -155,11 +206,18 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
+@@ -155,11 +213,18 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
    std::vector<base::ScopedFD> fds;
    std::vector<gfx::NativePixmapPlane> planes;
  
@@ -154,7 +166,7 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
  
      // TODO(dcastagna): support multiple fds.
      // crbug.com/642410
-@@ -172,9 +230,9 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
+@@ -172,9 +237,9 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
        fds.emplace_back(std::move(fd));
      }
  
@@ -162,12 +174,12 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
 -                        gbm_bo_get_plane_offset(bo, i),
 -                        gbm_bo_get_plane_size(bo, i), modifier);
 +    planes.emplace_back(gbm_bo_get_stride_for_plane(bo, i),
-+                        gbm_bo_get_offset(bo, i), GetSizeOfPlane(bo, i),
-+                        modifier);
++                        gbm_bo_get_offset(bo, i),
++                        GetSizeOfPlane(bo, format, size, i), modifier);
    }
    return std::make_unique<Buffer>(bo, format, flags, modifier, std::move(fds),
                                    size, std::move(planes));
-@@ -221,7 +279,10 @@ class Device final : public ui::GbmDevice {
+@@ -221,7 +286,10 @@ class Device final : public ui::GbmDevice {
      DCHECK_EQ(planes[0].offset, 0);
  
      // Try to use scanout if supported.
@@ -179,7 +191,7 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
      if (!gbm_device_is_format_supported(device_, format, gbm_flags))
        gbm_flags &= ~GBM_BO_USE_SCANOUT;
  
-@@ -231,17 +292,24 @@ class Device final : public ui::GbmDevice {
+@@ -231,32 +299,28 @@ class Device final : public ui::GbmDevice {
        return nullptr;
      }
  
@@ -188,7 +200,8 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
      fd_data.width = size.width();
      fd_data.height = size.height();
      fd_data.format = format;
-+    fd_data.modifier = DRM_FORMAT_MOD_NONE;
++    fd_data.num_fds = planes.size();
++    fd_data.modifier = planes[0].modifier;
  
      DCHECK_LE(planes.size(), 3u);
      for (size_t i = 0; i < planes.size(); ++i) {
@@ -196,16 +209,29 @@ index 15efd7bfeb32..fdf5aa62aa1a 100644
        fd_data.strides[i] = planes[i].stride;
        fd_data.offsets[i] = planes[i].offset;
 -      fd_data.format_modifiers[i] = planes[i].modifier;
-+      if (fd_data.modifier == DRM_FORMAT_MOD_NONE)
-+        fd_data.modifier = planes[i].modifier;
-+
-+      if (fd_data.modifier != planes[i].modifier) {
-+        LOG(ERROR) << "Format modifier must be the same for all the planes";
-+        return nullptr;
-+      }
++      // Make sure the modifier is the same for all the planes.
++      DCHECK_EQ(fd_data.modifier, planes[i].modifier);
      }
  
      // The fd passed to gbm_bo_import is not ref-counted and need to be
+     // kept open for the lifetime of the buffer.
+-    //
+-    // See the comment regarding the GBM_BO_IMPORT_FD_PLANAR_550X above.
+-    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR_5505, &fd_data,
+-                       gbm_flags);
++    bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_MODIFIER, &fd_data, gbm_flags);
+     if (!bo) {
+-      bo = gbm_bo_import(device_, GBM_BO_IMPORT_FD_PLANAR_5504, &fd_data,
+-                         gbm_flags);
+-      if (!bo) {
+-        LOG(ERROR) << "nullptr returned from gbm_bo_import";
+-        return nullptr;
+-      }
++      LOG(ERROR) << "nullptr returned from gbm_bo_import";
++      return nullptr;
+     }
+ 
+     return std::make_unique<Buffer>(bo, format, gbm_flags, planes[0].modifier,
 -- 
 2.17.1
 

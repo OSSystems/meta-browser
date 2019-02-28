@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 0ef604f38de77ade15031a1cb69fe2070f01b990 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 28 Jan 2019 13:02:00 +0000
-Subject: [PATCH 10/16] [ozone/wayland] Use surface listener to get display for
+Subject: [PATCH 10/35] [ozone/wayland] Use surface listener to get display for
  widget.
 
 Implement and start using wl_surface_listener, which tells the surface

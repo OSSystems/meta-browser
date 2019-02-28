@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 207c4d75c612fc77b836439e82fc7cfa7f06b57c Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Thu, 24 Jan 2019 15:44:25 +0000
-Subject: [PATCH 08/16] ui/base: move clipboard to own folder.
+Subject: [PATCH 08/35] ui/base: move clipboard to own folder.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit

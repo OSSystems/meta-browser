@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 91eff0cc01162d236f5585a2d0c206d999a169e9 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Thu, 31 Jan 2019 10:47:58 +0200
-Subject: [PATCH 12/16] [ozone/wayland] Implement GetCursorScreenPoint.
+Subject: [PATCH 12/35] [ozone/wayland] Implement GetCursorScreenPoint.
 
 Wayland does not provide either location of surfaces in global space
 coordinate system or location of a pointer. Instead, only locations of

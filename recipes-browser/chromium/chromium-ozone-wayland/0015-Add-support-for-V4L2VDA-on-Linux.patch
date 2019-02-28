@@ -13,7 +13,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 7e702234cb0e0c947e04bf568acd0820d3a410e1 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 11 Feb 2019 11:34:34 +0200
-Subject: [PATCH 15/16] Add support for V4L2VDA on Linux
+Subject: [PATCH 15/35] Add support for V4L2VDA on Linux
 
 This patch enables hardware assisted video decoding via the
 Chromium V4L2VDA. Including changes when Linux is used. In
