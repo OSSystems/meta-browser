@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From f66c9b45e9305b4e446f4739ca7e3d431b1fecb2 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Fri, 25 Jan 2019 20:52:31 +0000
-Subject: [PATCH 05/16] [ozone/wayland] Use nearest to origin display as a
+Subject: [PATCH 05/35] [ozone/wayland] Use nearest to origin display as a
  primary one.
 
 This CL changes the concept of choosing a primary display.

@@ -13,7 +13,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From f06d438dec7f03038308ecfa7ac575e78d5a81ec Mon Sep 17 00:00:00 2001
 From: Damian Hobson-Garcia <dhobsong@igel.co.jp>
 Date: Wed, 21 Mar 2018 13:18:17 +0200
-Subject: [PATCH 16/16] Add mmap via libv4l to generic_v4l2_device
+Subject: [PATCH 16/35] Add mmap via libv4l to generic_v4l2_device
 
 Issue #437
 

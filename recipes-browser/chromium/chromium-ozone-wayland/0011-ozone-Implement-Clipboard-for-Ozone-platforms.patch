@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From a22869e3887cb2620869ec07b11f1c3c71835efe Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Thu, 31 Jan 2019 11:58:37 +0200
-Subject: [PATCH 11/16] [ozone] Implement Clipboard for Ozone platforms.
+Subject: [PATCH 11/35] [ozone] Implement Clipboard for Ozone platforms.
 
 This patch provides a general clipboard implementation for Ozone.
 

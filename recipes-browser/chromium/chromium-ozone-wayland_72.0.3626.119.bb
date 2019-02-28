@@ -19,6 +19,25 @@ SRC_URI += " \
         file://0014-Reland-ozone-common-Make-gbm_wrapper-to-be-compiled-.patch \
         file://0015-Add-support-for-V4L2VDA-on-Linux.patch \
         file://0016-Add-mmap-via-libv4l-to-generic_v4l2_device.patch \
+        file://0017-Move-CharacterComposer-into-ui-base-ime.patch \
+        file://0018-ozone-wayland-Support-dead-keys.patch \
+        file://0019-ozone-wayland-Pass-0-modifier-on-DRM_FORMAT_MOD_INVA.patch \
+        file://0020-ozone-wayland-The-fuzzer-for-wayland-buffers-is-intr.patch \
+        file://0021-ozone-wayland-Remove-WaylandXkbKeyboardLayoutEngine.patch \
+        file://0022-ozone-wayland-Fix-wl_pointer-enter-event-handling.patch \
+        file://0023-ozone-wayland-Handle-preedit-string-in-WaylandInputM.patch \
+        file://0024-ozone-wayland-Use-gbm-with-in-process-gpu-mode.patch \
+        file://0025-ozone-wayland-Make-buffer-manager-resistant-to-event.patch \
+        file://0026-ozone-wayland-Reuse-tooltip-subsurfaces.patch \
+        file://0027-ozone-Implement-receiving-dragging.patch \
+        file://0028-ozone-wayland-Fix-includes-and-deps.patch \
+        file://0029-ozone-wayland-xkbcommon-Fix-layout-switching.patch \
+        file://0030-ozone-wayland-Fix-crash-when-there-is-no-zwp_linux_d.patch \
+        file://0031-Remove-dependency-cycle-between-ui-base-ime-and-ui-o.patch \
+        file://0032-Roll-third_party-minigbm-ff1ecaf.4fe3038.patch \
+        file://0033-ozone-wayland-Fix-software-rendering.patch \
+        file://0034-ozone-wayland-Return-primary-display-on-null-window.patch \
+        file://0035-ozone-Implement-single-window-tab-dragging.patch \
 "
 
 # Chromium can use v4l2 device for hardware accelerated video decoding. Make sure that

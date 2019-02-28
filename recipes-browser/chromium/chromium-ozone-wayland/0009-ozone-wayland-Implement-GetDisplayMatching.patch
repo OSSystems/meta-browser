@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From 183f0e55ee0869f0312d6ecd40d1b895846984c6 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Mon, 28 Jan 2019 10:42:02 +0000
-Subject: [PATCH 09/16] [ozone/wayland] Implement GetDisplayMatching.
+Subject: [PATCH 09/35] [ozone/wayland] Implement GetDisplayMatching.
 
 Use display::FindDisplayWithBiggestIntersection to find
 a display with biggest intersection with the specified rect.

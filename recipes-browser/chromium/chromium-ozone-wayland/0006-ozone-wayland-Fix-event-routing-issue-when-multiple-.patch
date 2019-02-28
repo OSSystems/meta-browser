@@ -7,7 +7,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 From d2dca30aeac3ab753a3e04a77cc26446b89d9494 Mon Sep 17 00:00:00 2001
 From: Nick Diego Yamane <nickdiego@igalia.com>
 Date: Mon, 14 Jan 2019 15:10:52 +0000
-Subject: [PATCH 06/16] [ozone/wayland] Fix event routing issue when multiple
+Subject: [PATCH 06/35] [ozone/wayland] Fix event routing issue when multiple
  windows are open
 
 Currently ozone wayland implementation uses singletons for bridging
