@@ -1,8 +1,8 @@
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 S = "${WORKDIR}/chromium-${PV}"
 
-SRC_URI[md5sum] = "c9b2cd5509e257501d21ed4b5db4b4c2"
-SRC_URI[sha256sum] = "4c1e554ab606eab328e77f5a92d8244b26a10ffd15d7986d30eab95f37adbc1f"
+SRC_URI[md5sum] = "5acadb18a18526beaa8f49982be57c5d"
+SRC_URI[sha256sum] = "8304810626c69c296b3262844e20052e7476280b634c525a711a7f6c0e3dd57c"
 
 LIC_FILES_CHKSUM = "\
     file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
@@ -41,7 +41,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/net/third_party/nss/LICENSE;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
     file://${S}/net/third_party/uri_template/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/SPIRV-Tools/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/abseil-cpp/LICENSE;md5=917cc5763a741e915bf7f2cc55830c17 \
+    file://${S}/third_party/abseil-cpp/LICENSE;md5=b1e01b26bacfc2232046c90a330332b3 \
     file://${S}/third_party/accessibility-audit/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/afl/src/docs/COPYING;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/android_crazy_linker/LICENSE;md5=997351b5bb1c56ca5be66be8060bb383 \
@@ -121,7 +121,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/dom_distiller_js/LICENSE;md5=1399a5b89c7ed8167d261770432511e8 \
     file://${S}/third_party/expat/files/COPYING;md5=5b8620d98e49772d95fc1d291c26aa79 \
     file://${S}/third_party/feed/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/ffmpeg/CREDITS.chromium;md5=c196fd5595d5ee48c87e2793f8a76cd6 \
+    file://${S}/third_party/ffmpeg/CREDITS.chromium;md5=005e77d67b51bc0b90c80d469d5e7a0e \
     file://${S}/third_party/fips181/COPYING;md5=da26b18c1a03a3cae0abccae554029c6 \
     file://${S}/third_party/flac/COPYING.Xiph;md5=a2c4b71c0198682376d483eb5bcc9197 \
     file://${S}/third_party/flatbuffers/LICENSE;md5=a873c5645c184d51e0f9b34e1d7cf559 \

@@ -1,0 +1,74 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 80ad34d84e45457daf3ee073154fe9ca3ac5f407 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Wed, 20 Feb 2019 22:38:29 +0000
+Subject: [PATCH 38/42] ozone: Fix ScreenOzone::GetWindowAtScreenPoint
+
+Screen::GetWindowAtScreenPoint function is supposed to
+return the NativeWindow under a given screen point.
+The current ScreenOzone implementation, unlike ScreenAsh,
+returns the root window instead of the exact
+window corresponding the that point inside the window
+hierarchy.
+
+This CL fixes that insconsistency, applying a solution similar
+to the one used in ScreenAsh: it relies on ScreenPositionClient
+and aura::Window::GetEventHandlerForPoint to get the correct
+window within window hierarchy under the specified point.
+
+Bug: 578890
+Change-Id: If3b078fb933006f323425bbcd05d9ccb504b8b61
+Reviewed-on: https://chromium-review.googlesource.com/c/1477828
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Reviewed-by: Scott Violet <sky@chromium.org>
+Commit-Queue: Nick Diego Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#633920}
+---
+ ui/aura/screen_ozone.cc | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/ui/aura/screen_ozone.cc b/ui/aura/screen_ozone.cc
+index 28493aceaae1..f99141b0d25a 100644
+--- a/ui/aura/screen_ozone.cc
++++ b/ui/aura/screen_ozone.cc
+@@ -4,6 +4,7 @@
+ 
+ #include "ui/aura/screen_ozone.h"
+ 
++#include "ui/aura/client/screen_position_client.h"
+ #include "ui/aura/window.h"
+ #include "ui/aura/window_tree_host.h"
+ #include "ui/display/display.h"
+@@ -30,7 +31,18 @@ gfx::NativeWindow ScreenOzone::GetWindowAtScreenPoint(const gfx::Point& point) {
+ 
+   aura::WindowTreeHost* host =
+       aura::WindowTreeHost::GetForAcceleratedWidget(widget);
+-  return host ? host->window() : nullptr;
++  if (!host)
++    return nullptr;
++
++  gfx::NativeWindow window = host->window();
++  gfx::Point local_point = point;
++
++  aura::client::ScreenPositionClient* position_client =
++      aura::client::GetScreenPositionClient(window);
++  if (position_client)
++    position_client->ConvertPointFromScreen(window, &local_point);
++
++  return window->GetEventHandlerForPoint(local_point);
+ }
+ 
+ int ScreenOzone::GetNumDisplays() const {
+@@ -89,4 +101,4 @@ gfx::AcceleratedWidget ScreenOzone::GetAcceleratedWidgetForWindow(
+   return host->GetAcceleratedWidget();
+ }
+ 
+-}  // namespace aura
+\ No newline at end of file
++}  // namespace aura
+-- 
+2.17.1
+

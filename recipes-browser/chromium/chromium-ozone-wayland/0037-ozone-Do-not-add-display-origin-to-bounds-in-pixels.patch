@@ -1,0 +1,47 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 4b5afb91f990961bd9cbfb2dfccdd88f90d6a86e Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 5 Mar 2019 05:42:02 +0000
+Subject: [PATCH 37/42] ozone: Do not add display origin to bounds in pixels.
+
+GetWindowBoundsInScreen adds display origin to
+bounds in pixels, which is incorrect, because they contain
+a location in screen, and adding additional offset results
+in wrong positions for menus (when the browser is located
+on a secondary display).
+
+Bug: 927280
+Change-Id: Ib16f46b095751cb3f29bfa6579d44eabdf104647
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1497052
+Reviewed-by: Scott Violet <sky@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#637604}
+---
+ .../desktop_aura/desktop_window_tree_host_platform.cc     | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc b/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
+index 7026dbc65805..905aa5c1e075 100644
+--- a/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
++++ b/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
+@@ -258,13 +258,7 @@ void DesktopWindowTreeHostPlatform::GetWindowPlacement(
+ }
+ 
+ gfx::Rect DesktopWindowTreeHostPlatform::GetWindowBoundsInScreen() const {
+-  gfx::Rect bounds =
+-      gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
+-  bounds += display::Screen::GetScreen()
+-                ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
+-                .bounds()
+-                .OffsetFromOrigin();
+-  return bounds;
++  return gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
+ }
+ 
+ gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
+-- 
+2.17.1
+

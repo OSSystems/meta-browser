@@ -1,0 +1,619 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 7c983718bd60d16302d6224ed8957b749b310294 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Fri, 8 Feb 2019 07:39:12 +0000
+Subject: [PATCH 13/42] ozone/wayland: Remove WaylandXkbKeyboardLayoutEngine
+
+Ozone/wayland keyboard input implementation uses libxkbcommon
+to properly handle different keyboard layouts. More specifically,
+it has been using a specialization of XkbKeyboardLayoutEngine,
+whose main functionalities are:
+
+  (1) Feed libxkbcommon with modifier events/masks (e.g: shift, ctrl, etc),
+  so that it can properly convert keys codes into key symbols later on. [1]
+
+  (2) Keep track of modifiers' state using an EventModifiers variable owned
+  by WaylandKeyboard singleton.
+
+Even though this approach works pretty well, the Wayland specialization
+of XkbKeyboardLayoutEngine has a weird API and it is actually not needed.
+In this patch, WaylandKeyboard is cleaned up so that WaylandXkbKeyboardLayoutEngine
+can be removed, and functionalities mentioned above are moved to XkbKeyboardLayoutEngine,
+and adpted to (re)use some of its internal structures, thus reducing code replication.
+Additionally, this CL modifies the way WaylandKeyboard interacts with KeyboardLayoutEngine,
+injecting it via its constructor, instead of directly accessing it through
+KeyboardLayoutEngineManager, what is more aligned with KeyboardEvdev implementation
+and general chromium practices.
+
+[1] https://xkbcommon.org/doc/current/group__state.html#ga566677517a286527e05efc5680adbe6b
+
+Bug: 921947
+Change-Id: I5c294e61711d0bf55db95b0e57d1466d00464706
+Reviewed-on: https://chromium-review.googlesource.com/c/1454308
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#630238}
+---
+ ui/events/ozone/evdev/keyboard_util_evdev.h   |  6 +-
+ .../layout/xkb/xkb_keyboard_layout_engine.cc  | 20 ++++-
+ .../layout/xkb/xkb_keyboard_layout_engine.h   |  9 ++-
+ ui/ozone/platform/wayland/BUILD.gn            |  4 -
+ .../wayland/ozone_platform_wayland.cc         | 10 ++-
+ .../platform/wayland/wayland_connection.cc    |  6 +-
+ ui/ozone/platform/wayland/wayland_keyboard.cc | 75 +++++++++----------
+ ui/ozone/platform/wayland/wayland_keyboard.h  | 22 ++++--
+ ui/ozone/platform/wayland/wayland_test.cc     |  5 +-
+ .../wayland_xkb_keyboard_layout_engine.cc     | 58 --------------
+ .../wayland_xkb_keyboard_layout_engine.h      | 46 ------------
+ 11 files changed, 97 insertions(+), 164 deletions(-)
+ delete mode 100644 ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.cc
+ delete mode 100644 ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h
+
+diff --git a/ui/events/ozone/evdev/keyboard_util_evdev.h b/ui/events/ozone/evdev/keyboard_util_evdev.h
+index 3460ff56e476..56bde0ce8cd2 100644
+--- a/ui/events/ozone/evdev/keyboard_util_evdev.h
++++ b/ui/events/ozone/evdev/keyboard_util_evdev.h
+@@ -5,10 +5,12 @@
+ #ifndef UI_EVENTS_OZONE_EVDEV_KEYBOARD_UTIL_EVDEV_H_
+ #define UI_EVENTS_OZONE_EVDEV_KEYBOARD_UTIL_EVDEV_H_
+ 
++#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
++
+ namespace ui {
+ 
+-int NativeCodeToEvdevCode(int native_code);
+-int EvdevCodeToNativeCode(int evdev_code);
++int EVENTS_OZONE_EVDEV_EXPORT NativeCodeToEvdevCode(int native_code);
++int EVENTS_OZONE_EVDEV_EXPORT EvdevCodeToNativeCode(int evdev_code);
+ 
+ }  // namespace ui
+ 
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+index d8185a0269e6..765a158958ce 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+@@ -8,6 +8,7 @@
+ #include <xkbcommon/xkbcommon-names.h>
+ 
+ #include <algorithm>
++#include <utility>
+ 
+ #include "base/bind.h"
+ #include "base/location.h"
+@@ -832,7 +833,7 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+       DVLOG(3) << "XKB keyboard layout does not contain " << flags[i].xkb_name;
+     } else {
+       xkb_mod_mask_t flag = static_cast<xkb_mod_mask_t>(1) << index;
+-      XkbFlagMapEntry e = {flags[i].ui_flag, flag};
++      XkbFlagMapEntry e = {flags[i].ui_flag, flag, index};
+       xkb_flag_map_.push_back(e);
+     }
+   }
+@@ -857,6 +858,23 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
+   return xkb_flags;
+ }
+ 
++int XkbKeyboardLayoutEngine::GetModifierFlags(uint32_t depressed,
++                                              uint32_t latched,
++                                              uint32_t locked,
++                                              uint32_t group) const {
++  auto* state = xkb_state_.get();
++  xkb_state_update_mask(state, depressed, latched, locked, 0, 0, group);
++  auto component = static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
++                                                    XKB_STATE_MODS_LATCHED |
++                                                    XKB_STATE_MODS_LOCKED);
++  int ui_flags = 0;
++  for (const auto& entry : xkb_flag_map_) {
++    if (xkb_state_mod_index_is_active(state, entry.xkb_index, component))
++      ui_flags |= entry.ui_flag;
++  }
++  return ui_flags;
++}
++
+ bool XkbKeyboardLayoutEngine::XkbLookup(xkb_keycode_t xkb_keycode,
+                                         xkb_mod_mask_t xkb_flags,
+                                         xkb_keysym_t* xkb_keysym,
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+index 50f09128ec04..b91bf80420cc 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+@@ -9,6 +9,7 @@
+ #include <xkbcommon/xkbcommon.h>
+ 
+ #include <memory>
++#include <string>
+ #include <vector>
+ 
+ #include "base/memory/free_deleter.h"
+@@ -26,7 +27,7 @@ namespace ui {
+ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+     : public KeyboardLayoutEngine {
+  public:
+-  XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
++  explicit XkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter);
+   ~XkbKeyboardLayoutEngine() override;
+ 
+   // KeyboardLayoutEngine:
+@@ -45,6 +46,11 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+               DomKey* dom_key,
+               KeyboardCode* key_code) const override;
+ 
++  int GetModifierFlags(uint32_t depressed,
++                       uint32_t latched,
++                       uint32_t locked,
++                       uint32_t group) const;
++
+   static void ParseLayoutName(const std::string& layout_name,
+                               std::string* layout_id,
+                               std::string* layout_variant);
+@@ -54,6 +60,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+   struct XkbFlagMapEntry {
+     int ui_flag;
+     xkb_mod_mask_t xkb_flag;
++    xkb_mod_index_t xkb_index;
+   };
+   std::vector<XkbFlagMapEntry> xkb_flag_map_;
+ 
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index 19ff2e26b2e2..64cf295db3b4 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -82,10 +82,6 @@ source_set("wayland") {
+ 
+   import("//ui/base/ui_features.gni")
+   if (use_xkbcommon) {
+-    sources += [
+-      "wayland_xkb_keyboard_layout_engine.cc",
+-      "wayland_xkb_keyboard_layout_engine.h",
+-    ]
+     configs += [ "//ui/events/ozone:xkbcommon" ]
+   }
+ 
+diff --git a/ui/ozone/platform/wayland/ozone_platform_wayland.cc b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+index 9c7267bdddb3..9eb665232a44 100644
+--- a/ui/ozone/platform/wayland/ozone_platform_wayland.cc
++++ b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+@@ -4,6 +4,11 @@
+ 
+ #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
+ 
++#include <memory>
++#include <string>
++#include <utility>
++#include <vector>
++
+ #include "base/memory/ptr_util.h"
+ #include "ui/base/buildflags.h"
+ #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+@@ -26,7 +31,7 @@
+ 
+ #if BUILDFLAG(USE_XKBCOMMON)
+ #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
+-#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
++#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+ #else
+ #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+ #endif
+@@ -139,8 +144,7 @@ class OzonePlatformWayland : public OzonePlatform {
+   void InitializeUI(const InitParams& args) override {
+ #if BUILDFLAG(USE_XKBCOMMON)
+     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+-        std::make_unique<WaylandXkbKeyboardLayoutEngine>(
+-            xkb_evdev_code_converter_));
++        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
+ #else
+     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+         std::make_unique<StubKeyboardLayoutEngine>());
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index 90230dd0b437..3e82f76cff70 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -14,6 +14,7 @@
+ #include "base/message_loop/message_loop_current.h"
+ #include "base/strings/string_util.h"
+ #include "base/threading/thread_task_runner_handle.h"
++#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+ #include "ui/gfx/swap_result.h"
+ #include "ui/ozone/platform/wayland/wayland_buffer_manager.h"
+ #include "ui/ozone/platform/wayland/wayland_input_method_context.h"
+@@ -551,8 +552,9 @@ void WaylandConnection::Capabilities(void* data,
+         return;
+       }
+       connection->keyboard_ = std::make_unique<WaylandKeyboard>(
+-          keyboard, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+-                                        base::Unretained(connection)));
++          keyboard, KeyboardLayoutEngineManager::GetKeyboardLayoutEngine(),
++          base::BindRepeating(&WaylandConnection::DispatchUiEvent,
++                              base::Unretained(connection)));
+       connection->keyboard_->set_connection(connection);
+     }
+   } else if (connection->keyboard_) {
+diff --git a/ui/ozone/platform/wayland/wayland_keyboard.cc b/ui/ozone/platform/wayland/wayland_keyboard.cc
+index a6d0ea7df04d..770908b266e8 100644
+--- a/ui/ozone/platform/wayland/wayland_keyboard.cc
++++ b/ui/ozone/platform/wayland/wayland_keyboard.cc
+@@ -5,6 +5,7 @@
+ #include "ui/ozone/platform/wayland/wayland_keyboard.h"
+ 
+ #include <sys/mman.h>
++#include <utility>
+ 
+ #include "base/files/scoped_file.h"
+ #include "ui/base/buildflags.h"
+@@ -12,6 +13,7 @@
+ #include "ui/events/event.h"
+ #include "ui/events/keycodes/dom/dom_code.h"
+ #include "ui/events/keycodes/dom/keycode_converter.h"
++#include "ui/events/ozone/evdev/keyboard_util_evdev.h"
+ #include "ui/events/ozone/layout/keyboard_layout_engine.h"
+ #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+ #include "ui/events/ozone/layout/layout_util.h"
+@@ -19,37 +21,33 @@
+ #include "ui/ozone/platform/wayland/wayland_window.h"
+ 
+ #if BUILDFLAG(USE_XKBCOMMON)
+-#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
++#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+ #endif
+ 
+ namespace ui {
+ 
+-namespace {
+-
+-const int kXkbKeycodeOffset = 8;
+-
+-}  // namespace
+-
+ // static
+ const wl_callback_listener WaylandKeyboard::callback_listener_ = {
+     WaylandKeyboard::SyncCallback,
+ };
+ 
+ WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
++                                 KeyboardLayoutEngine* layout_engine,
+                                  const EventDispatchCallback& callback)
+-    : obj_(keyboard), callback_(callback), auto_repeat_handler_(this) {
++    : obj_(keyboard),
++      callback_(callback),
++      auto_repeat_handler_(this),
++#if BUILDFLAG(USE_XKBCOMMON)
++      layout_engine_(static_cast<XkbKeyboardLayoutEngine*>(layout_engine)) {
++#else
++      layout_engine_(layout_engine) {
++#endif
+   static const wl_keyboard_listener listener = {
+       &WaylandKeyboard::Keymap,    &WaylandKeyboard::Enter,
+       &WaylandKeyboard::Leave,     &WaylandKeyboard::Key,
+       &WaylandKeyboard::Modifiers, &WaylandKeyboard::RepeatInfo,
+   };
+ 
+-#if BUILDFLAG(USE_XKBCOMMON)
+-  auto* engine = static_cast<WaylandXkbKeyboardLayoutEngine*>(
+-      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
+-  engine->SetEventModifiers(&event_modifiers_);
+-#endif
+-
+   wl_keyboard_add_listener(obj_.get(), &listener, this);
+ 
+   // TODO(tonikitoo): Default auto-repeat to ON here?
+@@ -62,6 +60,9 @@ void WaylandKeyboard::Keymap(void* data,
+                              uint32_t format,
+                              int32_t raw_fd,
+                              uint32_t size) {
++  WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
++  DCHECK(keyboard);
++
+   base::ScopedFD fd(raw_fd);
+   if (!data || format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+     return;
+@@ -71,9 +72,9 @@ void WaylandKeyboard::Keymap(void* data,
+   if (keymap_str == MAP_FAILED)
+     return;
+ 
++  auto length = strnlen(keymap_str, size);
+   bool success =
+-      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
+-          ->SetCurrentLayoutFromBuffer(keymap_str, strnlen(keymap_str, size));
++      keyboard->layout_engine_->SetCurrentLayoutFromBuffer(keymap_str, length);
+   DCHECK(success) << "Failed to set the XKB keyboard mapping.";
+   munmap(keymap_str, size);
+ }
+@@ -128,14 +129,16 @@ void WaylandKeyboard::Key(void* data,
+ void WaylandKeyboard::Modifiers(void* data,
+                                 wl_keyboard* obj,
+                                 uint32_t serial,
+-                                uint32_t mods_depressed,
+-                                uint32_t mods_latched,
+-                                uint32_t mods_locked,
++                                uint32_t depressed,
++                                uint32_t latched,
++                                uint32_t locked,
+                                 uint32_t group) {
+ #if BUILDFLAG(USE_XKBCOMMON)
+-  auto* engine = static_cast<WaylandXkbKeyboardLayoutEngine*>(
+-      KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
+-  engine->UpdateModifiers(mods_depressed, mods_latched, mods_locked, group);
++  WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
++  DCHECK(keyboard);
++
++  keyboard->modifiers_ = keyboard->layout_engine_->GetModifierFlags(
++      depressed, latched, locked, group);
+ #endif
+ }
+ 
+@@ -171,15 +174,13 @@ void WaylandKeyboard::DispatchKey(uint32_t key,
+                                   base::TimeTicks timestamp,
+                                   int device_id) {
+   DomCode dom_code =
+-      KeycodeConverter::NativeKeycodeToDomCode(key + kXkbKeycodeOffset);
++      KeycodeConverter::NativeKeycodeToDomCode(EvdevCodeToNativeCode(key));
+   if (dom_code == ui::DomCode::NONE)
+     return;
+ 
+-  uint8_t flags = event_modifiers_.GetModifierFlags();
+   DomKey dom_key;
+   KeyboardCode key_code;
+-  if (!KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+-          dom_code, flags, &dom_key, &key_code))
++  if (!layout_engine_->Lookup(dom_code, modifiers_, &dom_key, &key_code))
+     return;
+ 
+   if (!repeat) {
+@@ -188,8 +189,7 @@ void WaylandKeyboard::DispatchKey(uint32_t key,
+   }
+ 
+   ui::KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code,
+-                     dom_code, event_modifiers_.GetModifierFlags(), dom_key,
+-                     timestamp);
++                     dom_code, modifiers_, dom_key, timestamp);
+   event.set_source_device_id(device_id);
+   callback_.Run(&event);
+ }
+@@ -205,25 +205,22 @@ void WaylandKeyboard::SyncCallback(void* data,
+   keyboard->sync_callback_.reset();
+ }
+ 
+-void WaylandKeyboard::UpdateModifier(int modifier_flag, bool down) {
+-  if (modifier_flag == EF_NONE)
+-    return;
+-
+-  int modifier = EventModifiers::GetModifierFromEventFlag(modifier_flag);
+-  if (modifier == MODIFIER_NONE)
++void WaylandKeyboard::UpdateModifier(int modifier, bool down) {
++  if (modifier == EF_NONE)
+     return;
+ 
+-  // This mimics KeyboardEvDev, which matches chrome/x11.
++  // TODO(nickdiego): ChromeOS-specific keyboard remapping logic.
++  // Remove this once it is properly guarded under OS_CHROMEOS.
++  //
+   // Currently EF_MOD3_DOWN means that the CapsLock key is currently down,
+   // and EF_CAPS_LOCK_ON means the caps lock state is enabled (and the
+   // key may or may not be down, but usually isn't). There does need to
+   // to be two different flags, since the physical CapsLock key is subject
+   // to remapping, but the caps lock state (which can be triggered in a
+   // variety of ways) is not.
+-  if (modifier == MODIFIER_CAPS_LOCK)
+-    event_modifiers_.UpdateModifier(MODIFIER_MOD3, down);
+-  else
+-    event_modifiers_.UpdateModifier(modifier, down);
++  if (modifier == EF_CAPS_LOCK_ON)
++    modifier = (modifier & ~EF_CAPS_LOCK_ON) | EF_MOD3_DOWN;
++  modifiers_ = down ? (modifiers_ | modifier) : (modifiers_ & ~modifier);
+ }
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_keyboard.h b/ui/ozone/platform/wayland/wayland_keyboard.h
+index 18b535a6051d..9c4155c6794c 100644
+--- a/ui/ozone/platform/wayland/wayland_keyboard.h
++++ b/ui/ozone/platform/wayland/wayland_keyboard.h
+@@ -7,25 +7,31 @@
+ 
+ #include <wayland-client.h>
+ 
+-#include "ui/events/event_modifiers.h"
++#include "ui/base/buildflags.h"
+ #include "ui/events/ozone/evdev/event_dispatch_callback.h"
+ #include "ui/events/ozone/keyboard/event_auto_repeat_handler.h"
+ #include "ui/ozone/platform/wayland/wayland_object.h"
+ 
+ namespace ui {
+ 
++class KeyboardLayoutEngine;
++#if BUILDFLAG(USE_XKBCOMMON)
++class XkbKeyboardLayoutEngine;
++#endif
+ class WaylandConnection;
+ 
+ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
+  public:
+-  WaylandKeyboard(wl_keyboard* keyboard, const EventDispatchCallback& callback);
++  WaylandKeyboard(wl_keyboard* keyboard,
++                  KeyboardLayoutEngine* keyboard_layout_engine,
++                  const EventDispatchCallback& callback);
+   virtual ~WaylandKeyboard();
+ 
+   void set_connection(WaylandConnection* connection) {
+     connection_ = connection;
+   }
+ 
+-  int modifiers() { return event_modifiers_.GetModifierFlags(); }
++  int modifiers() { return modifiers_; }
+ 
+  private:
+   // wl_keyboard_listener
+@@ -63,7 +69,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
+ 
+   static void SyncCallback(void* data, struct wl_callback* cb, uint32_t time);
+ 
+-  void UpdateModifier(int modifier_flag, bool down);
++  void UpdateModifier(int modifier, bool down);
+ 
+   // EventAutoRepeatHandler::Delegate
+   void FlushInput(base::OnceClosure closure) override;
+@@ -76,13 +82,19 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
+   WaylandConnection* connection_ = nullptr;
+   wl::Object<wl_keyboard> obj_;
+   EventDispatchCallback callback_;
+-  EventModifiers event_modifiers_;
++  int modifiers_ = 0;
+ 
+   // Key repeat handler.
+   static const wl_callback_listener callback_listener_;
+   EventAutoRepeatHandler auto_repeat_handler_;
+   base::OnceClosure auto_repeat_closure_;
+   wl::Object<wl_callback> sync_callback_;
++
++#if BUILDFLAG(USE_XKBCOMMON)
++  XkbKeyboardLayoutEngine* layout_engine_;
++#else
++  KeyboardLayoutEngine* layout_engine_;
++#endif
+ };
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_test.cc b/ui/ozone/platform/wayland/wayland_test.cc
+index 8db81477fcb2..c15bc87efa15 100644
+--- a/ui/ozone/platform/wayland/wayland_test.cc
++++ b/ui/ozone/platform/wayland/wayland_test.cc
+@@ -9,7 +9,7 @@
+ #include "ui/platform_window/platform_window_init_properties.h"
+ 
+ #if BUILDFLAG(USE_XKBCOMMON)
+-#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
++#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+ #else
+ #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+ #endif
+@@ -22,8 +22,7 @@ namespace ui {
+ WaylandTest::WaylandTest() {
+ #if BUILDFLAG(USE_XKBCOMMON)
+   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+-      std::make_unique<WaylandXkbKeyboardLayoutEngine>(
+-          xkb_evdev_code_converter_));
++      std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
+ #else
+   KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+       std::make_unique<StubKeyboardLayoutEngine>());
+diff --git a/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.cc b/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.cc
+deleted file mode 100644
+index b2600adbbd75..000000000000
+--- a/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.cc
++++ /dev/null
+@@ -1,58 +0,0 @@
+-// Copyright 2017 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
+-
+-#include "ui/events/event_constants.h"
+-#include "ui/events/event_modifiers.h"
+-
+-namespace ui {
+-
+-void WaylandXkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+-  XkbKeyboardLayoutEngine::SetKeymap(keymap);
+-
+-  xkb_mod_indexes_.control =
+-      xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
+-  xkb_mod_indexes_.alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
+-  xkb_mod_indexes_.shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
+-  xkb_mod_indexes_.caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
+-}
+-
+-void WaylandXkbKeyboardLayoutEngine::UpdateModifiers(uint32_t depressed_mods,
+-                                                     uint32_t latched_mods,
+-                                                     uint32_t locked_mods,
+-                                                     uint32_t group) {
+-  xkb_state_update_mask(xkb_state_.get(), depressed_mods, latched_mods,
+-                        locked_mods, 0, 0, group);
+-
+-  event_modifiers_->ResetKeyboardModifiers();
+-
+-  auto component = static_cast<xkb_state_component>(XKB_STATE_MODS_DEPRESSED |
+-                                                    XKB_STATE_MODS_LATCHED |
+-                                                    XKB_STATE_MODS_LOCKED);
+-  if (xkb_state_mod_index_is_active(xkb_state_.get(), xkb_mod_indexes_.control,
+-                                    component))
+-    event_modifiers_->UpdateModifier(MODIFIER_CONTROL, true);
+-
+-  if (xkb_state_mod_index_is_active(xkb_state_.get(), xkb_mod_indexes_.alt,
+-                                    component))
+-    event_modifiers_->UpdateModifier(MODIFIER_ALT, true);
+-
+-  if (xkb_state_mod_index_is_active(xkb_state_.get(), xkb_mod_indexes_.shift,
+-                                    component))
+-    event_modifiers_->UpdateModifier(MODIFIER_SHIFT, true);
+-
+-  if (xkb_state_mod_index_is_active(xkb_state_.get(), xkb_mod_indexes_.caps,
+-                                    component))
+-    event_modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, true);
+-  else
+-    event_modifiers_->SetModifierLock(MODIFIER_CAPS_LOCK, false);
+-}
+-
+-void WaylandXkbKeyboardLayoutEngine::SetEventModifiers(
+-    EventModifiers* event_modifiers) {
+-  event_modifiers_ = event_modifiers;
+-}
+-
+-}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h b/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h
+deleted file mode 100644
+index 18c8f8c53a69..000000000000
+--- a/ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h
++++ /dev/null
+@@ -1,46 +0,0 @@
+-// Copyright 2017 The Chromium Authors. All rights reserved.
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_XKB_KEYBOARD_LAYOUT_ENGINE_H_
+-#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_XKB_KEYBOARD_LAYOUT_ENGINE_H_
+-
+-#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+-
+-#include "ui/events/ozone/layout/xkb/xkb_key_code_converter.h"
+-
+-namespace ui {
+-
+-class EventModifiers;
+-
+-class WaylandXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
+- public:
+-  WaylandXkbKeyboardLayoutEngine(const XkbKeyCodeConverter& converter)
+-      : XkbKeyboardLayoutEngine(converter) {}
+-
+-  // Used to sync up client side 'xkb_state' instance with modifiers status
+-  // update from the compositor.
+-  void UpdateModifiers(uint32_t depressed_mods,
+-                       uint32_t latched_mods,
+-                       uint32_t locked_mods,
+-                       uint32_t group);
+-
+-  void SetEventModifiers(EventModifiers* event_modifiers);
+-
+- private:
+-  void SetKeymap(xkb_keymap* keymap) override;
+-
+-  // Cache to access modifiers xkb_mode_index_t value.
+-  struct {
+-    xkb_mod_index_t control = 0;
+-    xkb_mod_index_t alt = 0;
+-    xkb_mod_index_t shift = 0;
+-    xkb_mod_index_t caps = 0;
+-  } xkb_mod_indexes_;
+-
+-  EventModifiers* event_modifiers_ = nullptr;  // Owned by WaylandKeyboard.
+-};
+-
+-}  // namespace ui
+-
+-#endif  // UI_EVENTS_OZONE_LAYOUT_XKB_XKB_KEYBOARD_LAYOUT_ENGINE_H_
+-- 
+2.17.1
+

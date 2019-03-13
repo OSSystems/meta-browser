@@ -1,0 +1,160 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 4f0c36b03bbb2d4f0b9eb17763e4d1b4df1575dd Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Tue, 26 Feb 2019 13:20:40 +0000
+Subject: [PATCH 30/42] [ozone/wayland]: Improve DataDevice initialization
+
+This CL is intended to make the Wayland data device
+initialization more robust, removing the assumption
+that data device manager global object is advertised
+before the wl_seat.
+
+Additionally this patch does a minor code cleanup in
+WaylandDataDeviceManager, removing the WaylandConnection
+setter, injecting connection instance via its constructor
+instead, as it is already being done in other classes, such
+as WaylandDataSource, for example.
+
+Bug: 578890
+Change-Id: Ia700c164f18b2778b08047bfcb5ccf382e69328f
+Reviewed-on: https://chromium-review.googlesource.com/c/1487853
+Reviewed-by: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Antonio Gomes <tonikitoo@igalia.com>
+Commit-Queue: Nick Diego Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#635489}
+---
+ .../platform/wayland/wayland_connection.cc    | 28 ++++++++-----------
+ .../platform/wayland/wayland_connection.h     |  3 ++
+ .../wayland/wayland_data_device_manager.cc    |  8 ++++--
+ .../wayland/wayland_data_device_manager.h     | 11 ++------
+ 4 files changed, 24 insertions(+), 26 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index b85fb60059cc..e7095507a83d 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -405,6 +405,14 @@ void WaylandConnection::TerminateGpuProcess(std::string reason) {
+   buffer_manager_->ClearState();
+ }
+ 
++void WaylandConnection::EnsureDataDevice() {
++  if (!data_device_manager_ || !seat_)
++    return;
++  DCHECK(!data_device_);
++  wl_data_device* data_device = data_device_manager_->GetDevice();
++  data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
++}
++
+ // static
+ void WaylandConnection::Global(void* data,
+                                wl_registry* registry,
+@@ -448,19 +456,7 @@ void WaylandConnection::Global(void* data,
+       return;
+     }
+     wl_seat_add_listener(connection->seat_.get(), &seat_listener, connection);
+-
+-    // TODO(tonikitoo,msisov): The connection passed to WaylandInputDevice must
+-    // have a valid data device manager. We should ideally be robust to the
+-    // compositor advertising a wl_seat first. No known compositor does this,
+-    // fortunately.
+-    if (!connection->data_device_manager_) {
+-      LOG(ERROR)
+-          << "No data device manager. Clipboard won't be fully functional";
+-      return;
+-    }
+-    wl_data_device* data_device = connection->data_device_manager_->GetDevice();
+-    connection->data_device_.reset(
+-        new WaylandDataDevice(connection, data_device));
++    connection->EnsureDataDevice();
+   } else if (!connection->shell_v6_ &&
+              strcmp(interface, "zxdg_shell_v6") == 0) {
+     // Check for zxdg_shell_v6 first.
+@@ -514,9 +510,9 @@ void WaylandConnection::Global(void* data,
+       LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
+       return;
+     }
+-    connection->data_device_manager_.reset(
+-        new WaylandDataDeviceManager(data_device_manager.release()));
+-    connection->data_device_manager_->set_connection(connection);
++    connection->data_device_manager_.reset(new WaylandDataDeviceManager(
++        data_device_manager.release(), connection));
++    connection->EnsureDataDevice();
+   } else if (!connection->buffer_manager_ &&
+              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
+     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =
+diff --git a/ui/ozone/platform/wayland/wayland_connection.h b/ui/ozone/platform/wayland/wayland_connection.h
+index 230e22cef36e..c7da42b930dd 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.h
++++ b/ui/ozone/platform/wayland/wayland_connection.h
+@@ -199,6 +199,9 @@ class WaylandConnection : public PlatformEventSource,
+   // Terminates the GPU process on invalid data received
+   void TerminateGpuProcess(std::string reason);
+ 
++  // Make sure data device is properly initialized
++  void EnsureDataDevice();
++
+   // wl_registry_listener
+   static void Global(void* data,
+                      wl_registry* registry,
+diff --git a/ui/ozone/platform/wayland/wayland_data_device_manager.cc b/ui/ozone/platform/wayland/wayland_data_device_manager.cc
+index f7aedbfebd22..4c20f3fb4a31 100644
+--- a/ui/ozone/platform/wayland/wayland_data_device_manager.cc
++++ b/ui/ozone/platform/wayland/wayland_data_device_manager.cc
+@@ -9,8 +9,12 @@
+ namespace ui {
+ 
+ WaylandDataDeviceManager::WaylandDataDeviceManager(
+-    wl_data_device_manager* device_manager)
+-    : device_manager_(device_manager) {}
++    wl_data_device_manager* device_manager,
++    WaylandConnection* connection)
++    : device_manager_(device_manager), connection_(connection) {
++  DCHECK(connection_);
++  DCHECK(device_manager_);
++}
+ 
+ WaylandDataDeviceManager::~WaylandDataDeviceManager() = default;
+ 
+diff --git a/ui/ozone/platform/wayland/wayland_data_device_manager.h b/ui/ozone/platform/wayland/wayland_data_device_manager.h
+index a13dbfedcc6f..f444d7d38575 100644
+--- a/ui/ozone/platform/wayland/wayland_data_device_manager.h
++++ b/ui/ozone/platform/wayland/wayland_data_device_manager.h
+@@ -7,7 +7,6 @@
+ 
+ #include <wayland-client.h>
+ 
+-#include "base/logging.h"
+ #include "base/macros.h"
+ #include "ui/ozone/platform/wayland/wayland_object.h"
+ 
+@@ -17,21 +16,17 @@ class WaylandConnection;
+ 
+ class WaylandDataDeviceManager {
+  public:
+-  explicit WaylandDataDeviceManager(wl_data_device_manager* device_manager);
++  WaylandDataDeviceManager(wl_data_device_manager* device_manager,
++                           WaylandConnection* connection);
+   ~WaylandDataDeviceManager();
+ 
+   wl_data_device* GetDevice();
+   wl_data_source* CreateSource();
+ 
+-  void set_connection(WaylandConnection* connection) {
+-    DCHECK(connection);
+-    connection_ = connection;
+-  }
+-
+  private:
+   wl::Object<wl_data_device_manager> device_manager_;
+ 
+-  WaylandConnection* connection_ = nullptr;
++  WaylandConnection* connection_;
+ 
+   DISALLOW_COPY_AND_ASSIGN(WaylandDataDeviceManager);
+ };
+-- 
+2.17.1
+

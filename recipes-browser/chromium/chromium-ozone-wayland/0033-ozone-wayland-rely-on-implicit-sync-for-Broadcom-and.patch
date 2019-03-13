@@ -1,0 +1,123 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From d9bd1018fe131a4a79db5279067f9bd920ff0c83 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 6 Mar 2019 07:06:16 +0000
+Subject: [PATCH 33/42] [ozone/wayland] rely on implicit sync for Broadcom and
+ Intel GPUs.
+
+The issue with fences was identified a long time ago, but it did not
+concern Linux before. As long as we use surfaceless drawing and
+insert fences between each buffer swap, we noticed some perf
+regression.
+
+On a powerful laptop (dell 9560) with Intel 630 graphics, gpu::AsyncSwap
+took ~8ms with fences and ~1ms without fences.
+
+On Raspberry Pi3 with Broadcom GPU, swap took ~105ms and
+after the applied workaround it took 77ms. The FPS rate
+became 16-17FPS instead of 11-12FPS in aquarium webgl demo.
+
+https://docs.google.com/spreadsheets/d/1dKLIQ6dkql-X0ppdc5s5y-ws2hPM-RLgqgGzkFpgUe0/edit?usp=sharing
+
+Bug: 938286
+Change-Id: I9fc616976a6ee3f9b4544ad7d8effc41e3ad4a91
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1503576
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Reviewed-by: Antoine Labour <piman@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#638037}
+---
+ gpu/config/gpu_driver_bug_list.json           | 24 +++++++++++++++++++
+ .../wayland/gpu/gbm_surfaceless_wayland.cc    | 10 ++++++++
+ .../wayland/gpu/gbm_surfaceless_wayland.h     |  2 ++
+ 3 files changed, 36 insertions(+)
+
+diff --git a/gpu/config/gpu_driver_bug_list.json b/gpu/config/gpu_driver_bug_list.json
+index 4996becd8a7b..a09950075e17 100644
+--- a/gpu/config/gpu_driver_bug_list.json
++++ b/gpu/config/gpu_driver_bug_list.json
+@@ -3102,6 +3102,30 @@
+       "features": [
+         "disable_direct_composition_layers"
+       ]
++    },
++    {
++      "id": 295,
++      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Intel GPUs",
++      "cr_bugs": [938286],
++      "os": {
++        "type": "linux"
++      },
++      "gl_vendor": "Intel.*",
++      "features": [
++        "rely_on_implicit_sync_for_swap_buffers"
++      ]
++    },
++    {
++      "id": 296,
++      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Broadcom GPUs",
++      "cr_bugs": [938286],
++      "os": {
++        "type": "linux"
++      },
++      "gl_vendor": "Broadcom.*",
++      "features": [
++        "rely_on_implicit_sync_for_swap_buffers"
++      ]
+     }
+   ]
+ }
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.cc
+index ce339c395c41..f72331626695 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.cc
++++ b/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.cc
+@@ -103,6 +103,12 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
+   frame->presentation_callback = presentation_callback;
+   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
+ 
++  if (!use_egl_fence_sync_) {
++    frame->ready = true;
++    SubmitFrame();
++    return;
++  }
++
+   // TODO: the following should be replaced by a per surface flush as it gets
+   // implemented in GL drivers.
+   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
+@@ -160,6 +166,10 @@ EGLConfig GbmSurfacelessWayland::GetConfig() {
+   return config_;
+ }
+ 
++void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
++  use_egl_fence_sync_ = false;
++}
++
+ GbmSurfacelessWayland::~GbmSurfacelessWayland() {
+   surface_factory_->UnregisterSurface(widget_);
+ }
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h
+index bfb8c9f99a13..15b5e902989a 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h
++++ b/ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h
+@@ -55,6 +55,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
+       const SwapCompletionCallback& completion_callback,
+       const PresentationCallback& presentation_callback) override;
+   EGLConfig GetConfig() override;
++  void SetRelyOnImplicitSync() override;
+ 
+  private:
+   ~GbmSurfacelessWayland() override;
+@@ -97,6 +98,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
+   std::unique_ptr<PendingFrame> submitted_frame_;
+   bool has_implicit_external_sync_;
+   bool last_swap_buffers_result_ = true;
++  bool use_egl_fence_sync_ = true;
+ 
+   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
+ 
+-- 
+2.17.1
+

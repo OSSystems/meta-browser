@@ -1,0 +1,566 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5d455008d9619d6e19268927ab316c5afbef4100 Mon Sep 17 00:00:00 2001
+From: Julie Jeongeun Kim <jkim@igalia.com>
+Date: Thu, 14 Feb 2019 04:26:20 +0000
+Subject: [PATCH 19/42] [ozone] Implement receiving dragging
+
+It adds the implementation of receiving dragging. In order to
+communicate between the platform and Ozone, it adds WmDropHandler
+and it's registered with PlatformWindow. Once the dragging event
+occurs from the platform layer, it finds WmDropHandler using
+PlatformWindow and delivers the event to DesktopDragDropClientOzone.
+After DesktopDragDropClientOzone gets the event, it finds the proper
+aura::client::DragDropDelegate based on the position where the event
+occurs and passes the event and the dragged data to it.
+
+Bug: 875164
+Test: DesktopDragDropClientOzoneTest.ReceiveDrag
+Change-Id: I2f9966d0224a5171cf1e50c23634d54c6cb44c1f
+Reviewed-on: https://chromium-review.googlesource.com/c/1353040
+Commit-Queue: Julie Jeongeun Kim <jkim@igalia.com>
+Reviewed-by: Sadrul Chowdhury <sadrul@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#632077}
+---
+ .../platform/wayland/wayland_connection.cc    |   4 +
+ .../platform/wayland/wayland_connection.h     |   3 +
+ .../platform/wayland/wayland_data_device.h    |   2 +
+ ui/ozone/platform/wayland/wayland_window.cc   |  37 ++++-
+ .../platform_window_handler/BUILD.gn          |   2 +
+ .../wm_drop_handler.cc                        |  25 ++++
+ .../platform_window_handler/wm_drop_handler.h |  55 ++++++++
+ .../desktop_drag_drop_client_ozone.cc         | 131 ++++++++++++++++++
+ .../desktop_drag_drop_client_ozone.h          |  53 ++++++-
+ .../desktop_window_tree_host_platform.cc      |  10 +-
+ 10 files changed, 312 insertions(+), 10 deletions(-)
+ create mode 100644 ui/platform_window/platform_window_handler/wm_drop_handler.cc
+ create mode 100644 ui/platform_window/platform_window_handler/wm_drop_handler.h
+
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index 3e82f76cff70..9cf54b61898e 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -308,6 +308,10 @@ void WaylandConnection::RequestDragData(
+   data_device_->RequestDragData(mime_type, std::move(callback));
+ }
+ 
++bool WaylandConnection::IsDragInProgress() {
++  return data_device_->IsDragEntered() || drag_data_source();
++}
++
+ void WaylandConnection::ResetPointerFlags() {
+   if (pointer_)
+     pointer_->ResetFlags();
+diff --git a/ui/ozone/platform/wayland/wayland_connection.h b/ui/ozone/platform/wayland/wayland_connection.h
+index cbb8d4f242bc..cfa0c92832a4 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.h
++++ b/ui/ozone/platform/wayland/wayland_connection.h
+@@ -158,6 +158,9 @@ class WaylandConnection : public PlatformEventSource,
+   void RequestDragData(const std::string& mime_type,
+                        base::OnceCallback<void(const std::string&)> callback);
+ 
++  // Returns true when dragging is entered or started.
++  bool IsDragInProgress();
++
+   // Resets flags and keyboard modifiers.
+   //
+   // This method is specially handy for cases when the WaylandPointer state is
+diff --git a/ui/ozone/platform/wayland/wayland_data_device.h b/ui/ozone/platform/wayland/wayland_data_device.h
+index f09867092469..c3953993e08b 100644
+--- a/ui/ozone/platform/wayland/wayland_data_device.h
++++ b/ui/ozone/platform/wayland/wayland_data_device.h
+@@ -58,6 +58,8 @@ class WaylandDataDevice {
+ 
+   wl_data_device* data_device() const { return data_device_.get(); }
+ 
++  bool IsDragEntered() { return drag_offer_ != nullptr; }
++
+  private:
+   void ReadClipboardDataFromFD(base::ScopedFD fd, const std::string& mime_type);
+ 
+diff --git a/ui/ozone/platform/wayland/wayland_window.cc b/ui/ozone/platform/wayland/wayland_window.cc
+index 1e6b4648b8ff..d400c61161e7 100644
+--- a/ui/ozone/platform/wayland/wayland_window.cc
++++ b/ui/ozone/platform/wayland/wayland_window.cc
+@@ -25,6 +25,7 @@
+ #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v6.h"
+ #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
+ #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
++#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+ #include "ui/platform_window/platform_window_init_properties.h"
+ 
+ namespace ui {
+@@ -167,6 +168,19 @@ void WaylandWindow::CreateXdgPopup() {
+   if (bounds_.IsEmpty())
+     return;
+ 
++  // TODO(jkim): Consider how to support DropArrow window on tabstrip.
++  // When it starts dragging, as described the protocol, https://goo.gl/1Mskq3,
++  // the client must have an active implicit grab. If we try to create a popup
++  // window while dragging is executed, it gets 'popup_done' directly from
++  // Wayland compositor and it's destroyed through 'popup_done'. It causes
++  // a crash when aura::Window is destroyed.
++  // https://crbug.com/875164
++  if (connection_->IsDragInProgress()) {
++    surface_.reset();
++    LOG(ERROR) << "Wayland can't create a popup window during dragging.";
++    return;
++  }
++
+   DCHECK(parent_window_ && !xdg_popup_);
+ 
+   gfx::Rect bounds =
+@@ -593,26 +607,39 @@ void WaylandWindow::OnCloseRequest() {
+ void WaylandWindow::OnDragEnter(const gfx::PointF& point,
+                                 std::unique_ptr<OSExchangeData> data,
+                                 int operation) {
+-  NOTIMPLEMENTED_LOG_ONCE();
++  WmDropHandler* drop_handler = GetWmDropHandler(*this);
++  if (!drop_handler)
++    return;
++  drop_handler->OnDragEnter(point, std::move(data), operation);
+ }
+ 
+ int WaylandWindow::OnDragMotion(const gfx::PointF& point,
+                                 uint32_t time,
+                                 int operation) {
+-  NOTIMPLEMENTED_LOG_ONCE();
+-  return 0;
++  WmDropHandler* drop_handler = GetWmDropHandler(*this);
++  if (!drop_handler)
++    return 0;
++
++  return drop_handler->OnDragMotion(point, operation);
+ }
+ 
+ void WaylandWindow::OnDragDrop(std::unique_ptr<OSExchangeData> data) {
+-  NOTIMPLEMENTED_LOG_ONCE();
++  WmDropHandler* drop_handler = GetWmDropHandler(*this);
++  if (!drop_handler)
++    return;
++  drop_handler->OnDragDrop(std::move(data));
+ }
+ 
+ void WaylandWindow::OnDragLeave() {
+-  NOTIMPLEMENTED_LOG_ONCE();
++  WmDropHandler* drop_handler = GetWmDropHandler(*this);
++  if (!drop_handler)
++    return;
++  drop_handler->OnDragLeave();
+ }
+ 
+ void WaylandWindow::OnDragSessionClose(uint32_t dnd_action) {
+   std::move(drag_closed_callback_).Run(dnd_action);
++  connection_->ResetPointerFlags();
+ }
+ 
+ bool WaylandWindow::IsMinimized() const {
+diff --git a/ui/platform_window/platform_window_handler/BUILD.gn b/ui/platform_window/platform_window_handler/BUILD.gn
+index 65ea155a800f..10e53a486463 100644
+--- a/ui/platform_window/platform_window_handler/BUILD.gn
++++ b/ui/platform_window/platform_window_handler/BUILD.gn
+@@ -10,6 +10,8 @@ jumbo_component("platform_window_handler") {
+   sources = [
+     "wm_drag_handler.cc",
+     "wm_drag_handler.h",
++    "wm_drop_handler.cc",
++    "wm_drop_handler.h",
+     "wm_move_resize_handler.cc",
+     "wm_move_resize_handler.h",
+     "wm_platform_export.h",
+diff --git a/ui/platform_window/platform_window_handler/wm_drop_handler.cc b/ui/platform_window/platform_window_handler/wm_drop_handler.cc
+new file mode 100644
+index 000000000000..27cf71abeea2
+--- /dev/null
++++ b/ui/platform_window/platform_window_handler/wm_drop_handler.cc
+@@ -0,0 +1,25 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
++
++#include "ui/base/class_property.h"
++#include "ui/platform_window/platform_window.h"
++
++DEFINE_UI_CLASS_PROPERTY_TYPE(ui::WmDropHandler*)
++
++namespace ui {
++
++DEFINE_UI_CLASS_PROPERTY_KEY(WmDropHandler*, kWmDropHandlerKey, nullptr);
++
++void SetWmDropHandler(PlatformWindow* platform_window,
++                      WmDropHandler* drop_handler) {
++  platform_window->SetProperty(kWmDropHandlerKey, drop_handler);
++}
++
++WmDropHandler* GetWmDropHandler(const PlatformWindow& platform_window) {
++  return platform_window.GetProperty(kWmDropHandlerKey);
++}
++
++}  // namespace ui
+diff --git a/ui/platform_window/platform_window_handler/wm_drop_handler.h b/ui/platform_window/platform_window_handler/wm_drop_handler.h
+new file mode 100644
+index 000000000000..768d9e342869
+--- /dev/null
++++ b/ui/platform_window/platform_window_handler/wm_drop_handler.h
+@@ -0,0 +1,55 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_DROP_HANDLER_H_
++#define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_DROP_HANDLER_H_
++
++#include <memory>
++
++#include "ui/gfx/native_widget_types.h"
++#include "ui/platform_window/platform_window_handler/wm_platform_export.h"
++
++namespace gfx {
++class PointF;
++}
++
++namespace ui {
++class OSExchangeData;
++class PlatformWindow;
++
++class WM_PLATFORM_EXPORT WmDropHandler {
++ public:
++  // Notifies that dragging is entered to the window. |point| is in the
++  // coordinate space of the PlatformWindow.
++  virtual void OnDragEnter(const gfx::PointF& point,
++                           std::unique_ptr<OSExchangeData> data,
++                           int operation) = 0;
++
++  // Notifies that dragging is moved. |widget_out| will be set with the
++  // widget located at |point|. |point| is in the coordinate space of the
++  // PlatformWindow. It returns the operation selected by client and the
++  // returned value should be from ui::DragDropTypes.
++  virtual int OnDragMotion(const gfx::PointF& point, int operation) = 0;
++
++  // Notifies that dragged data is dropped. When it doesn't deliver
++  // the dragged data on OnDragEnter, it should put it to |data|. The location
++  // of the drop is the location of the latest DragEnter/DragMotion. If
++  // OSExchangeData is provided on OnDragEnter, the |data| should be same as it.
++  virtual void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data) = 0;
++
++  // Notifies that dragging is left.
++  virtual void OnDragLeave() = 0;
++
++ protected:
++  virtual ~WmDropHandler() {}
++};
++
++WM_PLATFORM_EXPORT void SetWmDropHandler(PlatformWindow* platform_window,
++                                         WmDropHandler* drop_handler);
++WM_PLATFORM_EXPORT WmDropHandler* GetWmDropHandler(
++    const PlatformWindow& platform_window);
++
++}  // namespace ui
++
++#endif  // UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_DROP_HANDLER_H_
+diff --git a/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.cc b/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.cc
+index a5bf57fce896..dfe5f9a9f707 100644
+--- a/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.cc
++++ b/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.cc
+@@ -4,12 +4,21 @@
+ 
+ #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h"
+ 
++#include <memory>
++
+ #include "base/bind.h"
+ #include "base/run_loop.h"
++#include "base/strings/string16.h"
++#include "base/strings/utf_string_conversions.h"
++#include "base/threading/thread_task_runner_handle.h"
+ #include "ui/aura/client/capture_client.h"
+ #include "ui/aura/client/cursor_client.h"
++#include "ui/aura/client/drag_drop_delegate.h"
+ #include "ui/aura/window.h"
+ #include "ui/aura/window_tree_host.h"
++#include "ui/base/clipboard/clipboard.h"
++#include "ui/base/dragdrop/drag_drop_types.h"
++#include "ui/base/dragdrop/drop_target_event.h"
+ #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+ #include "ui/platform_window/platform_window_delegate.h"
+ #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
+@@ -17,6 +26,17 @@
+ 
+ namespace views {
+ 
++namespace {
++
++aura::Window* GetTargetWindow(aura::Window* root_window,
++                              const gfx::Point& point) {
++  gfx::Point root_location(point);
++  root_window->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
++  return root_window->GetEventHandlerForPoint(root_location);
++}
++
++}  // namespace
++
+ DesktopDragDropClientOzone::DesktopDragDropClientOzone(
+     aura::Window* root_window,
+     views::DesktopNativeCursorManager* cursor_manager,
+@@ -26,6 +46,8 @@ DesktopDragDropClientOzone::DesktopDragDropClientOzone(
+       drag_handler_(drag_handler) {}
+ 
+ DesktopDragDropClientOzone::~DesktopDragDropClientOzone() {
++  ResetDragDropTarget();
++
+   if (in_move_loop_)
+     DragCancel();
+ }
+@@ -86,6 +108,70 @@ void DesktopDragDropClientOzone::RemoveObserver(
+   NOTIMPLEMENTED_LOG_ONCE();
+ }
+ 
++void DesktopDragDropClientOzone::OnDragEnter(
++    const gfx::PointF& point,
++    std::unique_ptr<ui::OSExchangeData> data,
++    int operation) {
++  last_drag_point_ = point;
++  drag_operation_ = operation;
++
++  // If it doesn't have |data|, it defers sending events to
++  // |drag_drop_delegate_|. It will try again before handling drop.
++  if (!data)
++    return;
++
++  os_exchange_data_ = std::move(data);
++  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(point);
++  if (drag_drop_delegate_ && event)
++    drag_drop_delegate_->OnDragEntered(*event);
++}
++
++int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
++                                             int operation) {
++  last_drag_point_ = point;
++  drag_operation_ = operation;
++  int client_operation =
++      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
++
++  if (os_exchange_data_) {
++    std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(point);
++    // If |os_exchange_data_| has a valid data, |drag_drop_delegate_| returns
++    // the operation which it expects.
++    if (drag_drop_delegate_ && event)
++      client_operation = drag_drop_delegate_->OnDragUpdated(*event);
++  }
++  return client_operation;
++}
++
++void DesktopDragDropClientOzone::OnDragDrop(
++    std::unique_ptr<ui::OSExchangeData> data) {
++  // If it doesn't have |os_exchange_data_|, it needs to update it with |data|.
++  if (!os_exchange_data_) {
++    DCHECK(data);
++    os_exchange_data_ = std::move(data);
++    std::unique_ptr<ui::DropTargetEvent> event =
++        CreateDropTargetEvent(last_drag_point_);
++    // Sends the deferred drag events to |drag_drop_delegate_| before handling
++    // drop.
++    if (drag_drop_delegate_ && event) {
++      drag_drop_delegate_->OnDragEntered(*event);
++      // TODO(jkim): It doesn't use the return value from 'OnDragUpdated' and
++      // doesn't have a chance to update the expected operation.
++      // https://crbug.com/875164
++      drag_drop_delegate_->OnDragUpdated(*event);
++    }
++  } else {
++    // If it has |os_exchange_data_|, it doesn't expect |data| on OnDragDrop.
++    DCHECK(!data);
++  }
++  PerformDrop();
++}
++
++void DesktopDragDropClientOzone::OnDragLeave() {
++  os_exchange_data_.reset();
++  ResetDragDropTarget();
++}
++
+ void DesktopDragDropClientOzone::OnDragSessionClosed(int dnd_action) {
+   drag_operation_ = dnd_action;
+   QuitRunLoop();
+@@ -107,4 +193,49 @@ void DesktopDragDropClientOzone::QuitRunLoop() {
+   std::move(quit_closure_).Run();
+ }
+ 
++std::unique_ptr<ui::DropTargetEvent>
++DesktopDragDropClientOzone::CreateDropTargetEvent(const gfx::PointF& location) {
++  const gfx::Point point(location.x(), location.y());
++  aura::Window* window = GetTargetWindow(root_window_, point);
++  if (!window)
++    return nullptr;
++
++  UpdateDragDropDelegate(window);
++  gfx::Point root_location(location.x(), location.y());
++  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
++  gfx::PointF target_location(root_location);
++  aura::Window::ConvertPointToTarget(root_window_, window, &target_location);
++
++  return std::make_unique<ui::DropTargetEvent>(
++      *os_exchange_data_, target_location, gfx::PointF(root_location),
++      drag_operation_);
++}
++
++void DesktopDragDropClientOzone::UpdateDragDropDelegate(aura::Window* window) {
++  aura::client::DragDropDelegate* delegate =
++      aura::client::GetDragDropDelegate(window);
++
++  if (drag_drop_delegate_ == delegate)
++    return;
++
++  ResetDragDropTarget();
++  if (delegate)
++    drag_drop_delegate_ = delegate;
++}
++
++void DesktopDragDropClientOzone::ResetDragDropTarget() {
++  if (!drag_drop_delegate_)
++    return;
++  drag_drop_delegate_->OnDragExited();
++  drag_drop_delegate_ = nullptr;
++}
++
++void DesktopDragDropClientOzone::PerformDrop() {
++  std::unique_ptr<ui::DropTargetEvent> event =
++      CreateDropTargetEvent(last_drag_point_);
++  if (drag_drop_delegate_ && event)
++    drag_operation_ = drag_drop_delegate_->OnPerformDrop(*event);
++  DragDropSessionCompleted();
++}
++
+ }  // namespace views
+diff --git a/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h b/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h
+index e3632a7a7b09..e31f41ba49ee 100644
+--- a/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h
++++ b/ui/views/widget/desktop_aura/desktop_drag_drop_client_ozone.h
+@@ -5,25 +5,40 @@
+ #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_OZONE_H_
+ #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_DRAG_DROP_CLIENT_OZONE_H_
+ 
++#include <memory>
++
+ #include "base/callback.h"
+ #include "ui/aura/client/drag_drop_client.h"
+ #include "ui/base/cursor/cursor.h"
++#include "ui/base/dragdrop/os_exchange_data.h"
++#include "ui/gfx/geometry/point_f.h"
++#include "ui/gfx/native_widget_types.h"
+ #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
++#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+ #include "ui/views/views_export.h"
+ 
++namespace aura {
++namespace client {
++class DragDropDelegate;
++}
++}  // namespace aura
++
++namespace ui {
++class DropTargetEvent;
++}
++
+ namespace views {
+ class DesktopNativeCursorManager;
+ 
+ class VIEWS_EXPORT DesktopDragDropClientOzone
+-    : public aura::client::DragDropClient {
++    : public aura::client::DragDropClient,
++      public ui::WmDropHandler {
+  public:
+   DesktopDragDropClientOzone(aura::Window* root_window,
+                              views::DesktopNativeCursorManager* cursor_manager,
+                              ui::WmDragHandler* drag_handler);
+   ~DesktopDragDropClientOzone() override;
+ 
+-  void OnDragSessionClosed(int operation);
+-
+   // Overridden from aura::client::DragDropClient:
+   int StartDragAndDrop(const ui::OSExchangeData& data,
+                        aura::Window* root_window,
+@@ -36,16 +51,48 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
+   void AddObserver(aura::client::DragDropClientObserver* observer) override;
+   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
+ 
++  // Overridden from void ui::WmDropHandler:
++  void OnDragEnter(const gfx::PointF& point,
++                   std::unique_ptr<ui::OSExchangeData> data,
++                   int operation) override;
++  int OnDragMotion(const gfx::PointF& point, int operation) override;
++  void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data) override;
++  void OnDragLeave() override;
++
++  void OnDragSessionClosed(int operation);
++
+  private:
+   void DragDropSessionCompleted();
+   void QuitRunLoop();
+ 
++  // Returns a DropTargetEvent to be passed to the DragDropDelegate, or null to
++  // abort the drag.
++  std::unique_ptr<ui::DropTargetEvent> CreateDropTargetEvent(
++      const gfx::PointF& point);
++
++  // Updates |drag_drop_delegate_| along with |window|.
++  void UpdateDragDropDelegate(aura::Window* window);
++
++  // Resets |drag_drop_delegate_|.
++  void ResetDragDropTarget();
++
++  void PerformDrop();
++
+   aura::Window* const root_window_;
+ 
+   DesktopNativeCursorManager* cursor_manager_;
+ 
+   ui::WmDragHandler* const drag_handler_;
+ 
++  // The delegate corresponding to the window located at the mouse position.
++  aura::client::DragDropDelegate* drag_drop_delegate_ = nullptr;
++
++  // The data to be delivered through the drag and drop.
++  std::unique_ptr<ui::OSExchangeData> os_exchange_data_ = nullptr;
++
++  // The most recent native coordinates of a drag.
++  gfx::PointF last_drag_point_;
++
+   // Cursor in use prior to the move loop starting. Restored when the move loop
+   // quits.
+   gfx::NativeCursor initial_cursor_;
+diff --git a/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc b/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
+index ab1c54e75ca5..7026dbc65805 100644
+--- a/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
++++ b/ui/views/widget/desktop_aura/desktop_window_tree_host_platform.cc
+@@ -118,8 +118,13 @@ std::unique_ptr<aura::client::DragDropClient>
+ DesktopWindowTreeHostPlatform::CreateDragDropClient(
+     DesktopNativeCursorManager* cursor_manager) {
+   ui::WmDragHandler* drag_handler = ui::GetWmDragHandler(*(platform_window()));
+-  return std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
+-                                                      drag_handler);
++  std::unique_ptr<DesktopDragDropClientOzone> drag_drop_client =
++      std::make_unique<DesktopDragDropClientOzone>(window(), cursor_manager,
++                                                   drag_handler);
++  // Set a class property key, which allows |drag_drop_client| to be used for
++  // drop action.
++  SetWmDropHandler(platform_window(), drag_drop_client.get());
++  return std::move(drag_drop_client);
+ }
+ 
+ void DesktopWindowTreeHostPlatform::Close() {
+@@ -141,6 +146,7 @@ void DesktopWindowTreeHostPlatform::Close() {
+ 
+ void DesktopWindowTreeHostPlatform::CloseNow() {
+   auto weak_ref = weak_factory_.GetWeakPtr();
++  SetWmDropHandler(platform_window(), nullptr);
+   // Deleting the PlatformWindow may not result in OnClosed() being called, if
+   // not behave as though it was.
+   SetPlatformWindow(nullptr);
+-- 
+2.17.1
+

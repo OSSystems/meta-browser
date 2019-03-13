@@ -1,0 +1,104 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From ae381802d958f1ef2a55119676acf0a1a6db3c80 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Fri, 1 Feb 2019 02:11:19 +0000
+Subject: [PATCH 23/42] Remove dependency cycle between ui/base/ime and
+ ui/ozone
+
+Fix cyclic dependency error when trying to use CharacterComposer
+in ozone/platform (e.g: ozone/wayland). The issue shows up on chromeos
+builds due to the following dependency chain:
+
+  //ui/ozone:ozone ->
+  //ui/ozone:platform ->
+  //ui/ozone/platform/wayland:wayland ->
+  //ui/base/ime:ime ->
+  //services/ws/public/cpp/input_devices:input_devices ->
+  //ui/ozone:ozone
+
+This CL fixes it by moving character_composer.* files into
+//ui/base/ime:ime_types component, which is already in
+//ui/base/ime deps when is_chromeos=true and can automatically
+used in ozone/platform/wayland becaused ime_types is included
+in //ui/base/ime/linux's public_deps, which is in
+//ui/ozone/platform/wayland's deps.
+
+BUG=921947
+
+Change-Id: I9d01445325066f9c5a89d7d44729ec07f21c20c7
+Reviewed-on: https://chromium-review.googlesource.com/c/1448471
+Auto-Submit: Nick Yamane <nickdiego@igalia.com>
+Reviewed-by: Shu Chen <shuchen@chromium.org>
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#628202}
+---
+ ui/base/ime/BUILD.gn             | 20 ++++++++++++--------
+ ui/base/ime/character_composer.h |  4 ++--
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/ui/base/ime/BUILD.gn b/ui/base/ime/BUILD.gn
+index 47fb630180f4..d2e351d6b0d6 100644
+--- a/ui/base/ime/BUILD.gn
++++ b/ui/base/ime/BUILD.gn
+@@ -41,6 +41,18 @@ jumbo_component("ime_types") {
+     ":text_input_types",
+     "//skia",
+   ]
++
++  if (is_chromeos || use_ozone) {
++    sources += [
++      "character_composer.cc",
++      "character_composer.h",
++    ]
++    deps += [
++      "//ui/events:dom_keycode_converter",
++      "//ui/events:events",
++      "//ui/events:events_base",
++    ]
++  }
+ }
+ 
+ jumbo_component("ime") {
+@@ -173,14 +185,6 @@ jumbo_component("ime") {
+     ]
+   }
+ 
+-  if (is_chromeos || use_ozone) {
+-    sources += [
+-      "character_composer.cc",
+-      "character_composer.h",
+-    ]
+-    deps += [ "//ui/events:dom_keycode_converter" ]
+-  }
+-
+   if (!toolkit_views && !use_aura) {
+     sources -= [
+       "input_method_factory.cc",
+diff --git a/ui/base/ime/character_composer.h b/ui/base/ime/character_composer.h
+index b3845c3d669c..9f7967e4250b 100644
+--- a/ui/base/ime/character_composer.h
++++ b/ui/base/ime/character_composer.h
+@@ -12,7 +12,7 @@
+ 
+ #include "base/macros.h"
+ #include "base/strings/string_util.h"
+-#include "ui/base/ime/ui_base_ime_export.h"
++#include "ui/base/ime/ui_base_ime_types_export.h"
+ #include "ui/events/keycodes/dom/dom_key.h"
+ 
+ namespace ui {
+@@ -20,7 +20,7 @@ class KeyEvent;
+ 
+ // A class to recognize compose and dead key sequence.
+ // Outputs composed character.
+-class UI_BASE_IME_EXPORT CharacterComposer {
++class UI_BASE_IME_TYPES_EXPORT CharacterComposer {
+  public:
+   using ComposeBuffer = std::vector<DomKey>;
+ 
+-- 
+2.17.1
+

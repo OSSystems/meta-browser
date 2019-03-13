@@ -1,0 +1,64 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 363408a39664ea75a5aff0ac277ed366c98d14e8 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 20 Feb 2019 15:43:33 +0000
+Subject: [PATCH 24/42] Roll third_party/minigbm ff1ecaf...4fe3038
+
+$ git log --oneline ff1ecaf...4fe3038
+4fe3038 Reland "minigbm: define GBM_BO_IMPORT_FD_MODIFIER"
+eea88fa minigbm:amdgpu: align stride to 256
+067594b minigbm: msm: Add modifier for tiled buffer allocation
+90f8bb0 minigbm: Fix some clang-format issues
+c65bd8c minigbm: msm: Add platform specific alignment for NV12 linear format
+400e928 Revert "minigbm: define GBM_BO_IMPORT_FD_MODIFIER"
+bc667c3 minigbm: define GBM_BO_IMPORT_FD_MODIFIER
+ff66c80 amdgpu: use amdgpu_gem_wait_idle_ioctl to wait for GPU to finish.
+74e4893 amdgpu: Don't use AMDGPU_GEM_CREATE_EXPLICIT_SYNC flag.
+d7630cd amdgpu: fix misplaced code block
+39eb951 minigbm: i915: Do not use I915_MMAP_WC for camera buffers
+11161ac minigbm: add MINIGBM define.
+ee98f4e minigbm: align width so that stride aligns to 256
+617ee71 minigbm: minimal buffer allocation support using msm gem ioctls
+71bc665 minigbm: don't advertise BGR24 as a render/texture target
+86ddfdc minigbm: use drv_add_combination when adding a single combination
+2fdb721 minigbm: delete unused functions and definitions
+2b1d689 minigbm: run clang-format
+a72f442 minigbm: mediatek: always provide munmap() with a valid address
+500928f minigbm: mediatek: wait for outstanding operations when invalidating
+b131c9d minigbm: msm: add supported formats
+571a687 minigbm/i915.c: Android's HAL_PIXEL_FORMAT_BLOB is not tilable if BO_USE_PROTECTED
+d706a8c minigbm: move height adjustments to helper function
+79155d7 minigbm: run clang-format
+a13dda7 minigbm: support NV12 in virtio_gpu
+af94db9 minigbm: adjust height of NV12 buffer in helper
+
+Bug: 933123
+Change-Id: I174363f379407697ae0d571175ecc43d4cc51d3e
+Reviewed-on: https://chromium-review.googlesource.com/c/1477075
+Auto-Submit: Maksim Sisov <msisov@igalia.com>
+Commit-Queue: Michael Spang <spang@chromium.org>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#633716}
+---
+ DEPS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/DEPS b/DEPS
+index 665f70bc594e..9774e2381295 100644
+--- a/DEPS
++++ b/DEPS
+@@ -963,7 +963,7 @@ deps = {
+ 
+   # Graphics buffer allocator for Chrome OS.
+   'src/third_party/minigbm/src': {
+-      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + 'ff1ecaf1014df4cb9ca36c5a270647a9934aaa99',
++      'url': Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '4fe3038be586d5db8e44e452f5ed6a93c8ccf50a',
+       'condition': 'checkout_linux',
+   },
+ 
+-- 
+2.17.1
+

@@ -1,0 +1,42 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 8ffda21b3eaa3ca90b809dfb1d10f03863ae95e9 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 16 Oct 2018 11:24:05 +0300
+Subject: [PATCH] minigbm: add MINIGBM define.
+
+This patch does not bring any functionality changes, but just
+adds a MINIGBM define in order to be able to distiguish if
+Chromium, for example, uses a system libgbm (needed by Ozone/Wayland
+builds for Linux due to some diffirences, which we cannot fix yet)
+or minithird_party/minigbm/src/gbm.
+
+Change-Id: I82366ce9a1c302124b75a6c21028a67127497065
+Reviewed-on: https://chromium-review.googlesource.com/1281887
+Commit-Ready: ChromeOS CL Exonerator Bot <chromiumos-cl-exonerator@appspot.gserviceaccount.com>
+Tested-by: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Gurchetan Singh <gurchetansingh@chromium.org>
+---
+ third_party/minigbm/src/gbm.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/third_party/minigbm/src/gbm.h b/third_party/minigbm/src/gbm.h
+index 58ce07b..68a34c5 100644
+--- a/third_party/minigbm/src/gbm.h
++++ b/third_party/minigbm/src/gbm.h
+@@ -35,6 +35,10 @@ extern "C" {
+ 
+ #define __GBM__ 1
+ 
++#ifndef MINIGBM
++#define MINIGBM
++#endif
++
+ #include <stddef.h>
+ #include <stdint.h>
+ 
+-- 
+2.17.1
+

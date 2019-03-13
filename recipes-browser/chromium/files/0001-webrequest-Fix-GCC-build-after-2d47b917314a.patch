@@ -1,0 +1,146 @@
+Upstream-Status: Submitted [https://crrev.com/c/1520491]
+
+* Submitted to upstream, waiting approval
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 28893ed3193b6b8ab7eb041810f3f6f8a01f40b4 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 13 Mar 2019 14:35:21 +0200
+Subject: [PATCH] webrequest: Fix GCC build after 2d47b917314a
+
+Commit 2d47b917314a "Remove linked_ptr from extensions declarative web requests" added code that follows the following pattern:
+
+    base::Optional<T> Foo() {
+      T t;
+      return t;
+    }
+
+clang seems to automatically convert |t| to an rvalue reference, but GCC
+fails with:
+
+../../extensions/browser/api/declarative_webrequest/webrequest_action.cc:581:10: error: could not convert 'result' from 'extension_web_request_api_helpers::EventResponseDelta' to 'base::Optional<extension_web_request_api_helpers::EventResponseDelta>'
+   return result;
+          ^~~~~~
+
+Bug: 819294
+Change-Id: Ib0dfe283bfe47e44a2ec6760c5a9a90217eb7f30
+---
+ .../webrequest_action.cc                      | 24 +++++++++----------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/extensions/browser/api/declarative_webrequest/webrequest_action.cc b/extensions/browser/api/declarative_webrequest/webrequest_action.cc
+index 1961231c071a..146bc338f1d7 100644
+--- a/extensions/browser/api/declarative_webrequest/webrequest_action.cc
++++ b/extensions/browser/api/declarative_webrequest/webrequest_action.cc
+@@ -578,7 +578,7 @@ base::Optional<EventResponseDelta> WebRequestCancelAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.cancel = true;
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -613,7 +613,7 @@ base::Optional<EventResponseDelta> WebRequestRedirectAction::CreateDelta(
+     return base::nullopt;
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.new_url = redirect_url_;
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -642,7 +642,7 @@ WebRequestRedirectToTransparentImageAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.new_url = GURL(kTransparentImageUrl);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -671,7 +671,7 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.new_url = GURL(kEmptyDocumentUrl);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -773,7 +773,7 @@ base::Optional<EventResponseDelta> WebRequestRedirectByRegExAction::CreateDelta(
+ 
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.new_url = GURL(new_url);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -813,7 +813,7 @@ WebRequestSetRequestHeaderAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.modified_request_headers.SetHeader(name_, value_);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -851,7 +851,7 @@ WebRequestRemoveRequestHeaderAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.deleted_request_headers.push_back(name_);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -900,7 +900,7 @@ WebRequestAddResponseHeaderAction::CreateDelta(
+ 
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.added_response_headers.push_back(make_pair(name_, value_));
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -954,7 +954,7 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
+       continue;
+     result.deleted_response_headers.push_back(make_pair(name_, current_value));
+   }
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -1039,7 +1039,7 @@ base::Optional<EventResponseDelta> WebRequestRequestCookieAction::CreateDelta(
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.request_cookie_modifications.push_back(
+       request_cookie_modification_.Clone());
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -1087,7 +1087,7 @@ base::Optional<EventResponseDelta> WebRequestResponseCookieAction::CreateDelta(
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.response_cookie_modifications.push_back(
+       response_cookie_modification_.Clone());
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ //
+@@ -1127,7 +1127,7 @@ WebRequestSendMessageToExtensionAction::CreateDelta(
+   CHECK(request_data.stage & stages());
+   EventResponseDelta result(extension_id, extension_install_time);
+   result.messages_to_extension.insert(message_);
+-  return result;
++  return base::make_optional(std::move(result));
+ }
+ 
+ }  // namespace extensions
+-- 
+2.17.1
+

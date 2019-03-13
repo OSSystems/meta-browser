@@ -1,0 +1,83 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 97bb13185d57d3a6291ce75d2d6a71cde35276c5 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Fri, 1 Feb 2019 23:44:06 +0000
+Subject: [PATCH 39/42] ozone/wayland: Fix NEO keyboards layout handling
+
+As of [1] XkbKeyboardLayoutEngine has been hardcoded to
+always set num lock mask. That's a ChromeOS-specific
+requirement, so this patch guard those code under
+OS_CHROMEOS build flag.
+
+This has been causing an issue in ozone/wayland builds,
+for example, when using keyboards Neo layout (e.g: de-neo).
+This patch fixes it.
+
+[1] https://crrev.com/834373002
+
+R=rjkroege@chromium.org
+
+Bug: 921947
+Change-Id: I0eadae3169ff9a8442714cd7f41c75b1c623447b
+Reviewed-on: https://chromium-review.googlesource.com/c/1450338
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#628516}
+---
+ ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc | 6 +++++-
+ ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h  | 4 +++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+index ea8ddaadf85c..1c1dd2b27de7 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+@@ -839,12 +839,14 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+   }
+   layout_index_ = 0;
+ 
++#if defined(OS_CHROMEOS)
+   // Update num lock mask.
+   num_lock_mod_mask_ = 0;
+   xkb_mod_index_t num_mod_index =
+       xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
+   if (num_mod_index != XKB_MOD_INVALID)
+     num_lock_mod_mask_ = static_cast<xkb_mod_mask_t>(1) << num_mod_index;
++#endif
+ }
+ 
+ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
+@@ -854,8 +856,10 @@ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
+     if (ui_flags & entry.ui_flag)
+       xkb_flags |= entry.xkb_flag;
+   }
+-  // NumLock is always on.
++#if defined(OS_CHROMEOS)
++  // In ChromeOS NumLock is always on.
+   xkb_flags |= num_lock_mod_mask_;
++#endif
+   return xkb_flags;
+ }
+ 
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+index 46069ed744c6..b5bab3c4d444 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+@@ -64,8 +64,10 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+   };
+   std::vector<XkbFlagMapEntry> xkb_flag_map_;
+ 
+-  // Flag mask for num lock, which is always considered enabled.
++#if defined(OS_CHROMEOS)
++  // Flag mask for num lock, which is always considered enabled in ChromeOS.
+   xkb_mod_mask_t num_lock_mod_mask_ = 0;
++#endif
+ 
+   // Determines the Windows-based KeyboardCode (VKEY) for a character key,
+   // accounting for non-US layouts. May return VKEY_UNKNOWN, in which case the
+-- 
+2.17.1
+

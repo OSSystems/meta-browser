@@ -1,0 +1,69 @@
+Upstream-Status: Inappropriate
+
+This is a workaround for the GCC 7 bug, which was fixed in
+https://github.com/gcc-mirror/gcc/commit/8d6486e1234c4bbbac9058068fe77609e83a1feb
+
+Applicable only to GCC 7.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From dbd00e910c4f586a32fb73a08f9c5e0af07bb9b0 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 14 Mar 2019 13:38:16 +0200
+Subject: [PATCH] GCC 7 workaround: remove constexpr ctor
+
+This patch fixes a problem, when constexpr
+ctor cannot use static const value:
+In file included from ../../chrome/browser/media/webrtc/desktop_media_picker.h:13:0,
+                 from ../../chrome/browser/media/webrtc/desktop_media_picker.cc:5:
+../../content/public/browser/desktop_media_id.h: In constructor 'constexpr content::DesktopMediaID::DesktopMediaID(content::DesktopMediaID::Type, content::DesktopMediaID::Id, content::WebContentsMediaCaptureId)':
+../../content/public/browser/desktop_media_id.h:51:63: error: the value of 'content::DesktopMediaID::kNullId' is not usable in a constant expression
+       : type(type), id(id), web_contents_id(web_contents_id) {}
+                                                               ^
+../../content/public/browser/desktop_media_id.h:31:19: note: 'content::DesktopMediaID::kNullId' was not initialized with a constant expression
+   static const Id kNullId;
+                   ^~~~~~~
+../../content/public/browser/desktop_media_id.h: In constructor 'constexpr content::DesktopMediaID::DesktopMediaID(content::DesktopMediaID::Type, content::DesktopMediaID::Id, bool)':
+../../content/public/browser/desktop_media_id.h:54:55: error: the value of 'content::DesktopMediaID::kNullId' is not usable in a constant expression
+       : type(type), id(id), audio_share(audio_share) {}
+                                                       ^
+../../content/public/browser/desktop_media_id.h:31:19: note: 'content::DesktopMediaID::kNullId' was not initialized with a constant expression
+   static const Id kNullId;
+                   ^~~~~~~
+
+The bug has already been addressed, and is not reproducible with
+GCC 8. The bug or commit message couldn't be found :(
+
+Change-Id: I4492501deb0675f3170b1d0569e67fb9d4c6f37f
+---
+ content/public/browser/desktop_media_id.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/content/public/browser/desktop_media_id.h b/content/public/browser/desktop_media_id.h
+index cb93bc5875b3..86d2e29ba963 100644
+--- a/content/public/browser/desktop_media_id.h
++++ b/content/public/browser/desktop_media_id.h
+@@ -41,16 +41,16 @@ struct CONTENT_EXPORT DesktopMediaID {
+   static aura::Window* GetAuraWindowById(const DesktopMediaID& id);
+ #endif  // defined(USE_AURA)
+ 
+-  constexpr DesktopMediaID() = default;
++  DesktopMediaID() = default;
+ 
+-  constexpr DesktopMediaID(Type type, Id id) : type(type), id(id) {}
++  DesktopMediaID(Type type, Id id) : type(type), id(id) {}
+ 
+-  constexpr DesktopMediaID(Type type,
++  DesktopMediaID(Type type,
+                            Id id,
+                            WebContentsMediaCaptureId web_contents_id)
+       : type(type), id(id), web_contents_id(web_contents_id) {}
+ 
+-  constexpr DesktopMediaID(Type type, Id id, bool audio_share)
++  DesktopMediaID(Type type, Id id, bool audio_share)
+       : type(type), id(id), audio_share(audio_share) {}
+ 
+   // Operators so that DesktopMediaID can be used with STL containers.
+-- 
+2.17.1
+

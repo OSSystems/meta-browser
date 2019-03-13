@@ -1,0 +1,509 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From e96d38cd6d183b8fa1644a40be7a03b7bc7f310f Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Fri, 25 Jan 2019 20:52:31 +0000
+Subject: [PATCH 01/42] [ozone/wayland] Use nearest to origin display as a
+ primary one.
+
+This CL changes the concept of choosing a primary display.
+
+As discussed offline with rjkroege@, Chromium assumes that a primary
+display must be chosen among displays located as near to origin
+as possible (and Wayland does not have a concept of a primary display.
+Thus, that assumption works best).
+
+There are several cases, which have been addressed in WaylandScreen:
+1) When an output is added, its type is NOT_PRIMARY as long as
+geometry data is not known by that point.
+2) Once Wayland sends all the geometry changes to a WaylandOutput,
+the last one notifies WaylandScreen about the changes, and
+OnOutputMetricsChanged is called. A decision on which display
+is primary is taken based on several conditions:
+ - If there was a single display added without bounds (it always
+   happens on initialization, when no display was added before),
+   it must have been the very same display, which received
+   geometry changes, and it must become the primary display.
+ - If an updated/newly added display is located closer to origin
+   that a previous one, the former becomes a primary.
+ - If an updated/newly added display is one of the nearest displays
+   to origin and the previous display matches the same condition,
+   choose the updated/newly added one, because Wayland is sending
+   geometry changes for all the displays (a reaction to relocation
+   actions performed by a user).
+
+Bug: 924088
+Change-Id: Icf13f7b7eee0a33a67ca4830168eff9b5332ee9b
+Reviewed-on: https://chromium-review.googlesource.com/c/1426701
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#626190}
+---
+ ui/ozone/platform/wayland/fake_server.cc      | 15 +++-
+ ui/ozone/platform/wayland/fake_server.h       | 10 ++-
+ .../platform/wayland/wayland_connection.cc    |  2 +-
+ .../wayland/wayland_output_manager.cc         | 31 ++------
+ .../platform/wayland/wayland_output_manager.h |  7 +-
+ ui/ozone/platform/wayland/wayland_screen.cc   | 53 +++++++++++---
+ ui/ozone/platform/wayland/wayland_screen.h    |  5 +-
+ .../wayland/wayland_screen_unittest.cc        | 73 ++++++++++++++-----
+ 8 files changed, 130 insertions(+), 66 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/fake_server.cc b/ui/ozone/platform/wayland/fake_server.cc
+index 62e7f8c16c11..2571181771e5 100644
+--- a/ui/ozone/platform/wayland/fake_server.cc
++++ b/ui/ozone/platform/wayland/fake_server.cc
+@@ -1041,6 +1041,10 @@ bool Global::Initialize(wl_display* display) {
+   return global_ != nullptr;
+ }
+ 
++void Global::DestroyGlobal() {
++  global_.reset();
++}
++
+ // static
+ void Global::Bind(wl_client* client,
+                   void* data,
+@@ -1083,19 +1087,22 @@ MockDataDeviceManager::MockDataDeviceManager()
+ MockDataDeviceManager::~MockDataDeviceManager() {}
+ 
+ MockOutput::MockOutput()
+-    : Global(&wl_output_interface, nullptr, kOutputVersion),
+-      rect_(gfx::Rect(0, 0, 800, 600)) {}
++    : Global(&wl_output_interface, nullptr, kOutputVersion) {}
+ 
+ MockOutput::~MockOutput() {}
+ 
+ // Notify clients of the change for output position.
+ void MockOutput::OnBind() {
++  if (rect_.IsEmpty())
++    return;
++
+   const char* kUnknownMake = "unknown";
+   const char* kUnknownModel = "unknown";
+   wl_output_send_geometry(resource(), rect_.x(), rect_.y(), 0, 0, 0,
+                           kUnknownMake, kUnknownModel, 0);
+   wl_output_send_mode(resource(), WL_OUTPUT_MODE_CURRENT, rect_.width(),
+                       rect_.height(), 0);
++  wl_output_send_done(resource());
+ }
+ 
+ MockSeat::MockSeat() : Global(&wl_seat_interface, &seat_impl, kSeatVersion) {}
+@@ -1148,6 +1155,10 @@ bool FakeServer::Start(uint32_t shell_version) {
+   base::ScopedFD server_fd(fd[0]);
+   base::ScopedFD client_fd(fd[1]);
+ 
++  // If client has not specified rect before, user standard ones.
++  if (output_.GetRect().IsEmpty())
++    output_.SetRect(gfx::Rect(0, 0, 800, 600));
++
+   if (wl_display_init_shm(display_.get()) < 0)
+     return false;
+   if (!compositor_.Initialize(display_.get()))
+diff --git a/ui/ozone/platform/wayland/fake_server.h b/ui/ozone/platform/wayland/fake_server.h
+index ddda5748a196..7af277bbfc17 100644
+--- a/ui/ozone/platform/wayland/fake_server.h
++++ b/ui/ozone/platform/wayland/fake_server.h
+@@ -277,6 +277,11 @@ class Global {
+ 
+   // Create a global object.
+   bool Initialize(wl_display* display);
++
++  // Can be used by clients to explicitly destroy global objects and send
++  // global_remove event.
++  void DestroyGlobal();
++
+   // Called from Bind() to send additional information to clients.
+   virtual void OnBind() {}
+ 
+@@ -453,10 +458,13 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
+     return resource ? T::FromResource(resource) : nullptr;
+   }
+ 
+-  void CreateAndInitializeOutput() {
++  MockOutput* CreateAndInitializeOutput() {
+     auto output = std::make_unique<MockOutput>();
+     output->Initialize(display());
++
++    MockOutput* output_ptr = output.get();
+     globals_.push_back(std::move(output));
++    return output_ptr;
+   }
+ 
+   MockDataDeviceManager* data_device_manager() { return &data_device_manager_; }
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index b6a7c798fbc5..7b1f5bf69609 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -69,7 +69,7 @@ bool WaylandConnection::Initialize() {
+ 
+   wl_registry_add_listener(registry_.get(), &registry_listener, this);
+   while (!wayland_output_manager_ ||
+-         !wayland_output_manager_->IsPrimaryOutputReady()) {
++         !wayland_output_manager_->IsOutputReady()) {
+     wl_display_roundtrip(display_.get());
+   }
+ 
+diff --git a/ui/ozone/platform/wayland/wayland_output_manager.cc b/ui/ozone/platform/wayland/wayland_output_manager.cc
+index 82fe00a49d40..654f3c3acf6e 100644
+--- a/ui/ozone/platform/wayland/wayland_output_manager.cc
++++ b/ui/ozone/platform/wayland/wayland_output_manager.cc
+@@ -13,13 +13,10 @@ WaylandOutputManager::WaylandOutputManager() = default;
+ 
+ WaylandOutputManager::~WaylandOutputManager() = default;
+ 
+-bool WaylandOutputManager::IsPrimaryOutputReady() const {
++bool WaylandOutputManager::IsOutputReady() const {
+   if (output_list_.empty())
+     return false;
+-
+-  // The very first output in the list is always treated as a primary output.
+-  const auto& primary_output = output_list_.front();
+-  return primary_output->is_ready();
++  return output_list_.front()->is_ready();
+ }
+ 
+ void WaylandOutputManager::AddWaylandOutput(const uint32_t output_id,
+@@ -54,14 +51,7 @@ void WaylandOutputManager::RemoveWaylandOutput(const uint32_t output_id) {
+   if (output_it == output_list_.end())
+     return;
+ 
+-  bool was_primary_output = IsPrimaryOutput(output_id);
+   output_list_.erase(output_it);
+-
+-  // If it was a primary output removed, make sure the second output, which
+-  // became a primary one, announces that to observers.
+-  if (was_primary_output && !output_list_.empty())
+-    output_list_.front()->TriggerDelegateNotification();
+-
+   OnWaylandOutputRemoved(output_id);
+ }
+ 
+@@ -90,7 +80,7 @@ std::unique_ptr<WaylandScreen> WaylandOutputManager::CreateWaylandScreen(
+ 
+ void WaylandOutputManager::OnWaylandOutputAdded(uint32_t output_id) {
+   if (wayland_screen_)
+-    wayland_screen_->OnOutputAdded(output_id, IsPrimaryOutput(output_id));
++    wayland_screen_->OnOutputAdded(output_id);
+ }
+ 
+ void WaylandOutputManager::OnWaylandOutputRemoved(uint32_t output_id) {
+@@ -98,21 +88,12 @@ void WaylandOutputManager::OnWaylandOutputRemoved(uint32_t output_id) {
+     wayland_screen_->OnOutputRemoved(output_id);
+ }
+ 
+-bool WaylandOutputManager::IsPrimaryOutput(uint32_t output_id) const {
+-  DCHECK(!output_list_.empty());
+-  // The very first object in the |output_list_| is always treated as a primary
+-  // output.
+-  const auto& primary_output = output_list_.front();
+-  return primary_output->output_id() == output_id;
+-}
+-
+ void WaylandOutputManager::OnOutputHandleMetrics(uint32_t output_id,
+                                                  const gfx::Rect& new_bounds,
+                                                  int32_t scale_factor) {
+-  if (wayland_screen_) {
+-    wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds, scale_factor,
+-                                            IsPrimaryOutput(output_id));
+-  }
++  if (wayland_screen_)
++    wayland_screen_->OnOutputMetricsChanged(output_id, new_bounds,
++                                            scale_factor);
+ }
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_output_manager.h b/ui/ozone/platform/wayland/wayland_output_manager.h
+index ef429190c990..dcd6ca2fc955 100644
+--- a/ui/ozone/platform/wayland/wayland_output_manager.h
++++ b/ui/ozone/platform/wayland/wayland_output_manager.h
+@@ -27,8 +27,9 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
+   WaylandOutputManager();
+   ~WaylandOutputManager() override;
+ 
+-  // The first output in the vector is always a primary output.
+-  bool IsPrimaryOutputReady() const;
++  // Says if at least one output has already been announced by a Wayland
++  // compositor.
++  bool IsOutputReady() const;
+ 
+   void AddWaylandOutput(const uint32_t output_id, wl_output* output);
+   void RemoveWaylandOutput(const uint32_t output_id);
+@@ -41,8 +42,6 @@ class WaylandOutputManager : public WaylandOutput::Delegate {
+   void OnWaylandOutputAdded(uint32_t output_id);
+   void OnWaylandOutputRemoved(uint32_t output_id);
+ 
+-  bool IsPrimaryOutput(uint32_t output_id) const;
+-
+   // WaylandOutput::Delegate:
+   void OnOutputHandleMetrics(uint32_t output_id,
+                              const gfx::Rect& new_bounds,
+diff --git a/ui/ozone/platform/wayland/wayland_screen.cc b/ui/ozone/platform/wayland/wayland_screen.cc
+index 6906ee44929c..86fac9f780cf 100644
+--- a/ui/ozone/platform/wayland/wayland_screen.cc
++++ b/ui/ozone/platform/wayland/wayland_screen.cc
+@@ -21,27 +21,62 @@ WaylandScreen::WaylandScreen(WaylandConnection* connection)
+ 
+ WaylandScreen::~WaylandScreen() = default;
+ 
+-void WaylandScreen::OnOutputAdded(uint32_t output_id, bool is_primary) {
++void WaylandScreen::OnOutputAdded(uint32_t output_id) {
+   display::Display new_display(output_id);
+   display_list_.AddDisplay(std::move(new_display),
+-                           is_primary
+-                               ? display::DisplayList::Type::PRIMARY
+-                               : display::DisplayList::Type::NOT_PRIMARY);
++                           display::DisplayList::Type::NOT_PRIMARY);
+ }
+ 
+ void WaylandScreen::OnOutputRemoved(uint32_t output_id) {
++  display::Display primary_display = GetPrimaryDisplay();
++  if (primary_display.id() == output_id) {
++    // First, set a new primary display as required by the |display_list_|. It's
++    // safe to set any of the displays to be a primary one. Once the output is
++    // completely removed, Wayland updates geometry of other displays. And a
++    // display, which became the one to be nearest to the origin will become a
++    // primary one.
++    for (const auto& display : display_list_.displays()) {
++      if (display.id() != output_id) {
++        display_list_.AddOrUpdateDisplay(display,
++                                         display::DisplayList::Type::PRIMARY);
++        break;
++      }
++    }
++  }
+   display_list_.RemoveDisplay(output_id);
+ }
+ 
+ void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
+                                            const gfx::Rect& new_bounds,
+-                                           float device_pixel_ratio,
+-                                           bool is_primary) {
++                                           float device_pixel_ratio) {
+   display::Display changed_display(output_id);
+   changed_display.set_device_scale_factor(device_pixel_ratio);
+   changed_display.set_bounds(new_bounds);
+   changed_display.set_work_area(new_bounds);
+ 
++  bool is_primary = false;
++  display::Display display_nearest_origin =
++      GetDisplayNearestPoint(gfx::Point(0, 0));
++  // If bounds of the nearest to origin display are empty, it must have been the
++  // very first and the same display added before.
++  if (display_nearest_origin.bounds().IsEmpty()) {
++    DCHECK_EQ(display_nearest_origin.id(), changed_display.id());
++    is_primary = true;
++  } else if (changed_display.bounds().origin() <
++             display_nearest_origin.bounds().origin()) {
++    // If changed display is nearer to the origin than the previous display,
++    // that one must become a primary display.
++    is_primary = true;
++  } else if (changed_display.bounds().OffsetFromOrigin() ==
++             display_nearest_origin.bounds().OffsetFromOrigin()) {
++    // If changed display has the same origin as the nearest to origin display,
++    // |changed_display| must become a primary one or it has already been the
++    // primary one. If a user changed positions of two displays (the second at
++    // x,x was set to 0,0), the second change will modify geometry of the
++    // display, which used to be the one nearest to the origin.
++    is_primary = true;
++  }
++
+   display_list_.UpdateDisplay(
+       changed_display, is_primary ? display::DisplayList::Type::PRIMARY
+                                   : display::DisplayList::Type::NOT_PRIMARY);
+@@ -57,8 +92,7 @@ const std::vector<display::Display>& WaylandScreen::GetAllDisplays() const {
+ 
+ display::Display WaylandScreen::GetPrimaryDisplay() const {
+   auto iter = display_list_.GetPrimaryDisplayIterator();
+-  if (iter == display_list_.displays().end())
+-    return display::Display::GetDefaultDisplay();
++  DCHECK(iter != display_list_.displays().end());
+   return *iter;
+ }
+ 
+@@ -90,8 +124,7 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
+ 
+ display::Display WaylandScreen::GetDisplayNearestPoint(
+     const gfx::Point& point) const {
+-  NOTIMPLEMENTED_LOG_ONCE();
+-  return GetPrimaryDisplay();
++  return *FindDisplayNearestPoint(display_list_.displays(), point);
+ }
+ 
+ display::Display WaylandScreen::GetDisplayMatching(
+diff --git a/ui/ozone/platform/wayland/wayland_screen.h b/ui/ozone/platform/wayland/wayland_screen.h
+index fe6f74f26cd3..480957bf024d 100644
+--- a/ui/ozone/platform/wayland/wayland_screen.h
++++ b/ui/ozone/platform/wayland/wayland_screen.h
+@@ -25,12 +25,11 @@ class WaylandScreen : public PlatformScreen {
+   explicit WaylandScreen(WaylandConnection* connection);
+   ~WaylandScreen() override;
+ 
+-  void OnOutputAdded(uint32_t output_id, bool is_primary);
++  void OnOutputAdded(uint32_t output_id);
+   void OnOutputRemoved(uint32_t output_id);
+   void OnOutputMetricsChanged(uint32_t output_id,
+                               const gfx::Rect& bounds,
+-                              float device_pixel_ratio,
+-                              bool is_primary);
++                              float device_pixel_ratio);
+ 
+   base::WeakPtr<WaylandScreen> GetWeakPtr();
+ 
+diff --git a/ui/ozone/platform/wayland/wayland_screen_unittest.cc b/ui/ozone/platform/wayland/wayland_screen_unittest.cc
+index a84af11d06a3..fa4543589db0 100644
+--- a/ui/ozone/platform/wayland/wayland_screen_unittest.cc
++++ b/ui/ozone/platform/wayland/wayland_screen_unittest.cc
+@@ -27,6 +27,7 @@ class TestDisplayObserver : public display::DisplayObserver {
+   ~TestDisplayObserver() override {}
+ 
+   display::Display GetDisplay() { return std::move(display_); }
++  display::Display GetRemovedDisplay() { return std::move(removed_display_); }
+   uint32_t GetAndClearChangedMetrics() {
+     uint32_t changed_metrics = changed_metrics_;
+     changed_metrics_ = 0;
+@@ -39,7 +40,7 @@ class TestDisplayObserver : public display::DisplayObserver {
+   }
+ 
+   void OnDisplayRemoved(const display::Display& old_display) override {
+-    display_ = old_display;
++    removed_display_ = old_display;
+   }
+ 
+   void OnDisplayMetricsChanged(const display::Display& display,
+@@ -51,6 +52,7 @@ class TestDisplayObserver : public display::DisplayObserver {
+  private:
+   uint32_t changed_metrics_ = 0;
+   display::Display display_;
++  display::Display removed_display_;
+ 
+   DISALLOW_COPY_AND_ASSIGN(TestDisplayObserver);
+ };
+@@ -71,7 +73,7 @@ class WaylandScreenTest : public WaylandTest {
+     output_manager_ = connection_->wayland_output_manager();
+     ASSERT_TRUE(output_manager_);
+ 
+-    EXPECT_TRUE(output_manager_->IsPrimaryOutputReady());
++    EXPECT_TRUE(output_manager_->IsOutputReady());
+     platform_screen_ = output_manager_->CreateWaylandScreen(connection_.get());
+   }
+ 
+@@ -90,6 +92,17 @@ class WaylandScreenTest : public WaylandTest {
+     return window;
+   }
+ 
++  void UpdateOutputGeometry(wl_resource* output_resource,
++                            const gfx::Rect& new_rect) {
++    wl_output_send_geometry(output_resource, new_rect.x(), new_rect.y(),
++                            0 /* physical_width */, 0 /* physical_height */,
++                            0 /* subpixel */, "unknown_make", "unknown_model",
++                            0 /* transform */);
++    wl_output_send_mode(output_resource, WL_OUTPUT_MODE_CURRENT,
++                        new_rect.width(), new_rect.height(), 0 /* refresh */);
++    wl_output_send_done(output_resource);
++  }
++
+   wl::MockOutput* output_ = nullptr;
+   WaylandOutputManager* output_manager_ = nullptr;
+ 
+@@ -118,8 +131,20 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
+   TestDisplayObserver observer;
+   platform_screen_->AddObserver(&observer);
+ 
++  const int64_t old_primary_display_id =
++      platform_screen_->GetPrimaryDisplay().id();
++
+   // Add a second display.
+-  server_.CreateAndInitializeOutput();
++  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
++
++  Sync();
++
++  // Update rect of that display.
++  gfx::Rect output1_rect = server_.output()->GetRect();
++  gfx::Rect output2_rect(output1_rect.width(), 0, 800, 600);
++  // The second display is located to the right of first display like
++  // | || |.
++  UpdateOutputGeometry(output2->resource(), output2_rect);
+ 
+   Sync();
+ 
+@@ -127,17 +152,21 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
+   int64_t added_display_id = observer.GetDisplay().id();
+   EXPECT_NE(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
+ 
+-  // Remove the second output.
+-  output_manager_->RemoveWaylandOutput(added_display_id);
++  output2->DestroyGlobal();
+ 
+   Sync();
+ 
+   // Ensure that removed display has correct id.
+-  int64_t removed_display_id = observer.GetDisplay().id();
++  int64_t removed_display_id = observer.GetRemovedDisplay().id();
+   EXPECT_EQ(added_display_id, removed_display_id);
+ 
+   // Create another display again.
+-  server_.CreateAndInitializeOutput();
++  output2 = server_.CreateAndInitializeOutput();
++
++  Sync();
++
++  // Updates rect again.
++  UpdateOutputGeometry(output2->resource(), output2_rect);
+ 
+   Sync();
+ 
+@@ -145,16 +174,26 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
+   added_display_id = observer.GetDisplay().id();
+   EXPECT_NE(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
+ 
+-  // Make sure the geometry changes are sent by syncing one more time again.
+-  Sync();
++  // Now, rearrange displays so that second display becomes a primary one.
++  output1_rect = gfx::Rect(1024, 0, 1024, 768);
++  output2_rect = gfx::Rect(0, 0, 1024, 768);
++  UpdateOutputGeometry(server_.output()->resource(), output1_rect);
++  UpdateOutputGeometry(output2->resource(), output2_rect);
+ 
+-  int64_t old_primary_display_id = platform_screen_->GetPrimaryDisplay().id();
+-  output_manager_->RemoveWaylandOutput(old_primary_display_id);
++  Sync();
+ 
+-  // Ensure that previously added display is now a primary one.
++  // Ensure that output2 is now the primary one.
+   EXPECT_EQ(platform_screen_->GetPrimaryDisplay().id(), added_display_id);
++
++  // Remove the primary display now.
++  output2->DestroyGlobal();
++
++  Sync();
++
++  // Ensure that output1 is a primary display now.
++  EXPECT_EQ(platform_screen_->GetPrimaryDisplay().id(), old_primary_display_id);
+   // Ensure that the removed display was the one, which was a primary display.
+-  EXPECT_EQ(observer.GetDisplay().id(), old_primary_display_id);
++  EXPECT_EQ(observer.GetRemovedDisplay().id(), added_display_id);
+ 
+   platform_screen_->RemoveObserver(&observer);
+ }
+@@ -164,13 +203,7 @@ TEST_P(WaylandScreenTest, OutputPropertyChanges) {
+   platform_screen_->AddObserver(&observer);
+ 
+   const gfx::Rect new_rect(0, 0, 800, 600);
+-  wl_output_send_geometry(output_->resource(), new_rect.x(), new_rect.y(),
+-                          0 /* physical_width */, 0 /* physical_height */,
+-                          0 /* subpixel */, "unkown_make", "unknown_model",
+-                          0 /* transform */);
+-  wl_output_send_mode(output_->resource(), WL_OUTPUT_MODE_CURRENT,
+-                      new_rect.width(), new_rect.height(), 0 /* refresh */);
+-  wl_output_send_done(output_->resource());
++  UpdateOutputGeometry(output_->resource(), new_rect);
+ 
+   Sync();
+ 
+-- 
+2.17.1
+
