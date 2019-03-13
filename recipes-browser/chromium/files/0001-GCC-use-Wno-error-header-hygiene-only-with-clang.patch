@@ -1,0 +1,54 @@
+Upstream-Status: Backport
+
+* Backported from https://swiftshader-review.googlesource.com/c/24428
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From c0697ba17ee8d7e5bc3946decd5bfab4d5c82875 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 5 Feb 2019 10:20:55 +0200
+Subject: [PATCH] GCC: use Wno-error=header-hygiene only with clang.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+There is no sense in passing -Wno-error=header-hygiene
+if -Wno-header-hygiene is not passed (gcc case). Thus,
+use -Wno-error=header-hygiene only with clang.
+
+Bug: chromium:819294
+Change-Id: I01bd9771352ab2e8827f1fdd493eb89bb719dd0f
+Reviewed-on: https://swiftshader-review.googlesource.com/c/24428
+Kokoro-Presubmit: kokoro <noreply+kokoro@google.com>
+Reviewed-by: Alexis Hétu <sugoi@google.com>
+Tested-by: Alexis Hétu <sugoi@google.com>
+---
+ third_party/swiftshader/third_party/llvm-7.0/BUILD.gn | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/third_party/swiftshader/third_party/llvm-7.0/BUILD.gn b/third_party/swiftshader/third_party/llvm-7.0/BUILD.gn
+index f0b3dc807..f3e43d575 100644
+--- a/third_party/swiftshader/third_party/llvm-7.0/BUILD.gn
++++ b/third_party/swiftshader/third_party/llvm-7.0/BUILD.gn
+@@ -55,7 +55,9 @@ config("swiftshader_llvm_private_config") {
+   }
+ 
+   if (is_clang) {
+-    cflags += [ "-Wno-header-hygiene" ]
++    cflags += [ "-Wno-header-hygiene",
++                "-Wno-error=header-hygiene"
++    ]
+     if (target_cpu == "x86" || target_cpu == "x64") {
+       cflags += [ "-msse2" ]
+     }
+@@ -74,7 +76,6 @@ config("swiftshader_llvm_private_config") {
+     "-Wno-unused-private-field",
+     "-Wno-unused-result",
+     "-Wno-unused-variable",
+-    "-Wno-error=header-hygiene",
+   ]
+ 
+   defines = [
+-- 
+2.17.1
+

@@ -1,0 +1,561 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 98c00bc3de532a049b319f8c03b1e0c636cf5388 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 31 Jan 2019 10:47:58 +0200
+Subject: [PATCH 05/42] [ozone/wayland] Implement GetCursorScreenPoint.
+
+Wayland does not provide either location of surfaces in global space
+coordinate system or location of a pointer. Instead, only locations of
+mouse/touch events are known. Given that Chromium assumes top-level windows
+are located at origin, always provide a cursor point in regards to
+surfaces' location.
+
+If a pointer is located in any of the existing wayland windows, return the
+last known cursor position. Otherwise, return such a point, which is not
+contained by any of the windows.
+
+Bug: 875161
+Change-Id: If4de9936502efb6c49a50fe125f3fd6f5c59a4d0
+---
+ ui/ozone/platform/wayland/BUILD.gn            |   2 +
+ .../platform/wayland/wayland_connection.cc    |  18 ++
+ .../platform/wayland/wayland_connection.h     |   8 +
+ .../wayland/wayland_cursor_position.cc        |  24 +++
+ .../wayland/wayland_cursor_position.h         |  34 ++++
+ ui/ozone/platform/wayland/wayland_screen.cc   |  20 ++-
+ .../wayland/wayland_screen_unittest.cc        | 160 +++++++++++++++++-
+ ui/ozone/platform/wayland/wayland_window.cc   |  53 +++++-
+ ui/ozone/platform/wayland/wayland_window.h    |   2 +
+ 9 files changed, 314 insertions(+), 7 deletions(-)
+ create mode 100644 ui/ozone/platform/wayland/wayland_cursor_position.cc
+ create mode 100644 ui/ozone/platform/wayland/wayland_cursor_position.h
+
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index efd5e2d552d6..b19fae34712d 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -29,6 +29,8 @@ source_set("wayland") {
+     "wayland_connection_connector.h",
+     "wayland_cursor.cc",
+     "wayland_cursor.h",
++    "wayland_cursor_position.cc",
++    "wayland_cursor_position.h",
+     "wayland_data_device.cc",
+     "wayland_data_device.h",
+     "wayland_data_device_manager.cc",
+diff --git a/ui/ozone/platform/wayland/wayland_connection.cc b/ui/ozone/platform/wayland/wayland_connection.cc
+index a90a021a2b45..04d5f6316a1e 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/wayland_connection.cc
+@@ -125,6 +125,20 @@ WaylandWindow* WaylandConnection::GetWindow(gfx::AcceleratedWidget widget) {
+   return it == window_map_.end() ? nullptr : it->second;
+ }
+ 
++WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() {
++  WaylandWindow* window_with_largest_bounds = nullptr;
++  for (auto entry : window_map_) {
++    if (!window_with_largest_bounds) {
++      window_with_largest_bounds = entry.second;
++      continue;
++    }
++    WaylandWindow* window = entry.second;
++    if (window_with_largest_bounds->GetBounds() < window->GetBounds())
++      window_with_largest_bounds = window;
++  }
++  return window_with_largest_bounds;
++}
++
+ WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() {
+   for (auto entry : window_map_) {
+     WaylandWindow* window = entry.second;
+@@ -519,9 +533,13 @@ void WaylandConnection::Capabilities(void* data,
+           pointer, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
+                                        base::Unretained(connection)));
+       connection->pointer_->set_connection(connection);
++
++      connection->wayland_cursor_position_ =
++          std::make_unique<WaylandCursorPosition>();
+     }
+   } else if (connection->pointer_) {
+     connection->pointer_.reset();
++    connection->wayland_cursor_position_.reset();
+   }
+   if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
+     if (!connection->keyboard_) {
+diff --git a/ui/ozone/platform/wayland/wayland_connection.h b/ui/ozone/platform/wayland/wayland_connection.h
+index 1a3b4d880bbf..cbb8d4f242bc 100644
+--- a/ui/ozone/platform/wayland/wayland_connection.h
++++ b/ui/ozone/platform/wayland/wayland_connection.h
+@@ -13,6 +13,7 @@
+ #include "ui/events/platform/platform_event_source.h"
+ #include "ui/gfx/buffer_types.h"
+ #include "ui/gfx/native_widget_types.h"
++#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
+ #include "ui/ozone/platform/wayland/wayland_data_device.h"
+ #include "ui/ozone/platform/wayland/wayland_data_device_manager.h"
+ #include "ui/ozone/platform/wayland/wayland_data_source.h"
+@@ -83,6 +84,7 @@ class WaylandConnection : public PlatformEventSource,
+   }
+ 
+   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
++  WaylandWindow* GetWindowWithLargestBounds();
+   WaylandWindow* GetCurrentFocusedWindow();
+   WaylandWindow* GetCurrentKeyboardFocusedWindow();
+   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
+@@ -105,6 +107,11 @@ class WaylandConnection : public PlatformEventSource,
+     return wayland_output_manager_.get();
+   }
+ 
++  // Returns the cursor position, which may be null.
++  WaylandCursorPosition* wayland_cursor_position() {
++    return wayland_cursor_position_.get();
++  }
++
+   // Clipboard implementation.
+   PlatformClipboard* GetPlatformClipboard();
+   void DataSourceCancelled();
+@@ -214,6 +221,7 @@ class WaylandConnection : public PlatformEventSource,
+   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
+   std::unique_ptr<WaylandPointer> pointer_;
+   std::unique_ptr<WaylandTouch> touch_;
++  std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
+ 
+   // Objects that are using when GPU runs in own process.
+   std::unique_ptr<WaylandBufferManager> buffer_manager_;
+diff --git a/ui/ozone/platform/wayland/wayland_cursor_position.cc b/ui/ozone/platform/wayland/wayland_cursor_position.cc
+new file mode 100644
+index 000000000000..97cb6409a8a4
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_cursor_position.cc
+@@ -0,0 +1,24 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
++
++#include "ui/ozone/platform/wayland/wayland_connection.h"
++
++namespace ui {
++
++WaylandCursorPosition::WaylandCursorPosition() = default;
++
++WaylandCursorPosition::~WaylandCursorPosition() = default;
++
++void WaylandCursorPosition::OnCursorPositionChanged(
++    const gfx::Point& cursor_position) {
++  cursor_surface_point_ = cursor_position;
++}
++
++gfx::Point WaylandCursorPosition::GetCursorSurfacePoint() const {
++  return cursor_surface_point_;
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_cursor_position.h b/ui/ozone/platform/wayland/wayland_cursor_position.h
+new file mode 100644
+index 000000000000..123ed9c9a181
+--- /dev/null
++++ b/ui/ozone/platform/wayland/wayland_cursor_position.h
+@@ -0,0 +1,34 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_POSITION_H_
++#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_POSITION_H_
++
++#include "base/macros.h"
++#include "ui/gfx/geometry/point.h"
++
++namespace ui {
++
++// Stores last known cursor pointer position in regards to top-level windows'
++// coordinates and returns it on request.
++class WaylandCursorPosition {
++ public:
++  WaylandCursorPosition();
++  ~WaylandCursorPosition();
++
++  void OnCursorPositionChanged(const gfx::Point& cursor_position);
++
++  // Returns last known cursor position in regards to top-level surface local
++  // coordinates. It is unknown what surface receives that cursor position.
++  gfx::Point GetCursorSurfacePoint() const;
++
++ private:
++  gfx::Point cursor_surface_point_;
++
++  DISALLOW_COPY_AND_ASSIGN(WaylandCursorPosition);
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_POSITION_H_
+diff --git a/ui/ozone/platform/wayland/wayland_screen.cc b/ui/ozone/platform/wayland/wayland_screen.cc
+index a3561bf6a545..b0c1bc41ad0e 100644
+--- a/ui/ozone/platform/wayland/wayland_screen.cc
++++ b/ui/ozone/platform/wayland/wayland_screen.cc
+@@ -10,6 +10,7 @@
+ #include "ui/gfx/geometry/point.h"
+ #include "ui/gfx/geometry/size.h"
+ #include "ui/ozone/platform/wayland/wayland_connection.h"
++#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
+ #include "ui/ozone/platform/wayland/wayland_window.h"
+ 
+ namespace ui {
+@@ -129,8 +130,23 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
+ }
+ 
+ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
+-  NOTIMPLEMENTED_LOG_ONCE();
+-  return gfx::Point();
++  // Wayland does not provide either location of surfaces in global space
++  // coordinate system or location of a pointer. Instead, only locations of
++  // mouse/touch events are known. Given that Chromium assumes top-level windows
++  // are located at origin, always provide a cursor point in regards to
++  // surfaces' location.
++  //
++  // If a pointer is located in any of the existing wayland windows, return the
++  // last known cursor position. Otherwise, return such a point, which is not
++  // contained by any of the windows.
++  auto* cursor_position = connection_->wayland_cursor_position();
++  if (connection_->GetCurrentFocusedWindow() && cursor_position)
++    return cursor_position->GetCursorSurfacePoint();
++
++  WaylandWindow* window = connection_->GetWindowWithLargestBounds();
++  DCHECK(window);
++  const gfx::Rect bounds = window->GetBounds();
++  return gfx::Point(bounds.width() + 10, bounds.height() + 10);
+ }
+ 
+ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
+diff --git a/ui/ozone/platform/wayland/wayland_screen_unittest.cc b/ui/ozone/platform/wayland/wayland_screen_unittest.cc
+index 3861348ceec5..e05ec3645ef0 100644
+--- a/ui/ozone/platform/wayland/wayland_screen_unittest.cc
++++ b/ui/ozone/platform/wayland/wayland_screen_unittest.cc
+@@ -2,11 +2,15 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#include <memory>
++
+ #include <wayland-server.h>
+ 
+ #include "testing/gtest/include/gtest/gtest.h"
+ #include "ui/display/display_observer.h"
+ #include "ui/ozone/platform/wayland/fake_server.h"
++#include "ui/ozone/platform/wayland/test/mock_surface.h"
++#include "ui/ozone/platform/wayland/test/test_pointer.h"
+ #include "ui/ozone/platform/wayland/wayland_connection.h"
+ #include "ui/ozone/platform/wayland/wayland_output_manager.h"
+ #include "ui/ozone/platform/wayland/wayland_screen.h"
+@@ -110,7 +114,7 @@ class WaylandScreenTest : public WaylandTest {
+     EXPECT_EQ(display_for_widget.id(), expected_display_id);
+   }
+ 
+-  wl::MockOutput* output_ = nullptr;
++  wl::TestOutput* output_ = nullptr;
+   WaylandOutputManager* output_manager_ = nullptr;
+ 
+   std::unique_ptr<WaylandScreen> platform_screen_;
+@@ -142,7 +146,7 @@ TEST_P(WaylandScreenTest, MultipleOutputsAddedAndRemoved) {
+       platform_screen_->GetPrimaryDisplay().id();
+ 
+   // Add a second display.
+-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
++  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
+ 
+   Sync();
+ 
+@@ -295,7 +299,7 @@ TEST_P(WaylandScreenTest, GetDisplayMatching) {
+   const display::Display primary_display =
+       platform_screen_->GetPrimaryDisplay();
+ 
+-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
++  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
+ 
+   Sync();
+ 
+@@ -366,7 +370,7 @@ TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
+       platform_screen_->GetPrimaryDisplay();
+ 
+   // Create an additional display.
+-  wl::MockOutput* output2 = server_.CreateAndInitializeOutput();
++  wl::TestOutput* output2 = server_.CreateAndInitializeOutput();
+ 
+   Sync();
+ 
+@@ -424,6 +428,154 @@ TEST_P(WaylandScreenTest, GetDisplayForAcceleratedWidget) {
+   ValidateTheDisplayForWidget(widget, secondary_display.id());
+ }
+ 
++TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
++  MockPlatformWindowDelegate delegate;
++  std::unique_ptr<WaylandWindow> second_window =
++      CreateWaylandWindowWithProperties(gfx::Rect(0, 0, 1920, 1080),
++                                        PlatformWindowType::kWindow,
++                                        gfx::kNullAcceleratedWidget, &delegate);
++
++  auto* surface = server_.GetObject<wl::MockSurface>(window_->GetWidget());
++  ASSERT_TRUE(surface);
++
++  // Announce pointer capability so that WaylandPointer is created on the client
++  // side.
++  wl_seat_send_capabilities(server_.seat()->resource(),
++                            WL_SEAT_CAPABILITY_POINTER);
++
++  Sync();
++
++  wl::TestPointer* pointer = server_.seat()->pointer();
++  ASSERT_TRUE(pointer);
++
++  uint32_t serial = 0;
++  uint32_t time = 1002;
++  wl_pointer_send_enter(pointer->resource(), ++serial, surface->resource(), 0,
++                        0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(10),
++                         wl_fixed_from_int(20));
++
++  Sync();
++
++  // WaylandScreen must return the last pointer location.
++  EXPECT_EQ(gfx::Point(10, 20), platform_screen_->GetCursorScreenPoint());
++
++  auto* second_surface =
++      server_.GetObject<wl::MockSurface>(second_window->GetWidget());
++  ASSERT_TRUE(second_surface);
++  // Now, leave the first surface and enter second one.
++  wl_pointer_send_leave(pointer->resource(), ++serial, surface->resource());
++  wl_pointer_send_enter(pointer->resource(), ++serial,
++                        second_surface->resource(), 0, 0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(20),
++                         wl_fixed_from_int(10));
++
++  Sync();
++
++  // WaylandScreen must return the last pointer location.
++  EXPECT_EQ(gfx::Point(20, 10), platform_screen_->GetCursorScreenPoint());
++
++  // Clear pointer focus.
++  wl_pointer_send_leave(pointer->resource(), ++serial,
++                        second_surface->resource());
++
++  Sync();
++
++  // WaylandScreen must return a point, which is located outside of bounds of
++  // any window. Basically, it means that it takes the largest window and adds
++  // 10 pixels to its width and height, and returns the value.
++  const gfx::Rect second_window_bounds = second_window->GetBounds();
++  // A second window has largest bounds. Thus, these bounds must be taken as a
++  // ground for the point outside any of the surfaces.
++  ASSERT_TRUE(window_->GetBounds() < second_window_bounds);
++  EXPECT_EQ(gfx::Point(second_window_bounds.width() + 10,
++                       second_window_bounds.height() + 10),
++            platform_screen_->GetCursorScreenPoint());
++
++  // Create a menu window now and ensure cursor position is always sent in
++  // regards to that window bounds.
++  std::unique_ptr<WaylandWindow> menu_window =
++      CreateWaylandWindowWithProperties(
++          gfx::Rect(second_window_bounds.width() - 10,
++                    second_window_bounds.height() - 10, 10, 20),
++          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
++
++  Sync();
++
++  auto* menu_surface =
++      server_.GetObject<wl::MockSurface>(menu_window->GetWidget());
++  ASSERT_TRUE(menu_surface);
++
++  wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
++                        0, 0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
++                         wl_fixed_from_int(1));
++
++  Sync();
++
++  // The cursor screen point must be converted to the top-level window
++  // coordinates as long as Wayland doesn't provide global coordinates of
++  // surfaces and Chromium assumes those windows are always located at origin
++  // (0,0). For more information, check the comment in
++  // WaylandWindow::UpdateCursorPositionFromEvent.
++  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
++
++  // Leave the menu window and enter the top level window.
++  wl_pointer_send_leave(pointer->resource(), ++serial,
++                        menu_surface->resource());
++  wl_pointer_send_enter(pointer->resource(), ++serial,
++                        second_surface->resource(), 0, 0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(1912),
++                         wl_fixed_from_int(1071));
++
++  Sync();
++
++  // WaylandWindow::UpdateCursorPositionFromEvent mustn't convert this point,
++  // because it has already been located on the top-level window.
++  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
++
++  wl_pointer_send_leave(pointer->resource(), ++serial,
++                        second_surface->resource());
++
++  // Now, create a nested menu window and make sure that the cursor screen point
++  // still has been correct. The location of the window is on the right side of
++  // the main menu window.
++  const gfx::Rect menu_window_bounds = menu_window->GetBounds();
++  std::unique_ptr<WaylandWindow> nested_menu_window =
++      CreateWaylandWindowWithProperties(
++          gfx::Rect(menu_window_bounds.x() + menu_window_bounds.width(),
++                    menu_window_bounds.y() + 2, 10, 20),
++          PlatformWindowType::kPopup, second_window->GetWidget(), &delegate);
++
++  Sync();
++
++  auto* nested_menu_surface =
++      server_.GetObject<wl::MockSurface>(nested_menu_window->GetWidget());
++  ASSERT_TRUE(nested_menu_surface);
++
++  wl_pointer_send_enter(pointer->resource(), ++serial,
++                        nested_menu_surface->resource(), 0, 0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
++                         wl_fixed_from_int(3));
++
++  Sync();
++
++  EXPECT_EQ(gfx::Point(1922, 1075), platform_screen_->GetCursorScreenPoint());
++
++  // Leave the nested surface and enter main menu surface. The cursor screen
++  // point still must be reported correctly.
++  wl_pointer_send_leave(pointer->resource(), ++serial,
++                        nested_menu_surface->resource());
++  wl_pointer_send_enter(pointer->resource(), ++serial, menu_surface->resource(),
++                        0, 0);
++  wl_pointer_send_motion(pointer->resource(), ++time, wl_fixed_from_int(2),
++                         wl_fixed_from_int(1));
++
++  Sync();
++
++  EXPECT_EQ(gfx::Point(1912, 1071), platform_screen_->GetCursorScreenPoint());
++}
++
+ INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
+                         WaylandScreenTest,
+                         ::testing::Values(kXdgShellV5));
+diff --git a/ui/ozone/platform/wayland/wayland_window.cc b/ui/ozone/platform/wayland/wayland_window.cc
+index 82d6c0161e46..32bf9bfea091 100644
+--- a/ui/ozone/platform/wayland/wayland_window.cc
++++ b/ui/ozone/platform/wayland/wayland_window.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "ui/ozone/platform/wayland/wayland_window.h"
+ 
++#include <memory>
++
+ #include <wayland-client.h>
+ 
+ #include "base/bind.h"
+@@ -16,6 +18,7 @@
+ #include "ui/events/ozone/events_ozone.h"
+ #include "ui/gfx/geometry/point_f.h"
+ #include "ui/ozone/platform/wayland/wayland_connection.h"
++#include "ui/ozone/platform/wayland/wayland_cursor_position.h"
+ #include "ui/ozone/platform/wayland/wayland_output_manager.h"
+ #include "ui/ozone/platform/wayland/wayland_pointer.h"
+ #include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
+@@ -112,7 +115,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+   DCHECK(xdg_shell_objects_factory_);
+ 
+   bounds_ = properties.bounds;
+-  parent_window_ = GetParentWindow(properties.parent_widget);
+ 
+   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
+   if (!surface_) {
+@@ -126,6 +128,8 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+   switch (ui_window_type) {
+     case ui::PlatformWindowType::kMenu:
+     case ui::PlatformWindowType::kPopup:
++      parent_window_ = GetParentWindow(properties.parent_widget);
++
+       // TODO(msisov, jkim): Handle notification windows, which are marked
+       // as popup windows as well. Those are the windows that do not have
+       // parents and pop up when the browser receives a notification.
+@@ -478,6 +482,12 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
+ 
+ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
+   Event* event = static_cast<Event*>(native_event);
++
++  if (event->IsLocatedEvent()) {
++    auto copied_event = Event::Clone(*event);
++    UpdateCursorPositionFromEvent(std::move(copied_event));
++  }
++
+   // If the window does not have a pointer focus, but received this event, it
+   // means the window is a popup window with a child popup window. In this case,
+   // the location of the event must be converted from the nested popup to the
+@@ -679,6 +689,47 @@ void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
+     entered_outputs_ids_.erase(entered_output_id_it);
+ }
+ 
++void WaylandWindow::UpdateCursorPositionFromEvent(
++    std::unique_ptr<Event> event) {
++  DCHECK(event->IsLocatedEvent());
++  auto* window = connection_->GetCurrentFocusedWindow();
++  // This is a tricky part. Initially, Wayland sends events to surfaces the
++  // events are targeted for. But, in order to fulfill Chromium's assumptions
++  // about event targets, some of the events are rerouted and their locations
++  // are converted.
++  //
++  // The event we got here is rerouted, but it hasn't had its location fixed
++  // yet. Passing an event with fixed location won't help as well - its location
++  // is converted in a different way: if mouse is moved outside a menu window
++  // to the left, the location of such event includes negative values.
++  //
++  // In contrast, this method must translate coordinates of all events
++  // in regards to top-level windows' coordinates as it's always located at
++  // origin (0,0) from Chromium point of view (remember that Wayland doesn't
++  // provide global coordinates to its clients). And it's totally fine to use it
++  // as the target. Thus, the location of the |event| is always converted using
++  // the top-level window's bounds as the target excluding cases, when the
++  // mouse/touch is over a top-level window.
++  if (parent_window_ && parent_window_ != window) {
++    const gfx::Rect target_bounds = parent_window_->GetBounds();
++    gfx::Rect own_bounds = GetBounds();
++    // This is a bit trickier, and concerns nested menu windows. Whenever an
++    // event is sent to the nested menu window, it's rerouted to a parent menu
++    // window. Thus, in order to correctly translate its location, we must
++    // choose correct values for the |own_bounds|. In this case, it must the
++    // nested menu window, because |this| is the parent of that window.
++    if (window == child_window_)
++      own_bounds = child_window_->GetBounds();
++    ConvertEventLocationToTargetWindowLocation(
++        target_bounds.origin(), own_bounds.origin(), event->AsLocatedEvent());
++  }
++  auto* cursor_position = connection_->wayland_cursor_position();
++  if (cursor_position) {
++    cursor_position->OnCursorPositionChanged(
++        event->AsLocatedEvent()->location());
++  }
++}
++
+ // static
+ void WaylandWindow::Enter(void* data,
+                           struct wl_surface* wl_surface,
+diff --git a/ui/ozone/platform/wayland/wayland_window.h b/ui/ozone/platform/wayland/wayland_window.h
+index 4176c6ae5942..dc5fa34a766e 100644
+--- a/ui/ozone/platform/wayland/wayland_window.h
++++ b/ui/ozone/platform/wayland/wayland_window.h
+@@ -170,6 +170,8 @@ class WaylandWindow : public PlatformWindow,
+   void AddEnteredOutputId(struct wl_output* output);
+   void RemoveEnteredOutputId(struct wl_output* output);
+ 
++  void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
++
+   // wl_surface_listener
+   static void Enter(void* data,
+                     struct wl_surface* wl_surface,
+-- 
+2.17.1
+

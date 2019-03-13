@@ -1,0 +1,206 @@
+Upstream-Status: Backport
+
+* Backported from https://crrev.com/c/1478159
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 259218f6542b3daa8759ca58ced104ce6f940f22 Mon Sep 17 00:00:00 2001
+From: Allan Sandfeld Jensen <allan.jensen@qt.io>
+Date: Fri, 8 Mar 2019 19:35:45 +0000
+Subject: [PATCH] Stop using C++20 initialization
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Named initialization is proposed for C++20 and we are supposed to be using
+only C++14. It just happens to also be an old GCC extension also implemented
+by clang.
+
+Change-Id: I1a2f15a90bb4975aacb37812ed711ecb8481ac96
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1478159
+Commit-Queue: Nico Weber <thakis@chromium.org>
+Reviewed-by: Nico Weber <thakis@chromium.org>
+Reviewed-by: Sami Kyöstilä <skyostil@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#639116}
+---
+ base/message_loop/message_loop.cc              |  3 +--
+ .../sequence_manager_impl_unittest.cc          | 18 +++++++++---------
+ .../test/sequence_manager_for_test.h           |  3 ++-
+ .../scheduler/common/web_thread_scheduler.cc   |  3 ++-
+ .../scheduler/worker/compositor_thread.cc      |  3 ++-
+ .../worker/non_main_thread_scheduler_impl.cc   |  3 ++-
+ .../worker/worker_scheduler_proxy_unittest.cc  |  3 ++-
+ 7 files changed, 20 insertions(+), 16 deletions(-)
+
+diff --git a/base/message_loop/message_loop.cc b/base/message_loop/message_loop.cc
+index f72f17d9317c..151505e58623 100644
+--- a/base/message_loop/message_loop.cc
++++ b/base/message_loop/message_loop.cc
+@@ -220,8 +220,7 @@ std::unique_ptr<MessageLoopBase> MessageLoop::CreateSequenceManager(
+     MessageLoop::Type type) {
+   std::unique_ptr<sequence_manager::internal::SequenceManagerImpl> manager =
+       sequence_manager::internal::SequenceManagerImpl::CreateUnboundWithPump(
+-          sequence_manager::SequenceManager::Settings{.message_loop_type =
+-                                                          type});
++          sequence_manager::SequenceManager::Settings{type});
+   // std::move() for nacl, it doesn't properly handle returning unique_ptr
+   // for subtypes.
+   return std::move(manager);
+diff --git a/base/task/sequence_manager/sequence_manager_impl_unittest.cc b/base/task/sequence_manager/sequence_manager_impl_unittest.cc
+index 4495f02f1845..e00c74733bb6 100644
+--- a/base/task/sequence_manager/sequence_manager_impl_unittest.cc
++++ b/base/task/sequence_manager/sequence_manager_impl_unittest.cc
+@@ -109,7 +109,7 @@ class SequenceManagerTest : public SequenceManagerTestBase {
+     manager_ = SequenceManagerForTest::Create(
+         nullptr, ThreadTaskRunnerHandle::Get(),
+         test_task_runner_->GetMockTickClock(),
+-        SequenceManager::Settings{.randomised_sampling_enabled = false});
++        SequenceManager::Settings{false});
+   }
+ 
+   const TickClock* GetTickClock() {
+@@ -181,7 +181,7 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
+     manager_ = SequenceManagerForTest::Create(
+         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
+         &mock_clock_,
+-        SequenceManager::Settings{.randomised_sampling_enabled = false});
++        SequenceManager::Settings{false});
+   }
+ 
+   void SetUpWithMessagePump() {
+@@ -190,7 +190,7 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
+     manager_ = SequenceManagerForTest::Create(
+         std::make_unique<ThreadControllerWithMessagePumpImpl>(
+             std::make_unique<MessagePumpDefault>(), &mock_clock_),
+-        SequenceManager::Settings{.randomised_sampling_enabled = false});
++        SequenceManager::Settings{false});
+     // ThreadControllerWithMessagePumpImpl doesn't provide
+     // a default task runner.
+     default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
+@@ -218,7 +218,7 @@ class SequenceManagerTestWithMessagePump : public SequenceManagerTestBase {
+     manager_ = SequenceManagerForTest::Create(
+         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
+         &mock_clock_,
+-        SequenceManager::Settings{.randomised_sampling_enabled = false});
++        SequenceManager::Settings{false});
+   }
+ 
+   void SetUpWithMessagePump() {
+@@ -227,7 +227,7 @@ class SequenceManagerTestWithMessagePump : public SequenceManagerTestBase {
+     manager_ = SequenceManagerForTest::Create(
+         std::make_unique<ThreadControllerWithMessagePumpImpl>(
+             std::make_unique<MessagePumpDefault>(), &mock_clock_),
+-        SequenceManager::Settings{.randomised_sampling_enabled = false});
++        SequenceManager::Settings{false});
+     // ThreadControllerWithMessagePumpImpl doesn't provide
+     // a default task runner.
+     default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
+@@ -305,7 +305,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization, NowNotCalledIfUnneeded) {
+ 
+   manager_ = SequenceManagerForTest::Create(
+       nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+-      SequenceManager::Settings{.randomised_sampling_enabled = false});
++      SequenceManager::Settings{false});
+   manager_->SetWorkBatchSize(6);
+ 
+   CreateTaskQueues(3u);
+@@ -329,7 +329,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
+ 
+   manager_ = SequenceManagerForTest::Create(
+       nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+-      SequenceManager::Settings{.randomised_sampling_enabled = false});
++      SequenceManager::Settings{false});
+   manager_->SetWorkBatchSize(6);
+   manager_->AddTaskTimeObserver(&test_task_time_observer_);
+ 
+@@ -355,7 +355,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
+ 
+   manager_ = SequenceManagerForTest::Create(
+       nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+-      SequenceManager::Settings{.randomised_sampling_enabled = false});
++      SequenceManager::Settings{false});
+   manager_->SetWorkBatchSize(6);
+   manager_->AddTaskTimeObserver(&test_task_time_observer_);
+ 
+@@ -3425,7 +3425,7 @@ TEST_P(SequenceManagerTestWithCustomInitialization, DefaultTaskRunnerSupport) {
+         SequenceManagerForTest::Create(
+             message_loop.GetMessageLoopBase(), message_loop.task_runner(),
+             nullptr,
+-            SequenceManager::Settings{.randomised_sampling_enabled = false});
++            SequenceManager::Settings{false});
+     manager->SetDefaultTaskRunner(custom_task_runner);
+     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
+   }
+diff --git a/base/task/sequence_manager/test/sequence_manager_for_test.h b/base/task/sequence_manager/test/sequence_manager_for_test.h
+index 0b6afe4d1016..82a6297b7fdb 100644
+--- a/base/task/sequence_manager/test/sequence_manager_for_test.h
++++ b/base/task/sequence_manager/test/sequence_manager_for_test.h
+@@ -35,7 +35,8 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
+   static std::unique_ptr<SequenceManagerForTest> Create(
+       std::unique_ptr<internal::ThreadController> thread_controller,
+       SequenceManager::Settings settings = SequenceManager::Settings{
+-          .randomised_sampling_enabled = true});
++          base::MessageLoop::TYPE_DEFAULT,
++          /*randomised_sampling_enabled=*/true});
+ 
+   size_t ActiveQueuesCount() const;
+   bool HasImmediateWork() const;
+diff --git a/third_party/blink/renderer/platform/scheduler/common/web_thread_scheduler.cc b/third_party/blink/renderer/platform/scheduler/common/web_thread_scheduler.cc
+index c0756751ba59..1c5480948360 100644
+--- a/third_party/blink/renderer/platform/scheduler/common/web_thread_scheduler.cc
++++ b/third_party/blink/renderer/platform/scheduler/common/web_thread_scheduler.cc
+@@ -21,7 +21,8 @@ WebThreadScheduler::CreateMainThreadScheduler(
+     std::unique_ptr<base::MessagePump> message_pump,
+     base::Optional<base::Time> initial_virtual_time) {
+   auto settings = base::sequence_manager::SequenceManager::Settings{
+-      .randomised_sampling_enabled = true};
++      base::MessageLoop::TYPE_DEFAULT,
++      /*randomised_sampling_enabled=*/true};
+   auto sequence_manager =
+       message_pump
+           ? base::sequence_manager::
+diff --git a/third_party/blink/renderer/platform/scheduler/worker/compositor_thread.cc b/third_party/blink/renderer/platform/scheduler/worker/compositor_thread.cc
+index 32d5f4f80da9..71724a36276c 100644
+--- a/third_party/blink/renderer/platform/scheduler/worker/compositor_thread.cc
++++ b/third_party/blink/renderer/platform/scheduler/worker/compositor_thread.cc
+@@ -20,7 +20,8 @@ CompositorThread::CreateNonMainThreadScheduler() {
+   return std::make_unique<CompositorThreadScheduler>(
+       base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+           base::sequence_manager::SequenceManager::Settings{
+-              .randomised_sampling_enabled = true}));
++              base::MessageLoop::TYPE_DEFAULT,
++              /*randomised_sampling_enabled=*/true}));
+ }
+ 
+ }  // namespace scheduler
+diff --git a/third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.cc b/third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.cc
+index 10db0436f987..f05d94b3bf87 100644
+--- a/third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.cc
++++ b/third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.cc
+@@ -27,7 +27,8 @@ std::unique_ptr<NonMainThreadSchedulerImpl> NonMainThreadSchedulerImpl::Create(
+       thread_type,
+       base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+           base::sequence_manager::SequenceManager::Settings{
+-              .randomised_sampling_enabled = true}),
++              base::MessageLoop::TYPE_DEFAULT,
++              /*randomised_sampling_enabled=*/true}),
+       proxy);
+ }
+ 
+diff --git a/third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy_unittest.cc b/third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy_unittest.cc
+index 7b115c7e2b04..8f1f8fd1f8e6 100644
+--- a/third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy_unittest.cc
++++ b/third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy_unittest.cc
+@@ -78,7 +78,8 @@ class WorkerThreadForTest : public WorkerThread {
+     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
+         base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+             base::sequence_manager::SequenceManager::Settings{
+-                .randomised_sampling_enabled = true}),
++                base::MessageLoop::TYPE_DEFAULT,
++                /*randomised_sampling_enabled=*/true}),
+         worker_scheduler_proxy(), throtting_state_changed_);
+     scheduler_ = scheduler.get();
+     worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
+-- 
+2.17.1
+

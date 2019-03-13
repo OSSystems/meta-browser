@@ -1,0 +1,62 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From ec95be11bba7d9d6ba347443726712644f51761a Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 26 Feb 2019 07:44:55 +0000
+Subject: [PATCH 29/42] [ozone/wayland] Fix software rendering.
+
+This patch fixes software rendering path by adding mojo APIs
+to call newly created WaylandShmBufferManager, which
+uses Wayland APIs to create shm buffer and commit it.
+
+Also, some code is rearrenged and moved to WaylandShmBufferManager
+instead. WaylandSurfaceCanvas is also moved to a separate file.
+
+gn args:
+use_ozone=true
+ozone_platform_wayland=true
+use_xkbcommon=true
+
+./chrome --ozone-platform=wayland --use-gl=swiftshader --in-process-gpu
+
+Test: ./chrome --ozone-platform=wayland --use-gl=swiftshader
+Bug: 910998
+Change-Id: Id52fc41e165232cd08eeb471542eab11d6e1cae4
+Reviewed-on: https://chromium-review.googlesource.com/c/1454623
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Dominick Ng <dominickn@chromium.org>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#635428}
+---
+ .../wayland/wayland_shared_memory_buffer_manager.cc        | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.cc b/ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.cc
+index 9c649d5b9bec..0cfe3cdf204f 100644
+--- a/ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.cc
++++ b/ui/ozone/platform/wayland/wayland_shared_memory_buffer_manager.cc
+@@ -33,15 +33,16 @@ bool WaylandShmBufferManager::CreateBufferForWidget(
+     base::File file,
+     size_t length,
+     const gfx::Size& size) {
+-  if (!file.IsValid() || length == 0 || size.IsEmpty() ||
+-      widget == gfx::kNullAcceleratedWidget)
++  base::ScopedFD fd(file.TakePlatformFile());
++  if (!fd.is_valid() || length == 0 || size.IsEmpty() ||
++      widget == gfx::kNullAcceleratedWidget) {
+     return false;
++  }
+ 
+   auto it = shm_buffers_.find(widget);
+   if (it != shm_buffers_.end())
+     return false;
+ 
+-  base::ScopedFD fd(file.TakePlatformFile());
+   wl::Object<wl_shm_pool> pool(
+       wl_shm_create_pool(connection_->shm(), fd.get(), length));
+   if (!pool)
+-- 
+2.17.1
+

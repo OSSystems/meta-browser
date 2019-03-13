@@ -1,0 +1,77 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From cd08e7c478ea32841225bae9493fe24ea9a20263 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 6 Feb 2019 08:28:29 +0000
+Subject: [PATCH 11/42] [ozone/wayland] Pass 0 modifier on
+ DRM_FORMAT_MOD_INVALID
+
+Depending on the gpu driver, gbm_bo_get_format_modifier
+may return DRM_FORMAT_MOD_INVALID, which resulted in
+empty |modifiers| container passed to WaylandBufferManager.
+
+The empty container resulted in the gpu process being terminated
+as long as data validation expects all the three containers
+with offsets, strides and modifiers be of the same size.
+
+Thus, in order to fix the issue, store DRM_FORMAT_MOD_INVALID and
+check for it on the WaylandBufferManager side. If that value
+exists, pass 0 modifier_lo and modifier_hi to zwp dmabuf params
+and DCHECK that the size of planes is 1. Otherwise, multiplanar
+formats require modifiers.
+
+Bug: 928261
+Change-Id: I1e57dc604a616ae77dc88e08e3f65693d6e58818
+Reviewed-on: https://chromium-review.googlesource.com/c/1454496
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#629502}
+---
+ ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc |  3 +--
+ ui/ozone/platform/wayland/wayland_buffer_manager.cc | 12 ++++++++++--
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+index 8c662b9b5c68..e8232a9c6938 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
++++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+@@ -162,8 +162,7 @@ void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
+   for (size_t i = 0; i < plane_count; ++i) {
+     strides.push_back(GetDmaBufPitch(i));
+     offsets.push_back(GetDmaBufOffset(i));
+-    if (modifier != DRM_FORMAT_MOD_INVALID)
+-      modifiers.push_back(modifier);
++    modifiers.push_back(modifier);
+   }
+ 
+   base::ScopedFD fd(HANDLE_EINTR(dup(GetDmaBufFd(0))));
+diff --git a/ui/ozone/platform/wayland/wayland_buffer_manager.cc b/ui/ozone/platform/wayland/wayland_buffer_manager.cc
+index 91b1a1e8eb01..8f165e04a48c 100644
+--- a/ui/ozone/platform/wayland/wayland_buffer_manager.cc
++++ b/ui/ozone/platform/wayland/wayland_buffer_manager.cc
+@@ -105,9 +105,17 @@ bool WaylandBufferManager::CreateBuffer(base::File file,
+ 
+   uint32_t fd = file.TakePlatformFile();
+   for (size_t i = 0; i < planes_count; i++) {
++    uint32_t modifier_lo = 0;
++    uint32_t modifier_hi = 0;
++    if (modifiers[i] != DRM_FORMAT_MOD_INVALID) {
++      modifier_lo = modifiers[i] & UINT32_MAX;
++      modifier_hi = modifiers[i] >> 32;
++    } else {
++      DCHECK_EQ(planes_count, 1u) << "Invalid modifier may be passed only in "
++                                     "case of single plane format being used";
++    }
+     zwp_linux_buffer_params_v1_add(params, fd, i /* plane id */, offsets[i],
+-                                   strides[i], modifiers[i] >> 32,
+-                                   modifiers[i] & UINT32_MAX);
++                                   strides[i], modifier_hi, modifier_lo);
+   }
+   zwp_linux_buffer_params_v1_add_listener(params, &params_listener, this);
+   zwp_linux_buffer_params_v1_create(params, width, height, format, 0);
+-- 
+2.17.1
+

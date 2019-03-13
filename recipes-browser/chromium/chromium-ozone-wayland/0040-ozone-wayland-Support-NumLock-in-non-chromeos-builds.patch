@@ -1,0 +1,69 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From e14e861d7cf7b89b5773e4c0fa759183a4e7afc4 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Mon, 11 Feb 2019 19:31:08 +0000
+Subject: [PATCH 40/42] ozone/wayland: Support NumLock in non-chromeos builds
+
+This patch adds NumLock xkbcommon mask to the list
+used to convert EventFlags to XKB flags. This fixes
+the numeric pad keys handling for non-ChromeOS builds
+(ChromeOS hardcodes XkbKeyboardLayoutEngine to always
+have NumLock mask set[1]).
+
+[1] https://crrev.com/834373002
+
+Bug: 930302, 921947
+Change-Id: Ieba3a8ccb628b3ee167b4e751c71a33e52ebd901
+Reviewed-on: https://chromium-review.googlesource.com/c/1462616
+Reviewed-by: Michael Spang <spang@chromium.org>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#630869}
+---
+ .../ozone/layout/xkb/xkb_keyboard_layout_engine.cc   | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+index 1c1dd2b27de7..7cdd5e19ab25 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+@@ -824,9 +824,11 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+                {ui::EF_COMMAND_DOWN, XKB_MOD_NAME_LOGO},
+                {ui::EF_ALTGR_DOWN, "Mod5"},
+                {ui::EF_MOD3_DOWN, "Mod3"},
+-               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS}};
++               {ui::EF_CAPS_LOCK_ON, XKB_MOD_NAME_CAPS},
++               {ui::EF_NUM_LOCK_ON, XKB_MOD_NAME_NUM}};
+   xkb_flag_map_.clear();
+   xkb_flag_map_.reserve(base::size(flags));
++  xkb_mod_mask_t num_lock_mask = 0;
+   for (size_t i = 0; i < base::size(flags); ++i) {
+     xkb_mod_index_t index = xkb_keymap_mod_get_index(keymap, flags[i].xkb_name);
+     if (index == XKB_MOD_INVALID) {
+@@ -835,17 +837,15 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+       xkb_mod_mask_t flag = static_cast<xkb_mod_mask_t>(1) << index;
+       XkbFlagMapEntry e = {flags[i].ui_flag, flag, index};
+       xkb_flag_map_.push_back(e);
++      if (flags[i].ui_flag == EF_NUM_LOCK_ON)
++        num_lock_mask = flag;
+     }
+   }
+   layout_index_ = 0;
+ 
+ #if defined(OS_CHROMEOS)
+   // Update num lock mask.
+-  num_lock_mod_mask_ = 0;
+-  xkb_mod_index_t num_mod_index =
+-      xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_NUM);
+-  if (num_mod_index != XKB_MOD_INVALID)
+-    num_lock_mod_mask_ = static_cast<xkb_mod_mask_t>(1) << num_mod_index;
++  num_lock_mod_mask_ = num_lock_mask;
+ #endif
+ }
+ 
+-- 
+2.17.1
+

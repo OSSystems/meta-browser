@@ -1,0 +1,95 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From ce043a0aa266b4d05f62119c4e2ad80665c128de Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Tue, 26 Feb 2019 23:33:28 +0000
+Subject: [PATCH 41/42] ozone: xkbcommon: Pre-compute masks when setting keymap
+
+Currently, XkbKeyboardLayoutEngine::DifficultKeyboardCode performs
+unnecessary re-computation of XKB masks for Shift and AltGr modifiers
+when trying to decode key codes. This change proposes an optimization
+consisting on pre-computing and caching those masks only once, when
+the keymap is set, then saving some cpu cycles when decoding difficult
+keysyms/chars.
+
+R=spang@chromium.org
+
+Bug: 896640
+Change-Id: Ifad7511f94312777d057930caf37b5c96ffbbad8
+Reviewed-on: https://chromium-review.googlesource.com/c/1489951
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#635760}
+---
+ ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc | 9 +++++----
+ ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h  | 4 +++-
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+index 7cdd5e19ab25..9e3a94d999ed 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.cc
+@@ -847,6 +847,8 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
+   // Update num lock mask.
+   num_lock_mod_mask_ = num_lock_mask;
+ #endif
++  shift_mod_mask_ = EventFlagsToXkbFlags(ui::EF_SHIFT_DOWN);
++  altgr_mod_mask_ = EventFlagsToXkbFlags(ui::EF_ALTGR_DOWN);
+ }
+ 
+ xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
+@@ -941,7 +943,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
+       if (multi->subtable[i].test_shift) {
+         if (shift_character == kNonCharacter) {
+           shift_character = XkbSubCharacter(xkb_keycode, xkb_flags, character,
+-                                            ui::EF_SHIFT_DOWN);
++                                            shift_mod_mask_);
+         }
+         if (shift_character != multi->subtable[i].shift_character)
+           continue;
+@@ -949,7 +951,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
+       if (multi->subtable[i].test_altgr) {
+         if (altgr_character == kNonCharacter) {
+           altgr_character = XkbSubCharacter(xkb_keycode, xkb_flags, character,
+-                                            ui::EF_ALTGR_DOWN);
++                                            altgr_mod_mask_);
+         }
+         if (altgr_character != multi->subtable[i].altgr_character)
+           continue;
+@@ -975,8 +977,7 @@ base::char16 XkbKeyboardLayoutEngine::XkbSubCharacter(
+     xkb_keycode_t xkb_keycode,
+     xkb_mod_mask_t base_flags,
+     base::char16 base_character,
+-    int ui_flags) const {
+-  xkb_mod_mask_t flags = EventFlagsToXkbFlags(ui_flags);
++    xkb_mod_mask_t flags) const {
+   if (flags == base_flags)
+     return base_character;
+   xkb_keysym_t keysym;
+diff --git a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+index b5bab3c4d444..b4e04ea8ecf5 100644
+--- a/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
++++ b/ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h
+@@ -68,6 +68,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+   // Flag mask for num lock, which is always considered enabled in ChromeOS.
+   xkb_mod_mask_t num_lock_mod_mask_ = 0;
+ #endif
++  xkb_mod_mask_t shift_mod_mask_ = 0;
++  xkb_mod_mask_t altgr_mod_mask_ = 0;
+ 
+   // Determines the Windows-based KeyboardCode (VKEY) for a character key,
+   // accounting for non-US layouts. May return VKEY_UNKNOWN, in which case the
+@@ -114,7 +116,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
+   base::char16 XkbSubCharacter(xkb_keycode_t xkb_keycode,
+                                xkb_mod_mask_t base_flags,
+                                base::char16 base_character,
+-                               int ui_flags) const;
++                               xkb_mod_mask_t flags) const;
+ 
+   // Callback when keymap file is loaded complete.
+   void OnKeymapLoaded(const std::string& layout_name,
+-- 
+2.17.1
+

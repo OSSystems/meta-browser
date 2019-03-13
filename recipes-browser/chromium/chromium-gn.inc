@@ -10,8 +10,17 @@ B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
         file://0001-Add-missing-limits-header-to-crashpad.patch \
-        file://0001-GCC-use-Wno-errorheader-hygiene-only-with-clang.patch \
-        file://0001-Move-the-atspi2-target-to-a-separate-BUILD.gn-file.patch \
+        file://0001-GCC-use-Wno-error-header-hygiene-only-with-clang.patch \
+        file://0001-allocator-shim-Swap-ALIGN_LINKAGE-and-SHIM_ALWAYS_EX.patch \
+        file://0001-media-learning-Make-LabelledExample-s-move-assignmen.patch \
+        file://0001-BaseRenderingContext2D-Use-base-CheckMul-and-simplif.patch \
+        file://0001-CastActivityManager-Do-not-make-DoLaunchSessionParam.patch \
+        file://0001-Stop-using-C-20-initialization.patch \
+        file://0001-chrome-browser-Replace-some-forward-declarations-wit.patch \
+        file://0001-color_utils-Use-std-sqrt-instead-of-std-sqrtf.patch \
+        file://0001-quic_flags_impl-Fix-GCC-build-after-618558.patch \
+        file://0001-webrequest-Fix-GCC-build-after-2d47b917314a.patch \
+        file://0001-GCC-7-workaround-remove-constexpr-ctor.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \

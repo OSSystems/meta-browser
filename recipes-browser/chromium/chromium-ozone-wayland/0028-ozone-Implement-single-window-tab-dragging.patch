@@ -1,0 +1,79 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 2552a40e2e263ab8ec24015061a00d3f079a4ed9 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Thu, 21 Feb 2019 17:55:18 +0000
+Subject: [PATCH 28/42] ozone: Implement single window tab dragging
+
+This change adds initial support for tab dragging for non-ChromeOS
+Ozone builds. This first patch makes it possible to drag tabs in inside
+a browser window. Dragging to external window will be addressed in a
+follow up CL.
+
+To make it possible, this patch adds an implementation of
+WindowFinder::GetLocalProcessWindowAtPoint(), which is used by
+TabDragController to determine which window to use when checking
+cursor is dragging over a tab strip.
+
+Bug: 896640
+Co-author: Julie Jeongeun Kim <jkim@igalia.com>
+Change-Id: I2ff3202333445aafa16f06623c9dbef0c77759e2
+Reviewed-on: https://chromium-review.googlesource.com/c/1433272
+Reviewed-by: Scott Violet <sky@chromium.org>
+Reviewed-by: Peter Kasting <pkasting@chromium.org>
+Commit-Queue: Nick Diego Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#634251}
+---
+ .../browser/ui/views/tabs/tab_drag_controller.cc  |  5 +++++
+ .../browser/ui/views/tabs/window_finder_ozone.cc  | 15 ++++++++++++---
+ 2 files changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/chrome/browser/ui/views/tabs/tab_drag_controller.cc b/chrome/browser/ui/views/tabs/tab_drag_controller.cc
+index e343b8afbc67..39e8b98f6235 100644
+--- a/chrome/browser/ui/views/tabs/tab_drag_controller.cc
++++ b/chrome/browser/ui/views/tabs/tab_drag_controller.cc
+@@ -333,7 +333,12 @@ TabDragController::TabDragController()
+       last_move_screen_loc_(0),
+       source_tab_index_(std::numeric_limits<size_t>::max()),
+       initial_move_(true),
++#if defined(USE_OZONE) && !defined(OS_CHROMEOS)
++      // TODO(crbug.com/896640): Support detachable tabs
++      detach_behavior_(NOT_DETACHABLE),
++#else
+       detach_behavior_(DETACHABLE),
++#endif
+       move_behavior_(REORDER),
+       mouse_has_ever_moved_left_(false),
+       mouse_has_ever_moved_right_(false),
+diff --git a/chrome/browser/ui/views/tabs/window_finder_ozone.cc b/chrome/browser/ui/views/tabs/window_finder_ozone.cc
+index bb904744b6bd..f290223e703c 100644
+--- a/chrome/browser/ui/views/tabs/window_finder_ozone.cc
++++ b/chrome/browser/ui/views/tabs/window_finder_ozone.cc
+@@ -4,10 +4,19 @@
+ 
+ #include "chrome/browser/ui/views/tabs/window_finder.h"
+ 
++#include "base/stl_util.h"
++#include "ui/aura/window.h"
++#include "ui/display/screen.h"
++#include "ui/views/widget/widget.h"
++
+ gfx::NativeWindow WindowFinder::GetLocalProcessWindowAtPoint(
+     const gfx::Point& screen_point,
+     const std::set<gfx::NativeWindow>& ignore) {
+-  NOTIMPLEMENTED()
+-      << "For Ozone builds, window finder is not supported for now.";
+-  return nullptr;
++  gfx::NativeWindow window =
++      display::Screen::GetScreen()->GetWindowAtScreenPoint(screen_point);
++  for (; window; window = window->parent()) {
++    if (views::Widget::GetWidgetForNativeWindow(window))
++      break;
++  }
++  return (window && !base::ContainsKey(ignore, window)) ? window : nullptr;
+ }
+-- 
+2.17.1
+

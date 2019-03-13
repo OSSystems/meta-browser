@@ -1,0 +1,354 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From a98d7d4ec3d35b85d464f89abfa917899edf7b17 Mon Sep 17 00:00:00 2001
+From: Alexander Dunaev <adunaev@igalia.com>
+Date: Thu, 7 Mar 2019 11:04:44 +0000
+Subject: [PATCH 34/42] [ozone/wayland] Fixed buffer handling in the
+ WaylandCursor class.
+
+The visual shape of a pointer cursor is rendered at a surface attached
+to the wl_pointer object and backed by a wl_buffer.  The WaylandCursor
+class tried to reuse the buffer regardless of whether the compositor
+released it, which resulted in that the cursor shape didn't change
+when a new bitmap had been submitted.
+
+This CL simplifies the process: a new buffer is created and attached
+each time the new bitmap is submitted, and the old ones are held until
+the compositor releases them.
+
+R=msisov@igalia.com
+
+Bug: 928260
+Change-Id: I54cf679568276eddbd5c8042d05fe05de25f61d8
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1503374
+Commit-Queue: Alexander Dunaev <adunaev@igalia.com>
+Reviewed-by: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#638521}
+---
+ .../platform/wayland/test/mock_pointer.cc     | 32 +++++++
+ ui/ozone/platform/wayland/test/mock_pointer.h | 36 ++++++++
+ ui/ozone/platform/wayland/wayland_cursor.cc   | 83 +++++++++----------
+ ui/ozone/platform/wayland/wayland_cursor.h    | 30 ++++---
+ ui/ozone/platform/wayland/wayland_pointer.cc  |  3 +-
+ ui/ozone/platform/wayland/wayland_pointer.h   |  4 +
+ 6 files changed, 131 insertions(+), 57 deletions(-)
+ create mode 100644 ui/ozone/platform/wayland/test/mock_pointer.cc
+ create mode 100644 ui/ozone/platform/wayland/test/mock_pointer.h
+
+diff --git a/ui/ozone/platform/wayland/test/mock_pointer.cc b/ui/ozone/platform/wayland/test/mock_pointer.cc
+new file mode 100644
+index 000000000000..e41ad81a651d
+--- /dev/null
++++ b/ui/ozone/platform/wayland/test/mock_pointer.cc
+@@ -0,0 +1,32 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/test/mock_pointer.h"
++
++namespace wl {
++
++namespace {
++
++void SetCursor(wl_client* client,
++               wl_resource* pointer_resource,
++               uint32_t serial,
++               wl_resource* surface_resource,
++               int32_t hotspot_x,
++               int32_t hotspot_y) {
++  GetUserDataAs<MockPointer>(pointer_resource)
++      ->SetCursor(surface_resource, hotspot_x, hotspot_y);
++}
++
++}  // namespace
++
++const struct wl_pointer_interface kMockPointerImpl = {
++    &SetCursor,        // set_cursor
++    &DestroyResource,  // release
++};
++
++MockPointer::MockPointer(wl_resource* resource) : ServerObject(resource) {}
++
++MockPointer::~MockPointer() = default;
++
++}  // namespace wl
+diff --git a/ui/ozone/platform/wayland/test/mock_pointer.h b/ui/ozone/platform/wayland/test/mock_pointer.h
+new file mode 100644
+index 000000000000..811f85479a4d
+--- /dev/null
++++ b/ui/ozone/platform/wayland/test/mock_pointer.h
+@@ -0,0 +1,36 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_POINTER_H_
++#define UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_POINTER_H_
++
++#include <wayland-server-protocol.h>
++
++#include "base/macros.h"
++#include "testing/gmock/include/gmock/gmock.h"
++#include "ui/ozone/platform/wayland/test/server_object.h"
++
++struct wl_resource;
++
++namespace wl {
++
++extern const struct wl_pointer_interface kMockPointerImpl;
++
++class MockPointer : public ServerObject {
++ public:
++  explicit MockPointer(wl_resource* resource);
++  ~MockPointer() override;
++
++  MOCK_METHOD3(SetCursor,
++               void(wl_resource* surface_resource,
++                    int32_t hotspot_x,
++                    int32_t hotspot_y));
++
++ private:
++  DISALLOW_COPY_AND_ASSIGN(MockPointer);
++};
++
++}  // namespace wl
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_POINTER_H_
+diff --git a/ui/ozone/platform/wayland/wayland_cursor.cc b/ui/ozone/platform/wayland/wayland_cursor.cc
+index 0be77eeacba8..db2d5913550a 100644
+--- a/ui/ozone/platform/wayland/wayland_cursor.cc
++++ b/ui/ozone/platform/wayland/wayland_cursor.cc
+@@ -16,80 +16,71 @@
+ 
+ namespace ui {
+ 
+-WaylandCursor::WaylandCursor() : shared_memory_(new base::SharedMemory()) {}
++WaylandCursor::WaylandCursor() = default;
++
++WaylandCursor::~WaylandCursor() = default;
++
++// static
++void WaylandCursor::OnBufferRelease(void* data, wl_buffer* buffer) {
++  auto* cursor = static_cast<WaylandCursor*>(data);
++  DCHECK(cursor->buffers_.count(buffer) > 0);
++  cursor->buffers_.erase(buffer);
++}
+ 
+ void WaylandCursor::Init(wl_pointer* pointer, WaylandConnection* connection) {
+-  if (input_pointer_ == pointer)
+-    return;
++  DCHECK(connection);
+ 
+   input_pointer_ = pointer;
+ 
+-  DCHECK(connection);
+   shm_ = connection->shm();
+   pointer_surface_.reset(
+       wl_compositor_create_surface(connection->compositor()));
+ }
+ 
+-WaylandCursor::~WaylandCursor() {
+-  pointer_surface_.reset();
+-  buffer_.reset();
+-
+-  if (shared_memory_->handle().GetHandle()) {
+-    shared_memory_->Unmap();
+-    shared_memory_->Close();
+-  }
+-}
+-
+ void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
+-                                 const gfx::Point& location,
++                                 const gfx::Point& hotspot,
+                                  uint32_t serial) {
+   if (!input_pointer_)
+     return;
+ 
+-  if (!cursor_image.size()) {
+-    HideCursor(serial);
+-    return;
+-  }
++  if (!cursor_image.size())
++    return HideCursor(serial);
+ 
+   const SkBitmap& image = cursor_image[0];
+   SkISize size = image.dimensions();
+-  if (size.isEmpty()) {
+-    HideCursor(serial);
+-    return;
+-  }
++  if (size.isEmpty())
++    return HideCursor(serial);
+ 
+   gfx::Size image_size = gfx::SkISizeToSize(size);
+-  if (image_size != size_) {
+-    wl_buffer* buffer =
+-        wl::CreateSHMBuffer(image_size, shared_memory_.get(), shm_);
+-    if (!buffer) {
+-      LOG(ERROR) << "Failed to create SHM buffer for Cursor Bitmap.";
+-      wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
+-      return;
+-    }
+-    buffer_.reset(buffer);
+-    size_ = image_size;
++  auto shared_memory = std::make_unique<base::SharedMemory>();
++  wl::Object<wl_buffer> buffer(
++      wl::CreateSHMBuffer(image_size, shared_memory.get(), shm_));
++  if (!buffer) {
++    LOG(ERROR) << "Failed to create SHM buffer for Cursor Bitmap.";
++    return HideCursor(serial);
+   }
+-  wl::DrawBitmapToSHMB(size_, *shared_memory_, image);
++
++  static const struct wl_buffer_listener wl_buffer_listener {
++    &WaylandCursor::OnBufferRelease
++  };
++  wl_buffer_add_listener(buffer.get(), &wl_buffer_listener, this);
++
++  wl::DrawBitmapToSHMB(image_size, *shared_memory, image);
+ 
+   wl_pointer_set_cursor(input_pointer_, serial, pointer_surface_.get(),
+-                        location.x(), location.y());
+-  wl_surface_attach(pointer_surface_.get(), buffer_.get(), 0, 0);
+-  wl_surface_damage(pointer_surface_.get(), 0, 0, size_.width(),
+-                    size_.height());
++                        hotspot.x(), hotspot.y());
++  wl_surface_attach(pointer_surface_.get(), buffer.get(), 0, 0);
+   wl_surface_commit(pointer_surface_.get());
++
++  buffers_.emplace(
++      buffer.get(),
++      std::pair<wl::Object<wl_buffer>, std::unique_ptr<base::SharedMemory>>(
++          std::move(buffer), std::move(shared_memory)));
+ }
+ 
+ void WaylandCursor::HideCursor(uint32_t serial) {
+-  size_ = gfx::Size();
++  DCHECK(input_pointer_);
+   wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
+-
+-  buffer_.reset();
+-
+-  if (shared_memory_->handle().GetHandle()) {
+-    shared_memory_->Unmap();
+-    shared_memory_->Close();
+-  }
+ }
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/wayland_cursor.h b/ui/ozone/platform/wayland/wayland_cursor.h
+index 074df84c3dc5..e7e8368d7233 100644
+--- a/ui/ozone/platform/wayland/wayland_cursor.h
++++ b/ui/ozone/platform/wayland/wayland_cursor.h
+@@ -6,12 +6,14 @@
+ #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_H_
+ 
+ #include <wayland-client.h>
++#include <memory>
++#include <utility>
+ #include <vector>
+ 
++#include "base/containers/flat_map.h"
+ #include "base/macros.h"
+ #include "third_party/skia/include/core/SkBitmap.h"
+ #include "third_party/skia/include/core/SkSurface.h"
+-#include "ui/gfx/geometry/size.h"
+ #include "ui/ozone/platform/wayland/wayland_object.h"
+ 
+ namespace base {
+@@ -26,10 +28,14 @@ namespace ui {
+ 
+ class WaylandConnection;
+ 
+-// The WaylandCursor class wraps the actual visual representation
+-// (what users see drawn) of a wl_pointer.
++// Manages the actual visual representation (what users see drawn) of the
++// 'pointer' (which is the Wayland term for mouse/mice).
+ //
+-// 'pointer' is the Wayland terminology for mouse/mice.
++// An instance of this class is aggregated by an instance of WaylandPointer
++// and is exposed for updating the pointer bitmap with the single method call.
++//
++// Encapsulates the low-level job such as surface and buffer management and
++// Wayland protocol calls.
+ class WaylandCursor {
+  public:
+   WaylandCursor();
+@@ -38,25 +44,29 @@ class WaylandCursor {
+   void Init(wl_pointer* pointer, WaylandConnection* connection);
+ 
+   // Updates wl_pointer's visual representation with the given bitmap
+-  // image set, at the hotspot specified by 'location'.
++  // image set and hotspot.
+   void UpdateBitmap(const std::vector<SkBitmap>& bitmaps,
+-                    const gfx::Point& location,
++                    const gfx::Point& hotspot,
+                     uint32_t serial);
+ 
+  private:
++  // wl_buffer_listener:
++  static void OnBufferRelease(void* data, wl_buffer* wl_buffer);
++
+   void HideCursor(uint32_t serial);
+ 
+   wl_shm* shm_ = nullptr;                // Owned by WaylandConnection.
+   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
+ 
+-  wl::Object<wl_buffer> buffer_;
++  // Holds the buffers and their memory until the compositor releases them.
++  base::flat_map<
++      wl_buffer*,
++      std::pair<wl::Object<wl_buffer>, std::unique_ptr<base::SharedMemory>>>
++      buffers_;
+   wl::Object<wl_surface> pointer_surface_;
+ 
+-  std::unique_ptr<base::SharedMemory> shared_memory_;
+   sk_sp<SkSurface> sk_surface_;
+ 
+-  gfx::Size size_;
+-
+   DISALLOW_COPY_AND_ASSIGN(WaylandCursor);
+ };
+ 
+diff --git a/ui/ozone/platform/wayland/wayland_pointer.cc b/ui/ozone/platform/wayland/wayland_pointer.cc
+index 41ec5c58e755..ed2d14646e3a 100644
+--- a/ui/ozone/platform/wayland/wayland_pointer.cc
++++ b/ui/ozone/platform/wayland/wayland_pointer.cc
+@@ -6,6 +6,7 @@
+ 
+ #include <linux/input.h>
+ #include <wayland-client.h>
++#include <memory>
+ 
+ #include "ui/events/base_event_utils.h"
+ #include "ui/events/event.h"
+@@ -41,7 +42,7 @@ WaylandPointer::WaylandPointer(wl_pointer* pointer,
+ 
+   wl_pointer_add_listener(obj_.get(), &listener, this);
+ 
+-  cursor_.reset(new WaylandCursor);
++  cursor_ = std::make_unique<WaylandCursor>();
+ }
+ 
+ WaylandPointer::~WaylandPointer() {
+diff --git a/ui/ozone/platform/wayland/wayland_pointer.h b/ui/ozone/platform/wayland/wayland_pointer.h
+index 1af7b9703c1a..109d08db30a9 100644
+--- a/ui/ozone/platform/wayland/wayland_pointer.h
++++ b/ui/ozone/platform/wayland/wayland_pointer.h
+@@ -16,6 +16,10 @@ namespace ui {
+ 
+ class WaylandWindow;
+ 
++// Wraps the wl_pointer object and transmits events to the dispatcher callback.
++//
++// Exposes an aggregated WaylandCursor that manages the visual shape of the
++// pointer.
+ class WaylandPointer {
+  public:
+   WaylandPointer(wl_pointer* pointer, const EventDispatchCallback& callback);
+-- 
+2.17.1
+

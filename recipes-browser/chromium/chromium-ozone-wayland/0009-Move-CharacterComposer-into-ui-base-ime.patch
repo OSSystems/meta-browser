@@ -1,0 +1,292 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5a858d34071e68dc5f10ec8753233f1bd2f84287 Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Thu, 31 Jan 2019 17:08:31 +0000
+Subject: [PATCH 09/42] Move CharacterComposer into //ui/base/ime
+
+This patch makes CharacterComposer class reusable by other
+platforms, by moving character_composer{.h,.cc} files and its
+tests and auxiliary scripts out from ui/base/ime/chromeos
+into ui/base/ime so that it can be reused by other platforms.
+
+In particular, we intend to use it to properly handle dead keys
+in ozone/wayland configuration. The ozone/wayland integration
+will be done in a follow-up CL. In the future, ozone/x11 could
+also benefit from this.
+
+BUG=921947
+
+Change-Id: Iff6cd82da9696279c0cd21afad7aba79a58baa8d
+Reviewed-on: https://chromium-review.googlesource.com/c/1446477
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Reviewed-by: Shu Chen <shuchen@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#627991}
+---
+ ui/base/BUILD.gn                                 |  6 +++++-
+ ui/base/ime/BUILD.gn                             | 11 ++++++++---
+ ui/base/ime/{chromeos => }/PRESUBMIT.py          |  2 +-
+ ui/base/ime/{chromeos => }/character_composer.cc | 11 +++++------
+ ui/base/ime/{chromeos => }/character_composer.h  |  9 +++++----
+ .../ime/{chromeos => }/character_composer_data.h |  0
+ .../character_composer_sequences.txt             |  0
+ .../character_composer_unittest.cc               | 16 +++++++---------
+ .../generate_character_composer_data.py          |  0
+ ui/base/ime/input_method_chromeos.h              |  2 +-
+ 10 files changed, 32 insertions(+), 25 deletions(-)
+ rename ui/base/ime/{chromeos => }/PRESUBMIT.py (98%)
+ rename ui/base/ime/{chromeos => }/character_composer.cc (98%)
+ rename ui/base/ime/{chromeos => }/character_composer.h (94%)
+ rename ui/base/ime/{chromeos => }/character_composer_data.h (100%)
+ rename ui/base/ime/{chromeos => }/character_composer_sequences.txt (100%)
+ rename ui/base/ime/{chromeos => }/character_composer_unittest.cc (98%)
+ rename ui/base/ime/{chromeos => }/generate_character_composer_data.py (100%)
+
+diff --git a/ui/base/BUILD.gn b/ui/base/BUILD.gn
+index 195435b5cc3a..280d877e51dc 100644
+--- a/ui/base/BUILD.gn
++++ b/ui/base/BUILD.gn
+@@ -876,7 +876,6 @@ test("ui_base_unittests") {
+   if (build_ime) {
+     sources += [
+       "ime/candidate_window_unittest.cc",
+-      "ime/chromeos/character_composer_unittest.cc",
+       "ime/chromeos/extension_ime_util_unittest.cc",
+       "ime/chromeos/ime_keyboard_unittest.cc",
+       "ime/chromeos/input_method_util_unittest.cc",
+@@ -898,6 +897,11 @@ test("ui_base_unittests") {
+     if (use_x11) {
+       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
+     }
++    if (is_chromeos || use_ozone) {
++      sources += [
++        "ime/character_composer_unittest.cc",
++      ]
++    }
+   }
+ 
+   deps = [
+diff --git a/ui/base/ime/BUILD.gn b/ui/base/ime/BUILD.gn
+index d686d1dbed66..47fb630180f4 100644
+--- a/ui/base/ime/BUILD.gn
++++ b/ui/base/ime/BUILD.gn
+@@ -98,8 +98,6 @@ jumbo_component("ime") {
+ 
+   if (is_chromeos) {
+     sources += [
+-      "chromeos/character_composer.cc",
+-      "chromeos/character_composer.h",
+       "chromeos/component_extension_ime_manager.cc",
+       "chromeos/component_extension_ime_manager.h",
+       "chromeos/extension_ime_util.cc",
+@@ -175,6 +173,14 @@ jumbo_component("ime") {
+     ]
+   }
+ 
++  if (is_chromeos || use_ozone) {
++    sources += [
++      "character_composer.cc",
++      "character_composer.h",
++    ]
++    deps += [ "//ui/events:dom_keycode_converter" ]
++  }
++
+   if (!toolkit_views && !use_aura) {
+     sources -= [
+       "input_method_factory.cc",
+@@ -190,7 +196,6 @@ jumbo_component("ime") {
+       "//services/ws/public/cpp/input_devices",
+       "//ui/base/ime/chromeos/public/interfaces",
+       "//ui/chromeos/strings",
+-      "//ui/events:dom_keycode_converter",
+     ]
+     sources += [
+       "chromeos/ime_keyboard_mus.cc",
+diff --git a/ui/base/ime/chromeos/PRESUBMIT.py b/ui/base/ime/PRESUBMIT.py
+similarity index 98%
+rename from ui/base/ime/chromeos/PRESUBMIT.py
+rename to ui/base/ime/PRESUBMIT.py
+index ed44dfbee641..e9f33bbe89b7 100644
+--- a/ui/base/ime/chromeos/PRESUBMIT.py
++++ b/ui/base/ime/PRESUBMIT.py
+@@ -2,7 +2,7 @@
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+ 
+-"""Presubmit script for ui/base/ime/chromeos
++"""Presubmit script for ui/base/ime
+ 
+ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+ for more details about the presubmit API built into depot_tools.
+diff --git a/ui/base/ime/chromeos/character_composer.cc b/ui/base/ime/character_composer.cc
+similarity index 98%
+rename from ui/base/ime/chromeos/character_composer.cc
+rename to ui/base/ime/character_composer.cc
+index e0026255464c..d1ddcaa826a4 100644
+--- a/ui/base/ime/chromeos/character_composer.cc
++++ b/ui/base/ime/character_composer.cc
+@@ -2,10 +2,11 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
+-#include "ui/base/ime/chromeos/character_composer.h"
++#include "ui/base/ime/character_composer.h"
+ 
+ #include <algorithm>
+ #include <iterator>
++#include <string>
+ 
+ #include "base/strings/string_util.h"
+ #include "base/strings/utf_string_conversion_utils.h"
+@@ -18,7 +19,7 @@
+ 
+ namespace {
+ 
+-#include "ui/base/ime/chromeos/character_composer_data.h"
++#include "ui/base/ime/character_composer_data.h"
+ 
+ bool CheckCharacterComposeTable(
+     const ui::CharacterComposer::ComposeBuffer& compose_sequence,
+@@ -58,11 +59,9 @@ int KeycodeToHexDigit(unsigned int keycode) {
+ 
+ namespace ui {
+ 
+-CharacterComposer::CharacterComposer() : composition_mode_(KEY_SEQUENCE_MODE) {
+-}
++CharacterComposer::CharacterComposer() : composition_mode_(KEY_SEQUENCE_MODE) {}
+ 
+-CharacterComposer::~CharacterComposer() {
+-}
++CharacterComposer::~CharacterComposer() {}
+ 
+ void CharacterComposer::Reset() {
+   compose_buffer_.clear();
+diff --git a/ui/base/ime/chromeos/character_composer.h b/ui/base/ime/character_composer.h
+similarity index 94%
+rename from ui/base/ime/chromeos/character_composer.h
+rename to ui/base/ime/character_composer.h
+index d1befb6c275e..b3845c3d669c 100644
+--- a/ui/base/ime/chromeos/character_composer.h
++++ b/ui/base/ime/character_composer.h
+@@ -2,8 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
+-#ifndef UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
+-#define UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
++#ifndef UI_BASE_IME_CHARACTER_COMPOSER_H_
++#define UI_BASE_IME_CHARACTER_COMPOSER_H_
+ 
+ #include <stddef.h>
+ #include <stdint.h>
+@@ -102,6 +102,7 @@ class ComposeChecker {
+   virtual CheckSequenceResult CheckSequence(
+       const ui::CharacterComposer::ComposeBuffer& sequence,
+       uint32_t* composed_character) const = 0;
++
+  private:
+   DISALLOW_COPY_AND_ASSIGN(ComposeChecker);
+ };
+@@ -115,7 +116,7 @@ class TreeComposeChecker : public ComposeChecker {
+     const uint16_t* tree;
+   };
+ 
+-  TreeComposeChecker(const CompositionData& data) : data_(data) {}
++  explicit TreeComposeChecker(const CompositionData& data) : data_(data) {}
+   CheckSequenceResult CheckSequence(
+       const ui::CharacterComposer::ComposeBuffer& sequence,
+       uint32_t* composed_character) const override;
+@@ -127,4 +128,4 @@ class TreeComposeChecker : public ComposeChecker {
+ 
+ }  // namespace ui
+ 
+-#endif  // UI_BASE_IME_CHROMEOS_CHARACTER_COMPOSER_H_
++#endif  // UI_BASE_IME_CHARACTER_COMPOSER_H_
+diff --git a/ui/base/ime/chromeos/character_composer_data.h b/ui/base/ime/character_composer_data.h
+similarity index 100%
+rename from ui/base/ime/chromeos/character_composer_data.h
+rename to ui/base/ime/character_composer_data.h
+diff --git a/ui/base/ime/chromeos/character_composer_sequences.txt b/ui/base/ime/character_composer_sequences.txt
+similarity index 100%
+rename from ui/base/ime/chromeos/character_composer_sequences.txt
+rename to ui/base/ime/character_composer_sequences.txt
+diff --git a/ui/base/ime/chromeos/character_composer_unittest.cc b/ui/base/ime/character_composer_unittest.cc
+similarity index 98%
+rename from ui/base/ime/chromeos/character_composer_unittest.cc
+rename to ui/base/ime/character_composer_unittest.cc
+index 6ea0a0f0bec7..95ade2ddc6fc 100644
+--- a/ui/base/ime/chromeos/character_composer_unittest.cc
++++ b/ui/base/ime/character_composer_unittest.cc
+@@ -2,7 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
+-#include "ui/base/ime/chromeos/character_composer.h"
++#include "ui/base/ime/character_composer.h"
+ 
+ #include <stdint.h>
+ 
+@@ -63,9 +63,9 @@ class CharacterComposerTest : public testing::Test {
+                             DomCode code,
+                             int flags,
+                             base::char16 character) const {
+-    KeyEvent* event = new KeyEvent(ET_KEY_PRESSED, vkey, code, flags,
+-                                   DomKey::FromCharacter(character),
+-                                   EventTimeForNow());
++    KeyEvent* event =
++        new KeyEvent(ET_KEY_PRESSED, vkey, code, flags,
++                     DomKey::FromCharacter(character), EventTimeForNow());
+     return event;
+   }
+ 
+@@ -233,7 +233,7 @@ TEST_F(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
+ // This file is included here intentionally, instead of the top of the file,
+ // because including this file at the top of the file will define a
+ // global constant and contaminate the global namespace.
+-#include "ui/base/ime/chromeos/character_composer_data.h"
++#include "ui/base/ime/character_composer_data.h"
+   const int kTypes = 2;
+ 
+   // Record the subtree locations and check subtable sizes.
+@@ -331,8 +331,7 @@ TEST_F(CharacterComposerTest, HexadecimalCompositionPreedit) {
+   ExpectUnicodeKeyFiltered(VKEY_BACK, DomCode::BACKSPACE, EF_NONE, '\b');
+   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer_.preedit_string());
+   ExpectUnicodeKeyFiltered(VKEY_2, DomCode::DIGIT2, EF_NONE, '2');
+-  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, EF_NONE,
+-                           '\r',
++  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, EF_NONE, '\r',
+                            base::string16(1, 0x3042));
+   EXPECT_EQ(ASCIIToUTF16(""), character_composer_.preedit_string());
+ 
+@@ -462,8 +461,7 @@ TEST_F(CharacterComposerTest,
+   EXPECT_EQ(ASCIIToUTF16("u304"), character_composer_.preedit_string());
+   ExpectUnicodeKeyFiltered(ui::VKEY_2, DomCode::DIGIT2, kControlShift, 0);
+   EXPECT_EQ(ASCIIToUTF16("u3042"), character_composer_.preedit_string());
+-  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, kControlShift,
+-                           '\r',
++  ExpectUnicodeKeyComposed(VKEY_RETURN, DomCode::ENTER, kControlShift, '\r',
+                            base::string16(1, 0x3042));
+   EXPECT_EQ(ASCIIToUTF16(""), character_composer_.preedit_string());
+ 
+diff --git a/ui/base/ime/chromeos/generate_character_composer_data.py b/ui/base/ime/generate_character_composer_data.py
+similarity index 100%
+rename from ui/base/ime/chromeos/generate_character_composer_data.py
+rename to ui/base/ime/generate_character_composer_data.py
+diff --git a/ui/base/ime/input_method_chromeos.h b/ui/base/ime/input_method_chromeos.h
+index 52942a609a72..7787491f4f65 100644
+--- a/ui/base/ime/input_method_chromeos.h
++++ b/ui/base/ime/input_method_chromeos.h
+@@ -15,7 +15,7 @@
+ #include "base/compiler_specific.h"
+ #include "base/macros.h"
+ #include "base/memory/weak_ptr.h"
+-#include "ui/base/ime/chromeos/character_composer.h"
++#include "ui/base/ime/character_composer.h"
+ #include "ui/base/ime/composition_text.h"
+ #include "ui/base/ime/ime_input_context_handler_interface.h"
+ #include "ui/base/ime/input_method_base.h"
+-- 
+2.17.1
+
