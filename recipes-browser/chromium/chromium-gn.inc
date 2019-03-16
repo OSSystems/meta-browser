@@ -147,11 +147,9 @@ GN_ARGS += "is_debug=false is_official_build=true"
 # https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/8aYO3me2SCE/SZ8pJXhZAwAJ
 GN_ARGS += "use_custom_libcxx=false"
 
-# Pulling in meta-clang and enabling it does not automatically bring in lld,
-# but using clang does make GN enable |use_lld| by default when targeting
-# x86-64 (i.e. even builds targeting other architectures will fail to link host
-# tools because of -fuse-ld=lld).
-GN_ARGS += "use_lld=false"
+# When using meta-clang, one can switch to using the lld linker
+# by using the ld-is-lld distro feature.
+GN_ARGS += "${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-lld', 'true', 'false', d)}"
 
 # By default, passing is_official_build=true to GN causes its symbol_level
 # variable to be set to "2". This means the compiler will be passed "-g2" and
