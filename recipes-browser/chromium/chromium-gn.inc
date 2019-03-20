@@ -430,6 +430,13 @@ do_install() {
 		install -m 0755 *.so ${D}${libdir}/chromium/
 	fi
 
+	# When building chromium with use_system_minigbm=false,
+	# libminigbm.so does not seem to get linked in statically.
+	# So we simply check whether it exists in all cases and ship it.
+	if [ -e libminigbm.so ]; then
+		install -m 0755 libminigbm.so ${D}${libdir}/chromium/
+	fi
+
 	# Swiftshader is only built for x86 and x86-64.
 	if [ -d "swiftshader" ]; then
 		install -d ${D}${libdir}/chromium/swiftshader
