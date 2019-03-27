@@ -7,7 +7,8 @@ inherit pkgconfig
 
 EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
                 --with-toolchain-prefix=${TARGET_SYS}- \
-                --prefix=${prefix}"
+                --prefix=${prefix} \
+                --libdir=${libdir}"
 EXTRA_OECONF_append_arm = " --disable-elf-hack"
 EXTRA_OECONF_append_x86 = " --disable-elf-hack"
 EXTRA_OECONF_append_x86-64 = " --disable-elf-hack"
