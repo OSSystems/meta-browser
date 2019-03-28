@@ -76,7 +76,6 @@ S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 inherit mozilla rust-common
 
 DISABLE_STATIC=""
-EXTRA_OEMAKE += "installdir=${libdir}/${PN}"
 
 ARM_INSTRUCTION_SET_armv5 = "arm"
 
