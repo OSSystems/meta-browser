@@ -21,6 +21,7 @@ SRC_URI += " \
         file://0001-quic_flags_impl-Fix-GCC-build-after-618558.patch \
         file://0001-webrequest-Fix-GCC-build-after-2d47b917314a.patch \
         file://0001-GCC-7-workaround-remove-constexpr-ctor.patch \
+        file://0001-Fix-build-with-libstdc.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
