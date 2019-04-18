@@ -1,0 +1,75 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From ba87929562e1aa1aaadc6bc58e26e9f1050cad68 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 25 Mar 2019 15:27:26 +0000
+Subject: [PATCH 07/11] Change the order when the opaque region is updated.
+
+The Wayland compositor may skip opaque region updates if a client
+has not acked changed size of its surface or has not completed
+the initialization.
+
+This patch changes the order when the opaque region is set:
+1) The region is updated only after SetWindowGeometry() and
+AckConfigure() are sent.
+2) The region is updated after the entire initialization
+step is completed (a window is created first time).
+
+Bug: 942996
+Change-Id: I0ad3f4c7804a3292dedc845c352a89ea35765bea
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1527524
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#643847}
+---
+ ui/ozone/platform/wayland/host/wayland_window.cc | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_window.cc b/ui/ozone/platform/wayland/host/wayland_window.cc
+index 750da0bf3b2f..ccabb157d011 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window.cc
+@@ -133,7 +133,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+   }
+   wl_surface_set_user_data(surface_.get(), this);
+   AddSurfaceListener();
+-  MaybeUpdateOpaqueRegion();
+ 
+   ui::PlatformWindowType ui_window_type = properties.type;
+   switch (ui_window_type) {
+@@ -161,6 +160,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
+   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
+ 
++  MaybeUpdateOpaqueRegion();
+   return true;
+ }
+ 
+@@ -251,6 +251,10 @@ void WaylandWindow::ApplyPendingBounds() {
+   xdg_surface_->AckConfigure();
+   pending_bounds_ = gfx::Rect();
+   connection_->ScheduleFlush();
++
++  // Opaque region is based on the size of the window. Thus, update the region
++  // on each update.
++  MaybeUpdateOpaqueRegion();
+ }
+ 
+ void WaylandWindow::DispatchHostWindowDragMovement(
+@@ -325,11 +329,6 @@ void WaylandWindow::SetBounds(const gfx::Rect& bounds) {
+   if (bounds == bounds_)
+     return;
+   bounds_ = bounds;
+-
+-  // Opaque region is based on the size of the window. Thus, update the region
+-  // on each update.
+-  MaybeUpdateOpaqueRegion();
+-
+   delegate_->OnBoundsChanged(bounds);
+ }
+ 
+-- 
+2.17.1
+

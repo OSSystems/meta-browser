@@ -1,0 +1,223 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 8f2f37c56384a420a9d4baa68f5e3533d794bc18 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 26 Mar 2019 10:03:33 +0200
+Subject: [PATCH 03/11] ozone: Allow running presentation feedback any time
+ after swap ack.
+
+The previous limitation is artificial and blocks Wayland
+from correct behaviour.
+
+The presentation and swap completion callbacks come completely
+independently in case of Wayland, and blocking swap completion callback
+until presentation callback come adds an artificial delay to
+the display compositor as long as it's not known when the pixel
+will be turned to light.
+
+Thus, use local swap ids to allow the following order
+Swap[0]
+Swap-Ack[0]
+Swap[1]
+PresentationCallback[0]
+Swap-Ack[1]
+PresentationCallback[1]
+
+Right now, it crashes because Swap[1] sets
+allow_running_presentation_callback_ to false and the feedback
+for the Swap[0] cannot go through.
+
+To ensure that the presentation callback does not come earlier
+than the swap-ack callback, implement a queue with local swap ids
+to ensure 1) correct order of swap and swap-ack and ensure the
+presentation callbacks do not run earlier than their preceeding
+swap requests.
+
+Bug: 943096
+Change-Id: I0c399c6031991fd317484a8448228fe27ec69ded
+---
+ .../pass_through_image_transport_surface.cc   | 56 +++++++++++++++----
+ .../pass_through_image_transport_surface.h    | 11 +++-
+ 2 files changed, 54 insertions(+), 13 deletions(-)
+
+diff --git a/gpu/ipc/service/pass_through_image_transport_surface.cc b/gpu/ipc/service/pass_through_image_transport_surface.cc
+index 8827552d3206..477352d4d73d 100644
+--- a/gpu/ipc/service/pass_through_image_transport_surface.cc
++++ b/gpu/ipc/service/pass_through_image_transport_surface.cc
+@@ -56,7 +56,8 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers(
+   StartSwapBuffers(&response);
+   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffers(
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), callback));
++                 weak_ptr_factory_.GetWeakPtr(), callback,
++                 GetCurrentLocalSwapId()));
+   response.result = result;
+   FinishSwapBuffers(std::move(response));
+   return result;
+@@ -77,7 +78,8 @@ void PassThroughImageTransportSurface::SwapBuffersAsync(
+                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
+                  base::Passed(&response)),
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
++                 weak_ptr_factory_.GetWeakPtr(), presentation_callback,
++                 GetCurrentLocalSwapId()));
+ }
+ 
+ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
+@@ -87,7 +89,8 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
+   StartSwapBuffers(&response);
+   gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffersWithBounds(
+       rects, base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                        weak_ptr_factory_.GetWeakPtr(), callback));
++                        weak_ptr_factory_.GetWeakPtr(), callback,
++                        GetCurrentLocalSwapId()));
+   response.result = result;
+   FinishSwapBuffers(std::move(response));
+   return result;
+@@ -104,7 +107,8 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(
+   gfx::SwapResult result = gl::GLSurfaceAdapter::PostSubBuffer(
+       x, y, width, height,
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), callback));
++                 weak_ptr_factory_.GetWeakPtr(), callback,
++                 GetCurrentLocalSwapId()));
+   response.result = result;
+   FinishSwapBuffers(std::move(response));
+ 
+@@ -126,7 +130,8 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
+                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
+                  base::Passed(&response)),
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
++                 weak_ptr_factory_.GetWeakPtr(), presentation_callback,
++                 GetCurrentLocalSwapId()));
+ }
+ 
+ gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes(
+@@ -135,7 +140,8 @@ gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes(
+   StartSwapBuffers(&response);
+   gfx::SwapResult result = gl::GLSurfaceAdapter::CommitOverlayPlanes(
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), callback));
++                 weak_ptr_factory_.GetWeakPtr(), callback,
++                 GetCurrentLocalSwapId()));
+   response.result = result;
+   FinishSwapBuffers(std::move(response));
+   return result;
+@@ -151,7 +157,8 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
+                  weak_ptr_factory_.GetWeakPtr(), callback,
+                  base::Passed(&response)),
+       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
+-                 weak_ptr_factory_.GetWeakPtr(), presentation_callback));
++                 weak_ptr_factory_.GetWeakPtr(), presentation_callback,
++                 GetCurrentLocalSwapId()));
+ }
+ 
+ void PassThroughImageTransportSurface::SetVSyncEnabled(bool enabled) {
+@@ -197,10 +204,13 @@ void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
+ void PassThroughImageTransportSurface::StartSwapBuffers(
+     gfx::SwapResponse* response) {
+   UpdateVSyncEnabled();
+-  allow_running_presentation_callback_ = false;
++  // Store the local swap id to ensure the presentation callback is not called
++  // before this swap is completed.
++  pending_local_swap_ids_.push(++local_swap_id_);
+ 
+-  // Populated later in the DecoderClient, before passing to client.
+-  response->swap_id = 0;
++  // Temporary store the local swap id to ensure swap acks come in the correct
++  // order.
++  response->swap_id = pending_local_swap_ids_.back();
+ 
+   response->swap_start = base::TimeTicks::Now();
+ }
+@@ -209,12 +219,20 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
+     gfx::SwapResponse response) {
+   response.swap_end = base::TimeTicks::Now();
+ 
++  // After the swap is completed, the local swap id is removed from the queue,
++  // and the presentation callback for this swap can be run at any time later.
++  DCHECK_EQ(pending_local_swap_ids_.front(), response.swap_id);
++  pending_local_swap_ids_.pop();
++
++  // Reset the local swap id. Correct id will be opulated later in the
++  // DecoderClient, before passing to client.
++  response.swap_id = 0;
++
+   if (delegate_) {
+     SwapBuffersCompleteParams params;
+     params.swap_response = std::move(response);
+     delegate_->DidSwapBuffersComplete(std::move(params));
+   }
+-  allow_running_presentation_callback_ = true;
+ }
+ 
+ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
+@@ -235,11 +253,25 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
+ 
+ void PassThroughImageTransportSurface::BufferPresented(
+     const GLSurface::PresentationCallback& callback,
++    uint64_t swap_id,
+     const gfx::PresentationFeedback& feedback) {
+-  DCHECK(allow_running_presentation_callback_);
++  // The swaps are handled in queue. Thus, to allow the presentation feedback to
++  // be called after the first swap ack later, disregarding any of the following
++  // swap requests with own presentation feedbacks, and disallow calling the
++  // presentation callback before the same swap request, make sure the queue is
++  // either empty or the pending swap id is greater than the current. This means
++  // that the requested swap is completed and it's safe to call the presentation
++  // callback.
++  DCHECK(pending_local_swap_ids_.empty() ||
++         pending_local_swap_ids_.front() > swap_id);
++
+   callback.Run(feedback);
+   if (delegate_)
+     delegate_->BufferPresented(feedback);
+ }
+ 
++uint32_t PassThroughImageTransportSurface::GetCurrentLocalSwapId() const {
++  return pending_local_swap_ids_.front();
++}
++
+ }  // namespace gpu
+diff --git a/gpu/ipc/service/pass_through_image_transport_surface.h b/gpu/ipc/service/pass_through_image_transport_surface.h
+index 279bfa39e8d3..7b1a3ed4e8c4 100644
+--- a/gpu/ipc/service/pass_through_image_transport_surface.h
++++ b/gpu/ipc/service/pass_through_image_transport_surface.h
+@@ -10,6 +10,7 @@
+ #include <memory>
+ #include <vector>
+ 
++#include "base/containers/queue.h"
+ #include "base/macros.h"
+ #include "base/memory/weak_ptr.h"
+ #include "gpu/ipc/service/image_transport_surface.h"
+@@ -68,14 +69,22 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
+                               std::unique_ptr<gfx::GpuFence> gpu_fence);
+ 
+   void BufferPresented(const GLSurface::PresentationCallback& callback,
++                       uint64_t swap_id,
+                        const gfx::PresentationFeedback& feedback);
+ 
++  uint32_t GetCurrentLocalSwapId() const;
++
+   const bool is_gpu_vsync_disabled_;
+   const bool is_multi_window_swap_vsync_override_enabled_;
+   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
+   int swap_generation_ = 0;
+   bool vsync_enabled_ = true;
+-  bool allow_running_presentation_callback_ = true;
++
++  // Local swap ids, which are used to make sure the swap order is correct and
++  // the presentation callbacks are not called earlier than the swap ack of the
++  // same swap request.
++  uint64_t local_swap_id_ = 0;
++  base::queue<uint64_t> pending_local_swap_ids_;
+ 
+   base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
+ 
+-- 
+2.17.1
+
