@@ -45,6 +45,17 @@ SRC_URI += " \
         file://0040-ozone-wayland-Support-NumLock-in-non-chromeos-builds.patch \
         file://0041-ozone-xkbcommon-Pre-compute-masks-when-setting-keyma.patch \
         file://0042-ozone-wayland-Use-opaque-region-for-opaque-windows.patch \
+        file://0001-ozone-wayland-Add-const-keyword-to-getters.patch \
+        file://0002-ozone-wayland-Clean-up-data-device-related-code.patch \
+        file://0003-ozone-Allow-running-presentation-feedback-any-time-a.patch \
+        file://0004-ozone-wayland-Factor-out-zwp-linux-dmabuf-from-the-m.patch \
+        file://0005-ozone-wayland-Handle-viz-process-restart.patch \
+        file://0006-ozone-wayland-Move-the-host-gpu-common-and-test-code.patch \
+        file://0007-Change-the-order-when-the-opaque-region-is-updated.patch \
+        file://0008-Separate-swap-buffer-and-presentation-callbacks.patch \
+        file://0009-Ease-the-buffer-swap-and-maintenance.patch \
+        file://0010-ozone-wayland-Don-t-wait-for-frame-callback-after-su.patch \
+        file://0011-ozone-wayland-Fix-presentation-feedback-flags.patch \
 "
 
 # Chromium can use v4l2 device for hardware accelerated video decoding. Make sure that
@@ -65,6 +76,4 @@ GN_ARGS += "\
 "
 
 # The chromium binary must always be started with those arguments.
-# The VizDisplayCompositor is temporarely disabled.
-# See https://crbug.com/c/943096
-CHROMIUM_EXTRA_ARGS_append = " --disable-features=VizDisplayCompositor --ozone-platform=wayland"
+CHROMIUM_EXTRA_ARGS_append = " --ozone-platform=wayland"
