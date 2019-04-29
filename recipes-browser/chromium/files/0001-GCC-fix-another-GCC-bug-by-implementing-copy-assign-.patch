@@ -1,0 +1,44 @@
+Upstream-Status: Inappropriate
+
+This is clearly a hack. GCC tries to use a copy
+assignment for some reason, but, in reality, it is
+never used. Thus, just create a dumb copy
+assignment.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5d6f232b06298f3dcd3cd66b8743900f91acf8d9 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 8 May 2019 13:30:23 +0300
+Subject: [PATCH] GCC: fix another GCC bug by implementing copy assign op
+
+Though, the perfect forwarding is used, GCC complains on not
+deleted copy assignment operator.
+
+../../third_party/blink/renderer/platform/wtf/hash_table.h:605:14: error: use of deleted function 'WTF::KeyValuePair<blink::UntracedMember<blink::ScriptWrappable>, blink::DOMDataStore
+::DOMWorldWrapperReference>& WTF::KeyValuePair<blink::UntracedMember<blink::ScriptWrappable>, blink::DOMDataStore::DOMWorldWrapperReference>::operator=(const WTF::KeyValuePair<blink::
+UntracedMember<blink::ScriptWrappable>, blink::DOMDataStore::DOMWorldWrapperReference>&)'
+     location = std::forward<V>(value);
+     ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~
+---
+ third_party/blink/renderer/platform/bindings/dom_data_store.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/third_party/blink/renderer/platform/bindings/dom_data_store.h b/third_party/blink/renderer/platform/bindings/dom_data_store.h
+index 6e1213cae22b..414ceba5ce97 100644
+--- a/third_party/blink/renderer/platform/bindings/dom_data_store.h
++++ b/third_party/blink/renderer/platform/bindings/dom_data_store.h
+@@ -239,6 +239,10 @@ class DOMDataStore {
+       handle_ = std::move(rhs.handle_);
+       return *this;
+     }
++    DOMWorldWrapperReference& operator=(const DOMWorldWrapperReference& other) {
++      NOTREACHED() << "This must never happen";
++      return *this;
++    }
+   };
+ 
+   // UntracedMember is safe here as the map is not keeping ScriptWrappable alive
+-- 
+2.20.1
+

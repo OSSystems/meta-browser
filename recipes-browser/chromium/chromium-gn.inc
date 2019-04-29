@@ -9,24 +9,21 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-Add-missing-limits-header-to-crashpad.patch \
-        file://0001-GCC-use-Wno-error-header-hygiene-only-with-clang.patch \
-        file://0001-allocator-shim-Swap-ALIGN_LINKAGE-and-SHIM_ALWAYS_EX.patch \
-        file://0001-media-learning-Make-LabelledExample-s-move-assignmen.patch \
-        file://0001-BaseRenderingContext2D-Use-base-CheckMul-and-simplif.patch \
-        file://0001-CastActivityManager-Do-not-make-DoLaunchSessionParam.patch \
         file://0001-Stop-using-C-20-initialization.patch \
-        file://0001-chrome-browser-Replace-some-forward-declarations-wit.patch \
-        file://0001-color_utils-Use-std-sqrt-instead-of-std-sqrtf.patch \
-        file://0001-quic_flags_impl-Fix-GCC-build-after-618558.patch \
         file://0001-webrequest-Fix-GCC-build-after-2d47b917314a.patch \
         file://0001-GCC-7-workaround-remove-constexpr-ctor.patch \
-        file://0001-Fix-build-with-libstdc.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
+        file://0001-base-Value-Type-enum-class-size-should-be-8-bit.patch \
+        file://0002-base-Add-Dead-Type-to-base-Value.patch \
+        file://0003-base-Fix-Value-layout-for-GCC.patch \
+        file://0004-GCC-do-not-delete-move-constructor-of-QuicStreamSend.patch \
+        file://0005-Remove-banned-designated-initializer-list-usage-from.patch \
+        file://0006-GCC-add-std-move-to-return-to-base-Optional.patch \
+        file://0001-GCC-fix-another-GCC-bug-by-implementing-copy-assign-.patch \
 "
 
 SRC_URI_append_libc-musl = "\

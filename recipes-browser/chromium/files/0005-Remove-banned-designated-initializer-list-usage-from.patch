@@ -1,0 +1,196 @@
+Upstream-Status: Backport
+
+Fixes the following GCC issue:
+
+../../chrome/browser/tracing/trace_event_system_stats_monitor.cc: In member function 'void tracing::TraceEventSystemStatsMonitor::StartProfiling()':
+../../chrome/browser/tracing/trace_event_system_stats_monitor.cc:88:55: sorry, unimplemented: non-trivial designated initializers not supported
+                  SamplingFrequency::kDefaultFrequency});
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From bc0e297f5985b5c4f38f3dd2787b96269ce18cfd Mon Sep 17 00:00:00 2001
+From: Sebastien Marchand <sebmarchand@chromium.org>
+Date: Fri, 26 Apr 2019 18:39:21 +0000
+Subject: [PATCH 5/6] Remove banned designated initializer list usage from
+ SystemMonitor.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Bug: 956581
+Change-Id: I16332fa1dd9c9f9282fb894308c199652fcfb540
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1584887
+Reviewed-by: François Doray <fdoray@chromium.org>
+Reviewed-by: oysteine <oysteine@chromium.org>
+Commit-Queue: Sébastien Marchand <sebmarchand@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#654537}
+---
+ .../performance_monitor/system_monitor.cc     | 25 +++++++++++++++
+ .../performance_monitor/system_monitor.h      | 22 +++++++++++++
+ .../system_monitor_unittest.cc                | 31 ++++++++++++-------
+ .../trace_event_system_stats_monitor.cc       |  8 +++--
+ 4 files changed, 72 insertions(+), 14 deletions(-)
+
+diff --git a/chrome/browser/performance_monitor/system_monitor.cc b/chrome/browser/performance_monitor/system_monitor.cc
+index 1c3d0a500245..344a8af258de 100644
+--- a/chrome/browser/performance_monitor/system_monitor.cc
++++ b/chrome/browser/performance_monitor/system_monitor.cc
+@@ -75,6 +75,31 @@ SystemMonitor* SystemMonitor::Get() {
+   return g_system_metrics_monitor;
+ }
+ 
++MetricRefreshFrequencies::Builder&
++MetricRefreshFrequencies::Builder::SetFreePhysMemoryMbFrequency(
++    SamplingFrequency freq) {
++  metrics_and_frequencies_.free_phys_memory_mb_frequency = freq;
++  return *this;
++}
++
++MetricRefreshFrequencies::Builder&
++MetricRefreshFrequencies::Builder::SetDiskIdleTimePercentFrequency(
++    SamplingFrequency freq) {
++  metrics_and_frequencies_.disk_idle_time_percent_frequency = freq;
++  return *this;
++}
++
++MetricRefreshFrequencies::Builder&
++MetricRefreshFrequencies::Builder::SetSystemMetricsSamplingFrequency(
++    SamplingFrequency freq) {
++  metrics_and_frequencies_.system_metrics_sampling_frequency = freq;
++  return *this;
++}
++
++MetricRefreshFrequencies MetricRefreshFrequencies::Builder::Build() {
++  return metrics_and_frequencies_;
++}
++
+ SystemMonitor::SystemObserver::~SystemObserver() {
+   if (g_system_metrics_monitor) {
+     // This is a no-op if the observer has already been removed.
+diff --git a/chrome/browser/performance_monitor/system_monitor.h b/chrome/browser/performance_monitor/system_monitor.h
+index 6bb002a12bd6..b41907850192 100644
+--- a/chrome/browser/performance_monitor/system_monitor.h
++++ b/chrome/browser/performance_monitor/system_monitor.h
+@@ -75,6 +75,9 @@ class SystemMonitor {
+ 
+       SamplingFrequency system_metrics_sampling_frequency =
+           SamplingFrequency::kNoSampling;
++
++      // A builder used to create instances of this object.
++      class Builder;
+     };
+ 
+     ~SystemObserver() override;
+@@ -290,6 +293,25 @@ class SystemMonitor {
+   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
+ };
+ 
++// A builder class used to easily create a MetricRefreshFrequencies object.
++class SystemMonitor::SystemObserver::MetricRefreshFrequencies::Builder {
++ public:
++  Builder() = default;
++  ~Builder() = default;
++
++  Builder& SetFreePhysMemoryMbFrequency(SamplingFrequency freq);
++  Builder& SetDiskIdleTimePercentFrequency(SamplingFrequency freq);
++  Builder& SetSystemMetricsSamplingFrequency(SamplingFrequency freq);
++
++  // Returns the initialized MetricRefreshFrequencies instance.
++  MetricRefreshFrequencies Build();
++
++ private:
++  MetricRefreshFrequencies metrics_and_frequencies_ = {};
++
++  DISALLOW_COPY_AND_ASSIGN(Builder);
++};
++
+ // An helper class used by the MetricEvaluator object to retrieve the info
+ // they need.
+ class MetricEvaluatorsHelper {
+diff --git a/chrome/browser/performance_monitor/system_monitor_unittest.cc b/chrome/browser/performance_monitor/system_monitor_unittest.cc
+index 2a117d63f0a1..f15a928d1e59 100644
+--- a/chrome/browser/performance_monitor/system_monitor_unittest.cc
++++ b/chrome/browser/performance_monitor/system_monitor_unittest.cc
+@@ -115,17 +115,22 @@ TEST_F(SystemMonitorTest, AddAndUpdateObservers) {
+ 
+   // Add a second observer that observes the amount of free memory at the
+   // default frequency.
+-  MetricsRefreshFrequencies obs2_metrics_frequencies = {
+-      .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency};
++  MetricsRefreshFrequencies obs2_metrics_frequencies =
++      MetricsRefreshFrequencies::Builder()
++          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
++          .Build();
++
+   system_monitor_->AddOrUpdateObserver(&obs2, obs2_metrics_frequencies);
+   EnsureMetricsAreObservedAtExpectedFrequency(
+       SamplingFrequency::kDefaultFrequency);
+ 
+   // Add a third observer that observes the amount of free memory and the disk
+   // idle time at the default frequency.
+-  MetricsRefreshFrequencies obs3_metrics_frequencies = {
+-      .free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency,
+-      .disk_idle_time_percent_frequency = SamplingFrequency::kDefaultFrequency};
++  MetricsRefreshFrequencies obs3_metrics_frequencies =
++      MetricsRefreshFrequencies::Builder()
++          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
++          .SetDiskIdleTimePercentFrequency(SamplingFrequency::kDefaultFrequency)
++          .Build();
+   system_monitor_->AddOrUpdateObserver(&obs3, obs3_metrics_frequencies);
+   EnsureMetricsAreObservedAtExpectedFrequency(
+       SamplingFrequency::kDefaultFrequency,
+@@ -150,16 +155,18 @@ TEST_F(SystemMonitorTest, ObserverGetsCalled) {
+   ::testing::StrictMock<MockMetricsMonitorObserver> mock_observer_1;
+   system_monitor_->AddOrUpdateObserver(
+       &mock_observer_1,
+-      {.free_phys_memory_mb_frequency = SamplingFrequency::kDefaultFrequency});
++      MetricsRefreshFrequencies::Builder()
++          .SetFreePhysMemoryMbFrequency(SamplingFrequency::kDefaultFrequency)
++          .Build());
+ 
+   ::testing::StrictMock<MockMetricsMonitorObserver> mock_observer_2;
+   system_monitor_->AddOrUpdateObserver(
+-      &mock_observer_2, {
+-                            .disk_idle_time_percent_frequency =
+-                                SamplingFrequency::kDefaultFrequency,
+-                            .system_metrics_sampling_frequency =
+-                                SamplingFrequency::kDefaultFrequency,
+-                        });
++      &mock_observer_2,
++      MetricsRefreshFrequencies::Builder()
++          .SetDiskIdleTimePercentFrequency(SamplingFrequency::kDefaultFrequency)
++          .SetSystemMetricsSamplingFrequency(
++              SamplingFrequency::kDefaultFrequency)
++          .Build());
+ 
+   EnsureMetricsAreObservedAtExpectedFrequency(
+       SamplingFrequency::kDefaultFrequency,
+diff --git a/chrome/browser/tracing/trace_event_system_stats_monitor.cc b/chrome/browser/tracing/trace_event_system_stats_monitor.cc
+index 9cbeffbb41a1..993b96b30366 100644
+--- a/chrome/browser/tracing/trace_event_system_stats_monitor.cc
++++ b/chrome/browser/tracing/trace_event_system_stats_monitor.cc
+@@ -17,6 +17,8 @@ namespace tracing {
+ namespace {
+ 
+ using SamplingFrequency = performance_monitor::SystemMonitor::SamplingFrequency;
++using MetricsRefreshFrequencies = performance_monitor::SystemMonitor::
++    SystemObserver::MetricRefreshFrequencies;
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ // Holds profiled system stats until the tracing system needs to serialize it.
+@@ -84,8 +86,10 @@ void TraceEventSystemStatsMonitor::StartProfiling() {
+   is_profiling_ = true;
+   DCHECK(performance_monitor::SystemMonitor::Get());
+   performance_monitor::SystemMonitor::Get()->AddOrUpdateObserver(
+-      this, {.system_metrics_sampling_frequency =
+-                 SamplingFrequency::kDefaultFrequency});
++      this, MetricsRefreshFrequencies::Builder()
++                .SetSystemMetricsSamplingFrequency(
++                    SamplingFrequency::kDefaultFrequency)
++                .Build());
+ }
+ 
+ void TraceEventSystemStatsMonitor::OnSystemMetricsStruct(
+-- 
+2.20.1
+
