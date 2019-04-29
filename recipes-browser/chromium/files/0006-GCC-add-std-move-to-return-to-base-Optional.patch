@@ -1,0 +1,39 @@
+Upstream-Status: Submitted [https://crrev.com/c/1601036]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 170d72fcbacafafb1233a90ecf295c659a85d032 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 7 May 2019 10:02:49 +0300
+Subject: [PATCH 6/6] GCC: add std::move to return to base::Optional
+
+GCC fails to implicitely move an T to a base::Optional<T> in return. So
+this causes a build error. Explicitely std::move(). In this case the
+issue happened in device::pin
+
+../../device/fido/pin.cc: In function 'base::Optional<std::unique_ptr<ec_point_st, bssl::internal::Deleter<ec_point_st> > > device::pin::PointFromKeyAgreementResponse(const EC_GROUP*, const device::pin::KeyAgreementResponse&)':
+../../device/fido/pin.cc:132:10: error: could not convert 'ret' from 'bssl::UniquePtr<ec_point_st> {aka std::unique_ptr<ec_point_st, bssl::internal::Deleter<ec_point_st> >}' to 'base::Optional<std::unique_ptr<ec_point_st, bssl::internal::Deleter<ec_point_st> > >'
+   return ret;
+          ^~~
+
+Bug: 819294
+---
+ device/fido/pin.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/device/fido/pin.cc b/device/fido/pin.cc
+index 2d1200849f11..9d881872d4dc 100644
+--- a/device/fido/pin.cc
++++ b/device/fido/pin.cc
+@@ -129,7 +129,7 @@ base::Optional<bssl::UniquePtr<EC_POINT>> PointFromKeyAgreementResponse(
+     return base::nullopt;
+   }
+ 
+-  return ret;
++  return std::move(ret);
+ }
+ 
+ // static
+-- 
+2.20.1
+
