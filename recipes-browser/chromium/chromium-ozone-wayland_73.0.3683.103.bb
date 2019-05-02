@@ -58,6 +58,15 @@ SRC_URI += " \
         file://0011-ozone-wayland-Fix-presentation-feedback-flags.patch \
 "
 
+REQUIRED_DISTRO_FEATURES = "wayland"
+
+DEPENDS += "\
+        libxkbcommon \
+        virtual/egl \
+        wayland \
+        wayland-native \
+"
+
 # Chromium can use v4l2 device for hardware accelerated video decoding. Make sure that
 # /dev/video-dec exists.
 PACKAGECONFIG[use-linux-v4l2] = "use_v4l2_codec=true use_v4lplugin=true use_linux_v4l2_only=true"
@@ -69,6 +78,7 @@ GN_ARGS += "\
         ozone_platform_headless=true \
         ozone_platform_wayland=true \
         ozone_platform_x11=false \
+        system_wayland_scanner_path="${STAGING_BINDIR_NATIVE}/wayland-scanner" \
         use_xkbcommon=true \
         use_system_libwayland=true \
         use_system_minigbm=true \
