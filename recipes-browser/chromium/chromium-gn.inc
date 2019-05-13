@@ -24,6 +24,7 @@ SRC_URI += " \
         file://0005-Remove-banned-designated-initializer-list-usage-from.patch \
         file://0006-GCC-add-std-move-to-return-to-base-Optional.patch \
         file://0001-GCC-fix-another-GCC-bug-by-implementing-copy-assign-.patch \
+        file://0001-crc32c-Re-enable-crc-and-crypto-extensions-to-arm64-.patch \
 "
 
 SRC_URI_append_libc-musl = "\
