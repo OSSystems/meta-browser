@@ -1,0 +1,66 @@
+Upstream-Status: Submitted [https://crrev.com/c/1609781]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 496c6dee4195bffe2a7ed607782117a60a198813 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 13 May 2019 16:31:06 +0300
+Subject: [PATCH] [ozone/wayland] Fix NativeGpuMemoryBuffers usage.
+
+After https://crrev.com/c/1570014, Chromium started to
+crash immediately because of null accelerated widget provided
+to the WaylandBufferManager and hitting data validation
+error when --enable-native-gpu-memory-buffer with
+the --enable-gpu-rasterization passed.
+
+The problem was that the raster buffer provided can
+create a staging buffer for rasterization, which is not
+tight to any of the existing widgets. Thus, it seems like
+it just passes a null widget [1][2].
+
+But, when the GbmPixmapWayland was created and the dmabuf handle
+was passed to the WaylandBufferManager to import a wl_buffer,
+it crashed on the data validation, because the widget was null.
+
+Thus, when a null widget is passed, just create a native pixmap
+and do not call the WaylandBufferManager with a request to import
+a wl_buffer as long as they can also be used as staging buffers
+and not meant for attaching to Wayland surfaces.
+
+[1] https://cs.chromium.org/chromium/src/cc/raster/one_copy_raster_buffer_provider.cc?type=cs&g=0&l=296
+[2] https://cs.chromium.org/chromium/src/cc/raster/zero_copy_raster_buffer_provider.cc?type=cs&g=0&l=125
+
+Bug: 962466
+Change-Id: Ied6fd6d3e29fdd21939c8b159682537f9239ab84
+---
+ ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+index e7aeb029dbb6..5899a352343b 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
++++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+@@ -35,7 +35,7 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
+       widget_(widget) {}
+ 
+ GbmPixmapWayland::~GbmPixmapWayland() {
+-  if (gbm_bo_)
++  if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
+     connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
+ }
+ 
+@@ -81,7 +81,10 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
+     return false;
+   }
+ 
+-  CreateZwpLinuxDmabuf();
++  // The pixmap can be created as a staging buffer and not be mapped to any of
++  // the existing widgets.
++  if (widget_ != gfx::kNullAcceleratedWidget)
++    CreateZwpLinuxDmabuf();
+   return true;
+ }
+ 
+-- 
+2.20.1
+

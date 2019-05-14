@@ -1,0 +1,60 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5b70aa27f495667f8c436242f4197c1e5645ac68 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 14 May 2019 06:50:15 +0000
+Subject: [PATCH] [ozone/wayland] Do not add window if manager does not exist
+
+It may happen that the zwp linux dmabuf protocol is not available.
+In this case, we have already been resetting the gbm device and
+make the gpu use wl_egl instead, but the WaylandConnection still
+has been trying to add a window to the WaylandBufferManager upon
+creation. However, as previously said, the manager may not exist
+because the zwp linux dmabuf had not been advertised as supported
+protocol.
+
+Without this patch, it just crashes.
+
+Bug: 578890
+Change-Id: I15bcd7ae968590d358a4590d79a54067de02e8d6
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1609822
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#659405}
+---
+ ui/ozone/platform/wayland/host/wayland_connection.cc | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index 8bb0844d8d6a..9d3fe04c3c61 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -160,8 +160,10 @@ WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
+ 
+ void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
+                                   WaylandWindow* window) {
+-  DCHECK(buffer_manager_);
+-  buffer_manager_->OnWindowAdded(window);
++  if (buffer_manager_) {
++    DCHECK(zwp_dmabuf_);
++    buffer_manager_->OnWindowAdded(window);
++  }
+ 
+   window_map_[widget] = window;
+ }
+@@ -170,8 +172,8 @@ void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
+   if (touch_)
+     touch_->RemoveTouchPoints(window_map_[widget]);
+ 
+-  DCHECK(buffer_manager_);
+-  buffer_manager_->OnWindowRemoved(window_map_[widget]);
++  if (buffer_manager_)
++    buffer_manager_->OnWindowRemoved(window_map_[widget]);
+ 
+   window_map_.erase(widget);
+ }
+-- 
+2.20.1
+
