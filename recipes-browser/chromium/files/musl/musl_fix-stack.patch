@@ -14,7 +14,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FREEBSD) || \
      defined(OS_FUCHSIA)
    // pthread_getattr_np() can fail if the thread is not invoked by
-   // pthread_create() (e.g., the main thread of webkit_unit_tests).
+   // pthread_create() (e.g., the main thread of blink_unittests).
 @@ -98,7 +98,7 @@ size_t GetUnderestimatedStackSize() {
  }
  
