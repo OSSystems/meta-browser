@@ -14,15 +14,49 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include <execinfo.h>
  #endif
  
-@@ -825,7 +825,7 @@ StackTrace::StackTrace(size_t count) {
+@@ -86,7 +86,7 @@ void DemangleSymbols(std::string* text)
+   // Note: code in this function is NOT async-signal safe (std::string uses
+   // malloc internally).
+ 
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+   std::string::size_type search_from = 0;
+   while (search_from < text->size()) {
+     // Look for the start of a mangled symbol, from search_from.
+@@ -133,7 +133,7 @@ class BacktraceOutputHandler {
+   virtual ~BacktraceOutputHandler() = default;
+ };
+ 
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+ void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
+   // This should be more than enough to store a 64-bit number in hex:
+   // 16 hex digits + 1 for null-terminator.
+@@ -812,7 +812,7 @@ size_t CollectStackTrace(void** trace, s
+   // NOTE: This code MUST be async-signal safe (it's used by in-process
+   // stack dumping signal handler). NO malloc or stdio is allowed here.
+ 
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+   // Though the backtrace API man page does not list any possible negative
+   // return values, we take no chance.
+   return base::saturated_cast<size_t>(backtrace(trace, count));
+@@ -825,13 +825,13 @@ void StackTrace::PrintWithPrefix(const c
  // NOTE: This code MUST be async-signal safe (it's used by in-process
  // stack dumping signal handler). NO malloc or stdio is allowed here.
  
 -#if !defined(__UCLIBC__) && !defined(_AIX)
 +#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
-   count = std::min(arraysize(trace_), count);
+   PrintBacktraceOutputHandler handler;
+   ProcessBacktrace(trace_, count_, prefix_string, &handler);
+ #endif
+ }
  
-   // Though the backtrace API man page does not list any possible negative
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if !defined(__UCLIBC__) && defined(__GLIBC__) && !defined(_AIX)
+ void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
+                                           const char* prefix_string) const {
+   StreamBacktraceOutputHandler handler(os);
 --- a/third_party/blink/renderer/platform/wtf/assertions.cc
 +++ b/third_party/blink/renderer/platform/wtf/assertions.cc
 @@ -51,6 +51,8 @@

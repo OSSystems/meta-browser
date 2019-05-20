@@ -8,7 +8,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
 @@ -17,6 +17,36 @@
- #include "base/threading/thread_local_storage.h"
+ #include "base/threading/thread_local.h"
  #include "net/base/network_change_notifier.h"
  
 +#if !defined(__GLIBC__)
@@ -46,7 +46,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  namespace {
 --- a/net/dns/dns_config_service_posix.cc
 +++ b/net/dns/dns_config_service_posix.cc
-@@ -41,6 +41,36 @@
+@@ -42,6 +42,36 @@
  #include "net/base/network_interfaces.h"
  #endif
  
