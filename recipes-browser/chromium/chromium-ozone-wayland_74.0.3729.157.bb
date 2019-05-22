@@ -34,6 +34,7 @@ SRC_URI += " \
         file://0002-Add-mmap-via-libv4l-to-generic_v4l2_device.patch \
         file://0001-ozone-wayland-Do-not-add-window-if-manager-does-not-.patch \
         file://0001-ozone-wayland-Fix-NativeGpuMemoryBuffers-usage.patch \
+        file://0001-v4l2_device-Update-CanCreateEGLImageFrom-to-support-.patch \
 "
 
 # Chromium can use v4l2 device for hardware accelerated video decoding. Make sure that
