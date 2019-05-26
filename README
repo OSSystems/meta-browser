@@ -14,6 +14,8 @@ URI: git://git.openembedded.org/meta-openembedded
 branch: master
 revision: HEAD
 
+For Firefox, meta-rust is necessary:
+
 URI: git://github.com/meta-rust/meta-rust
 branch: master
 revision: HEAD
