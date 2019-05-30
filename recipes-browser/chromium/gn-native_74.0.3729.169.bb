@@ -17,6 +17,8 @@ B = "${S}/out_bootstrap"
 
 SRC_URI += "\
         file://0001-gen-Stop-passing-static-libstdc-to-the-compiler.patch \
+        file://0001-Revert-Disallow-non-buildable-sources-in-binary-targets.patch \
+        file://0002-Revert-Cache-source-file-type-in-SourceFile.patch \
 "
 
 # The build system expects the linker to be invoked via the compiler. If we use
