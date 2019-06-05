@@ -25,24 +25,24 @@ always required.
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/zlib/BUILD.gn b/third_party/zlib/BUILD.gn
-index 51d477a331b8..5260bc8fb5bd 100644
+index 1a9cd3b827b3..dd019cfdd975 100644
 --- a/third_party/zlib/BUILD.gn
 +++ b/third_party/zlib/BUILD.gn
-@@ -68,7 +68,7 @@ if (use_arm_neon_optimizations) {
-     #  - Fuchsia just added a syscall for feature detection.
-     # TODO(cavalcantii): crbug.com/810125.
-     if (!is_ios && !is_fuchsia) {
+@@ -71,7 +71,7 @@ if (use_arm_neon_optimizations) {
+     #  "All implementations of the ARMv8.1 architecture are required to
+     #   implement the CRC32* instructions. These are optional in ARMv8.0."
+     if (!is_ios) {
 -      defines = [ "CRC32_ARMV8_CRC32" ]
 +      defines = []
        if (is_android) {
          defines += [ "ARMV8_OS_ANDROID" ]
        } else if (is_linux || is_chromeos) {
-@@ -80,7 +80,7 @@ if (use_arm_neon_optimizations) {
+@@ -89,7 +89,7 @@ if (use_arm_neon_optimizations) {
    source_set("zlib_arm_crc32") {
      visibility = [ ":*" ]
  
--    if (is_clang && (!is_ios && !is_fuchsia)) {
-+    if (!is_ios && !is_chromeos && !is_fuchsia) {
+-    if (is_clang && !is_ios) {
++    if (!is_ios) {
        include_dirs = [ "." ]
  
        if (is_android) {

@@ -1,0 +1,35 @@
+Upstream-status: Inappropriate
+
+Work around for a GCC bug fixed in the 8 series, so it does not make sense to
+upstream it.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From e0653bd8a8cbb33640c70ae80c2f442e4ab23eb7 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 5 Jun 2019 17:20:24 +0200
+Subject: [PATCH] TrackEventJSONExporter::HandleLegacyEvent: Use std::move() to return |builder|
+
+This fixes a build issue with GCC releases prior to 8, where |builder|
+cannot be automatically converted into a base::Optional<>:
+
+    ../../services/tracing/perfetto/track_event_json_exporter.cc:533:10: error: could not convert 'builder' from 'tracing::JSONTraceExporter::ScopedJSONTraceEventAppender' to 'base::Optional<tracing::JSONTraceExporter::ScopedJSONTraceEventAppender>'
+---
+ services/tracing/perfetto/track_event_json_exporter.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/tracing/perfetto/track_event_json_exporter.cc b/services/tracing/perfetto/track_event_json_exporter.cc
+index 01fbca4cbbbd..52a51385e4f5 100644
+--- a/services/tracing/perfetto/track_event_json_exporter.cc
++++ b/services/tracing/perfetto/track_event_json_exporter.cc
+@@ -530,6 +530,6 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
+   }
+   // Even if |flags==0|, we need to call AddFlags to output instant event scope.
+   builder.AddFlags(flags, id, event.id_scope());
+-  return builder;
++  return std::move(builder);
+ }
+ }  // namespace tracing
+-- 
+2.20.1
+

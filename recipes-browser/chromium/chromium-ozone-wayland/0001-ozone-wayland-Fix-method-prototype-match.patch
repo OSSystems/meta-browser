@@ -1,0 +1,35 @@
+Upstream-Status: Submitted (https://ccrev.com/c/1649156)
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+From 715928026034a9bd4671c95769526763f068c1d6 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Fri, 7 Jun 2019 09:35:00 +0300
+Subject: [PATCH] ozone/wayland: Fix method prototype match
+
+CreateShmBasedBuffer uses uint64_t type for the length parameter,
+but the definition uses size_t instead.
+
+This CL fixes this inconsistency.
+
+Bug: 578890
+Change-Id: I3deac38340422d7c2098d226966312ad16eb831b
+---
+ ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc b/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
+index b6c85ef70fb4..3f163a012c31 100644
+--- a/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
++++ b/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
+@@ -558,7 +558,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
+ void WaylandBufferManagerHost::CreateShmBasedBuffer(
+     gfx::AcceleratedWidget widget,
+     mojo::ScopedHandle shm_fd,
+-    size_t length,
++    uint64_t length,
+     const gfx::Size& size,
+     uint32_t buffer_id) {
+   DCHECK(base::MessageLoopCurrentForUI::IsSet());
+-- 
+2.20.1
+

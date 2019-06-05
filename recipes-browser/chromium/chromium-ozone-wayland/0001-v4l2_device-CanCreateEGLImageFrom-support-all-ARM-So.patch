@@ -1,0 +1,51 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 8cc023d99366225511a1dbe5cc0418c348a044e6 Mon Sep 17 00:00:00 2001
+From: Peter Griffin <peter.griffin@linaro.org>
+Date: Thu, 23 May 2019 17:15:47 +0000
+Subject: [PATCH] v4l2_device: CanCreateEGLImageFrom support all ARM SoC
+
+ARCH_CPU_ARM_FAMILY is set for both 32bit & 64bit SoCs.
+This allows V4L2 VDA to be used for aarch64 SoCs when
+they are using NV12 & YVU420 buffers.
+
+Change-Id: I47efa7ddec9b7fe9ba76dfd5a810c42efc26f31d
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1624333
+Commit-Queue: Dan Sanders <sandersd@chromium.org>
+Reviewed-by: Dan Sanders <sandersd@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#662694}
+---
+ AUTHORS                               | 1 +
+ media/gpu/v4l2/generic_v4l2_device.cc | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/AUTHORS b/AUTHORS
+index a9cc1637b3f4..a78a88af6463 100644
+--- a/AUTHORS
++++ b/AUTHORS
+@@ -692,6 +692,7 @@ Peter Bright <drpizza@quiscalusmexicanus.org>
+ Peter Brophy <pbrophy@adobe.com>
+ Peter Collingbourne <peter@pcc.me.uk>
+ Peter Gal <pgal.u-szeged@partner.samsung.com>
++Peter Griffin <peter.griffin@linaro.org>
+ Peter Molnar <pmolnar.u-szeged@partner.samsung.com>
+ Peter Snyder <snyderp@gmail.com>
+ Peter Wong <peter.wm.wong@gmail.com>
+diff --git a/media/gpu/v4l2/generic_v4l2_device.cc b/media/gpu/v4l2/generic_v4l2_device.cc
+index cc9e4c008862..8841211abb25 100644
+--- a/media/gpu/v4l2/generic_v4l2_device.cc
++++ b/media/gpu/v4l2/generic_v4l2_device.cc
+@@ -210,7 +210,7 @@ std::vector<base::ScopedFD> GenericV4L2Device::GetDmabufsForV4L2Buffer(
+ bool GenericV4L2Device::CanCreateEGLImageFrom(uint32_t v4l2_pixfmt) {
+   static uint32_t kEGLImageDrmFmtsSupported[] = {
+     DRM_FORMAT_ARGB8888,
+-#if defined(ARCH_CPU_ARMEL)
++#if defined(ARCH_CPU_ARM_FAMILY)
+     DRM_FORMAT_NV12,
+     DRM_FORMAT_YVU420,
+ #endif
+-- 
+2.20.1
+

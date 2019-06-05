@@ -9,22 +9,20 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-Stop-using-C-20-initialization.patch \
+        file://0001-Add-support-for-GCC-Compilers.patch \
+        file://0001-Revert-Use-noexcept-consistently-on-the-move-ctor-of.patch \
+        file://0001-TrackEventJSONExporter-HandleLegacyEvent-Use-std-mov.patch \
         file://0001-webrequest-Fix-GCC-build-after-2d47b917314a.patch \
         file://0001-GCC-7-workaround-remove-constexpr-ctor.patch \
+        file://0001-libstdc-do-not-assume-unique_ptr-has-ostream-operato.patch \
         file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
-        file://0001-base-Value-Type-enum-class-size-should-be-8-bit.patch \
-        file://0002-base-Add-Dead-Type-to-base-Value.patch \
-        file://0003-base-Fix-Value-layout-for-GCC.patch \
-        file://0004-GCC-do-not-delete-move-constructor-of-QuicStreamSend.patch \
         file://0005-Remove-banned-designated-initializer-list-usage-from.patch \
         file://0006-GCC-add-std-move-to-return-to-base-Optional.patch \
         file://0001-GCC-fix-another-GCC-bug-by-implementing-copy-assign-.patch \
-        file://0001-crc32c-Re-enable-crc-and-crypto-extensions-to-arm64-.patch \
 "
 
 SRC_URI_append_libc-musl = "\

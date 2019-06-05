@@ -1,0 +1,81 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 68b36cd3ab0ecf9d00de4e3f98480c8a64cc3e7a Mon Sep 17 00:00:00 2001
+From: Nick Diego Yamane <nickdiego@igalia.com>
+Date: Fri, 31 May 2019 19:21:06 +0000
+Subject: [PATCH 18/23] ozone/wayland: Use new shmen API when loading keymap
+
+Modify WaylandKeyboard keymap handling method to use the brand new
+SharedMemory API rather than raw mmap/munmap calls. This does not
+implies in any behavioral change.
+
+Bug: 578890, 795291
+Change-Id: I7e5a0495b96af84a114414ce34268410d2cee57b
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1637627
+Reviewed-by: Antonio Gomes <tonikitoo@igalia.com>
+Commit-Queue: Nick Yamane <nickdiego@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#665210}
+---
+ .../platform/wayland/host/wayland_keyboard.cc | 26 ++++++++++---------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_keyboard.cc b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
+index 181e6e56b4b6..c082b30133e5 100644
+--- a/ui/ozone/platform/wayland/host/wayland_keyboard.cc
++++ b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
+@@ -4,10 +4,11 @@
+ 
+ #include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
+ 
+-#include <sys/mman.h>
+ #include <utility>
+ 
+ #include "base/files/scoped_file.h"
++#include "base/memory/unsafe_shared_memory_region.h"
++#include "base/unguessable_token.h"
+ #include "ui/base/buildflags.h"
+ #include "ui/events/base_event_utils.h"
+ #include "ui/events/event.h"
+@@ -58,25 +59,26 @@ WaylandKeyboard::~WaylandKeyboard() {}
+ void WaylandKeyboard::Keymap(void* data,
+                              wl_keyboard* obj,
+                              uint32_t format,
+-                             int32_t raw_fd,
++                             int32_t keymap_fd,
+                              uint32_t size) {
+   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
+   DCHECK(keyboard);
+ 
+-  base::ScopedFD fd(raw_fd);
+-  if (!data || format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+-    return;
++  base::ScopedFD fd(keymap_fd);
++  auto length = size - 1;
++  auto shmen = base::subtle::PlatformSharedMemoryRegion::Take(
++      std::move(fd), base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
++      length, base::UnguessableToken::Create());
++  auto mapped_memory =
++      base::UnsafeSharedMemoryRegion::Deserialize(std::move(shmen)).Map();
++  const char* keymap = mapped_memory.GetMemoryAs<char>();
+ 
+-  char* keymap_str = reinterpret_cast<char*>(
+-      mmap(nullptr, size, PROT_READ, MAP_SHARED, fd.get(), 0));
+-  if (keymap_str == MAP_FAILED)
++  if (!keymap || format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+     return;
+ 
+-  auto length = strnlen(keymap_str, size);
+-  bool success =
+-      keyboard->layout_engine_->SetCurrentLayoutFromBuffer(keymap_str, length);
++  bool success = keyboard->layout_engine_->SetCurrentLayoutFromBuffer(
++      keymap, mapped_memory.size());
+   DCHECK(success) << "Failed to set the XKB keyboard mapping.";
+-  munmap(keymap_str, size);
+ }
+ 
+ void WaylandKeyboard::Enter(void* data,
+-- 
+2.20.1
+
