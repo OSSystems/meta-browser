@@ -2,8 +2,7 @@
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native unzip-native zip-native"
-# drop to keep allarch
-# RDEPENDS_${PN} = "firefox"
+RDEPENDS_${PN} = "firefox"
 
 LICENSE = "MPLv2"
 
