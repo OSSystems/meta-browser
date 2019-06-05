@@ -1,0 +1,426 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 71860249acbc270972d26eeda0c66fc453224982 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Sat, 18 May 2019 11:46:41 +0000
+Subject: [PATCH 11/23] [ozone/wayland] Wrap wl_shm to WaylandShm
+
+This patch does not bring functionality changes, but
+just wraps the wl_shm to WaylandShm for more convinient usage.
+
+This is also a prerequisite to unite the
+WaylandShmBufferManager and the WaylandBufferManager.
+
+Bug: 963853
+Change-Id: I5ce47dc981caccf3df7f0092cb2095712a63443e
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1617501
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#661174}
+---
+ ui/ozone/platform/wayland/BUILD.gn            |  2 +
+ .../wayland/host/wayland_connection.cc        |  4 +-
+ .../wayland/host/wayland_connection.h         |  6 ++-
+ .../platform/wayland/host/wayland_cursor.cc   |  1 +
+ .../platform/wayland/host/wayland_cursor.h    |  3 +-
+ .../wayland_shared_memory_buffer_manager.cc   | 27 +++---------
+ .../wayland_shared_memory_buffer_manager.h    | 19 +-------
+ ui/ozone/platform/wayland/host/wayland_shm.cc | 41 +++++++++++++++++
+ ui/ozone/platform/wayland/host/wayland_shm.h  | 44 +++++++++++++++++++
+ .../wayland/host/wayland_shm_buffer.cc        | 22 +++-------
+ .../wayland/host/wayland_shm_buffer.h         |  6 ++-
+ 11 files changed, 114 insertions(+), 61 deletions(-)
+ create mode 100644 ui/ozone/platform/wayland/host/wayland_shm.cc
+ create mode 100644 ui/ozone/platform/wayland/host/wayland_shm.h
+
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index 1e5aa6f1dc55..0529f8b08dce 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -66,6 +66,8 @@ source_set("wayland") {
+     "host/wayland_screen.h",
+     "host/wayland_shared_memory_buffer_manager.cc",
+     "host/wayland_shared_memory_buffer_manager.h",
++    "host/wayland_shm.cc",
++    "host/wayland_shm.h",
+     "host/wayland_shm_buffer.cc",
+     "host/wayland_shm_buffer.h",
+     "host/wayland_touch.cc",
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index 9d3fe04c3c61..d2417802b966 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -25,6 +25,7 @@
+ #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
+ #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+ #include "ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h"
++#include "ui/ozone/platform/wayland/host/wayland_shm.h"
+ #include "ui/ozone/platform/wayland/host/wayland_window.h"
+ #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
+ 
+@@ -403,8 +404,9 @@ void WaylandConnection::Global(void* data,
+     if (!connection->subcompositor_)
+       LOG(ERROR) << "Failed to bind to wl_subcompositor global";
+   } else if (!connection->shm_ && strcmp(interface, "wl_shm") == 0) {
+-    connection->shm_ =
++    wl::Object<wl_shm> shm =
+         wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
++    connection->shm_ = std::make_unique<WaylandShm>(shm.release(), connection);
+     if (!connection->shm_)
+       LOG(ERROR) << "Failed to bind to wl_shm global";
+     connection->shm_buffer_manager_ =
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 3f9d12ddd4ee..2b06d427338e 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -35,6 +35,7 @@ class WaylandShmBufferManager;
+ class WaylandOutputManager;
+ class WaylandWindow;
+ class WaylandZwpLinuxDmabuf;
++class WaylandShm;
+ 
+ class WaylandConnection : public PlatformEventSource,
+                           public ozone::mojom::WaylandConnection,
+@@ -105,7 +106,6 @@ class WaylandConnection : public PlatformEventSource,
+   wl_display* display() const { return display_.get(); }
+   wl_compositor* compositor() const { return compositor_.get(); }
+   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
+-  wl_shm* shm() const { return shm_.get(); }
+   xdg_shell* shell() const { return shell_.get(); }
+   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
+   wl_seat* seat() const { return seat_.get(); }
+@@ -152,6 +152,8 @@ class WaylandConnection : public PlatformEventSource,
+ 
+   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
+ 
++  WaylandShm* shm() const { return shm_.get(); }
++
+   // Returns bound pointer to own mojo interface.
+   ozone::mojom::WaylandConnectionPtr BindInterface();
+ 
+@@ -237,7 +239,6 @@ class WaylandConnection : public PlatformEventSource,
+   wl::Object<wl_compositor> compositor_;
+   wl::Object<wl_subcompositor> subcompositor_;
+   wl::Object<wl_seat> seat_;
+-  wl::Object<wl_shm> shm_;
+   wl::Object<xdg_shell> shell_;
+   wl::Object<zxdg_shell_v6> shell_v6_;
+   wl::Object<wp_presentation> presentation_;
+@@ -254,6 +255,7 @@ class WaylandConnection : public PlatformEventSource,
+   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
+   std::unique_ptr<WaylandShmBufferManager> shm_buffer_manager_;
+   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
++  std::unique_ptr<WaylandShm> shm_;
+ 
+   // Objects that are using when GPU runs in own process.
+   std::unique_ptr<WaylandBufferManager> buffer_manager_;
+diff --git a/ui/ozone/platform/wayland/host/wayland_cursor.cc b/ui/ozone/platform/wayland/host/wayland_cursor.cc
+index d397281d3ffd..85b16dc3c686 100644
+--- a/ui/ozone/platform/wayland/host/wayland_cursor.cc
++++ b/ui/ozone/platform/wayland/host/wayland_cursor.cc
+@@ -11,6 +11,7 @@
+ #include "ui/gfx/skia_util.h"
+ #include "ui/ozone/platform/wayland/common/wayland_util.h"
+ #include "ui/ozone/platform/wayland/host/wayland_connection.h"
++#include "ui/ozone/platform/wayland/host/wayland_shm.h"
+ 
+ namespace ui {
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_cursor.h b/ui/ozone/platform/wayland/host/wayland_cursor.h
+index bad636c776cf..c2890f96e7a2 100644
+--- a/ui/ozone/platform/wayland/host/wayland_cursor.h
++++ b/ui/ozone/platform/wayland/host/wayland_cursor.h
+@@ -26,6 +26,7 @@ class Point;
+ namespace ui {
+ 
+ class WaylandConnection;
++class WaylandShm;
+ 
+ // Manages the actual visual representation (what users see drawn) of the
+ // 'pointer' (which is the Wayland term for mouse/mice).
+@@ -54,7 +55,7 @@ class WaylandCursor {
+ 
+   void HideCursor(uint32_t serial);
+ 
+-  wl_shm* shm_ = nullptr;                // Owned by WaylandConnection.
++  WaylandShm* shm_ = nullptr;            // Owned by WaylandConnection.
+   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
+ 
+   // Holds the buffers and their memory until the compositor releases them.
+diff --git a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
+index af129fe4ece0..283f92a5d76a 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
++++ b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
+@@ -8,19 +8,11 @@
+ 
+ #include "base/trace_event/trace_event.h"
+ #include "ui/ozone/platform/wayland/host/wayland_connection.h"
++#include "ui/ozone/platform/wayland/host/wayland_shm.h"
+ #include "ui/ozone/platform/wayland/host/wayland_window.h"
+ 
+ namespace ui {
+ 
+-WaylandShmBufferManager::ShmBuffer::ShmBuffer() = default;
+-
+-WaylandShmBufferManager::ShmBuffer::ShmBuffer(
+-    wl::Object<struct wl_buffer> buffer,
+-    wl::Object<struct wl_shm_pool> pool)
+-    : shm_buffer(std::move(buffer)), shm_pool(std::move(pool)) {}
+-
+-WaylandShmBufferManager::ShmBuffer::~ShmBuffer() = default;
+-
+ WaylandShmBufferManager::WaylandShmBufferManager(WaylandConnection* connection)
+     : connection_(connection) {}
+ 
+@@ -43,20 +35,11 @@ bool WaylandShmBufferManager::CreateBufferForWidget(
+   if (it != shm_buffers_.end())
+     return false;
+ 
+-  wl::Object<wl_shm_pool> pool(
+-      wl_shm_create_pool(connection_->shm(), fd.get(), length));
+-  if (!pool)
+-    return false;
+-
+-  wl::Object<wl_buffer> shm_buffer(
+-      wl_shm_pool_create_buffer(pool.get(), 0, size.width(), size.height(),
+-                                size.width() * 4, WL_SHM_FORMAT_ARGB8888));
+-  if (!shm_buffer)
++  auto buffer = connection_->shm()->CreateBuffer(std::move(fd), length, size);
++  if (!buffer)
+     return false;
+ 
+-  shm_buffers_.insert(std::make_pair(
+-      widget,
+-      std::make_unique<ShmBuffer>(std::move(shm_buffer), std::move(pool))));
++  shm_buffers_.insert(std::make_pair(widget, std::move(buffer)));
+ 
+   connection_->ScheduleFlush();
+   return true;
+@@ -77,7 +60,7 @@ bool WaylandShmBufferManager::PresentBufferForWidget(
+   wl_surface* surface = connection_->GetWindow(widget)->surface();
+   wl_surface_damage(surface, damage.x(), damage.y(), damage.width(),
+                     damage.height());
+-  wl_surface_attach(surface, it->second->shm_buffer.get(), 0, 0);
++  wl_surface_attach(surface, it->second.get(), 0, 0);
+   wl_surface_commit(surface);
+   connection_->ScheduleFlush();
+   return true;
+diff --git a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
+index e10ffe603de5..5d4a4838a74e 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
++++ b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
+@@ -45,25 +45,8 @@ class WaylandShmBufferManager {
+   bool DestroyBuffer(gfx::AcceleratedWidget widget);
+ 
+  private:
+-  // Internal representation of a shared memory buffer.
+-  struct ShmBuffer {
+-    ShmBuffer();
+-    ShmBuffer(wl::Object<struct wl_buffer> buffer,
+-              wl::Object<struct wl_shm_pool> pool);
+-    ~ShmBuffer();
+-
+-    // A wl_buffer backed by a shared memory handle passed from the gpu process.
+-    wl::Object<struct wl_buffer> shm_buffer;
+-
+-    // Is used to create shared memory based buffer objects.
+-    wl::Object<struct wl_shm_pool> shm_pool;
+-
+-    DISALLOW_COPY_AND_ASSIGN(ShmBuffer);
+-  };
+-
+   // A container of created buffers.
+-  base::flat_map<gfx::AcceleratedWidget, std::unique_ptr<ShmBuffer>>
+-      shm_buffers_;
++  base::flat_map<gfx::AcceleratedWidget, wl::Object<wl_buffer>> shm_buffers_;
+ 
+   // Non-owned pointer to the main connection.
+   WaylandConnection* connection_ = nullptr;
+diff --git a/ui/ozone/platform/wayland/host/wayland_shm.cc b/ui/ozone/platform/wayland/host/wayland_shm.cc
+new file mode 100644
+index 000000000000..9128e31e2fc4
+--- /dev/null
++++ b/ui/ozone/platform/wayland/host/wayland_shm.cc
+@@ -0,0 +1,41 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/host/wayland_shm.h"
++
++#include "ui/ozone/platform/wayland/host/wayland_connection.h"
++
++namespace ui {
++
++namespace {
++
++constexpr uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
++
++}  // namespace
++
++WaylandShm::WaylandShm(wl_shm* shm, WaylandConnection* connection)
++    : shm_(shm), connection_(connection) {}
++
++WaylandShm::~WaylandShm() = default;
++
++wl::Object<wl_buffer> WaylandShm::CreateBuffer(base::ScopedFD fd,
++                                               size_t length,
++                                               const gfx::Size& size) {
++  if (!fd.is_valid() || length == 0 || size.IsEmpty())
++    return wl::Object<wl_buffer>(nullptr);
++
++  wl::Object<wl_shm_pool> pool(
++      wl_shm_create_pool(shm_.get(), fd.get(), length));
++  if (!pool)
++    return wl::Object<wl_buffer>(nullptr);
++
++  wl::Object<wl_buffer> shm_buffer(
++      wl_shm_pool_create_buffer(pool.get(), 0, size.width(), size.height(),
++                                size.width() * 4, kShmFormat));
++
++  connection_->ScheduleFlush();
++  return shm_buffer;
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/host/wayland_shm.h b/ui/ozone/platform/wayland/host/wayland_shm.h
+new file mode 100644
+index 000000000000..4f7f13ea8bf5
+--- /dev/null
++++ b/ui/ozone/platform/wayland/host/wayland_shm.h
+@@ -0,0 +1,44 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SHM_H_
++#define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SHM_H_
++
++#include <memory>
++
++#include "base/files/scoped_file.h"
++#include "base/macros.h"
++#include "ui/gfx/geometry/rect.h"
++#include "ui/ozone/platform/wayland/common/wayland_object.h"
++#include "ui/ozone/platform/wayland/common/wayland_util.h"
++
++namespace ui {
++
++class WaylandConnection;
++
++// Wrapper around |wl_shm| Wayland factory, which creates
++// |wl_buffer|s backed by a fd to a shared memory.
++class WaylandShm {
++ public:
++  WaylandShm(wl_shm* shm, WaylandConnection* connection);
++  ~WaylandShm();
++
++  // Creates a wl_buffer based on shared memory handle for the specified
++  // |widget|.
++  wl::Object<struct wl_buffer> CreateBuffer(base::ScopedFD fd,
++                                            size_t length,
++                                            const gfx::Size& size);
++
++ private:
++  wl::Object<wl_shm> const shm_;
++
++  // Non-owned pointer to the main connection.
++  WaylandConnection* const connection_;
++
++  DISALLOW_COPY_AND_ASSIGN(WaylandShm);
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SHM_H_
+diff --git a/ui/ozone/platform/wayland/host/wayland_shm_buffer.cc b/ui/ozone/platform/wayland/host/wayland_shm_buffer.cc
+index 9a17e35c37e8..298ea68b29f3 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shm_buffer.cc
++++ b/ui/ozone/platform/wayland/host/wayland_shm_buffer.cc
+@@ -8,16 +8,11 @@
+ #include "base/memory/unsafe_shared_memory_region.h"
+ #include "ui/gfx/skia_util.h"
+ #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+-
+-namespace {
+-
+-const uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
+-
+-}  // namespace
++#include "ui/ozone/platform/wayland/host/wayland_shm.h"
+ 
+ namespace ui {
+ 
+-WaylandShmBuffer::WaylandShmBuffer(wl_shm* shm, const gfx::Size& size)
++WaylandShmBuffer::WaylandShmBuffer(WaylandShm* shm, const gfx::Size& size)
+     : size_(size) {
+   Initialize(shm);
+ }
+@@ -27,7 +22,7 @@ WaylandShmBuffer::WaylandShmBuffer(WaylandShmBuffer&& buffer) = default;
+ WaylandShmBuffer& WaylandShmBuffer::operator=(WaylandShmBuffer&& buffer) =
+     default;
+ 
+-void WaylandShmBuffer::Initialize(wl_shm* shm) {
++void WaylandShmBuffer::Initialize(WaylandShm* shm) {
+   DCHECK(shm);
+ 
+   SkImageInfo info = SkImageInfo::MakeN32Premul(size_.width(), size_.height());
+@@ -48,18 +43,15 @@ void WaylandShmBuffer::Initialize(wl_shm* shm) {
+       base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+           std::move(shared_memory_region));
+ 
+-  wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
+-      shm, platform_shared_memory.GetPlatformHandle().fd, buffer_size));
+-
+-  auto* new_buffer = wl_shm_pool_create_buffer(
+-      pool.get(), 0, size_.width(), size_.height(), stride, kShmFormat);
+-  if (!new_buffer) {
++  base::subtle::ScopedFDPair fd_pair =
++      platform_shared_memory.PassPlatformHandle();
++  buffer_ = shm->CreateBuffer(std::move(fd_pair.fd), buffer_size, size_);
++  if (!buffer_) {
+     shared_memory_mapping_ = base::WritableSharedMemoryMapping();
+     return;
+   }
+ 
+   stride_ = stride;
+-  buffer_.reset(new_buffer);
+ }
+ 
+ uint8_t* WaylandShmBuffer::GetMemory() const {
+diff --git a/ui/ozone/platform/wayland/host/wayland_shm_buffer.h b/ui/ozone/platform/wayland/host/wayland_shm_buffer.h
+index 1b70920e1ef8..a33bf7d15498 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shm_buffer.h
++++ b/ui/ozone/platform/wayland/host/wayland_shm_buffer.h
+@@ -18,6 +18,8 @@
+ 
+ namespace ui {
+ 
++class WaylandShm;
++
+ // Encapsulates a Wayland SHM buffer, covering basically 2 use cases:
+ // (1) Buffers created and mmap'ed locally to draw skia bitmap(s) into; and
+ // (2) Buffers created using file descriptor (e.g: sent by gpu process/thread,
+@@ -26,7 +28,7 @@ namespace ui {
+ // wl_buffer and WritableSharedMemoryMapping (if any) instance.
+ class WaylandShmBuffer {
+  public:
+-  WaylandShmBuffer(wl_shm* shm, const gfx::Size& size);
++  WaylandShmBuffer(WaylandShm* shm, const gfx::Size& size);
+   ~WaylandShmBuffer();
+ 
+   WaylandShmBuffer(WaylandShmBuffer&& buffer);
+@@ -49,7 +51,7 @@ class WaylandShmBuffer {
+   int stride() const { return stride_; }
+ 
+  private:
+-  void Initialize(wl_shm* shm);
++  void Initialize(WaylandShm* shm);
+ 
+   gfx::Size size_;
+   int stride_;
+-- 
+2.20.1
+

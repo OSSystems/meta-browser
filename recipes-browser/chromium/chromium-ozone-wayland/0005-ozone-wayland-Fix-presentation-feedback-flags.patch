@@ -1,0 +1,45 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 2f6ba5adea52982b52ec6ade87e90640099bf469 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 7 May 2019 09:15:47 +0000
+Subject: [PATCH 05/23] [ozone/wayland] Fix presentation feedback flags.
+
+Wayland VSync is different from what Chromium expects.
+
+In Chromium, VSync means that the timestamp and the interval
+must be taken into the account to update scheduling of the next frames.
+
+Bug: 954087
+Change-Id: I7c441e3fa7d1b9c4fbc3d7835bd99302a93b3a61
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1571655
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#657176}
+---
+ ui/ozone/platform/wayland/host/wayland_buffer_manager.cc | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_buffer_manager.cc b/ui/ozone/platform/wayland/host/wayland_buffer_manager.cc
+index 56a66eb4975b..994396db16f0 100644
+--- a/ui/ozone/platform/wayland/host/wayland_buffer_manager.cc
++++ b/ui/ozone/platform/wayland/host/wayland_buffer_manager.cc
+@@ -20,9 +20,10 @@ namespace ui {
+ namespace {
+ 
+ uint32_t GetPresentationKindFlags(uint32_t flags) {
+-  uint32_t presentation_flags = 0;
+-  if (flags & WP_PRESENTATION_FEEDBACK_KIND_VSYNC)
+-    presentation_flags |= gfx::PresentationFeedback::kVSync;
++  // Wayland spec has different meaning of VSync. In Chromium, VSync means to
++  // update the begin frame vsync timing based on presentation feedback.
++  uint32_t presentation_flags = gfx::PresentationFeedback::kVSync;
++
+   if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK)
+     presentation_flags |= gfx::PresentationFeedback::kHWClock;
+   if (flags & WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION)
+-- 
+2.20.1
+

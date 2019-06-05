@@ -22,7 +22,7 @@ Issue #437
  2 files changed, 12 insertions(+)
 
 diff --git a/media/gpu/v4l2/generic_v4l2_device.cc b/media/gpu/v4l2/generic_v4l2_device.cc
-index 845a134b5b63..6337247b0a5e 100644
+index 932b785537e7..cc9e4c008862 100644
 --- a/media/gpu/v4l2/generic_v4l2_device.cc
 +++ b/media/gpu/v4l2/generic_v4l2_device.cc
 @@ -100,10 +100,20 @@ void* GenericV4L2Device::Mmap(void* addr,

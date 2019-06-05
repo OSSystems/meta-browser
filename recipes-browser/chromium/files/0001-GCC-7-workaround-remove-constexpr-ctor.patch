@@ -40,12 +40,12 @@ Change-Id: I4492501deb0675f3170b1d0569e67fb9d4c6f37f
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/content/public/browser/desktop_media_id.h b/content/public/browser/desktop_media_id.h
-index fc84715e209b..434a6e008f50 100644
+index c9791b4f436a..293a8a7083af 100644
 --- a/content/public/browser/desktop_media_id.h
 +++ b/content/public/browser/desktop_media_id.h
-@@ -37,16 +37,16 @@ struct CONTENT_EXPORT DesktopMediaID {
+@@ -38,16 +38,16 @@ struct CONTENT_EXPORT DesktopMediaID {
    static gfx::NativeWindow GetNativeWindowById(const DesktopMediaID& id);
- #endif  // USE_AURA
+ #endif  // USE_AURA || OS_MACOSX
  
 -  constexpr DesktopMediaID() = default;
 +  DesktopMediaID() = default;

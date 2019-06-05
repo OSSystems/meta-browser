@@ -1,0 +1,51 @@
+Upstream-status: Backport
+
+This commit was made to the ANGLE git repository, not Chromium's. Changes to
+unit test files have also been ommitted.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 926f1caa8b5c34a6d2e3a9fa9f10976ca6d51323 Mon Sep 17 00:00:00 2001
+From: Yi Xu <yiyix@chromium.org>
+Date: Wed, 1 May 2019 14:03:05 -0400
+Subject: [PATCH] Add support for GCC Compilers
+
+Add support for GCC Compilers, so it can be build on Ubuntu.
+
+BUG=angleproject:3392
+
+Change-Id: I2f5ac7355a40f52123bd465f86b1e966c59c943d
+Reviewed-on: https://chromium-review.googlesource.com/c/angle/angle/+/1592062
+Reviewed-by: Geoff Lang <geofflang@chromium.org>
+Commit-Queue: Yi Xu <yiyix@chromium.org>
+---
+ src/common/debug.h                            |   4 +-
+ .../GPUTestExpectationsParser_unittest.cpp    |  20 +++
+ .../vulkan_command_buffer_utils.cpp           | 116 +++++++++---------
+ 3 files changed, 80 insertions(+), 60 deletions(-)
+
+diff --git a/src/common/debug.h b/src/common/debug.h
+index 64783687b..3e687b816 100644
+--- a/third_party/angle/src/common/debug.h
++++ b/third_party/angle/src/common/debug.h
+@@ -248,7 +248,7 @@ std::ostream &FmtHex(std::ostream &os, T value)
+ #    define EVENT(message, ...) (void(0))
+ #endif
+ 
+-#if defined(COMPILER_GCC) || defined(__clang__)
++#if defined(__GNUC__)
+ #    define ANGLE_CRASH() __builtin_trap()
+ #else
+ #    define ANGLE_CRASH() ((void)(*(volatile char *)0 = 0)), __assume(0)
+@@ -336,7 +336,7 @@ std::ostream &FmtHex(std::ostream &os, T value)
+ #    define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS \
+         _Pragma("clang diagnostic push") _Pragma("clang diagnostic error \"-Wpadded\"")
+ #    define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS _Pragma("clang diagnostic pop")
+-#elif defined(COMPILER_GCC)
++#elif defined(__GNUC__)
+ #    define ANGLE_ENABLE_STRUCT_PADDING_WARNINGS \
+         _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic error \"-Wpadded\"")
+ #    define ANGLE_DISABLE_STRUCT_PADDING_WARNINGS _Pragma("GCC diagnostic pop")
+-- 
+2.20.1
+

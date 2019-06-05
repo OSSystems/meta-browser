@@ -1,0 +1,62 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 2feda28b6f032ae3e7dff379eb182a8d6310d751 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 29 May 2019 03:32:22 +0000
+Subject: [PATCH 16/23] [ozone/wayland] Improve logging when creating gbm
+ buffer.
+
+Change the log to present more meaningful information about
+what buffer format and usage were used to create a gbm buffer.
+
+Also, remove the size from the TRACE as it is not really
+needed.
+
+Bug: 939794
+Change-Id: I04fbbfa17b5eedd0fd9f5de0a9088b3e7f79fc2b
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1511461
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#664110}
+---
+ ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+index 4aa164284cd5..ff9c2998fe83 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
++++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+@@ -15,6 +15,7 @@
+ #include "base/strings/stringprintf.h"
+ #include "base/trace_event/trace_event.h"
+ #include "ui/gfx/buffer_format_util.h"
++#include "ui/gfx/buffer_usage_util.h"
+ #include "ui/gfx/geometry/size_conversions.h"
+ #include "ui/gfx/native_pixmap_handle.h"
+ #include "ui/ozone/common/linux/drm_util_linux.h"
+@@ -42,8 +43,7 @@ GbmPixmapWayland::~GbmPixmapWayland() {
+ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
+                                         gfx::BufferFormat format,
+                                         gfx::BufferUsage usage) {
+-  TRACE_EVENT1("wayland", "GbmPixmapWayland::InitializeBuffer", "size",
+-               size.ToString());
++  TRACE_EVENT0("wayland", "GbmPixmapWayland::InitializeBuffer");
+ 
+   if (!connection_->gbm_device())
+     return false;
+@@ -76,7 +76,9 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
+   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
+   gbm_bo_ = connection_->gbm_device()->CreateBuffer(fourcc_format, size, flags);
+   if (!gbm_bo_) {
+-    LOG(FATAL) << "Cannot create bo";
++    LOG(ERROR) << "Cannot create bo with format= "
++               << gfx::BufferFormatToString(format) << " and usage "
++               << gfx::BufferUsageToString(usage);
+     return false;
+   }
+ 
+-- 
+2.20.1
+

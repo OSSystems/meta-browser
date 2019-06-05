@@ -1,0 +1,491 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From fc0a7d834a2811c616c0cd78b893b64ac0fecbed Mon Sep 17 00:00:00 2001
+From: Alexander Dunaev <adunaev@igalia.com>
+Date: Mon, 29 Apr 2019 07:59:33 +0000
+Subject: [PATCH 01/23] [ozone/wayland] Factored the clipboard logic out of
+ WaylandConnection.
+
+The ui::WaylandConnection class is somewhat overloaded with various logic,
+so we move out things that are not directly connected to it.
+
+Here we move the PlatformClipboard implementation out of WaylandConnection
+into the standalone class, an instance of which will now be owned by the
+connection object.
+
+Bug: 942203
+Change-Id: I2c36894141c220569d82266a0693b0157ce2b23d
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1583700
+Commit-Queue: Alexander Dunaev <adunaev@igalia.com>
+Reviewed-by: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#654807}
+---
+ ui/ozone/platform/wayland/BUILD.gn            |  4 +-
+ .../wayland/host/wayland_clipboard.cc         | 87 +++++++++++++++++++
+ .../platform/wayland/host/wayland_clipboard.h | 68 +++++++++++++++
+ .../wayland/host/wayland_connection.cc        | 72 +--------------
+ .../wayland/host/wayland_connection.h         | 40 +--------
+ .../wayland/host/wayland_data_device.cc       |  6 +-
+ .../host/wayland_data_device_unittest.cc      |  2 +-
+ .../wayland/host/wayland_data_source.cc       |  2 +-
+ .../wayland/ozone_platform_wayland.cc         |  2 +-
+ 9 files changed, 170 insertions(+), 113 deletions(-)
+ create mode 100644 ui/ozone/platform/wayland/host/wayland_clipboard.cc
+ create mode 100644 ui/ozone/platform/wayland/host/wayland_clipboard.h
+
+diff --git a/ui/ozone/platform/wayland/BUILD.gn b/ui/ozone/platform/wayland/BUILD.gn
+index bc651e1c3bcd..1e5aa6f1dc55 100644
+--- a/ui/ozone/platform/wayland/BUILD.gn
++++ b/ui/ozone/platform/wayland/BUILD.gn
+@@ -32,6 +32,8 @@ source_set("wayland") {
+     "gpu/wayland_surface_factory.h",
+     "host/wayland_buffer_manager.cc",
+     "host/wayland_buffer_manager.h",
++    "host/wayland_clipboard.cc",
++    "host/wayland_clipboard.h",
+     "host/wayland_connection.cc",
+     "host/wayland_connection.h",
+     "host/wayland_connection_connector.cc",
+@@ -127,7 +129,7 @@ source_set("wayland") {
+   ]
+ 
+   if (is_linux && !is_chromeos) {
+-    deps += ["//ui/base/ime/linux"]
++    deps += [ "//ui/base/ime/linux" ]
+   }
+ 
+   defines = [ "OZONE_IMPLEMENTATION" ]
+diff --git a/ui/ozone/platform/wayland/host/wayland_clipboard.cc b/ui/ozone/platform/wayland/host/wayland_clipboard.cc
+new file mode 100644
+index 000000000000..ae4fb0617906
+--- /dev/null
++++ b/ui/ozone/platform/wayland/host/wayland_clipboard.cc
+@@ -0,0 +1,87 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
++#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
++#include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
++
++namespace ui {
++
++WaylandClipboard::WaylandClipboard(
++    WaylandDataDeviceManager* data_device_manager,
++    WaylandDataDevice* data_device)
++    : data_device_manager_(data_device_manager), data_device_(data_device) {
++  DCHECK(data_device_manager_);
++  DCHECK(data_device_);
++}
++
++WaylandClipboard::~WaylandClipboard() = default;
++
++void WaylandClipboard::OfferClipboardData(
++    const PlatformClipboard::DataMap& data_map,
++    PlatformClipboard::OfferDataClosure callback) {
++  if (!clipboard_data_source_) {
++    clipboard_data_source_ = data_device_manager_->CreateSource();
++    clipboard_data_source_->WriteToClipboard(data_map);
++  }
++  clipboard_data_source_->UpdateDataMap(data_map);
++  std::move(callback).Run();
++}
++
++void WaylandClipboard::RequestClipboardData(
++    const std::string& mime_type,
++    PlatformClipboard::DataMap* data_map,
++    PlatformClipboard::RequestDataClosure callback) {
++  read_clipboard_closure_ = std::move(callback);
++
++  DCHECK(data_map);
++  data_map_ = data_map;
++  if (!data_device_->RequestSelectionData(mime_type))
++    SetData({}, mime_type);
++}
++
++bool WaylandClipboard::IsSelectionOwner() {
++  return !!clipboard_data_source_;
++}
++
++void WaylandClipboard::SetSequenceNumberUpdateCb(
++    PlatformClipboard::SequenceNumberUpdateCb cb) {
++  CHECK(update_sequence_cb_.is_null())
++      << " The callback can be installed only once.";
++  update_sequence_cb_ = std::move(cb);
++}
++
++void WaylandClipboard::GetAvailableMimeTypes(
++    PlatformClipboard::GetMimeTypesClosure callback) {
++  std::move(callback).Run(data_device_->GetAvailableMimeTypes());
++}
++
++void WaylandClipboard::DataSourceCancelled() {
++  DCHECK(clipboard_data_source_);
++  SetData({}, {});
++  clipboard_data_source_.reset();
++}
++
++void WaylandClipboard::SetData(const std::string& contents,
++                               const std::string& mime_type) {
++  if (!data_map_)
++    return;
++
++  (*data_map_)[mime_type] =
++      std::vector<uint8_t>(contents.begin(), contents.end());
++
++  if (!read_clipboard_closure_.is_null()) {
++    auto it = data_map_->find(mime_type);
++    DCHECK(it != data_map_->end());
++    std::move(read_clipboard_closure_).Run(it->second);
++  }
++  data_map_ = nullptr;
++}
++
++void WaylandClipboard::UpdateSequenceNumber() {
++  if (!update_sequence_cb_.is_null())
++    update_sequence_cb_.Run();
++}
++
++}  // namespace ui
+diff --git a/ui/ozone/platform/wayland/host/wayland_clipboard.h b/ui/ozone/platform/wayland/host/wayland_clipboard.h
+new file mode 100644
+index 000000000000..61daf6a13db5
+--- /dev/null
++++ b/ui/ozone/platform/wayland/host/wayland_clipboard.h
+@@ -0,0 +1,68 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
++#define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
++
++#include "base/callback.h"
++#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
++#include "ui/ozone/public/platform_clipboard.h"
++
++namespace ui {
++
++class WaylandDataDevice;
++class WaylandDataDeviceManager;
++
++// Handles clipboard operations.
++//
++// Owned by WaylandConnection, which provides a data device and a data device
++// manager.
++class WaylandClipboard : public PlatformClipboard {
++ public:
++  WaylandClipboard(WaylandDataDeviceManager* data_device_manager,
++                   WaylandDataDevice* data_device);
++  virtual ~WaylandClipboard();
++
++  // PlatformClipboard.
++  void OfferClipboardData(
++      const PlatformClipboard::DataMap& data_map,
++      PlatformClipboard::OfferDataClosure callback) override;
++  void RequestClipboardData(
++      const std::string& mime_type,
++      PlatformClipboard::DataMap* data_map,
++      PlatformClipboard::RequestDataClosure callback) override;
++  void GetAvailableMimeTypes(
++      PlatformClipboard::GetMimeTypesClosure callback) override;
++  bool IsSelectionOwner() override;
++  void SetSequenceNumberUpdateCb(
++      PlatformClipboard::SequenceNumberUpdateCb cb) override;
++
++  void DataSourceCancelled();
++  void SetData(const std::string& contents, const std::string& mime_type);
++  void UpdateSequenceNumber();
++
++ private:
++  // Holds a temporary instance of the client's clipboard content
++  // so that we can asynchronously write to it.
++  PlatformClipboard::DataMap* data_map_ = nullptr;
++
++  // Notifies whenever clipboard sequence number is changed. Can be empty if not
++  // set.
++  PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
++
++  // Stores the callback to be invoked upon data reading from clipboard.
++  PlatformClipboard::RequestDataClosure read_clipboard_closure_;
++
++  std::unique_ptr<WaylandDataSource> clipboard_data_source_;
++
++  // These two instances are owned by the connection.
++  WaylandDataDeviceManager* const data_device_manager_ = nullptr;
++  WaylandDataDevice* const data_device_ = nullptr;
++
++  DISALLOW_COPY_AND_ASSIGN(WaylandClipboard);
++};
++
++}  // namespace ui
++
++#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index 0be2a976330c..0c72f2de6f52 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -265,44 +265,6 @@ void WaylandConnection::OnPresentation(
+   client_associated_ptr_->OnPresentation(widget, buffer_id, feedback);
+ }
+ 
+-PlatformClipboard* WaylandConnection::GetPlatformClipboard() {
+-  return this;
+-}
+-
+-void WaylandConnection::OfferClipboardData(
+-    const PlatformClipboard::DataMap& data_map,
+-    PlatformClipboard::OfferDataClosure callback) {
+-  if (!clipboard_data_source_) {
+-    clipboard_data_source_ = data_device_manager_->CreateSource();
+-    clipboard_data_source_->WriteToClipboard(data_map);
+-  }
+-  clipboard_data_source_->UpdateDataMap(data_map);
+-  std::move(callback).Run();
+-}
+-
+-void WaylandConnection::RequestClipboardData(
+-    const std::string& mime_type,
+-    PlatformClipboard::DataMap* data_map,
+-    PlatformClipboard::RequestDataClosure callback) {
+-  read_clipboard_closure_ = std::move(callback);
+-
+-  DCHECK(data_map);
+-  data_map_ = data_map;
+-  if (!data_device_->RequestSelectionData(mime_type))
+-    SetClipboardData({}, mime_type);
+-}
+-
+-bool WaylandConnection::IsSelectionOwner() {
+-  return !!clipboard_data_source_;
+-}
+-
+-void WaylandConnection::SetSequenceNumberUpdateCb(
+-    PlatformClipboard::SequenceNumberUpdateCb cb) {
+-  CHECK(update_sequence_cb_.is_null())
+-      << " The callback can be installed only once.";
+-  update_sequence_cb_ = std::move(cb);
+-}
+-
+ ozone::mojom::WaylandConnectionPtr WaylandConnection::BindInterface() {
+   DCHECK(!binding_.is_bound());
+   ozone::mojom::WaylandConnectionPtr ptr;
+@@ -365,38 +327,6 @@ void WaylandConnection::ResetPointerFlags() {
+     pointer_->ResetFlags();
+ }
+ 
+-void WaylandConnection::GetAvailableMimeTypes(
+-    PlatformClipboard::GetMimeTypesClosure callback) {
+-  std::move(callback).Run(data_device_->GetAvailableMimeTypes());
+-}
+-
+-void WaylandConnection::DataSourceCancelled() {
+-  DCHECK(clipboard_data_source_);
+-  SetClipboardData({}, {});
+-  clipboard_data_source_.reset();
+-}
+-
+-void WaylandConnection::SetClipboardData(const std::string& contents,
+-                                         const std::string& mime_type) {
+-  if (!data_map_)
+-    return;
+-
+-  (*data_map_)[mime_type] =
+-      std::vector<uint8_t>(contents.begin(), contents.end());
+-
+-  if (!read_clipboard_closure_.is_null()) {
+-    auto it = data_map_->find(mime_type);
+-    DCHECK(it != data_map_->end());
+-    std::move(read_clipboard_closure_).Run(it->second);
+-  }
+-  data_map_ = nullptr;
+-}
+-
+-void WaylandConnection::UpdateClipboardSequenceNumber() {
+-  if (!update_sequence_cb_.is_null())
+-    update_sequence_cb_.Run();
+-}
+-
+ void WaylandConnection::OnDispatcherListChanged() {
+   StartProcessingEvents();
+ }
+@@ -429,6 +359,8 @@ void WaylandConnection::EnsureDataDevice() {
+   DCHECK(!data_device_);
+   wl_data_device* data_device = data_device_manager_->GetDevice();
+   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
++  clipboard_ = std::make_unique<WaylandClipboard>(data_device_manager_.get(),
++                                                  data_device_.get());
+ }
+ 
+ // static
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 2edbdb7e403d..e38f5e1f1fc1 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -17,6 +17,7 @@
+ #include "ui/gfx/buffer_types.h"
+ #include "ui/gfx/native_widget_types.h"
+ #include "ui/ozone/platform/wayland/common/wayland_object.h"
++#include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
+ #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
+ #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
+ #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
+@@ -26,7 +27,6 @@
+ #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
+ #include "ui/ozone/platform/wayland/host/wayland_touch.h"
+ #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
+-#include "ui/ozone/public/platform_clipboard.h"
+ 
+ namespace ui {
+ 
+@@ -36,9 +36,7 @@ class WaylandOutputManager;
+ class WaylandWindow;
+ class WaylandZwpLinuxDmabuf;
+ 
+-// TODO(crbug.com/942203): factor out PlatformClipboard to a separate class.
+ class WaylandConnection : public PlatformEventSource,
+-                          public PlatformClipboard,
+                           public ozone::mojom::WaylandConnection,
+                           public base::MessagePumpLibevent::FdWatcher {
+  public:
+@@ -134,6 +132,8 @@ class WaylandConnection : public PlatformEventSource,
+   // Returns the current pointer, which may be null.
+   WaylandPointer* pointer() const { return pointer_.get(); }
+ 
++  WaylandClipboard* clipboard() const { return clipboard_.get(); }
++
+   WaylandDataSource* drag_data_source() const {
+     return dragdrop_data_source_.get();
+   }
+@@ -151,27 +151,6 @@ class WaylandConnection : public PlatformEventSource,
+ 
+   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
+ 
+-  // Clipboard implementation.
+-  PlatformClipboard* GetPlatformClipboard();
+-  void DataSourceCancelled();
+-  void SetClipboardData(const std::string& contents,
+-                        const std::string& mime_type);
+-  void UpdateClipboardSequenceNumber();
+-
+-  // PlatformClipboard.
+-  void OfferClipboardData(
+-      const PlatformClipboard::DataMap& data_map,
+-      PlatformClipboard::OfferDataClosure callback) override;
+-  void RequestClipboardData(
+-      const std::string& mime_type,
+-      PlatformClipboard::DataMap* data_map,
+-      PlatformClipboard::RequestDataClosure callback) override;
+-  void GetAvailableMimeTypes(
+-      PlatformClipboard::GetMimeTypesClosure callback) override;
+-  bool IsSelectionOwner() override;
+-  void SetSequenceNumberUpdateCb(
+-      PlatformClipboard::SequenceNumberUpdateCb cb) override;
+-
+   // Returns bound pointer to own mojo interface.
+   ozone::mojom::WaylandConnectionPtr BindInterface();
+ 
+@@ -265,7 +244,7 @@ class WaylandConnection : public PlatformEventSource,
+ 
+   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
+   std::unique_ptr<WaylandDataDevice> data_device_;
+-  std::unique_ptr<WaylandDataSource> clipboard_data_source_;
++  std::unique_ptr<WaylandClipboard> clipboard_;
+   std::unique_ptr<WaylandDataSource> dragdrop_data_source_;
+   std::unique_ptr<WaylandKeyboard> keyboard_;
+   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
+@@ -284,17 +263,6 @@ class WaylandConnection : public PlatformEventSource,
+ 
+   uint32_t serial_ = 0;
+ 
+-  // Holds a temporary instance of the client's clipboard content
+-  // so that we can asynchronously write to it.
+-  PlatformClipboard::DataMap* data_map_ = nullptr;
+-
+-  // Notifies whenever clipboard sequence number is changed. Can be empty if not
+-  // set.
+-  PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
+-
+-  // Stores the callback to be invoked upon data reading from clipboard.
+-  RequestDataClosure read_clipboard_closure_;
+-
+   ozone::mojom::WaylandConnectionClientAssociatedPtr client_associated_ptr_;
+   mojo::Binding<ozone::mojom::WaylandConnection> binding_;
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_device.cc b/ui/ozone/platform/wayland/host/wayland_data_device.cc
+index a8e16cdea095..f258e8ddba2d 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_device.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_device.cc
+@@ -175,7 +175,7 @@ void WaylandDataDevice::ReadClipboardDataFromFD(base::ScopedFD fd,
+                                                 const std::string& mime_type) {
+   std::string contents;
+   ReadDataFromFD(std::move(fd), &contents);
+-  connection_->SetClipboardData(contents, mime_type);
++  connection_->clipboard()->SetData(contents, mime_type);
+ }
+ 
+ void WaylandDataDevice::ReadDragDataFromFD(
+@@ -208,7 +208,7 @@ void WaylandDataDevice::OnDataOffer(void* data,
+                                     wl_data_offer* offer) {
+   auto* self = static_cast<WaylandDataDevice*>(data);
+ 
+-  self->connection_->UpdateClipboardSequenceNumber();
++  self->connection_->clipboard()->UpdateSequenceNumber();
+ 
+   DCHECK(!self->new_offer_);
+   self->new_offer_.reset(new WaylandDataOffer(offer));
+@@ -335,7 +335,7 @@ void WaylandDataDevice::OnSelection(void* data,
+     self->selection_offer_.reset();
+ 
+     // Clear Clipboard cache.
+-    self->connection_->SetClipboardData(std::string(), std::string());
++    self->connection_->clipboard()->SetData(std::string(), std::string());
+     return;
+   }
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_device_unittest.cc b/ui/ozone/platform/wayland/host/wayland_data_device_unittest.cc
+index 406ca31b12e3..d5b25bbad783 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_device_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_device_unittest.cc
+@@ -35,7 +35,7 @@ class MockClipboardClient {
+     DCHECK(connection);
+     // See comment above for reasoning to access the WaylandConnection
+     // directly from here.
+-    delegate_ = connection->GetPlatformClipboard();
++    delegate_ = connection->clipboard();
+ 
+     DCHECK(delegate_);
+   }
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_source.cc b/ui/ozone/platform/wayland/host/wayland_data_source.cc
+index 592b51fdcf02..f8ba38a0fa51 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_source.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_source.cc
+@@ -112,7 +112,7 @@ void WaylandDataSource::OnCancel(void* data, wl_data_source* source) {
+     self->connection_->FinishDragSession(self->dnd_action_,
+                                          self->source_window_);
+   } else {
+-    self->connection_->DataSourceCancelled();
++    self->connection_->clipboard()->DataSourceCancelled();
+   }
+ }
+ 
+diff --git a/ui/ozone/platform/wayland/ozone_platform_wayland.cc b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+index 55a51f93e945..d4f26d8bac4c 100644
+--- a/ui/ozone/platform/wayland/ozone_platform_wayland.cc
++++ b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+@@ -126,7 +126,7 @@ class OzonePlatformWayland : public OzonePlatform {
+ 
+   PlatformClipboard* GetPlatformClipboard() override {
+     DCHECK(connection_);
+-    return connection_->GetPlatformClipboard();
++    return connection_->clipboard();
+   }
+ 
+   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
+-- 
+2.20.1
+

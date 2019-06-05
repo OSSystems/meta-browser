@@ -1,0 +1,460 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 311b1289147267b5ca3389aac73340e660f768ad Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 23 May 2019 08:40:54 +0000
+Subject: [PATCH 13/23] [ozone/wayland] Shm: add buffer_id.
+
+This is a prerequisite to unite WaylandShmBufferManager
+and the WaylandBufferManager.
+
+The last requires buffer_id to be passed when managing buffers.
+Thus, make canvas assign new ids when creating new SkSurfaces and
+buffers for them.
+
+Bug: 963853
+Change-Id: I0d980d468a2cc000fd23f0c4abffab2322dcacd3
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1617503
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Tom Sepez <tsepez@chromium.org>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#662528}
+---
+ .../wayland/gpu/wayland_canvas_surface.cc     | 10 ++---
+ .../wayland/gpu/wayland_canvas_surface.h      |  5 +++
+ .../wayland/gpu/wayland_connection_proxy.cc   | 31 +++++++++------
+ .../wayland/gpu/wayland_connection_proxy.h    | 17 ++++++---
+ .../wayland/host/wayland_connection.cc        | 15 +++++---
+ .../wayland/host/wayland_connection.h         |  9 +++--
+ .../wayland_shared_memory_buffer_manager.cc   | 38 ++++++++++++++-----
+ .../wayland_shared_memory_buffer_manager.h    | 30 +++++++++++----
+ .../wayland/wayland_connection.mojom          | 21 ++++++----
+ 9 files changed, 118 insertions(+), 58 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.cc b/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.cc
+index e21bff0bfbfa..420c04764b60 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.cc
++++ b/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.cc
+@@ -31,7 +31,7 @@ WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnectionProxy* connection,
+ 
+ WaylandCanvasSurface::~WaylandCanvasSurface() {
+   if (sk_surface_)
+-    connection_->DestroyShmBuffer(widget_);
++    connection_->DestroyShmBuffer(widget_, buffer_id_);
+ }
+ 
+ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
+@@ -54,8 +54,8 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
+           std::move(shm_region));
+   base::subtle::ScopedFDPair fd_pair = platform_shm.PassPlatformHandle();
+   base::File file(fd_pair.fd.release());
+-  connection_->CreateShmBufferForWidget(widget_, std::move(file), length,
+-                                        size_);
++  connection_->CreateShmBufferForWidget(widget_, std::move(file), length, size_,
++                                        ++buffer_id_);
+ 
+   auto shm_mapping_on_heap =
+       std::make_unique<base::WritableSharedMemoryMapping>(
+@@ -80,13 +80,13 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {
+   // smaller than the old size).
+   if (sk_surface_) {
+     sk_surface_.reset();
+-    connection_->DestroyShmBuffer(widget_);
++    connection_->DestroyShmBuffer(widget_, buffer_id_);
+   }
+   size_ = viewport_size;
+ }
+ 
+ void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
+-  connection_->PresentShmBufferForWidget(widget_, damage);
++  connection_->PresentShmBufferForWidget(widget_, damage, buffer_id_);
+ }
+ 
+ std::unique_ptr<gfx::VSyncProvider>
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h b/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h
+index 0511bb3b4b53..6972fe5f70e5 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h
++++ b/ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h
+@@ -39,6 +39,11 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
+   gfx::Size size_;
+   sk_sp<SkSurface> sk_surface_;
+ 
++  // The id of the current existing buffer. Even though, there can only be one
++  // buffer (SkSurface) at a time, the buffer manager on the browser process
++  // side requires buffer id to be passed.
++  uint32_t buffer_id_ = 0;
++
+   DISALLOW_COPY_AND_ASSIGN(WaylandCanvasSurface);
+ };
+ 
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.cc b/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.cc
+index 479bc11be1e4..6ca46a9e8452 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.cc
++++ b/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.cc
+@@ -149,7 +149,8 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
+     gfx::AcceleratedWidget widget,
+     base::File file,
+     size_t length,
+-    const gfx::Size size) {
++    const gfx::Size size,
++    uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_);
+   // Do a mojo call on the GpuMainThread instead of the io child thread to
+   // ensure proper functionality.
+@@ -157,57 +158,63 @@ void WaylandConnectionProxy::CreateShmBufferForWidget(
+       FROM_HERE,
+       base::BindOnce(&WaylandConnectionProxy::CreateShmBufferInternal,
+                      base::Unretained(this), widget, std::move(file), length,
+-                     std::move(size)));
++                     std::move(size), buffer_id));
+ }
+ 
+ void WaylandConnectionProxy::CreateShmBufferInternal(
+     gfx::AcceleratedWidget widget,
+     base::File file,
+     size_t length,
+-    const gfx::Size size) {
++    const gfx::Size size,
++    uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
+   if (!wc_ptr_.is_bound())
+     BindHostInterface();
+ 
+   DCHECK(wc_ptr_);
+-  wc_ptr_->CreateShmBufferForWidget(widget, std::move(file), length, size);
++  wc_ptr_->CreateShmBufferForWidget(widget, std::move(file), length, size,
++                                    buffer_id);
+ }
+ 
+ void WaylandConnectionProxy::PresentShmBufferForWidget(
+     gfx::AcceleratedWidget widget,
+-    const gfx::Rect& damage) {
++    const gfx::Rect& damage,
++    uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_);
+   // Do a mojo call on the GpuMainThread instead of the io child thread to
+   // ensure proper functionality.
+   gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(&WaylandConnectionProxy::PresentShmBufferForWidgetInternal,
+-                     base::Unretained(this), widget, damage));
++                     base::Unretained(this), widget, damage, buffer_id));
+ }
+ 
+ void WaylandConnectionProxy::PresentShmBufferForWidgetInternal(
+     gfx::AcceleratedWidget widget,
+-    const gfx::Rect& damage) {
++    const gfx::Rect& damage,
++    uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
+   DCHECK(wc_ptr_);
+-  wc_ptr_->PresentShmBufferForWidget(widget, damage);
++  wc_ptr_->PresentShmBufferForWidget(widget, damage, buffer_id);
+ }
+ 
+-void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
++void WaylandConnectionProxy::DestroyShmBuffer(gfx::AcceleratedWidget widget,
++                                              uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_);
+   // Do a mojo call on the GpuMainThread instead of the io child thread to
+   // ensure proper functionality.
+   gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(&WaylandConnectionProxy::DestroyShmBufferInternal,
+-                     base::Unretained(this), widget));
++                     base::Unretained(this), widget, buffer_id));
+ }
+ 
+ void WaylandConnectionProxy::DestroyShmBufferInternal(
+-    gfx::AcceleratedWidget widget) {
++    gfx::AcceleratedWidget widget,
++    uint32_t buffer_id) {
+   DCHECK(gpu_thread_runner_->BelongsToCurrentThread());
+   DCHECK(wc_ptr_);
+-  wc_ptr_->DestroyShmBuffer(widget);
++  wc_ptr_->DestroyShmBuffer(widget, buffer_id);
+ }
+ 
+ WaylandWindow* WaylandConnectionProxy::GetWindow(
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h b/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h
+index f367ca93aa77..6d81169ce677 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h
++++ b/ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h
+@@ -107,14 +107,16 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
+   void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                 base::File file,
+                                 size_t length,
+-                                const gfx::Size size);
++                                const gfx::Size size,
++                                uint32_t buffer_id);
+ 
+   // Asks to damage and commit previously created buffer for the |widget|.
+   void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
+-                                 const gfx::Rect& damage);
++                                 const gfx::Rect& damage,
++                                 uint32_t buffer_id);
+ 
+   // Asks to destroy shared memory based buffer for the |widget|.
+-  void DestroyShmBuffer(gfx::AcceleratedWidget widget);
++  void DestroyShmBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+ 
+   // Methods, which must be used when a single process mode is used (GPU is
+   // hosted in the browser process).
+@@ -153,10 +155,13 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
+   void CreateShmBufferInternal(gfx::AcceleratedWidget widget,
+                                base::File file,
+                                size_t length,
+-                               const gfx::Size size);
++                               const gfx::Size size,
++                               uint32_t buffer_id);
+   void PresentShmBufferForWidgetInternal(gfx::AcceleratedWidget widget,
+-                                         const gfx::Rect& damage);
+-  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget);
++                                         const gfx::Rect& damage,
++                                         uint32_t buffer_id);
++  void DestroyShmBufferInternal(gfx::AcceleratedWidget widget,
++                                uint32_t buffer_id);
+ 
+   void BindHostInterface();
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index d2417802b966..e0bbcee12f6b 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -241,23 +241,26 @@ void WaylandConnection::CommitBuffer(gfx::AcceleratedWidget widget,
+ void WaylandConnection::CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                                  base::File file,
+                                                  uint64_t length,
+-                                                 const gfx::Size& size) {
++                                                 const gfx::Size& size,
++                                                 uint32_t buffer_id) {
+   DCHECK(shm_buffer_manager_);
+   if (!shm_buffer_manager_->CreateBufferForWidget(widget, std::move(file),
+-                                                  length, size))
++                                                  length, size, buffer_id))
+     TerminateGpuProcess("Failed to create SHM buffer.");
+ }
+ 
+ void WaylandConnection::PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
+-                                                  const gfx::Rect& damage) {
++                                                  const gfx::Rect& damage,
++                                                  uint32_t buffer_id) {
+   DCHECK(shm_buffer_manager_);
+-  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage))
++  if (!shm_buffer_manager_->PresentBufferForWidget(widget, damage, buffer_id))
+     TerminateGpuProcess("Failed to present SHM buffer.");
+ }
+ 
+-void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget) {
++void WaylandConnection::DestroyShmBuffer(gfx::AcceleratedWidget widget,
++                                         uint32_t buffer_id) {
+   DCHECK(shm_buffer_manager_);
+-  if (!shm_buffer_manager_->DestroyBuffer(widget))
++  if (!shm_buffer_manager_->DestroyBuffer(widget, buffer_id))
+     TerminateGpuProcess("Failed to destroy SHM buffer.");
+ }
+ 
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 2b06d427338e..e55c817e57c7 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -81,10 +81,13 @@ class WaylandConnection : public PlatformEventSource,
+   void CreateShmBufferForWidget(gfx::AcceleratedWidget widget,
+                                 base::File file,
+                                 uint64_t length,
+-                                const gfx::Size& size) override;
++                                const gfx::Size& size,
++                                uint32_t buffer_id) override;
+   void PresentShmBufferForWidget(gfx::AcceleratedWidget widget,
+-                                 const gfx::Rect& damage) override;
+-  void DestroyShmBuffer(gfx::AcceleratedWidget widget) override;
++                                 const gfx::Rect& damage,
++                                 uint32_t buffer_id) override;
++  void DestroyShmBuffer(gfx::AcceleratedWidget widget,
++                        uint32_t buffer_id) override;
+ 
+   // These methods are exclusively used by the WaylandBufferManager to notify
+   // the |client_associated_ptr_| about buffer swaps' results.
+diff --git a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
+index 283f92a5d76a..a198a024d8e0 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
++++ b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.cc
+@@ -13,6 +13,12 @@
+ 
+ namespace ui {
+ 
++WaylandShmBufferManager::Buffer::Buffer(gfx::AcceleratedWidget widget,
++                                        wl::Object<wl_buffer> buffer)
++    : widget(widget), buffer(std::move(buffer)) {}
++
++WaylandShmBufferManager::Buffer::~Buffer() = default;
++
+ WaylandShmBufferManager::WaylandShmBufferManager(WaylandConnection* connection)
+     : connection_(connection) {}
+ 
+@@ -24,22 +30,27 @@ bool WaylandShmBufferManager::CreateBufferForWidget(
+     gfx::AcceleratedWidget widget,
+     base::File file,
+     size_t length,
+-    const gfx::Size& size) {
++    const gfx::Size& size,
++    uint32_t buffer_id) {
+   base::ScopedFD fd(file.TakePlatformFile());
+   if (!fd.is_valid() || length == 0 || size.IsEmpty() ||
+       widget == gfx::kNullAcceleratedWidget) {
+     return false;
+   }
+ 
+-  auto it = shm_buffers_.find(widget);
++  auto it = shm_buffers_.find(buffer_id);
+   if (it != shm_buffers_.end())
+     return false;
+ 
+-  auto buffer = connection_->shm()->CreateBuffer(std::move(fd), length, size);
+-  if (!buffer)
++  auto wl_buffer =
++      connection_->shm()->CreateBuffer(std::move(fd), length, size);
++
++  if (!wl_buffer)
+     return false;
+ 
+-  shm_buffers_.insert(std::make_pair(widget, std::move(buffer)));
++  std::unique_ptr<Buffer> buffer =
++      std::make_unique<Buffer>(widget, std::move(wl_buffer));
++  shm_buffers_.insert(std::make_pair(buffer_id, std::move(buffer)));
+ 
+   connection_->ScheduleFlush();
+   return true;
+@@ -47,30 +58,37 @@ bool WaylandShmBufferManager::CreateBufferForWidget(
+ 
+ bool WaylandShmBufferManager::PresentBufferForWidget(
+     gfx::AcceleratedWidget widget,
+-    const gfx::Rect& damage) {
+-  auto it = shm_buffers_.find(widget);
++    const gfx::Rect& damage,
++    uint32_t buffer_id) {
++  auto it = shm_buffers_.find(buffer_id);
+   if (it == shm_buffers_.end())
+     return false;
+ 
++  DCHECK_EQ(it->second->widget, widget);
++
+   // TODO(https://crbug.com/930662): This is just a naive implementation that
+   // allows chromium to draw to the buffer at any time, even if it is being used
+   // by the Wayland compositor. Instead, we should track buffer releases and
+   // frame callbacks from Wayland to ensure perfect frames (while minimizing
+   // copies).
+   wl_surface* surface = connection_->GetWindow(widget)->surface();
++  DCHECK(surface);
+   wl_surface_damage(surface, damage.x(), damage.y(), damage.width(),
+                     damage.height());
+-  wl_surface_attach(surface, it->second.get(), 0, 0);
++  wl_surface_attach(surface, it->second->buffer.get(), 0, 0);
+   wl_surface_commit(surface);
+   connection_->ScheduleFlush();
+   return true;
+ }
+ 
+-bool WaylandShmBufferManager::DestroyBuffer(gfx::AcceleratedWidget widget) {
+-  auto it = shm_buffers_.find(widget);
++bool WaylandShmBufferManager::DestroyBuffer(gfx::AcceleratedWidget widget,
++                                            uint32_t buffer_id) {
++  auto it = shm_buffers_.find(buffer_id);
+   if (it == shm_buffers_.end())
+     return false;
+ 
++  DCHECK_EQ(it->second->widget, widget);
++
+   shm_buffers_.erase(it);
+   connection_->ScheduleFlush();
+   return true;
+diff --git a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
+index 5d4a4838a74e..98f0f7e5cf06 100644
+--- a/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
++++ b/ui/ozone/platform/wayland/host/wayland_shared_memory_buffer_manager.h
+@@ -33,20 +33,34 @@ class WaylandShmBufferManager {
+   bool CreateBufferForWidget(gfx::AcceleratedWidget widget,
+                              base::File file,
+                              size_t length,
+-                             const gfx::Size& size);
++                             const gfx::Size& size,
++                             uint32_t buffer_id);
+ 
+-  // Attaches and commits a |wl_buffer| created for the |widget| in the Create
+-  // method.
++  // Attaches and commits a |wl_buffer| with |buffer_id| to a surface with the
++  // |widget|.
+   bool PresentBufferForWidget(gfx::AcceleratedWidget widget,
+-                              const gfx::Rect& damage);
++                              const gfx::Rect& damage,
++                              uint32_t buffer_id);
+ 
+-  // Destroyes a |wl_buffer|, which was created for the |widget| in the Create
+-  // method.
+-  bool DestroyBuffer(gfx::AcceleratedWidget widget);
++  // Destroyes a |wl_buffer| with the |buffer_id| for a surface with the
++  // |widget|.
++  bool DestroyBuffer(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+ 
+  private:
++  struct Buffer {
++    Buffer() = delete;
++    Buffer(gfx::AcceleratedWidget widget, wl::Object<wl_buffer> buffer);
++    ~Buffer();
++
++    // Widget this buffer is created for.
++    gfx::AcceleratedWidget widget;
++
++    // Actual wayland buffer object.
++    wl::Object<wl_buffer> buffer;
++  };
++
+   // A container of created buffers.
+-  base::flat_map<gfx::AcceleratedWidget, wl::Object<wl_buffer>> shm_buffers_;
++  base::flat_map<uint32_t, std::unique_ptr<Buffer>> shm_buffers_;
+ 
+   // Non-owned pointer to the main connection.
+   WaylandConnection* connection_ = nullptr;
+diff --git a/ui/ozone/public/interfaces/wayland/wayland_connection.mojom b/ui/ozone/public/interfaces/wayland/wayland_connection.mojom
+index 8f812aaa9fe8..dd343f76c93a 100644
+--- a/ui/ozone/public/interfaces/wayland/wayland_connection.mojom
++++ b/ui/ozone/public/interfaces/wayland/wayland_connection.mojom
+@@ -55,20 +55,25 @@ interface WaylandConnection {
+   // Methods used for software rendering:
+   //
+   // Asks Wayland to create a wl_buffer based on the shared memory |file|
+-  // descriptor. There can be only one buffer per |widget|.
++  // descriptor. The |length| is the length of the shared memory, |size|
++  // is the size of buffer in bytes and |buffer_id| is the id of the buffer.
+   CreateShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
+                            mojo_base.mojom.File file,
+                            uint64 length,
+-                           gfx.mojom.Size size);
++                           gfx.mojom.Size size,
++                           uint32 buffer_id);
+ 
+-  // Asks Wayland to damage and commit previously created buffer for the
+-  // |widget|.
++  // Attaches a wl_buffer to a WaylandWindow's surface with the following
++  // |widget|. The |damage| describes changed the region of the buffer.
++  // The |buffer_id| is a unique id for the buffer, which is used to
++  // identify imported wl_buffers on the browser process side mapped with
++  // the ones on the gpu process.
+   PresentShmBufferForWidget(gfx.mojom.AcceleratedWidget widget,
+-                            gfx.mojom.Rect damage);
++                            gfx.mojom.Rect damage,
++                            uint32 buffer_id);
+ 
+-  // Destroys the previously created shared memory based buffer for the
+-  // |widget|.
+-  DestroyShmBuffer(gfx.mojom.AcceleratedWidget widget);
++  // Destroys the buffer with |buffer_id| for the |widget|.
++  DestroyShmBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
+ };
+ 
+ 
+-- 
+2.20.1
+

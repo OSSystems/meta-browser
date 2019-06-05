@@ -1,0 +1,40 @@
+Upstream-status: Inappropriate
+
+This is a GCC fix for
+
+    ./../../components/omnibox/browser/autocomplete_match.cc:157:1: error: function 'AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&&)' defaulted on its redeclaration with an exception-specification that differs from the implicit exception-specification 'noexcept (false)'
+     AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept =
+
+which does not happen with clang. Fixing this upstream is more trouble than it
+is worth given our desire to require clang in the future.
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From c748727e54fc88fc73c5764ed21fd9637829fc5d Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 5 Jun 2019 15:16:51 +0200
+Subject: [PATCH] Revert "Use noexcept consistently on the move ctor of
+ AutocompleteMatch"
+
+This reverts commit daff6b66faae53a0cefb88987c9ff4843629b728.
+---
+ components/omnibox/browser/autocomplete_match.cc | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/components/omnibox/browser/autocomplete_match.cc b/components/omnibox/browser/autocomplete_match.cc
+index ffd4fbd649f3..07a3a7b52704 100644
+--- a/components/omnibox/browser/autocomplete_match.cc
++++ b/components/omnibox/browser/autocomplete_match.cc
+@@ -156,8 +156,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
+       additional_info(match.additional_info),
+       duplicate_matches(match.duplicate_matches) {}
+ 
+-AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept =
+-    default;
++AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) = default;
+ 
+ AutocompleteMatch::~AutocompleteMatch() {
+ }
+-- 
+2.20.1
+
