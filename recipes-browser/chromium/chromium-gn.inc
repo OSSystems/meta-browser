@@ -41,6 +41,7 @@ SRC_URI_append_libc-musl = "\
         file://musl/musl_lss-match_syscalls.patch \
         file://musl/musl_crashpad.patch \
         file://musl/musl_replace_libc_fpstate.patch \
+        file://musl/musl_fix_stack_trace.patch \
 "
 # This patch could be enabled for clang builds, one just needs to make it work.
 # On sumo and MACHINE="raspberrypi3", the build fails with errors such as
