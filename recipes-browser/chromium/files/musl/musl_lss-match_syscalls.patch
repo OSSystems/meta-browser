@@ -4,17 +4,25 @@ Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/third_party/lss/linux_syscall_support.h
 +++ b/third_party/lss/linux_syscall_support.h
-@@ -816,6 +816,9 @@ struct kernel_statfs {
+@@ -816,6 +816,17 @@ struct kernel_statfs {
  #define FUTEX_TRYLOCK_PI_PRIVATE  (FUTEX_TRYLOCK_PI | FUTEX_PRIVATE_FLAG)
  #endif
  
++#ifndef __NR_stat
++#define __NR_stat __NR_stat64
++#endif
++
++#ifndef __NR_fstat
++#define __NR_fstat __NR_fstat64
++#endif
++
 +#ifndef __NR_fstatat
 +#define __NR_fstatat __NR_fstatat64
 +#endif
  
  #if defined(__x86_64__)
  #ifndef ARCH_SET_GS
-@@ -1239,6 +1242,12 @@ struct kernel_statfs {
+@@ -1239,6 +1250,12 @@ struct kernel_statfs {
  #ifndef __NR_fallocate
  #define __NR_fallocate          285
  #endif
