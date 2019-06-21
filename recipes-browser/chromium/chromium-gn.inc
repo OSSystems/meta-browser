@@ -24,6 +24,7 @@ SRC_URI += " \
         file://0006-GCC-add-std-move-to-return-to-base-Optional.patch \
         file://0001-GCC-fix-another-GCC-bug-by-implementing-copy-assign-.patch \
         file://add_internal_define_armv7ve.patch \
+        file://0001-Avoid-pure-virtual-crash-destroying-RenderProcessUse.patch \
 "
 
 SRC_URI_append_libc-musl = "\
