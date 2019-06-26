@@ -23,13 +23,18 @@ revision: HEAD
 Contributing
 ------------
 
-To contribute to this layer you should the patches for review to the
-OpenEmbedded dev mailing list openembedded-devel@lists.openembedded.org
-and please cc the maintainers.
+The preferred way to contribute to this layer is to send GitHub pull requests or
+report problems in GitHub's issue tracker.
 
-Maintainers: Eric Bénard <eric@eukrea.com>
-             Denis Carikli <denis@eukrea.com>
+Alternatively there is the classic way of review on the OpenEmbedded dev mailing
+list openembedded-devel@lists.openembedded.org (you have to be subscribed to
+post to the list). Please cc the maintainers if you send your patches.
+
+Maintainers: Fabio Berton <fabio.berton@ossystems.com.br>
+             Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+             Khem Raj <raj.khem@gmail.com>
              Otavio Salvador <otavio@ossystems.com.br>
+             Maksim Sisov <msisov@igalia.com>
 
 When sending single patches, please use something like :
 git send-email -1 -s --to openembedded-devel@lists.openembedded.org --subject-prefix='meta-browser][PATCH'
