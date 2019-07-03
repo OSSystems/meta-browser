@@ -2,7 +2,7 @@
 # Released under the MIT license (see packages/COPYING)
 
 DESCRIPTION ?= "Browser made by mozilla"
-DEPENDS += "curl startup-notification libevent cairo libnotify \
+DEPENDS += "curl startup-notification libevent cairo libnotify dbus-glib \
             virtual/libgl pulseaudio yasm-native icu unzip-native \
             virtual/${TARGET_PREFIX}rust cargo-native ${RUSTLIB_DEP} \
            "
