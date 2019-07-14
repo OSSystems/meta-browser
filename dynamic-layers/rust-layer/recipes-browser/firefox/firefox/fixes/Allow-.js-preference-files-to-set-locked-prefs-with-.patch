@@ -7,7 +7,7 @@ Subject: Allow .js preference files to set locked prefs with lockPref()
  1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/parser/src/lib.rs b/modules/libpref/parser/src/lib.rs
-index 8d8b9a6125e4..797c330f9f0a 100644
+index ca253e2b0190..35bdaed67491 100644
 --- a/modules/libpref/parser/src/lib.rs
 +++ b/modules/libpref/parser/src/lib.rs
 @@ -10,7 +10,7 @@
@@ -19,7 +19,7 @@ index 8d8b9a6125e4..797c330f9f0a 100644
  //! <pref-name>   = <string-literal>
  //! <pref-value>  = <string-literal> | "true" | "false" | <int-value>
  //! <int-value>   = <sign>? <int-literal>
-@@ -159,6 +159,7 @@ enum Token {
+@@ -153,6 +153,7 @@ enum Token {
      // Keywords
      Pref,       // pref
      StickyPref, // sticky_pref
@@ -27,7 +27,7 @@ index 8d8b9a6125e4..797c330f9f0a 100644
      UserPref,   // user_pref
      True,       // true
      False,      // false
-@@ -279,7 +280,7 @@ struct KeywordInfo {
+@@ -273,7 +274,7 @@ struct KeywordInfo {
    token: Token,
  }
  
@@ -36,7 +36,7 @@ index 8d8b9a6125e4..797c330f9f0a 100644
    // These are ordered by frequency.
    KeywordInfo { string: b"pref",        token: Token::Pref },
    KeywordInfo { string: b"true",        token: Token::True },
-@@ -288,6 +289,7 @@ const KEYWORD_INFOS: [KeywordInfo; 7] = [
+@@ -282,6 +283,7 @@ const KEYWORD_INFOS: [KeywordInfo; 7] = [
    KeywordInfo { string: b"sticky",      token: Token::Sticky },
    KeywordInfo { string: b"locked",      token: Token::Locked },
    KeywordInfo { string: b"sticky_pref", token: Token::StickyPref },
@@ -44,7 +44,7 @@ index 8d8b9a6125e4..797c330f9f0a 100644
  ];
  
  struct Parser<'t> {
-@@ -335,10 +337,11 @@ impl<'t> Parser<'t> {
+@@ -329,10 +331,11 @@ impl<'t> Parser<'t> {
          // this will be either the first token of a new pref, or EOF.
          loop {
              // <pref-spec>
@@ -60,7 +60,7 @@ index 8d8b9a6125e4..797c330f9f0a 100644
                  Token::SingleChar(EOF) => return !self.has_errors,
                  _ => {
                      token = self.error_and_recover(
-@@ -437,7 +440,6 @@ impl<'t> Parser<'t> {
+@@ -431,7 +434,6 @@ impl<'t> Parser<'t> {
              };
  
              // ("," <pref-attr>)*   // default pref files only

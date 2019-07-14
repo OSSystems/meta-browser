@@ -1,0 +1,87 @@
+# HG changeset patch
+# User Takuro Ashie <ashie@clear-code.com>
+# Date 1555596916 -32400
+#      Thu Apr 18 23:15:16 2019 +0900
+# Node ID 47e4ea055911f33c24260f871a0c8397a3366516
+# Parent  02b89c29412b6c1444fe32a4847e5261e2bb3d00
+Bug 1545437 - Add options to specify Rust target name r?glandium
+
+Certain build systems such as Yocto know more suitable Rust target name, so it
+would be better that there is a way to pass it to Mozilla's build system.
+
+Differential Revision: https://phabricator.services.mozilla.com/D28069
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -188,37 +188,66 @@ def rust_supported_targets(rustc):
+             if raw_os == 'androideabi':
+                 raw_os = 'linux-androideabi'
+             per_raw_os[(t.cpu, endianness, raw_os)] = t
+         else:
+             per_os[key] = t
+     return namespace(per_os=per_os, per_raw_os=per_raw_os)
+ 
+ 
++option(env='RUST_HOST',
++       nargs=1,
++       help='Define the system type for Rust performing the build')
++
++@depends('RUST_HOST')
++@checking('rust host', lambda host: host)
++def rust_host_env(value):
++    if value:
++        return value[0]
++
++
++option(env='RUST_TARGET',
++       nargs=1,
++       help='Define the system type for Rust where the resulting executables will be used')
++
++@depends('RUST_TARGET')
++@checking('rust target', lambda target: target)
++def rust_target_env(value):
++    if value:
++        return value[0]
++
++
+ @template
+ def rust_triple_alias(host_or_target):
+     """Template defining the alias used for rustc's --target flag.
+     `host_or_target` is either `host` or `target` (the @depends functions
+     from init.configure).
+     """
+     assert host_or_target in {host, target}
+ 
+     host_or_target_str = {host: 'host', target: 'target'}[host_or_target]
+ 
+-    @depends(rustc, host_or_target, c_compiler, rust_supported_targets,
+-             arm_target, when=rust_compiler)
++    @depends(rustc, host_or_target, rust_host_env, rust_target_env,
++             c_compiler, rust_supported_targets, arm_target,
++             when=rust_compiler)
+     @checking('for rust %s triplet' % host_or_target_str)
+     @imports('os')
+     @imports('subprocess')
+     @imports(_from='mozbuild.configure.util', _import='LineIO')
+     @imports(_from='mozbuild.shellutil', _import='quote')
+     @imports(_from='tempfile', _import='mkstemp')
+     @imports(_from='textwrap', _import='dedent')
+-    def rust_target(rustc, host_or_target, compiler_info,
+-                    rust_supported_targets, arm_target):
++    def rust_target(rustc, host_or_target, rust_host_env, rust_target_env,
++                    compiler_info, rust_supported_targets, arm_target):
++
++        specified_targets = {"host": rust_host_env, "target": rust_target_env}
++        specified_target = specified_targets[host_or_target_str]
++        if (specified_target):
++            return specified_target
++
+         # Rust's --target options are similar to, but not exactly the same
+         # as, the autoconf-derived targets we use.  An example would be that
+         # Rust uses distinct target triples for targetting the GNU C++ ABI
+         # and the MSVC C++ ABI on Win32, whereas autoconf has a single
+         # triple and relies on the user to ensure that everything is
+         # compiled for the appropriate ABI.  We need to perform appropriate
+         # munging to get the correct option to rustc.
+         # We correlate the autoconf-derived targets with the list of targets

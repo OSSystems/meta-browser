@@ -8,14 +8,14 @@ and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
 ---
- browser/components/sessionstore/SessionStore.jsm | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ browser/components/sessionstore/SessionStore.jsm | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/browser/components/sessionstore/SessionStore.jsm b/browser/components/sessionstore/SessionStore.jsm
-index 88de8a64f0fc..6543f3c70799 100644
+index b9c57df12a30..5918b2bdfc11 100644
 --- a/browser/components/sessionstore/SessionStore.jsm
 +++ b/browser/components/sessionstore/SessionStore.jsm
-@@ -4106,7 +4106,7 @@ var SessionStoreInternal = {
+@@ -4486,7 +4486,7 @@ var SessionStoreInternal = {
      try {
        // only modify those aspects which aren't correct yet
        if (!isNaN(aLeft) && !isNaN(aTop) && (aLeft != win_("screenX") || aTop != win_("screenY"))) {
@@ -24,12 +24,17 @@ index 88de8a64f0fc..6543f3c70799 100644
        }
        if (aWidth && aHeight && (aWidth != win_("width") || aHeight != win_("height")) && !gResistFingerprintingEnabled) {
          // Don't resize the window if it's currently maximized and we would
-@@ -4121,8 +4121,6 @@ var SessionStoreInternal = {
+@@ -4502,10 +4502,10 @@ var SessionStoreInternal = {
            aWindow.maximize();
            break;
          case "minimized":
+-          if (aSizeModeBeforeMinimized == "maximized")
++          if (aSizeModeBeforeMinimized == "maximized") {
+             aWindow.maximize();
 -          aWindow.minimize();
 -          break;
++            break;
++          }
          case "normal":
            aWindow.restore();
            break;

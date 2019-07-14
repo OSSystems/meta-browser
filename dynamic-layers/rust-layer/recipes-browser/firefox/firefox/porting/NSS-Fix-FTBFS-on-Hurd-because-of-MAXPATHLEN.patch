@@ -8,7 +8,7 @@ Subject: [NSS] Fix FTBFS on Hurd because of MAXPATHLEN
  2 files changed, 20 insertions(+), 5 deletions(-)
 
 diff --git a/security/nss/cmd/shlibsign/shlibsign.c b/security/nss/cmd/shlibsign/shlibsign.c
-index d93fc422d54f..2ec752bd3176 100644
+index 221d1e67edbc..dbe63236a596 100644
 --- a/security/nss/cmd/shlibsign/shlibsign.c
 +++ b/security/nss/cmd/shlibsign/shlibsign.c
 @@ -725,7 +725,6 @@ main(int argc, char **argv)
