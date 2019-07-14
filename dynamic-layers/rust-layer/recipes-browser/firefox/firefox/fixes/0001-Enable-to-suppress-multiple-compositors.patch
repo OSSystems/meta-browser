@@ -1,0 +1,49 @@
+From 9da3b9e3faad471278f4d42c17a69ce2ca9e6b03 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Sun, 17 Feb 2019 16:36:53 +0900
+Subject: [PATCH] Enable to suppress multiple compositors
+
+Because embedded devices might not support multiple EGL windows.
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ widget/nsBaseWidget.cpp | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/widget/nsBaseWidget.cpp b/widget/nsBaseWidget.cpp
+index 00411c736dd3..6f9ff218b8b7 100644
+--- a/widget/nsBaseWidget.cpp
++++ b/widget/nsBaseWidget.cpp
+@@ -131,6 +131,8 @@ int32_t nsIWidget::sPointerIdCounter = 0;
+ // milliseconds.
+ const uint32_t kAsyncDragDropTimeout = 1000;
+ 
++static nsBaseWidget *sSingleCompositorWidget = nullptr;
++
+ namespace mozilla {
+ namespace widget {
+ 
+@@ -278,6 +280,9 @@ void nsBaseWidget::DestroyCompositor() {
+     RefPtr<CompositorSession> session = mCompositorSession.forget();
+     session->Shutdown();
+   }
++
++  if (sSingleCompositorWidget == this)
++    sSingleCompositorWidget = nullptr;
+ }
+ 
+ // This prevents the layer manager from starting a new transaction during
+@@ -1335,6 +1340,8 @@ void nsBaseWidget::CreateCompositor(int aWidth, int aHeight) {
+     gfxPlatform::GetPlatform()->NotifyCompositorCreated(
+         mLayerManager->GetCompositorBackendType());
+   }
++
++  sSingleCompositorWidget = this;
+ }
+ 
+ void nsBaseWidget::NotifyCompositorSessionLost(CompositorSession* aSession) {
+-- 
+2.17.1
+

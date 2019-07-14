@@ -1,0 +1,29 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Thu, 20 Jun 2019 05:14:26 +0900
+Subject: Attempt to work around make issue happening on arch: all buildd
+
+---
+ python/mozbuild/mozbuild/action/node.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/python/mozbuild/mozbuild/action/node.py b/python/mozbuild/mozbuild/action/node.py
+index de4e094a9471..dd3d4fdd0d1e 100644
+--- a/python/mozbuild/mozbuild/action/node.py
++++ b/python/mozbuild/mozbuild/action/node.py
+@@ -5,6 +5,7 @@
+ from __future__ import absolute_import, unicode_literals, print_function
+ 
+ import buildconfig
++import os
+ import pipes
+ import subprocess
+ import sys
+@@ -52,7 +53,7 @@ def execute_node_cmd(node_cmd_list):
+         print('Executing "{}"'.format(printable_cmd), file=sys.stderr)
+         sys.stderr.flush()
+ 
+-        output = subprocess.check_output(node_cmd_list)
++        output = subprocess.check_output(node_cmd_list, stderr=open(os.devnull, 'w'))
+ 
+         # Process the node script output
+         #

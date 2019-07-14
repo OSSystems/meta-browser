@@ -31,4 +31,3 @@ ac_add_options --disable-gconf
 ac_add_options --disable-crashreporter
 ac_add_options --disable-updater
 ac_add_options --disable-debug-symbols
-ac_add_options --disable-av1

@@ -6,9 +6,10 @@ This recipe provides a package for the Firefox web browser.
 Build requirements
 ------------------
 
-* GCC 4.9 or 7
 * [meta-rust](https://github.com/meta-rust/meta-rust)
-  * Need Rust-1.24 or later
+  * Rust-1.34 or later
+* [meta-clang](https://github.com/kraj/meta-clang)
+  * Clang-7 or later
 
 PACKAGECONFIG knobs
 -------------------
@@ -24,15 +25,8 @@ PACKAGECONFIG knobs
   Enable wayland support. It will be enabled automatically when DISTRO_FEATURES
   contains "wayland".
 
-* glx: (off by default)
-  Use GLX to create OpenGL context on X11. Although GLX feature is built-in on
-  X11 but not enabled against most GPUs by default. This option enables it
-  forcedly.
-
-* egl: (off by default)
-  Use EGL instead of GLX to create OpenGL context. It may be desired than GLX
-  on embedded platforms. On wayland, this is the only way to enable GPU
-  acceleration.
+* gpu: (off by default)
+  Enable GPU acceleration.
 
 * openmax: (off by default)
   Enable OpenMAX IL decoder to play H.264 video.
@@ -41,16 +35,6 @@ PACKAGECONFIG knobs
 * webgl: (off by default)
   Firefox on Linux doesn't enable WebGL against most GPUs by default. This
   option adds a config file to enable it focedly.
-
-* canvas-gpu: (off by default)
-  Firefox on Linux doesn't enable GPU acceleration for 2D canvas by default.
-  This option enables it focedly.
-
-* stylo: (off by default)
-  This option enables Quantum CSS (aka Stylo) feature of Firefox.
-  You need clang-3.9 & llvm-3.9 packages of host to build it. In addition you
-  need to add the following setting in your local.conf:
-  `HOSTTOOLS += " llvm-config-3.9 "`
 
 * disable-e10s: (off by default)
   This option disables Electrolysis (e10s) fearture which hosts, renders, or
@@ -62,3 +46,8 @@ PACKAGECONFIG knobs
   This option allows to create only one GPU accelerated compositor, second and
   the following windows will use basic compositors. Multiple compositor may
   cause crash on platforms that doesn't support multiple EGL windows.
+
+Runtime options
+---------------
+* The enviromental variable `GDK_BACKEND=wayland` is needed to run Firefox with
+  the wayland backend.

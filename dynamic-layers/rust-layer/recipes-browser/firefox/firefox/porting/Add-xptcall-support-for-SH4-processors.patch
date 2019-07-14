@@ -13,13 +13,13 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index 4c2c35f53631..ff916d28d8d8 100644
+index 61a364abb6a1..52b79889249c 100644
 --- a/xpcom/reflect/xptcall/md/unix/moz.build
 +++ b/xpcom/reflect/xptcall/md/unix/moz.build
-@@ -325,6 +325,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
-             '-fomit-frame-pointer',
-             '-mbackchain',
-         ]
+@@ -252,6 +252,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
+             CXXFLAGS += [
+                 '-fno-integrated-as',
+             ]
 +    elif CONFIG['OS_TEST'] in ('sh4', 'sh4a'):
 +        SOURCES += [
 +            'xptcinvoke_linux_sh.cpp',
