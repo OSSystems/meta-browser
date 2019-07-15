@@ -11,7 +11,6 @@ SRC_URI += "git://github.com/eqrion/cbindgen.git;protocol=https"
 SRCREV = "7b9ea991bdabb442093014d21fde6a192f574f21"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR=""
-PV_append = ".AUTOINC+7b9ea991bd"
 
 BBCLASSEXTEND = "native"
 
