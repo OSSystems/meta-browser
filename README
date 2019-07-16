@@ -16,7 +16,7 @@ revision: HEAD
 
 For Firefox, meta-rust and meta-clang are necessary:
 
-URI: git@github.com:kraj/meta-clang
+URI: git://github.com/kraj/meta-clang
 branch: master
 revision: HEAD
 
