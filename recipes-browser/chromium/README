@@ -18,14 +18,15 @@ peculiarities:
 
 Build requirements
 ------------------
+This recipe requires clang, and GCC is not supported. Upstream Chromium has not
+tested or officially supported GCC for years, so it is safer and easier to
+follow their lead and only support one compiler.
+
 As part of its build process, Chromium builds and runs some binaries on the
-host. As such, as of M62 this means you must have a C++ compiler that is
-capable of building C++11 (preferably C++14) code, which for GCC means at least
-version 5.4.0.
+host. clang-native from the meta-clang layer is used to build those binaries.
 
 For building most of the code for your target, a C++14-compliant compiler is
-required. For GCC, at least version 7.3.1 (and thus the "rocko" branch) is
-required.
+required. At least clang 7.0.0 (and thus the "thud" branch) is required.
 
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.

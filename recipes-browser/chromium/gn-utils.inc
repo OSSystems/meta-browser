@@ -33,16 +33,6 @@ GN_TARGET_ARCH_NAME_arm = "arm"
 GN_TARGET_ARCH_NAME_x86 = "x86"
 GN_TARGET_ARCH_NAME_x86-64 = "x64"
 
-# knob for clang, when using meta-clang to provide clang and case where
-# clang happens to be default compiler for OE we should let it use clang
-def is_default_cc_clang(d):
-    """Return true if clang is default cross compiler."""
-    toolchain = d.getVar("TOOLCHAIN")
-    overrides = d.getVar("OVERRIDES")
-    if toolchain == "clang" and "toolchain-clang" in overrides.split(":"):
-        return "true"
-    return "false"
-
 def clang_install_path(d):
     """Return clang compiler install path."""
     return d.getVar("STAGING_BINDIR_NATIVE")
@@ -59,6 +49,10 @@ def gn_target_arch_name(d):
 def write_toolchain_file(d, file_path):
     """Creates a complete GN toolchain file in |file_path|."""
     import string
+    # Even though we always use clang, the "clang_toolchain" GN template is too
+    # restrictive in the way it sets variables such as |cxx|. Since it is just
+    # a wrapper on top of the "gcc_toolchain" template, we keep using the
+    # latter directly to accommodate our cross-compilation needs.
     toolchain_tmpl = string.Template(
         'gcc_toolchain("${toolchain_name}") {\n'
         '  cc = "${cc}"\n'
@@ -74,7 +68,7 @@ def write_toolchain_file(d, file_path):
         '  toolchain_args = {\n'
         '    current_cpu = "${current_cpu}"\n'
         '    current_os = "linux"\n'
-        '    is_clang = ${is_clang}\n'
+        '    is_clang = true\n'
         '  }\n'
         '}\n'
     )
@@ -91,7 +85,6 @@ def write_toolchain_file(d, file_path):
         'extra_cppflags': d.expand('${BUILD_CPPFLAGS}'),
         'extra_cxxflags': d.expand('${BUILD_CXXFLAGS}'),
         'extra_ldflags': d.expand('${BUILD_LDFLAGS}'),
-        'is_clang': is_default_cc_clang(d),
     }
     target_toolchain = {
         'toolchain_name': 'yocto_target',
@@ -105,7 +98,6 @@ def write_toolchain_file(d, file_path):
         'extra_cppflags': d.expand('${TARGET_CPPFLAGS}'),
         'extra_cxxflags': d.expand('${TARGET_CXXFLAGS}'),
         'extra_ldflags': d.expand('${TARGET_LDFLAGS}'),
-        'is_clang': is_default_cc_clang(d),
     }
 
     with open(file_path, 'w') as toolchain_file:

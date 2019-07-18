@@ -7,6 +7,15 @@ SRC_URI[sha256sum] = "510e6ca7ccc218b401b375c13656f6aecab196b03142026dc3602b9d18
 
 S = "${WORKDIR}/chromium-${PV}"
 
+# GCC is not tested or officially supported upstream, and supporting it here
+# requires an ever-growing amount of backports and custom patches, without any
+# guarantee that the generated code will work as expected.
+TOOLCHAIN = "clang"
+
+# By default, clang.bbclass sets TOOLCHAIN_class-native to "gcc", but we want
+# to build the native recipes (e.g. GN) with clang too.
+TOOLCHAIN_class-native = "clang"
+
 inherit pythonnative
 
 # Chromium itself is licensed under the 3-clause BSD license. However, it

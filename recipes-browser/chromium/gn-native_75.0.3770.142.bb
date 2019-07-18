@@ -23,7 +23,11 @@ SRC_URI += "\
 # some of the arguments passed to it.
 BUILD_LD = "${CXX}"
 
-DEPENDS = "ninja-native"
+# Use LLVM's ar rather than binutils'. Depending on the optimizations enabled
+# in the build ar(1) may not be enough.
+BUILD_AR = "llvm-ar"
+
+DEPENDS = "clang-native ninja-native"
 
 do_configure[noexec] = "1"
 
