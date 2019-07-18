@@ -1,4 +1,3 @@
-require chromium-upstream-tarball.inc
 require chromium-gn.inc
 
 REQUIRED_DISTRO_FEATURES = "x11"
