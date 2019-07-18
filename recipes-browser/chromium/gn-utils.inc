@@ -116,7 +116,6 @@ def write_toolchain_file(d, file_path):
         toolchain_file.write(
             '# This file has been generated automatically.\n'
             '\n'
-            'import("//build/config/sysroot.gni")\n'
             'import("//build/toolchain/gcc_toolchain.gni")\n'
             '\n'
         )
