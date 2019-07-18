@@ -3,5 +3,5 @@
 
 require firefox-l10n.inc
 
-SRC_URI[md5sum] = "a0826b6a8201b0d3089d013264ef421b"
-SRC_URI[sha256sum] = "4e25455515434f0822f8fd732cd0f949c079e8fe457d4f04c6a3c3a39ffaa3a2"
+SRC_URI[md5sum] = "d383d55bf72af5bed1c29490b88b3e2c"
+SRC_URI[sha256sum] = "0bd1522840830e7e6efede6f9e290e8242d72f53f6823a4c8ef7f21f2f3e346c"

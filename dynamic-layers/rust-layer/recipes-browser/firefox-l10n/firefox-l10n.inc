@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2014, O.S. Systems Software Ltda. All Rights Reserved
+# Copyright (C) 2009-2019, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "mozilla-devscripts-native unzip-native zip-native"
@@ -14,7 +14,7 @@ PR = "r3"
 # Mangle place where to store the file
 DL_DIR_append = "/${PN}-${PV}"
 
-SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-i686/xpi/${LANGUAGE}.xpi"
+SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-x86_64/xpi/${LANGUAGE}.xpi"
 S = "${WORKDIR}"
 
 inherit allarch
