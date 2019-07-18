@@ -33,6 +33,7 @@ GN_TARGET_ARCH_NAME_arm = "arm"
 GN_TARGET_ARCH_NAME_x86 = "x86"
 GN_TARGET_ARCH_NAME_x86-64 = "x64"
 
+BUILD_AR_toolchain-clang = "llvm-ar"
 BUILD_CC_toolchain-clang = "clang"
 BUILD_CXX_toolchain-clang = "clang++"
 BUILD_LD_toolchain-clang = "clang"
