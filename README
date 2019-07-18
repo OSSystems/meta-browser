@@ -14,11 +14,11 @@ URI: git://git.openembedded.org/meta-openembedded
 branch: master
 revision: HEAD
 
-For Firefox, meta-rust and meta-clang are necessary:
-
 URI: git://github.com/kraj/meta-clang
 branch: master
 revision: HEAD
+
+For Firefox, meta-rust is also necessary:
 
 URI: git://github.com/meta-rust/meta-rust
 branch: master

@@ -9,22 +9,12 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-Add-support-for-GCC-Compilers.patch \
-        file://0001-Revert-Use-noexcept-consistently-on-the-move-ctor-of.patch \
-        file://0001-TrackEventJSONExporter-HandleLegacyEvent-Use-std-mov.patch \
-        file://0001-webrequest-Fix-GCC-build-after-2d47b917314a.patch \
-        file://0001-GCC-7-workaround-remove-constexpr-ctor.patch \
         file://0001-libstdc-do-not-assume-unique_ptr-has-ostream-operato.patch \
-        file://aarch64-skia-build-fix.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
-        file://0005-Remove-banned-designated-initializer-list-usage-from.patch \
-        file://0006-GCC-add-std-move-to-return-to-base-Optional.patch \
-        file://0001-GCC-fix-another-GCC-bug-by-implementing-copy-assign-.patch \
         file://add_internal_define_armv7ve.patch \
-        file://0001-Avoid-pure-virtual-crash-destroying-RenderProcessUse.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -46,12 +36,6 @@ SRC_URI_append_libc-musl = "\
         file://musl/musl_fix_stack_trace.patch \
         file://musl/musl_portable_msghdr.patch \
 "
-# This patch could be enabled for clang builds, one just needs to make it work.
-# On sumo and MACHINE="raspberrypi3", the build fails with errors such as
-#   /tmp/crc32_simd-01be44.s:86: Error: selected processor does not support `crc32b r0,r0,r5' in Thumb mode
-# Enabling this on GCC requires more work, see the comments in the patch itself
-# for directions.
-SRC_URI += "file://0001-zlib-GCC-Disable-CRC32-optimizations-on-ARM.patch"
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
 # adds packages to DEPENDS.
@@ -218,16 +202,14 @@ GN_ARGS += "enable_nacl=false"
 # let Yocto handle everything.
 GN_ARGS += "use_sysroot=false"
 
-# Upstream Chromium uses clang on Linux, and GCC is not regularly tested. This
-# means new GCC releases can introduce build failures as Chromium uses "-Wall
-# -Werror" by default and we do not have much control over which warnings GCC
-# decides to include in -Wall.
+# The clang version used to build this recipe may be older than upstream
+# Chromium's, which can cause unexpected warnings to show up. They should not
+# cause the build to fail.
 GN_ARGS += "treat_warnings_as_errors=false"
 
-# As of M63, we explicitly need to set is_cfi to false, otherwise we fail the
-# following assertion in //build/config/sanitizers/sanitizers.gni:
-#   assert(!is_cfi || is_clang,
-#          "is_cfi requires setting is_clang = true in 'gn args'")
+# Enabling Control Flow Integrity requires more research (i.e. we need to
+# figure out when it was first deemed stable by Chromium). Upstream only
+# enables this for x86-64 right now.
 GN_ARGS += "is_cfi=false"
 
 # Disable activation of field trial tests that can cause problems in
@@ -257,7 +239,7 @@ GN_ARGS += ' \
         custom_toolchain="//build/toolchain/yocto:yocto_target" \
         gold_path="" \
         host_toolchain="//build/toolchain/yocto:yocto_native" \
-        is_clang=${@is_default_cc_clang(d)} \
+        is_clang=true \
         clang_base_path="${@clang_install_path(d)}" \
         clang_use_chrome_plugins=false \
         linux_use_bundled_binutils=false \
