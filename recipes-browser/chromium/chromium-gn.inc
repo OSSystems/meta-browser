@@ -101,6 +101,12 @@ COMPATIBLE_MACHINE_armv7ve = "(.*)"
 COMPATIBLE_MACHINE_x86 = "(.*)"
 COMPATIBLE_MACHINE_x86-64 = "(.*)"
 
+# Also build the parts that are run on the host with clang.
+BUILD_AR_toolchain-clang = "llvm-ar"
+BUILD_CC_toolchain-clang = "clang"
+BUILD_CXX_toolchain-clang = "clang++"
+BUILD_LD_toolchain-clang = "clang"
+
 PACKAGECONFIG ??= "use-egl"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
