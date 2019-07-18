@@ -79,8 +79,6 @@ def write_toolchain_file(d, file_path):
         '    current_cpu = "${current_cpu}"\n'
         '    current_os = "linux"\n'
         '    is_clang = ${is_clang}\n'
-        '    clang_base_path = "${clang_base_path}"\n'
-        '    clang_use_chrome_plugins = false\n'
         '  }\n'
         '}\n'
     )
@@ -98,7 +96,6 @@ def write_toolchain_file(d, file_path):
         'extra_cxxflags': d.expand('${BUILD_CXXFLAGS}'),
         'extra_ldflags': d.expand('${BUILD_LDFLAGS}'),
         'is_clang': is_default_cc_clang(d),
-        'clang_base_path': clang_install_path(d),
     }
     target_toolchain = {
         'toolchain_name': 'yocto_target',
@@ -113,7 +110,6 @@ def write_toolchain_file(d, file_path):
         'extra_cxxflags': d.expand('${TARGET_CXXFLAGS}'),
         'extra_ldflags': d.expand('${TARGET_LDFLAGS}'),
         'is_clang': is_default_cc_clang(d),
-        'clang_base_path': clang_install_path(d),
     }
 
     with open(file_path, 'w') as toolchain_file:
