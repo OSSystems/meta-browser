@@ -4,34 +4,39 @@ Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/third_party/lss/linux_syscall_support.h
 +++ b/third_party/lss/linux_syscall_support.h
-@@ -816,6 +816,17 @@ struct kernel_statfs {
- #define FUTEX_TRYLOCK_PI_PRIVATE  (FUTEX_TRYLOCK_PI | FUTEX_PRIVATE_FLAG)
+@@ -132,15 +132,18 @@ extern "C" {
+ 
+ /* The Android NDK's <sys/stat.h> #defines these macros as aliases
+  * to their non-64 counterparts. To avoid naming conflict, remove them. */
+-#ifdef __ANDROID__
++#if defined(fstat64)
+   /* These are restored by the corresponding #pragma pop_macro near
+    * the end of this file. */
+ # pragma push_macro("stat64")
+ # pragma push_macro("fstat64")
++# pragma push_macro("fstatat64")
+ # pragma push_macro("lstat64")
+ # undef stat64
+ # undef fstat64
++# undef fstatat64
+ # undef lstat64
++# define __RESTORE_MACRO 1
  #endif
  
-+#ifndef __NR_stat
-+#define __NR_stat __NR_stat64
-+#endif
-+
-+#ifndef __NR_fstat
-+#define __NR_fstat __NR_fstat64
-+#endif
-+
-+#ifndef __NR_fstatat
-+#define __NR_fstatat __NR_fstatat64
-+#endif
- 
- #if defined(__x86_64__)
- #ifndef ARCH_SET_GS
-@@ -1239,6 +1250,12 @@ struct kernel_statfs {
- #ifndef __NR_fallocate
- #define __NR_fallocate          285
+ #if defined(__ANDROID__) && defined(__x86_64__)
+@@ -4539,12 +4542,14 @@ struct kernel_statfs {
+ # endif
  #endif
-+#ifndef __NR_pread
-+#define __NR_pread __NR_pread64
-+#endif
-+#ifndef __NR_pwrite
-+#define __NR_pwrite __NR_pwrite64
-+#endif
- /* End of x86-64 definitions                                                 */
- #elif defined(__mips__)
- #if _MIPS_SIM == _MIPS_SIM_ABI32
+ 
+-#ifdef __ANDROID__
++#ifdef __RESTORE_MACRO
+   /* These restore the original values of these macros saved by the
+    * corresponding #pragma push_macro near the top of this file. */
+ # pragma pop_macro("stat64")
+ # pragma pop_macro("fstat64")
++# pragma pop_macro("fstatat64")
+ # pragma pop_macro("lstat64")
++#undef __RESTORE_MACRO
+ #endif
+ 
+ #if defined(__cplusplus) && !defined(SYS_CPLUSPLUS)
