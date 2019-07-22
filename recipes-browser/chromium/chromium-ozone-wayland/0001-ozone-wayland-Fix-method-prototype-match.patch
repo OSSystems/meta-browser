@@ -1,9 +1,10 @@
-Upstream-Status: Submitted (https://ccrev.com/c/1649156)
+Upstream-Status: Backport
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
-From 715928026034a9bd4671c95769526763f068c1d6 Mon Sep 17 00:00:00 2001
+---
+From 2f50410169a7b5ff55f73b202657f526ab589072 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
-Date: Fri, 7 Jun 2019 09:35:00 +0300
+Date: Fri, 7 Jun 2019 11:16:49 +0000
 Subject: [PATCH] ozone/wayland: Fix method prototype match
 
 CreateShmBasedBuffer uses uint64_t type for the length parameter,
@@ -13,15 +14,19 @@ This CL fixes this inconsistency.
 
 Bug: 578890
 Change-Id: I3deac38340422d7c2098d226966312ad16eb831b
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1649156
+Reviewed-by: Antonio Gomes <tonikitoo@igalia.com>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#667080}
 ---
  ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc b/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
-index b6c85ef70fb4..3f163a012c31 100644
+index bbcfa84016f9..23ac231b2990 100644
 --- a/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_buffer_manager_host.cc
-@@ -558,7 +558,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
+@@ -529,7 +529,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
  void WaylandBufferManagerHost::CreateShmBasedBuffer(
      gfx::AcceleratedWidget widget,
      mojo::ScopedHandle shm_fd,
@@ -31,5 +36,5 @@ index b6c85ef70fb4..3f163a012c31 100644
      uint32_t buffer_id) {
    DCHECK(base::MessageLoopCurrentForUI::IsSet());
 -- 
-2.20.1
+2.23.0.rc0
 

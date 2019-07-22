@@ -9,7 +9,6 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-libstdc-do-not-assume-unique_ptr-has-ostream-operato.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
