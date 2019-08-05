@@ -49,7 +49,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://debian-hacks/Attempt-to-work-around-make-issue-happening-on-arch-.patch \
            file://debian-hacks/Use-build-id-as-langpack-version-for-reproducibility.patch \
            file://wayland/bug1451816-workaround-for-grabbing-popup.patch \
-           file://wayland/egl/0001-Disable-query-EGL_EXTENSIONS.patch \
+           file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
            "
