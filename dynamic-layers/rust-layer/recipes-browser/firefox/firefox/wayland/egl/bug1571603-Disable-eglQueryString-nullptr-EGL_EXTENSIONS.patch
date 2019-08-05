@@ -1,0 +1,60 @@
+From 1d50c9b2c411c6732463b1c89d6c58661b57cb04 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@homa.ne.jp>
+Date: Wed, 8 May 2019 14:42:24 +0900
+Subject: [PATCH] Disable eglQueryString(nullptr, EGL_EXTENSIONS)
+
+Because it causes crash on certain environments such as PowerVR drivers,
+and such extensions aren't used on Linux in fact.
+
+Upstream-Status: Inappropriate [OE-specific: https://bugzilla.mozilla.org/show_bug.cgi?id=1571603]
+
+Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+---
+ gfx/gl/GLContextProviderEGL.cpp | 6 ++++++
+ gfx/gl/GLLibraryEGL.cpp         | 2 ++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/gfx/gl/GLContextProviderEGL.cpp b/gfx/gl/GLContextProviderEGL.cpp
+index 0ee98f3fce58..ac6f29a2eb39 100644
+--- a/gfx/gl/GLContextProviderEGL.cpp
++++ b/gfx/gl/GLContextProviderEGL.cpp
+@@ -525,10 +525,16 @@ void GLContextEGL::GetWSIInfo(nsCString* const out) const {
+   out->Append(
+       (const char*)mEgl->fQueryString(EGL_DISPLAY(), LOCAL_EGL_EXTENSIONS));
+ 
++#if 0
+ #ifndef ANDROID  // This query will crash some old android.
++  // Bug 1209612: Crashes on a number of android drivers.
++  // Ideally we would only blocklist this there, but for now we don't need the
++  // client extension list on ANDROID or embedded linux (we mostly need it on
++  // ANGLE), and we'd rather not crash.
+   out->AppendLiteral("\nEGL_EXTENSIONS(nullptr): ");
+   out->Append((const char*)mEgl->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
+ #endif
++#endif
+ }
+ 
+ // hold a reference to the given surface
+diff --git a/gfx/gl/GLLibraryEGL.cpp b/gfx/gl/GLLibraryEGL.cpp
+index 0ecd6f67b46f..9876719ca83c 100644
+--- a/gfx/gl/GLLibraryEGL.cpp
++++ b/gfx/gl/GLLibraryEGL.cpp
+@@ -834,12 +834,14 @@ void GLLibraryEGL::InitClientExtensions() {
+ 
+   const char* rawExtString = nullptr;
+ 
++#if 0
+ #ifndef ANDROID
+   // Bug 1209612: Crashes on a number of android drivers.
+   // Ideally we would only blocklist this there, but for now we don't need the
+   // client extension list on ANDROID (we mostly need it on ANGLE), and we'd
+   // rather not crash.
+   rawExtString = (const char*)fQueryString(nullptr, LOCAL_EGL_EXTENSIONS);
++#endif
+ #endif
+ 
+   if (!rawExtString) {
+-- 
+2.20.1
+
