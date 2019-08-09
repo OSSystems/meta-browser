@@ -165,7 +165,8 @@ GN_ARGS += 'host_pkg_config="pkg-config-native"'
 # (debug, release, official) but for historical reasons there are two
 # separate flags.
 # See also: https://groups.google.com/a/chromium.org/d/msg/chromium-dev/hkcb6AOX5gE/PPT1ukWoBwAJ
-GN_ARGS += "is_debug=false is_official_build=true"
+GN_ARGS += "is_debug=false"
+GN_ARGS += "is_official_build=${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'false', 'true', d)}"
 
 # Starting with M61, Chromium defaults to building with its own copy of libc++
 # instead of the system's libstdc++. Explicitly disable this behavior.
