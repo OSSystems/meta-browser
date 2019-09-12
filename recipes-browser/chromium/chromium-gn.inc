@@ -14,6 +14,9 @@ SRC_URI += " \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
+        file://0001-Enforce-host-toolchain-for-cddl-and-protoc-tools.patch \
+        file://0001-Fix-build-failure-due-to-missing-include-for-std-num.patch \
+        file://0001-include-memory-in-one-euro-filter.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -397,7 +400,7 @@ do_install() {
 	install -m 0644 chromium.desktop ${D}${datadir}/applications/chromium.desktop
 
 	# Install icons.
-	for size in 16 22 24 32 48 64 128 256; do
+	for size in 16 24 32 48 64 128 256; do
 		install -d ${D}${datadir}/icons/hicolor/${size}x${size}
 		install -d ${D}${datadir}/icons/hicolor/${size}x${size}/apps
 		for dirname in "chromium" "default_100_percent/chromium"; do

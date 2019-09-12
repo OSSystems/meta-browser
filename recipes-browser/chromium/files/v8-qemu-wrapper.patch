@@ -7,7 +7,7 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index 771fc0df366c..389a93fabeda 100644
+index 2d7b357cfc2c..f87bab050634 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -62,6 +62,7 @@ if (use_v8_context_snapshot) {
@@ -19,11 +19,12 @@ index 771fc0df366c..389a93fabeda 100644
                get_label_info(
                        ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
 
+
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 8640517ae5..a8a220c501 100644
+index c486f1a1c8..7a46341a72 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -1075,6 +1075,7 @@ action("run_torque") {
+@@ -1070,6 +1070,7 @@ action("run_torque") {
    }
  
    args = [
@@ -31,7 +32,7 @@ index 8640517ae5..a8a220c501 100644
      "./" + rebase_path(get_label_info(":torque($v8_generator_toolchain)",
                                        "root_out_dir") + "/torque",
                         root_build_dir),
-@@ -1153,6 +1154,7 @@ action("generate_bytecode_builtins_list") {
+@@ -1148,6 +1149,7 @@ action("generate_bytecode_builtins_list") {
      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
    ]
    args = [
@@ -39,7 +40,7 @@ index 8640517ae5..a8a220c501 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1196,6 +1198,7 @@ template("run_mksnapshot") {
+@@ -1191,6 +1193,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
@@ -47,11 +48,11 @@ index 8640517ae5..a8a220c501 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -3928,6 +3931,7 @@ action("run_gen-regexp-special-case") {
-   ]
+@@ -3976,6 +3979,7 @@ if (v8_enable_i18n_support) {
+     ]
  
-   args = [
-+    "./v8-qemu-wrapper.sh",
-     "./" + rebase_path(
-             get_label_info(":gen-regexp-special-case($v8_generator_toolchain)",
-                            "root_out_dir") + "/gen-regexp-special-case",
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(
+                       ":gen-regexp-special-case($v8_generator_toolchain)",
