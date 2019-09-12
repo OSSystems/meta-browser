@@ -1,0 +1,409 @@
+Upstream-Status: Backport
+
+https://crrev.com/c/1759283
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 4ca3339848cc889648ba6c70edfbef944cdf1ffb Mon Sep 17 00:00:00 2001
+From: btolsch <btolsch@chromium.org>
+Date: Tue, 20 Aug 2019 13:01:05 -0700
+Subject: [PATCH] Enforce host toolchain for cddl and protoc tools
+
+This change helps people who are cross-compiling by ensuring that the
+cddl and protoc tools are only ever compiled with the host toolchain.
+
+Bug: 981676
+Change-Id: I8999764e9913a78b116d6ec3ced5b31c77c83604
+Reviewed-on: https://chromium-review.googlesource.com/c/openscreen/+/1759283
+Commit-Queue: Brandon Tolsch <btolsch@chromium.org>
+Reviewed-by: Max Yakimakha <yakimakha@chromium.org>
+Reviewed-by: Ryan Keane <rwkeane@google.com>
+---
+ build/config/BUILDCONFIG.gn            |   6 +-
+ osp/msgs/BUILD.gn                      |  30 ++--
+ third_party/protobuf/BUILD.gn          | 206 +++++++++++++------------
+ third_party/protobuf/proto_library.gni |   2 +-
+ tools/cddl/BUILD.gn                    |  46 +++---
+ tools/cddl/cddl.py                     |   3 +-
+ 6 files changed, 154 insertions(+), 139 deletions(-)
+
+diff --git a/third_party/openscreen/src/build/config/BUILDCONFIG.gn b/third_party/openscreen/src/build/config/BUILDCONFIG.gn
+index 64ab092..5a8724d 100644
+--- a/third_party/openscreen/src/build/config/BUILDCONFIG.gn
++++ b/third_party/openscreen/src/build/config/BUILDCONFIG.gn
+@@ -85,14 +85,16 @@ if (is_clang) {
+ # ==============================================================================
+ #
+ # Here we set the default toolchain. Currently only Mac and POSIX are defined.
++host_toolchain = ""
+ if (current_os == "chromeos" || current_os == "linux") {
+-  set_default_toolchain("//build/toolchain/linux:linux")
++  host_toolchain = "//build/toolchain/linux:linux"
+ } else if (current_os == "mac") {
+-  set_default_toolchain("//build/toolchain/mac:clang")
++  host_toolchain = "//build/toolchain/mac:clang"
+ } else {
+   # TODO(miu): Windows, and others.
+   assert(false, "Toolchain for current_os is not defined.")
+ }
++set_default_toolchain(host_toolchain)
+ 
+ # =============================================================================
+ # OS DEFINITIONS
+diff --git a/third_party/openscreen/src/osp/msgs/BUILD.gn b/third_party/openscreen/src/osp/msgs/BUILD.gn
+index 324e838..898ce91 100644
+--- a/third_party/openscreen/src/osp/msgs/BUILD.gn
++++ b/third_party/openscreen/src/osp/msgs/BUILD.gn
+@@ -40,19 +40,27 @@ action("cddl_gen") {
+     outputs += [ root_gen_dir + "/" + o ]
+   }
+ 
+-  args = [
+-           "--header",
+-           outputs_src[0],
+-           "--cc",
+-           outputs_src[1],
+-           "--gen-dir",
+-           rebase_path(root_gen_dir, root_build_dir),
+-           "--log",
+-           rebase_path("cddl.log", "//"),
+-         ] + rebase_path(sources, root_build_dir)
++  cddl_label = "../../tools/cddl:cddl($host_toolchain)"
++  cddl_path = get_label_info(cddl_label, "root_out_dir") + "/cddl"
++  args =
++      [
++        "--cddl",
++
++        # Path should be rebased because |root_build_dir| for current toolchain
++        # may be different from |root_out_dir| of cddl built on host toolchain.
++        "./" + rebase_path(cddl_path, root_build_dir),
++        "--header",
++        outputs_src[0],
++        "--cc",
++        outputs_src[1],
++        "--gen-dir",
++        rebase_path(root_gen_dir, root_build_dir),
++        "--log",
++        rebase_path("cddl.log", "//"),
++      ] + rebase_path(sources, root_build_dir)
+ 
+   deps = [
+-    "../../tools/cddl",
++    cddl_label,
+   ]
+ }
+ 
+diff --git a/third_party/openscreen/src/third_party/protobuf/BUILD.gn b/third_party/openscreen/src/third_party/protobuf/BUILD.gn
+index 77112f7..7a3c96d 100644
+--- a/third_party/openscreen/src/third_party/protobuf/BUILD.gn
++++ b/third_party/openscreen/src/third_party/protobuf/BUILD.gn
+@@ -160,111 +160,113 @@ static_library("protobuf_full") {
+   ]
+ }
+ 
+-# protoc compiler is separated into protoc library and executable targets to
+-# support protoc plugins that need to link libprotoc, but not the main()
+-# itself. See src/google/protobuf/compiler/plugin.h
+-static_library("protoc_lib") {
+-  sources = [
+-    "src/src/google/protobuf/compiler/code_generator.cc",
+-    "src/src/google/protobuf/compiler/command_line_interface.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_enum.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_extension.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_field.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_file.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_generator.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_helpers.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_map_field.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_message.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_message_field.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_service.cc",
+-    "src/src/google/protobuf/compiler/cpp/cpp_string_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_enum.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_field_base.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_generator.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_helpers.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_map_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_message.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_message_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
+-    "src/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_context.cc",
+-    "src/src/google/protobuf/compiler/java/java_doc_comment.cc",
+-    "src/src/google/protobuf/compiler/java/java_enum.cc",
+-    "src/src/google/protobuf/compiler/java/java_enum_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_enum_field_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_enum_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_extension.cc",
+-    "src/src/google/protobuf/compiler/java/java_extension_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_file.cc",
+-    "src/src/google/protobuf/compiler/java/java_generator.cc",
+-    "src/src/google/protobuf/compiler/java/java_generator_factory.cc",
+-    "src/src/google/protobuf/compiler/java/java_helpers.cc",
+-    "src/src/google/protobuf/compiler/java/java_map_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_map_field_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_message.cc",
+-    "src/src/google/protobuf/compiler/java/java_message_builder.cc",
+-    "src/src/google/protobuf/compiler/java/java_message_builder_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_message_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_message_field_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_message_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_name_resolver.cc",
+-    "src/src/google/protobuf/compiler/java/java_primitive_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
+-    "src/src/google/protobuf/compiler/java/java_service.cc",
+-    "src/src/google/protobuf/compiler/java/java_shared_code_generator.cc",
+-    "src/src/google/protobuf/compiler/java/java_string_field.cc",
+-    "src/src/google/protobuf/compiler/java/java_string_field_lite.cc",
+-    "src/src/google/protobuf/compiler/js/js_generator.cc",
+-    "src/src/google/protobuf/compiler/js/well_known_types_embed.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_field.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_file.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_message.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
+-    "src/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
+-    "src/src/google/protobuf/compiler/php/php_generator.cc",
+-    "src/src/google/protobuf/compiler/plugin.cc",
+-    "src/src/google/protobuf/compiler/plugin.pb.cc",
+-    "src/src/google/protobuf/compiler/python/python_generator.cc",
+-    "src/src/google/protobuf/compiler/ruby/ruby_generator.cc",
+-    "src/src/google/protobuf/compiler/subprocess.cc",
+-    "src/src/google/protobuf/compiler/zip_writer.cc",
+-  ]
++if (current_toolchain == host_toolchain) {
++  # protoc compiler is separated into protoc library and executable targets to
++  # support protoc plugins that need to link libprotoc, but not the main()
++  # itself. See src/google/protobuf/compiler/plugin.h
++  static_library("protoc_lib") {
++    sources = [
++      "src/src/google/protobuf/compiler/code_generator.cc",
++      "src/src/google/protobuf/compiler/command_line_interface.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_enum.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_enum_field.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_extension.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_field.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_file.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_generator.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_helpers.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_map_field.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_message.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_message_field.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_service.cc",
++      "src/src/google/protobuf/compiler/cpp/cpp_string_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_enum.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_field_base.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_generator.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_helpers.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_map_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_message.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_message_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc",
++      "src/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc",
++      "src/src/google/protobuf/compiler/java/java_context.cc",
++      "src/src/google/protobuf/compiler/java/java_doc_comment.cc",
++      "src/src/google/protobuf/compiler/java/java_enum.cc",
++      "src/src/google/protobuf/compiler/java/java_enum_field.cc",
++      "src/src/google/protobuf/compiler/java/java_enum_field_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_enum_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_extension.cc",
++      "src/src/google/protobuf/compiler/java/java_extension_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_field.cc",
++      "src/src/google/protobuf/compiler/java/java_file.cc",
++      "src/src/google/protobuf/compiler/java/java_generator.cc",
++      "src/src/google/protobuf/compiler/java/java_generator_factory.cc",
++      "src/src/google/protobuf/compiler/java/java_helpers.cc",
++      "src/src/google/protobuf/compiler/java/java_map_field.cc",
++      "src/src/google/protobuf/compiler/java/java_map_field_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_message.cc",
++      "src/src/google/protobuf/compiler/java/java_message_builder.cc",
++      "src/src/google/protobuf/compiler/java/java_message_builder_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_message_field.cc",
++      "src/src/google/protobuf/compiler/java/java_message_field_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_message_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_name_resolver.cc",
++      "src/src/google/protobuf/compiler/java/java_primitive_field.cc",
++      "src/src/google/protobuf/compiler/java/java_primitive_field_lite.cc",
++      "src/src/google/protobuf/compiler/java/java_service.cc",
++      "src/src/google/protobuf/compiler/java/java_shared_code_generator.cc",
++      "src/src/google/protobuf/compiler/java/java_string_field.cc",
++      "src/src/google/protobuf/compiler/java/java_string_field_lite.cc",
++      "src/src/google/protobuf/compiler/js/js_generator.cc",
++      "src/src/google/protobuf/compiler/js/well_known_types_embed.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_field.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_file.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_generator.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_helpers.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_map_field.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_message.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
++      "src/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
++      "src/src/google/protobuf/compiler/php/php_generator.cc",
++      "src/src/google/protobuf/compiler/plugin.cc",
++      "src/src/google/protobuf/compiler/plugin.pb.cc",
++      "src/src/google/protobuf/compiler/python/python_generator.cc",
++      "src/src/google/protobuf/compiler/ruby/ruby_generator.cc",
++      "src/src/google/protobuf/compiler/subprocess.cc",
++      "src/src/google/protobuf/compiler/zip_writer.cc",
++    ]
+ 
+-  configs += [ ":protobuf_warnings" ]
+-  public_configs = [ ":protobuf_config" ]
++    configs += [ ":protobuf_warnings" ]
++    public_configs = [ ":protobuf_config" ]
+ 
+-  public_deps = [
+-    ":protobuf_full",
+-  ]
+-}
++    public_deps = [
++      ":protobuf_full",
++    ]
++  }
+ 
+-executable("protoc") {
+-  sources = [
+-    "src/src/google/protobuf/compiler/main.cc",
+-  ]
++  executable("protoc") {
++    sources = [
++      "src/src/google/protobuf/compiler/main.cc",
++    ]
+ 
+-  deps = [
+-    ":protoc_lib",
+-  ]
++    deps = [
++      ":protoc_lib",
++    ]
+ 
+-  configs += [ ":protobuf_warnings" ]
+-  public_configs = [ ":protobuf_config" ]
++    configs += [ ":protobuf_warnings" ]
++    public_configs = [ ":protobuf_config" ]
++  }
+ }
+diff --git a/third_party/openscreen/src/third_party/protobuf/proto_library.gni b/third_party/openscreen/src/third_party/protobuf/proto_library.gni
+index 89867ca..222d650 100644
+--- a/third_party/openscreen/src/third_party/protobuf/proto_library.gni
++++ b/third_party/openscreen/src/third_party/protobuf/proto_library.gni
+@@ -50,7 +50,7 @@ template("proto_library") {
+     outputs = get_path_info(protogens_cc, "abspath")
+     args = protos
+ 
+-    protoc_label = "//third_party/protobuf:protoc"
++    protoc_label = "//third_party/protobuf:protoc($host_toolchain)"
+     protoc_path = get_label_info(protoc_label, "root_out_dir") + "/protoc"
+     args += [
+       # Wrapper should never pick a system protoc.
+diff --git a/third_party/openscreen/src/tools/cddl/BUILD.gn b/third_party/openscreen/src/tools/cddl/BUILD.gn
+index 403cab3..a50dfa0 100644
+--- a/third_party/openscreen/src/tools/cddl/BUILD.gn
++++ b/third_party/openscreen/src/tools/cddl/BUILD.gn
+@@ -4,28 +4,30 @@
+ 
+ import("//build_overrides/build.gni")
+ 
+-executable("cddl") {
+-  sources = [
+-    "codegen.cc",
+-    "codegen.h",
+-    "logging.cc",
+-    "logging.h",
+-    "main.cc",
+-    "parse.cc",
+-    "parse.h",
+-    "sema.cc",
+-    "sema.h",
+-  ]
++if (current_toolchain == host_toolchain) {
++  executable("cddl") {
++    sources = [
++      "codegen.cc",
++      "codegen.h",
++      "logging.cc",
++      "logging.h",
++      "main.cc",
++      "parse.cc",
++      "parse.h",
++      "sema.cc",
++      "sema.h",
++    ]
+ 
+-  if (build_with_chromium) {
+-    sources += [ "stubs.cc" ]
+-  }
++    if (build_with_chromium) {
++      sources += [ "stubs.cc" ]
++    }
+ 
+-  deps = [
+-    # CDDL always uses the default logger, even when embedded.
+-    "../../platform",
+-    "../../platform:default_logger",
+-    "../../third_party/abseil",
+-  ]
+-  configs += [ "../../build:allow_build_from_embedder" ]
++    deps = [
++      # CDDL always uses the default logger, even when embedded.
++      "../../platform",
++      "../../platform:default_logger",
++      "../../third_party/abseil",
++    ]
++    configs += [ "../../build:allow_build_from_embedder" ]
++  }
+ }
+diff --git a/third_party/openscreen/src/tools/cddl/cddl.py b/third_party/openscreen/src/tools/cddl/cddl.py
+index 5ad9c90..28436f2 100644
+--- a/third_party/openscreen/src/tools/cddl/cddl.py
++++ b/third_party/openscreen/src/tools/cddl/cddl.py
+@@ -32,7 +32,7 @@ def main():
+ 
+   if (args.verbose):
+     print('Creating C++ files from provided CDDL file...')
+-  echoAndRunCommand(['./cddl', "--header", args.header, "--cc", args.cc,
++  echoAndRunCommand([args.cddl, "--header", args.header, "--cc", args.cc,
+                      "--gen-dir", args.gen_dir, args.file],
+                      False, log, args.verbose)
+ 
+@@ -49,6 +49,7 @@ def main():
+ 
+ def parseInput():
+   parser = argparse.ArgumentParser()
++  parser.add_argument("--cddl", help="path to the cddl executable to use")
+   parser.add_argument("--header", help="Specify the filename of the output \
+      header file. This is also the name that will be used for the include \
+      guard and as the include path in the source file.")
+-- 
+2.23.0
+
