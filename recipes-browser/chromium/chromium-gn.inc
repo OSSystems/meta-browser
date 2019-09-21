@@ -299,22 +299,6 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
 "
 
-# See https://github.com/OSSystems/meta-browser/issues/194 for more context.
-python do_check_fdlimit_for_linking () {
-    """Checks if enough files can be open at the same time by the linker."""
-    # The best option would be checking if the linker is ld.bfd instead.
-    if bb.utils.contains_any('DISTRO_FEATURES', 'ld-is-gold ld-is-lld', True, False, d):
-        return
-    import resource
-    nofile_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
-    if nofile_limit[0] < 4096:
-        bb.fatal('The current maximum number of open file descriptors '
-                 'is too low (%d), and causes ld.bfd to fail to link '
-                 'Chromium. Please use ulimit -n to increase it to a higher '
-                 'value, such as 4096, or switch to gold or lld.' % nofile_limit[0])
-}
-addtask check_fdlimit_for_linking before do_unpack
-
 # V8's JIT infrastructure requires binaries such as mksnapshot and
 # mkpeephole to be run in the host during the build. However, these
 # binaries must have the same bit-width as the target (e.g. a x86_64
