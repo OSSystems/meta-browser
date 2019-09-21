@@ -149,8 +149,8 @@ GN_ARGS += "is_debug=false is_official_build=true"
 GN_ARGS += "use_custom_libcxx=false"
 
 # When using meta-clang, one can switch to using the lld linker
-# by using the ld-is-lld distro feature.
-GN_ARGS += "use_lld=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-lld', 'true', 'false', d)}"
+# by using the ld-is-lld distro feature otherwise use gold linker
+GN_ARGS += "${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-lld', 'use_lld=true use_gold=false', 'use_lld=false use_gold=true', d)}"
 
 # By default, passing is_official_build=true to GN causes its symbol_level
 # variable to be set to "2". This means the compiler will be passed "-g2" and
@@ -245,7 +245,6 @@ GN_ARGS += ' \
         clang_use_chrome_plugins=false \
         linux_use_bundled_binutils=false \
         target_cpu="${@gn_target_arch_name(d)}" \
-        use_gold=${@bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold', 'true', 'false', d)} \
         v8_snapshot_toolchain="//build/toolchain/yocto:yocto_target" \
 '
 
