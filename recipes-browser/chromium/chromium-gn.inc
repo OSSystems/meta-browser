@@ -304,7 +304,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
 python do_check_fdlimit_for_linking () {
     """Checks if enough files can be open at the same time by the linker."""
     # The best option would be checking if the linker is ld.bfd instead.
-    if bb.utils.contains('DISTRO_FEATURES', 'ld-is-gold ld-is-lld', True, False, d):
+    if bb.utils.contains_any('DISTRO_FEATURES', 'ld-is-gold ld-is-lld', True, False, d):
         return
     import resource
     nofile_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
