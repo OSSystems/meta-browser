@@ -17,6 +17,7 @@ SRC_URI += " \
         file://0001-Enforce-host-toolchain-for-cddl-and-protoc-tools.patch \
         file://0001-Fix-build-failure-due-to-missing-include-for-std-num.patch \
         file://0001-include-memory-in-one-euro-filter.patch \
+        file://0001-WTF-Make-LinkedHashSet-understand-values-for-which-m.patch \
 "
 
 SRC_URI_append_libc-musl = "\
