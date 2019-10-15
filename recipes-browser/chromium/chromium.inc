@@ -2,8 +2,8 @@ DESCRIPTION = "Chromium is an open-source browser project that aims to build a s
 HOMEPAGE = "https://www.chromium.org/Home"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "8580912b6c254d8c422f514be178a0a5"
-SRC_URI[sha256sum] = "004cfdb1df74847bea8659bcaf8e039d51fe1101d42b6cf1c6cc346073fdefc3"
+SRC_URI[md5sum] = "69729e1cbabfe5a6fe135f690b2ef9b9"
+SRC_URI[sha256sum] = "d792f9b09b1dcfd64e68f47a611c540dd1383dd9abd78ca1e06b2a7e2ff06af8"
 
 S = "${WORKDIR}/chromium-${PV}"
 
