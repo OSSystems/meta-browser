@@ -1,0 +1,244 @@
+From fa55d120f5ebaded0e0df977fdc8fd6782afb4a7 Mon Sep 17 00:00:00 2001
+From: INAJIMA Daisuke <inajima@soum.co.jp>
+Date: Thu, 29 Aug 2019 19:54:59 +0900
+Subject: [PATCH] openmax: Import latest OpenMAX IL 1.1.2 headers
+
+Upstream-Status: Submitted [https://bugzilla.mozilla.org/show_bug.cgi?id=1590977]
+Signed-off-by: INAJIMA Daisuke <inajima@soum.co.jp>
+---
+ media/openmax_il/il112/OMX_Audio.h        |  2 +-
+ media/openmax_il/il112/OMX_Component.h    |  2 +-
+ media/openmax_il/il112/OMX_ComponentExt.h |  2 +-
+ media/openmax_il/il112/OMX_ContentPipe.h  |  2 +-
+ media/openmax_il/il112/OMX_Core.h         |  2 +-
+ media/openmax_il/il112/OMX_CoreExt.h      |  2 +-
+ media/openmax_il/il112/OMX_IVCommon.h     |  2 +-
+ media/openmax_il/il112/OMX_Image.h        |  2 +-
+ media/openmax_il/il112/OMX_ImageExt.h     |  2 +-
+ media/openmax_il/il112/OMX_Index.h        |  2 +-
+ media/openmax_il/il112/OMX_IndexExt.h     |  2 +-
+ media/openmax_il/il112/OMX_Other.h        |  2 +-
+ media/openmax_il/il112/OMX_Types.h        | 20 +++++++++++---------
+ media/openmax_il/il112/OMX_Video.h        |  2 +-
+ media/openmax_il/il112/OMX_VideoExt.h     |  2 +-
+ 15 files changed, 25 insertions(+), 23 deletions(-)
+
+diff --git a/media/openmax_il/il112/OMX_Audio.h b/media/openmax_il/il112/OMX_Audio.h
+index 9d084e87428a..0f7b8c8ce273 100644
+--- a/media/openmax_il/il112/OMX_Audio.h
++++ b/media/openmax_il/il112/OMX_Audio.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Component.h b/media/openmax_il/il112/OMX_Component.h
+index 8526f3abc1b6..137c67fae787 100644
+--- a/media/openmax_il/il112/OMX_Component.h
++++ b/media/openmax_il/il112/OMX_Component.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_ComponentExt.h b/media/openmax_il/il112/OMX_ComponentExt.h
+index e32dcbed2eff..50ac5c6476b7 100644
+--- a/media/openmax_il/il112/OMX_ComponentExt.h
++++ b/media/openmax_il/il112/OMX_ComponentExt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_ContentPipe.h b/media/openmax_il/il112/OMX_ContentPipe.h
+index 403ea55d2992..a1f37c84efe4 100644
+--- a/media/openmax_il/il112/OMX_ContentPipe.h
++++ b/media/openmax_il/il112/OMX_ContentPipe.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Core.h b/media/openmax_il/il112/OMX_Core.h
+index 6c858e42f5cc..bfe57d1352ab 100644
+--- a/media/openmax_il/il112/OMX_Core.h
++++ b/media/openmax_il/il112/OMX_Core.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_CoreExt.h b/media/openmax_il/il112/OMX_CoreExt.h
+index 5974d0261647..1a97300a4f0c 100644
+--- a/media/openmax_il/il112/OMX_CoreExt.h
++++ b/media/openmax_il/il112/OMX_CoreExt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_IVCommon.h b/media/openmax_il/il112/OMX_IVCommon.h
+index 37763ec0840d..e514342f4c8f 100644
+--- a/media/openmax_il/il112/OMX_IVCommon.h
++++ b/media/openmax_il/il112/OMX_IVCommon.h
+@@ -1,5 +1,5 @@
+ /**
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Image.h b/media/openmax_il/il112/OMX_Image.h
+index 599fb2d6c834..dabd0c8f60b9 100644
+--- a/media/openmax_il/il112/OMX_Image.h
++++ b/media/openmax_il/il112/OMX_Image.h
+@@ -1,5 +1,5 @@
+ /**
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_ImageExt.h b/media/openmax_il/il112/OMX_ImageExt.h
+index 664a0848747d..e7cae029b60d 100644
+--- a/media/openmax_il/il112/OMX_ImageExt.h
++++ b/media/openmax_il/il112/OMX_ImageExt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2011 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Index.h b/media/openmax_il/il112/OMX_Index.h
+index cb94da28b408..1e549dc8685d 100644
+--- a/media/openmax_il/il112/OMX_Index.h
++++ b/media/openmax_il/il112/OMX_Index.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_IndexExt.h b/media/openmax_il/il112/OMX_IndexExt.h
+index d22df56bd94b..2895e2c6d111 100644
+--- a/media/openmax_il/il112/OMX_IndexExt.h
++++ b/media/openmax_il/il112/OMX_IndexExt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Other.h b/media/openmax_il/il112/OMX_Other.h
+index a3abbec0e41f..1bf7434c6604 100644
+--- a/media/openmax_il/il112/OMX_Other.h
++++ b/media/openmax_il/il112/OMX_Other.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_Types.h b/media/openmax_il/il112/OMX_Types.h
+index 873ba7a48676..527ba2354eca 100644
+--- a/media/openmax_il/il112/OMX_Types.h
++++ b/media/openmax_il/il112/OMX_Types.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+@@ -31,6 +31,8 @@
+ #ifndef OMX_Types_h
+ #define OMX_Types_h
+ 
++#include <stdint.h>
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif /* __cplusplus */
+@@ -130,22 +132,22 @@ extern "C" {
+   */
+ 
+ /** OMX_U8 is an 8 bit unsigned quantity that is byte aligned */
+-typedef unsigned char OMX_U8;
++typedef uint8_t OMX_U8;
+ 
+ /** OMX_S8 is an 8 bit signed quantity that is byte aligned */
+-typedef signed char OMX_S8;
++typedef int8_t OMX_S8;
+ 
+ /** OMX_U16 is a 16 bit unsigned quantity that is 16 bit word aligned */
+-typedef unsigned short OMX_U16;
++typedef uint16_t OMX_U16;
+ 
+ /** OMX_S16 is a 16 bit signed quantity that is 16 bit word aligned */
+-typedef signed short OMX_S16;
++typedef int16_t OMX_S16;
+ 
+ /** OMX_U32 is a 32 bit unsigned quantity that is 32 bit word aligned */
+-typedef unsigned long OMX_U32;
++typedef uint32_t OMX_U32;
+ 
+ /** OMX_S32 is a 32 bit signed quantity that is 32 bit word aligned */
+-typedef signed long OMX_S32;
++typedef int32_t OMX_S32;
+ 
+ 
+ /* Users with compilers that cannot accept the "long long" designation should
+@@ -173,10 +175,10 @@ typedef signed   __int64  OMX_S64;
+ #else /* WIN32 */
+ 
+ /** OMX_U64 is a 64 bit unsigned quantity that is 64 bit word aligned */
+-typedef unsigned long long OMX_U64;
++typedef uint64_t OMX_U64;
+ 
+ /** OMX_S64 is a 64 bit signed quantity that is 64 bit word aligned */
+-typedef signed long long OMX_S64;
++typedef int64_t OMX_S64;
+ 
+ #endif /* WIN32 */
+ #endif
+diff --git a/media/openmax_il/il112/OMX_Video.h b/media/openmax_il/il112/OMX_Video.h
+index af36238b88a1..f3660ec7d521 100644
+--- a/media/openmax_il/il112/OMX_Video.h
++++ b/media/openmax_il/il112/OMX_Video.h
+@@ -1,5 +1,5 @@
+ /**
+- * Copyright (c) 2008 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+diff --git a/media/openmax_il/il112/OMX_VideoExt.h b/media/openmax_il/il112/OMX_VideoExt.h
+index 5e79b47b1a68..1aeb5264fc6f 100644
+--- a/media/openmax_il/il112/OMX_VideoExt.h
++++ b/media/openmax_il/il112/OMX_VideoExt.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2010 The Khronos Group Inc.
++ * Copyright (c) 2016 The Khronos Group Inc.
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining
+  * a copy of this software and associated documentation files (the
+-- 
+2.23.0
+
