@@ -88,7 +88,9 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'gpu', \
 
 # Additional upstream patches to support OpenMAX IL
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'openmax', \
-           'file://prefs/openmax.js', '', d)}"
+           'file://fixes/Bug-1590977-openmax-Import-latest-OpenMAX-IL-1.1.2-headers.patch \
+            file://prefs/openmax.js \
+           ', '', d)}"
 
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'webgl', \
            'file://prefs/webgl.js', '', d)}"
