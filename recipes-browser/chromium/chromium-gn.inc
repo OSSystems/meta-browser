@@ -9,15 +9,13 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
+        file://0001-Add-missing-include-for-unique_ptr.patch \
+        file://0001-dns_util-Make-DohUpgradeEntry-non-const-when-used-wi.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
-        file://0001-Enforce-host-toolchain-for-cddl-and-protoc-tools.patch \
-        file://0001-Fix-build-failure-due-to-missing-include-for-std-num.patch \
-        file://0001-include-memory-in-one-euro-filter.patch \
-        file://0001-WTF-Make-LinkedHashSet-understand-values-for-which-m.patch \
 "
 
 SRC_URI_append_libc-musl = "\
