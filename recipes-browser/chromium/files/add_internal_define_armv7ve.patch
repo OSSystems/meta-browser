@@ -6,8 +6,8 @@ add this to check as well.
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
---- a/third_party/tcmalloc/gperftools-2.0/chromium/src/base/arm_instruction_set_select.h
-+++ b/third_party/tcmalloc/gperftools-2.0/chromium/src/base/arm_instruction_set_select.h
+--- a/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
++++ b/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
 @@ -42,6 +42,7 @@
  #if defined(ARMV8) || \
      defined(__ARM_ARCH_7__) || \

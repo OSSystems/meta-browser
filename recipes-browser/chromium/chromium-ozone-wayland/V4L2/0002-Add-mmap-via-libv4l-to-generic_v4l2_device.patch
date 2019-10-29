@@ -16,11 +16,6 @@ Date: Wed, 21 Mar 2018 13:18:17 +0200
 Subject: [PATCH 2/2] Add mmap via libv4l to generic_v4l2_device
 
 Issue #437
----
-From d16ed2e2db9665704c04f267c752a55bcf57a61e Mon Sep 17 00:00:00 2001
-From: Maksim Sisov <msisov@igalia.com>
-Date: Thu, 1 Aug 2019 11:31:05 +0300
-Subject: [PATCH 2/2] Add-mmap-via-libv4l-to-generic_v4l2_device
 
 ---
  media/gpu/v4l2/generic_v4l2_device.cc | 10 ++++++++++
@@ -28,7 +23,7 @@ Subject: [PATCH 2/2] Add-mmap-via-libv4l-to-generic_v4l2_device
  2 files changed, 12 insertions(+)
 
 diff --git a/media/gpu/v4l2/generic_v4l2_device.cc b/media/gpu/v4l2/generic_v4l2_device.cc
-index 1831a56a3d3a..8841211abb25 100644
+index 3920e956c4c7..7981acfc89b6 100644
 --- a/media/gpu/v4l2/generic_v4l2_device.cc
 +++ b/media/gpu/v4l2/generic_v4l2_device.cc
 @@ -100,10 +100,20 @@ void* GenericV4L2Device::Mmap(void* addr,
@@ -63,5 +58,5 @@ index 4269fb48d592..71b5b3787d56 100644
 +LIBV4L_PUBLIC void *v4l2_mmap(void *start, size_t length, int prot, int flags, int fd, int64_t offset);
 +LIBV4L_PUBLIC int v4l2_munmap(void *_start, size_t length);
 -- 
-2.23.0.rc0
+2.23.0
 
