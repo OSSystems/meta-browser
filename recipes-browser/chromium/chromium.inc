@@ -1,6 +1,8 @@
 DESCRIPTION = "Chromium is an open-source browser project that aims to build a safer, faster, and more stable way for all users to experience the web."
 HOMEPAGE = "https://www.chromium.org/Home"
 
+CVE_PRODUCT = "chromium:chromium google:chrome"
+
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 SRC_URI[md5sum] = "7f3aee3274a0667d2523922388ed4f07"
 SRC_URI[sha256sum] = "8df6ffca4087fc43e7d0443acc4f758399b248e96482705bd4fe7e88d239eb56"
