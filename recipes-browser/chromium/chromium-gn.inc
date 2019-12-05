@@ -17,6 +17,7 @@ SRC_URI += " \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
         file://0001-Fix-building-with-pulseaudio-13.patch \
+        file://delete_not_yet_released_clang_warnings.patch \
 "
 
 SRC_URI_append_libc-musl = "\
