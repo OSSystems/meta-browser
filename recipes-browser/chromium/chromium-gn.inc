@@ -16,6 +16,7 @@ SRC_URI += " \
         file://wrapper-extra-flags.patch \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
+        file://0001-Fix-building-with-pulseaudio-13.patch \
 "
 
 SRC_URI_append_libc-musl = "\
