@@ -1,0 +1,19 @@
+Delete compiler options not available in release versions of clang _yet_
+
+Upstream-Status: Inappropriate [ clang/master already supports them ]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -1481,6 +1481,11 @@ config("default_warnings") {
+ 
+           # TODO(https://crbug.com/999886): Clean up, enable.
+           "-Wno-final-dtor-non-final-class",
++
++          # Disable unknown warnings, since system clang may not have
++          # backported newer warning yet unlike internal clang that
++          # chromium uses.
++          "-Wno-unknown-warning-option",
+         ]
+         cflags_c += [
+           # TODO(https://crbug.com/995993): Clean up and enable.
