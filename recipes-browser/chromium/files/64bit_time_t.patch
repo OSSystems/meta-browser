@@ -1,0 +1,54 @@
+Fix build on 32bit arches with 64bit time_t
+
+time element is deprecated on new input_event structure in kernel's
+input.h [1]
+
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit?id=152194fe9c3f
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/ui/events/ozone/evdev/touch_evdev_debug_buffer.cc
++++ b/ui/events/ozone/evdev/touch_evdev_debug_buffer.cc
+@@ -59,11 +59,11 @@ void TouchEventLogEvdev::DumpLog(const c
+   for (int i = 0; i < kDebugBufferSize; ++i) {
+     struct TouchEvent* te =
+         &logged_events_[(debug_buffer_tail_ + i) % kDebugBufferSize];
+-    if (te->ev.time.tv_sec == 0 && te->ev.time.tv_usec == 0)
++    if (te->ev.input_event_sec == 0 && te->ev.input_event_usec == 0)
+       continue;
+     std::string event_string = base::StringPrintf(
+-        "E: %ld.%06ld %04x %04x %d %d\n", te->ev.time.tv_sec,
+-        te->ev.time.tv_usec, te->ev.type, te->ev.code, te->ev.value, te->slot);
++        "E: %ld.%06ld %04x %04x %d %d\n", te->ev.input_event_sec,
++        te->ev.input_event_usec, te->ev.type, te->ev.code, te->ev.value, te->slot);
+     report_content += event_string;
+   }
+   file.Write(0, report_content.c_str(), report_content.length());
+--- a/ui/events/ozone/evdev/touch_evdev_debug_buffer.h
++++ b/ui/events/ozone/evdev/touch_evdev_debug_buffer.h
+@@ -14,6 +14,11 @@
+ 
+ #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+ 
++#ifndef input_event_sec
++#define input_event_sec time.tv_sec
++#define input_event_usec time.tv_usec
++#endif
++
+ namespace ui {
+ 
+ class EventDeviceInfo;
+--- a/ui/events/ozone/evdev/event_converter_evdev.cc
++++ b/ui/events/ozone/evdev/event_converter_evdev.cc
+@@ -176,8 +176,8 @@ void EventConverterEvdev::SetPalmSuppres
+ base::TimeTicks EventConverterEvdev::TimeTicksFromInputEvent(
+     const input_event& event) {
+   base::TimeTicks timestamp =
+-      ui::EventTimeStampFromSeconds(event.time.tv_sec) +
+-      base::TimeDelta::FromMicroseconds(event.time.tv_usec);
++      ui::EventTimeStampFromSeconds(event.input_event_sec) +
++      base::TimeDelta::FromMicroseconds(event.input_event_usec);
+   ValidateEventTimeClock(&timestamp);
+   return timestamp;
+ }

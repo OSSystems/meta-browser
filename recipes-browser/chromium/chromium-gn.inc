@@ -20,6 +20,7 @@ SRC_URI += " \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
+        file://64bit_time_t.patch \
 "
 
 SRC_URI_append_libc-musl = "\
