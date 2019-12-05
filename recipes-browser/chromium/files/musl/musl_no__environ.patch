@@ -1,0 +1,16 @@
+musl does not provide __environ therefore disable it
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/tcmalloc/chromium/src/config_linux.h
++++ b/third_party/tcmalloc/chromium/src/config_linux.h
+@@ -209,7 +209,7 @@
+ #define HAVE___ATTRIBUTE__ALIGNED_FN 1
+ 
+ /* Define to 1 if compiler supports __environ */
+-#define HAVE___ENVIRON 1
++/* #undef HAVE___ENVIRON */
+ 
+ /* Define to 1 if the system has the type `__int64'. */
+ /* #undef HAVE___INT64 */
