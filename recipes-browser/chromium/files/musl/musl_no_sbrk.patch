@@ -1,0 +1,17 @@
+__sbrk does not exist on musl as well therefore check for __GLIBC__
+to enable it
+
+Upstream-Status: Inappropriate
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
++++ b/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
+@@ -214,7 +214,7 @@ extern "C" void* mremap(void* old_addr,
+   return result;
+ }
+ 
+-#ifndef __UCLIBC__
++#ifdef __GLIBC__
+ // libc's version:
+ extern "C" void* __sbrk(intptr_t increment);
+ 

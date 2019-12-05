@@ -21,14 +21,12 @@ SRC_URI += " \
 "
 
 SRC_URI_append_libc-musl = "\
-        file://musl/musl-include-fcntl.h-for-loff_t.patch \
         file://musl/musl_no_mallinfo.patch \
         file://musl/musl_no_execinfo.patch \
         file://musl/musl_TEMP_FAILURE_RETRY.patch \
         file://musl/musl_fix-stack.patch \
         file://musl/musl_breakpad.patch \
         file://musl/musl_fontconfig.patch \
-        file://musl/musl_secure_getenv.patch \
         file://musl/musl_libc_malloc.patch \
         file://musl/musl_gnu_libc-version.patch \
         file://musl/musl_resolver.patch \
@@ -38,6 +36,10 @@ SRC_URI_append_libc-musl = "\
         file://musl/musl_replace_libc_fpstate.patch \
         file://musl/musl_fix_stack_trace.patch \
         file://musl/musl_portable_msghdr.patch \
+        file://musl/musl_no__environ.patch \
+        file://musl/musl_no_mallopt.patch \
+        file://musl/musl_undef_mmap64.patch \
+        file://musl/musl_no_sbrk.patch \
 "
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
