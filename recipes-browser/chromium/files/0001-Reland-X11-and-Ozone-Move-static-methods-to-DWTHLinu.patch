@@ -1,0 +1,55 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From a4bfda7f5171b6a4705642615a0711b166c2975b Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Sun, 20 Oct 2019 20:23:39 +0000
+Subject: [PATCH] Reland "X11 and Ozone: Move static methods to DWTHLinux."
+
+This is a reland of 6983e9fadfbdd3b555413f4dff0913a21cc4d113
+
+Change: provided a correct include
+
+Original change's description:
+> X11 and Ozone: Move static methods to DWTHLinux.
+>
+> At first, I wanted to remove these static methods, but then decided
+> to keep them and remove later when we no longer need them.
+>
+> Bug: 990756
+> Change-Id: If6132986e25bb1c8712acdbc90ce29093616bff7
+> Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1860341
+> Reviewed-by: Thomas Anderson <thomasanderson@chromium.org>
+> Reviewed-by: Scott Violet <sky@chromium.org>
+> Commit-Queue: Maksim Sisov <msisov@igalia.com>
+> Cr-Commit-Position: refs/heads/master@{#705946}
+
+Bug: 990756
+Change-Id: Ifc7dc9675aeb0ce9ebf938f1c4660f3d312dbb62
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/1868869
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Michael Spang <spang@chromium.org>
+Reviewed-by: Thomas Anderson <thomasanderson@chromium.org>
+Reviewed-by: Scott Violet <sky@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#707684}
+---
+ ui/views/widget/native_widget_aura.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/views/widget/native_widget_aura.cc b/ui/views/widget/native_widget_aura.cc
+index 0769f9b63ae1..1ec2999f0d2e 100644
+--- a/ui/views/widget/native_widget_aura.cc
++++ b/ui/views/widget/native_widget_aura.cc
+@@ -61,7 +61,7 @@
+ 
+ #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+ #include "ui/views/linux_ui/linux_ui.h"
+-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
++#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+ #endif
+ 
+ #if !defined(OS_CHROMEOS)
+-- 
+2.20.1
+

@@ -1,0 +1,55 @@
+Upstream-Status: Pending
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 377441930e304c622859f669c6d6689657df8e1a Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 17 Dec 2019 14:39:15 +0200
+Subject: [PATCH 2/2] media: do not use fwd decl with nullptr instantiation of
+ unique_ptr<T>.
+
+nullptr instantiation requires ctor and dtor to be declared, and
+result in
+
+/include/c++/8.2.0/bits/unique_ptr.h:79:16: error: invalid application of 'sizeof' to an incomplete type 'gpu::GpuMemoryBufferSupport'
+        static_assert(sizeof(_Tp)>0,
+                      ^~~~~~~~~~~
+/include/c++/8.2.0/bits/unique_ptr.h:274:4: note: in instantiation of member function 'std::default_delete<gpu::GpuMemoryBufferSupport>::operator()' requested here
+          get_deleter()(__ptr);
+          ^
+/include/c++/8.2.0/bits/unique_ptr.h:236:45: note: in instantiation of member function 'std::unique_ptr<gpu::GpuMemoryBufferSupport, std::default_delete<gpu::GpuMemoryBufferSupport> >::~unique_ptr' requested here
+        constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+                                                   ^
+../../media/capture/video/fake_video_capture_device.h:18:7: note: forward declaration of 'gpu::GpuMemoryBufferSupport'
+class GpuMemoryBufferSupport;
+      ^
+
+Thus, remove fwd declration
+
+Bug: 819294
+---
+ media/capture/video/fake_video_capture_device_factory.h | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/media/capture/video/fake_video_capture_device_factory.h b/media/capture/video/fake_video_capture_device_factory.h
+index 8461caefcd83..450dc3633b75 100644
+--- a/media/capture/video/fake_video_capture_device_factory.h
++++ b/media/capture/video/fake_video_capture_device_factory.h
+@@ -11,13 +11,10 @@
+ #include <utility>
+ #include <vector>
+ 
++#include "gpu/ipc/common/gpu_memory_buffer_support.h"
+ #include "media/capture/video/fake_video_capture_device.h"
+ #include "media/capture/video/video_capture_device_factory.h"
+ 
+-namespace gpu {
+-class GpuMemoryBufferSupport;
+-}  // namespace gpu
+-
+ namespace media {
+ 
+ struct CAPTURE_EXPORT FakeVideoCaptureDeviceSettings {
+-- 
+2.20.1
+

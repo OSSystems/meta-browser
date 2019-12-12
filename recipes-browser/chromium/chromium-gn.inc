@@ -9,8 +9,11 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-Add-missing-include-for-unique_ptr.patch \
-        file://0001-dns_util-Make-DohUpgradeEntry-non-const-when-used-wi.patch \
+        file://0001-IWYU-include-algorithm-to-use-std-lower_bound-in-ui-.patch \
+        file://0001-Do-not-use-nullptr-initalization-of-fwd-declared-typ.patch \
+        file://0002-media-do-not-use-fwd-decl-with-nullptr-instantiation.patch \
+        file://0001-Reland-X11-and-Ozone-Move-static-methods-to-DWTHLinu.patch \
+        file://0001-IWYU-launch_manager.h-uses-std-vector.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
