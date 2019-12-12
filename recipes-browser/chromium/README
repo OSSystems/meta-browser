@@ -75,11 +75,6 @@ PACKAGECONFIG knobs
   are desirable on embedded platforms. With this packageconfig, EGL and OpenGL
   ES 2.x are used instead.
 
-* use-linux-v4l2: (off by default)
-  This a chromium-ozone-wayland specific knob, which allows the browser to be
-  built with a hardware accelerated video decoding patch enabled using v4l2
-  device.
-
 Google API keys
 ---------------
 Some Chromium features use Google APIs, and to access those APIs either an API

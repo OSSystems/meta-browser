@@ -1,0 +1,79 @@
+Upstream-Status: Pending
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+----
+From ee0870dadc66b5dc396b88d63908e780aab8aabe Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 17 Dec 2019 14:28:14 +0200
+Subject: [PATCH 1/2] Do not use nullptr initalization of fwd declared types.
+
+Instantiation via = nullptr uses copy initialization and requires
+dtor and ctor to be declared for the unique_ptr<T>.
+
+To continue using fwd decl, pass nullptr instead of using
+default arguments.
+
+Example error:
+
+/include/c++/8.2.0/bits/unique_ptr.h:79:16: error: invalid application of 'sizeof' to an incomplete type 'blink::Canvas2DLayerBridge'
+        static_assert(sizeof(_Tp)>0,
+                      ^~~~~~~~~~~
+/include/c++/8.2.0/bits/unique_ptr.h:274:4: note: in instantiation of member function 'std::default_delete<blink::Canvas2DLayerBridge>::operator()' requested here
+          get_deleter()(__ptr);
+          ^
+include/c++/8.2.0/bits/unique_ptr.h:236:45: note: in instantiation of member function 'std::unique_ptr<blink::Canvas2DLayerBridge, std::default_delete<blink::Canvas2DLayerBridge> >::~unique_ptr' requested here
+        constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+                                                   ^
+../../third_party/blink/renderer/core/html/canvas/html_canvas_element.h:65:7: note: forward declaration of 'blink::Canvas2DLayerBridge'
+class Canvas2DLayerBridge;
+      ^
+
+Bug: 819294
+---
+ .../blink/renderer/core/html/canvas/html_canvas_element.h       | 2 +-
+ .../modules/canvas/canvas2d/canvas_rendering_context_2d.cc      | 2 +-
+ .../blink/renderer/platform/scheduler/public/event_loop.h       | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/blink/renderer/core/html/canvas/html_canvas_element.h b/third_party/blink/renderer/core/html/canvas/html_canvas_element.h
+index 97aed1a608e7..7f9bc060654d 100644
+--- a/third_party/blink/renderer/core/html/canvas/html_canvas_element.h
++++ b/third_party/blink/renderer/core/html/canvas/html_canvas_element.h
+@@ -227,7 +227,7 @@ class CORE_EXPORT HTMLCanvasElement final
+   bool IsPrinting() const override;
+ 
+   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
+-                               unaccelerated_bridge_used_for_testing = nullptr);
++                               unaccelerated_bridge_used_for_testing);
+ 
+   // ImageBitmapSource implementation
+   IntSize BitmapSourceSize() const override;
+diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.cc b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.cc
+index 1b08424ad109..b659d9b9a399 100644
+--- a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.cc
++++ b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.cc
+@@ -1129,7 +1129,7 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
+ // TODO(aaronhk) This is only used for the size heuristic. Delete this function
+ // once always accelerate fully lands.
+ void CanvasRenderingContext2D::DisableAcceleration() {
+-  canvas()->DisableAcceleration();
++  canvas()->DisableAcceleration(nullptr);
+ }
+ 
+ bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
+diff --git a/third_party/blink/renderer/platform/scheduler/public/event_loop.h b/third_party/blink/renderer/platform/scheduler/public/event_loop.h
+index d2ee089685f5..94cb4efd265a 100644
+--- a/third_party/blink/renderer/platform/scheduler/public/event_loop.h
++++ b/third_party/blink/renderer/platform/scheduler/public/event_loop.h
+@@ -87,7 +87,7 @@ class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
+   friend blink::Agent;
+ 
+   EventLoop(v8::Isolate* isolate,
+-            std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr);
++            std::unique_ptr<v8::MicrotaskQueue> microtask_queue);
+   ~EventLoop();
+ 
+   static void RunPendingMicrotask(void* data);
+-- 
+2.20.1
+
