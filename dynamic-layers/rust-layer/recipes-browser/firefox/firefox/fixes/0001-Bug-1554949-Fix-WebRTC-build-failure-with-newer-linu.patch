@@ -1,0 +1,45 @@
+From 6a5a56cc4412a82bbc0acae9fba1236466de8c7c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Emilio=20Cobos=20=C3=81lvarez?= <emilio@crisal.io>
+Date: Tue, 28 May 2019 13:02:22 +0000
+Subject: [PATCH] Bug 1554949 - Fix WebRTC build failure with newer linux
+ kernel. r=dminor, a=RyanVM
+
+Recent kernel commit[1] moved a bit the define for this constant. This revealed
+a missing include in WebRTC.
+
+I filed this upstream in:
+
+ * https://bugs.chromium.org/p/webrtc/issues/detail?id=10677
+
+And sent a patch in:
+
+ * https://webrtc-review.googlesource.com/c/src/+/138270
+
+[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=0768e17073dc5
+
+Differential Revision: https://phabricator.services.mozilla.com/D32809
+
+--HG--
+extra : source : 49be991ad4d9ab41ddd6dd829edf62a2154fbfea
+extra : intermediate-source : 8757befbd9395db7a2b1a81faabb11ec329b0486
+---
+ media/webrtc/trunk/webrtc/rtc_base/physicalsocketserver.cc | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/media/webrtc/trunk/webrtc/rtc_base/physicalsocketserver.cc b/media/webrtc/trunk/webrtc/rtc_base/physicalsocketserver.cc
+index 8ac87db58a22..1ae37d53ff05 100644
+--- a/media/webrtc/trunk/webrtc/rtc_base/physicalsocketserver.cc
++++ b/media/webrtc/trunk/webrtc/rtc_base/physicalsocketserver.cc
+@@ -61,6 +61,9 @@ typedef void* SockOptArg;
+ #endif  // WEBRTC_POSIX
+ 
+ #if defined(WEBRTC_POSIX) && !defined(WEBRTC_MAC) && !defined(WEBRTC_BSD) && !defined(__native_client__)
++#if defined(WEBRTC_LINUX)
++#include <linux/sockios.h>
++#endif
+ 
+ int64_t GetSocketRecvTimestamp(int socket) {
+   struct timeval tv_ioctl;
+-- 
+2.20.1
+
