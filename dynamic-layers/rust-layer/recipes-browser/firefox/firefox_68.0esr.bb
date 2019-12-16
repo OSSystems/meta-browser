@@ -66,7 +66,7 @@ MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 inherit mozilla rust-common
 
 TOOLCHAIN_pn-firefox = "clang"
-AS_pn-firefox = "${CC}"
+AS = "${CC}"
 
 DISABLE_STATIC=""
 
