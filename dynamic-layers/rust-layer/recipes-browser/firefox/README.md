@@ -36,12 +36,6 @@ PACKAGECONFIG knobs
   Firefox on Linux doesn't enable WebGL against most GPUs by default. This
   option adds a config file to enable it focedly.
 
-* disable-e10s: (off by default)
-  This option disables Electrolysis (e10s) fearture which hosts, renders, or
-  executes web related content in background child processes. This feature
-  improves security and reactivity of UI, but may eat much more memory or may
-  breaks GPU acceleration on certain platforms.
-
 * forbit-multiple-compositors: (off by default)
   This option allows to create only one GPU accelerated compositor, second and
   the following windows will use basic compositors. Multiple compositor may

@@ -81,7 +81,6 @@ PACKAGECONFIG[gpu] = ",,,"
 PACKAGECONFIG[openmax] = "--enable-openmax,,,"
 PACKAGECONFIG[webgl] = ",,,"
 PACKAGECONFIG[webrtc] = "--enable-webrtc,--disable-webrtc,,"
-PACKAGECONFIG[disable-e10s] = ",,,"
 PACKAGECONFIG[forbit-multiple-compositors] = ",,,"
 
 # Add a config file to enable GPU acceleration by default.
@@ -96,9 +95,6 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'openmax', \
 
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'webgl', \
            'file://prefs/webgl.js', '', d)}"
-
-SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'disable-e10s', \
-           'file://prefs/disable-e10s.js', '', d)}"
 
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbit-multiple-compositors', \
            'file://prefs/single-compositor.js \
@@ -120,9 +116,6 @@ do_install_append() {
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'webgl', '1', '', d)}" ]; then
         install -m 0644 ${WORKDIR}/prefs/webgl.js ${D}${libdir}/${PN}/defaults/pref/
-    fi
-    if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'disable-e10s', '1', '', d)}" ]; then
-        install -m 0644 ${WORKDIR}/prefs/disable-e10s.js ${D}${libdir}/${PN}/defaults/pref/
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'forbit-multiple-compositors', '1', '', d)}" ]; then
         install -m 0644 ${WORKDIR}/prefs/single-compositor.js ${D}${libdir}/${PN}/defaults/pref/
