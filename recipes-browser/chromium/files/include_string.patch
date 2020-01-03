@@ -1,0 +1,10 @@
+include missing header string.h
+
+Fixes
+
+trace_event_memory_overhead.h:60:29: error: no type named 'string' in namespace 'std' 
+void AddString(const std::string& str);                                                                                                                                                                                                                            ~~~~~^
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+

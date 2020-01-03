@@ -1,0 +1,42 @@
+--- a/third_party/webrtc/modules/audio_processing/aec3/clockdrift_detector.h
++++ b/third_party/webrtc/modules/audio_processing/aec3/clockdrift_detector.h
+@@ -11,6 +11,7 @@
+ #ifndef MODULES_AUDIO_PROCESSING_AEC3_CLOCKDRIFT_DETECTOR_H_
+ #define MODULES_AUDIO_PROCESSING_AEC3_CLOCKDRIFT_DETECTOR_H_
+ 
++#include <cstddef>
+ #include <array>
+ 
+ namespace webrtc {
+--- a/third_party/angle/include/platform/Platform.h
++++ b/third_party/angle/include/platform/Platform.h
+@@ -9,7 +9,8 @@
+ #ifndef ANGLE_PLATFORM_H
+ #define ANGLE_PLATFORM_H
+ 
+-#include <stdint.h>
++#include <cstdint>
++#include <cstddef>
+ #include <array>
+ 
+ #define EGL_PLATFORM_ANGLE_PLATFORM_METHODS_ANGLEX 0x3482
+--- a/media/cdm/supported_cdm_versions.h
++++ b/media/cdm/supported_cdm_versions.h
+@@ -5,6 +5,7 @@
+ #ifndef MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
+ #define MEDIA_CDM_SUPPORTED_CDM_VERSIONS_H_
+ 
++#include <cstddef>
+ #include <array>
+ 
+ #include "media/base/media_export.h"
+--- a/chrome/browser/search/background/ntp_backgrounds.h
++++ b/chrome/browser/search/background/ntp_backgrounds.h
+@@ -5,6 +5,7 @@
+ #ifndef CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUNDS_H_
+ #define CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUNDS_H_
+ 
++#include <cstddef>
+ #include <array>
+ 
+ class GURL;

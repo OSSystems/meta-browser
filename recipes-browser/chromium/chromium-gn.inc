@@ -21,6 +21,11 @@ SRC_URI += " \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
         file://64bit_time_t.patch \
+        file://std_size_t.patch \
+        file://stdint.patch \
+        file://include_string.patch \
+        file://0023-chromium-Move-CharAllocator-definition-to-a-header-f.patch \
+        file://0001-Remove-glslang-pool_allocator-setAllocator.patch \
 "
 
 SRC_URI_append_libc-musl = "\
