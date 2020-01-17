@@ -22,8 +22,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 -#else
 +#elif defined(__GLIBC__)
    struct mallinfo info = mallinfo();
-   DCHECK_GE(info.arena + info.hblkhd, info.uordblks);
- 
+ #if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+   // Sanitizers override mallinfo.
 --- a/third_party/swiftshader/third_party/llvm-7.0/configs/linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-7.0/configs/linux/include/llvm/Config/config.h
 @@ -122,8 +122,9 @@
