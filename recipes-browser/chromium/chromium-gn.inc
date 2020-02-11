@@ -9,11 +9,10 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-IWYU-include-algorithm-to-use-std-lower_bound-in-ui-.patch \
         file://0001-Do-not-use-nullptr-initalization-of-fwd-declared-typ.patch \
         file://0002-media-do-not-use-fwd-decl-with-nullptr-instantiation.patch \
-        file://0001-Reland-X11-and-Ozone-Move-static-methods-to-DWTHLinu.patch \
-        file://0001-IWYU-launch_manager.h-uses-std-vector.patch \
+        file://0001-BookmarkModelMerger-Move-RemoteTreeNode-declaration-.patch \
+        file://0001-cros-search-service-Include-cmath-for-std-pow.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
@@ -63,7 +62,6 @@ DEPENDS += " \
     jpeg \
     libdrm \
     libwebp \
-    libxml2 \
     libxslt \
     ninja-native \
     nodejs-native \

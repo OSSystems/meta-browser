@@ -1,0 +1,50 @@
+From 011e828ce053e9141e234429c57fdbf7a2bd3b72 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 19 Feb 2020 16:56:42 +0000
+Subject: [PATCH] ozone/wayland: do not use modifiers for linear buffers
+
+Video playback is broken in Ozone/Wayland whenever Wayland compositor
+announces that R_8 buffer is supported and sends supported format
+modifiers for that buffer type.
+
+Then, when video is played, GbmPixmapWayland is created with format
+modifiers supplied by Wayland compositor. However, this result in a video
+playback that is garbled.
+
+The reason to this is that the buffer is requested to be linear, which
+means no format modifiers should be supplied. I believe it could be
+the gbm handling that, but it turns out that messes up and we have
+weird behaviour.
+
+Thus, do not use format modifiers if the buffer usage is linear.
+
+Bug: 1050364
+Change-Id: I980c462f857b3a462f95677810e3ff2aaaf340c6
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2049978
+Reviewed-by: Michael Spang <spang@chromium.org>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#742670}
+---
+ ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+index f36ec10cac1c..e38216870598 100644
+--- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
++++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
+@@ -70,7 +70,10 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
+   }
+ 
+   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
+-  auto modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
++  std::vector<uint64_t> modifiers;
++  if (!(flags & GBM_BO_USE_LINEAR))
++    modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
++
+   gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferWithModifiers(
+       fourcc_format, size, flags, modifiers);
+   if (!gbm_bo_) {
+-- 
+2.20.1
+

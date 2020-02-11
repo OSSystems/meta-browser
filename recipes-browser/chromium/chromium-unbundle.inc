@@ -3,7 +3,6 @@
 GN_UNBUNDLE_LIBS = " \
         flac \
         libjpeg \
-        libxml \
         libxslt \
         yasm \
 "
