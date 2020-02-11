@@ -1,8 +1,8 @@
 require chromium-gn.inc
 
 SRC_URI += " \
-        file://0001-ozone-wayland-Complete-submission-of-a-buffer-submit.patch \
         file://0001-Add-missing-algorithm-header-in-bitmap_cursor_factor.patch \
+        file://0001-ozone-wayland-do-not-use-modifiers-for-linear-buffer.patch \
 "
 
 REQUIRED_DISTRO_FEATURES = "wayland"
