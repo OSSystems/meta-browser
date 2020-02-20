@@ -4,8 +4,8 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "880ac47fbd544cea246aaf9a594d21bf"
-SRC_URI[sha256sum] = "e9464c4045a9afca90ddb9a085c32b302944073ef920365af1d7244902a7200b"
+SRC_URI[md5sum] = "0415367f8b5aaf45e4b572954cdd00c9"
+SRC_URI[sha256sum] = "65c5d9bc510b712170c6013acd3bbb07d770a1ce02d64d01890386e9e5678901"
 
 S = "${WORKDIR}/chromium-${PV}"
 
