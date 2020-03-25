@@ -1,0 +1,20 @@
+include missing header string.h
+
+Fixes
+
+trace_event_memory_overhead.h:60:29: error: no type named 'string' in namespace 'std' 
+void AddString(const std::string& str);                                                                                                                                                                                                                            ~~~~~^
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/base/trace_event/trace_event_memory_overhead.h
++++ b/base/trace_event/trace_event_memory_overhead.h
+@@ -8,6 +8,7 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++#include <string>
+ #include <unordered_map>
+ 
+ #include "base/base_export.h"

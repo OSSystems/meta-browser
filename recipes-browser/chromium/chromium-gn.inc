@@ -19,6 +19,10 @@ SRC_URI += " \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
+        file://std_size_t.patch \
+        file://stdint.patch \
+        file://include_string.patch \
+        file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
 "
 
 SRC_URI_append_libc-musl = "\
