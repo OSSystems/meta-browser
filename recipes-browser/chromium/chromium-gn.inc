@@ -23,6 +23,7 @@ SRC_URI += " \
         file://stdint.patch \
         file://include_string.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
+        file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
 "
 
 SRC_URI_append_libc-musl = "\
