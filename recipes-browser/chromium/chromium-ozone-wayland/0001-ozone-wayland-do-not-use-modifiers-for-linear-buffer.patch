@@ -1,4 +1,10 @@
-From 011e828ce053e9141e234429c57fdbf7a2bd3b72 Mon Sep 17 00:00:00 2001
+Upstream-Status: Backport
+
+Backported from https://crrev.com/c/2049978
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 3f3f5e2d31cad67b92678880653d7e658496e2cb Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Wed, 19 Feb 2020 16:56:42 +0000
 Subject: [PATCH] ozone/wayland: do not use modifiers for linear buffers
@@ -26,25 +32,29 @@ Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
 Commit-Queue: Maksim Sisov <msisov@igalia.com>
 Cr-Commit-Position: refs/heads/master@{#742670}
 ---
- ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index f36ec10cac1c..e38216870598 100644
+index 737dc8251cdf..c78ca1d02aae 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-@@ -70,7 +70,10 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
-   }
+@@ -47,9 +47,13 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
+     return false;
  
    const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
 -  auto modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
++  auto gbm_usage = ui::BufferUsageToGbmFlags(usage);
 +  std::vector<uint64_t> modifiers;
-+  if (!(flags & GBM_BO_USE_LINEAR))
++  if (!(gbm_usage & GBM_BO_USE_LINEAR))
 +    modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
 +
    gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferWithModifiers(
-       fourcc_format, size, flags, modifiers);
+-      fourcc_format, size, ui::BufferUsageToGbmFlags(usage), modifiers);
++      fourcc_format, size, gbm_usage, modifiers);
    if (!gbm_bo_) {
+     LOG(ERROR) << "Cannot create bo with format= "
+                << gfx::BufferFormatToString(format) << " and usage "
 -- 
-2.20.1
+2.25.1
 

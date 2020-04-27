@@ -11,8 +11,6 @@ B = "${S}/${OUTPUT_DIR}"
 SRC_URI += " \
         file://0001-Do-not-use-nullptr-initalization-of-fwd-declared-typ.patch \
         file://0002-media-do-not-use-fwd-decl-with-nullptr-instantiation.patch \
-        file://0001-BookmarkModelMerger-Move-RemoteTreeNode-declaration-.patch \
-        file://0001-cros-search-service-Include-cmath-for-std-pow.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
