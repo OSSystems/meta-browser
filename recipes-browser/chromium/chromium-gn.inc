@@ -2,7 +2,7 @@ require chromium.inc
 require chromium-unbundle.inc
 require gn-utils.inc
 
-inherit features_check gtk-icon-cache qemu
+inherit distro_features_check gtk-icon-cache qemu
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
