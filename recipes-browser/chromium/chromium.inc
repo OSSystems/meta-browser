@@ -195,7 +195,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/android_deps/libs/com_google_protobuf_protobuf_lite/LICENSE;md5=37b5762e07f0af8c74ce80a8bda4266b \
     file://${S}/third_party/android_deps/libs/javax_inject_javax_inject/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/android_media/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/android_ndk/NOTICE;md5=5552da59999006962cb94f01f7f42081 \
     file://${S}/third_party/android_opengl/LICENSE;md5=d10e92761a860d4113a7a525c78daf13 \
     file://${S}/third_party/android_sdk/LICENSE;md5=a9559ed17808a8b10eec6672f993ce75 \
     file://${S}/third_party/android_swipe_refresh/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
