@@ -1,0 +1,68 @@
+Upstream-Status: Backport
+
+backported from https://crrev.com/c/2164645
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 5028d28cef444802e4d783cdcd399f5d34a1840f Mon Sep 17 00:00:00 2001
+From: Piotr Tworek <ptworek@vewd.com>
+Date: Mon, 27 Apr 2020 16:31:46 +0000
+Subject: [PATCH 4/6] Include "memory" header to get the definition of
+ std::unique_ptr.
+
+Right now the code im the affected fails to build when using libstdc++
+instead of bundled libcxx. Apparently libcxx pulls the necessary header
+indirectly.
+
+Change-Id: Ie5e86f228434ab16d622ae7a912d9ce607258931
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2164645
+Reviewed-by: Jochen Eisinger <jochen@chromium.org>
+Commit-Queue: Jochen Eisinger <jochen@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#762881}
+---
+ base/test/icu_test_util.h                                       | 1 +
+ content/public/test/back_forward_cache_util.h                   | 2 ++
+ .../blink/renderer/core/html/trust_token_attribute_parsing.h    | 2 ++
+ 3 files changed, 5 insertions(+)
+
+diff --git a/base/test/icu_test_util.h b/base/test/icu_test_util.h
+index f764bdfeb2da..91f44ffbd363 100644
+--- a/base/test/icu_test_util.h
++++ b/base/test/icu_test_util.h
+@@ -5,6 +5,7 @@
+ #ifndef BASE_TEST_ICU_TEST_UTIL_H_
+ #define BASE_TEST_ICU_TEST_UTIL_H_
+ 
++#include <memory>
+ #include <string>
+ 
+ #include "base/macros.h"
+diff --git a/content/public/test/back_forward_cache_util.h b/content/public/test/back_forward_cache_util.h
+index 9364cb2ddd98..8ffa71cc0b48 100644
+--- a/content/public/test/back_forward_cache_util.h
++++ b/content/public/test/back_forward_cache_util.h
+@@ -5,6 +5,8 @@
+ #ifndef CONTENT_PUBLIC_TEST_BACK_FORWARD_CACHE_UTIL_H_
+ #define CONTENT_PUBLIC_TEST_BACK_FORWARD_CACHE_UTIL_H_
+ 
++#include <memory>
++
+ #include "base/strings/string_piece.h"
+ 
+ namespace content {
+diff --git a/third_party/blink/renderer/core/html/trust_token_attribute_parsing.h b/third_party/blink/renderer/core/html/trust_token_attribute_parsing.h
+index f5a7ab03892b..ef19cfaf680f 100644
+--- a/third_party/blink/renderer/core/html/trust_token_attribute_parsing.h
++++ b/third_party/blink/renderer/core/html/trust_token_attribute_parsing.h
+@@ -5,6 +5,8 @@
+ #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRUST_TOKEN_ATTRIBUTE_PARSING_H_
+ #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRUST_TOKEN_ATTRIBUTE_PARSING_H_
+ 
++#include <memory>
++
+ #include "base/optional.h"
+ #include "services/network/public/mojom/trust_tokens.mojom-blink-forward.h"
+ #include "third_party/blink/renderer/core/core_export.h"
+-- 
+2.26.2
+

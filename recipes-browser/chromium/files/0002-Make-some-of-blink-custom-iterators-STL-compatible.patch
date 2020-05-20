@@ -1,0 +1,104 @@
+Upstream-Status: Backport
+
+backported from https://crrev.com/c/2174199
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 6e47ee86f39394b98a0fffb5594b4b4385c18234 Mon Sep 17 00:00:00 2001
+From: Piotr Tworek <ptworek@vewd.com>
+Date: Thu, 30 Apr 2020 21:33:47 +0000
+Subject: [PATCH 2/6] Make some of blink custom iterators STL compatible.
+
+Blink has recently started using functions like std::any_of with some of
+the custom iterators it provides. On Linux this works in the default
+setup using libcxx, but fails with even the most recent versions of
+libstdc++. In all cases the error message (text in bug report) complains
+about lack of matching std::__iterator_category definition.
+
+From what I understand the error message is basically saying those
+iterators are not STL compatible due to missing traits as described
+in https://en.cppreference.com/w/cpp/iterator/iterator_traits. Such
+traits are provided by custom iterators defined in //base, or //cc.
+
+This patch adds the necessary traits to iterators that are currently
+affected by this problem.
+
+Bug: 1076869
+Change-Id: I9950a7100c32499ba96647317fa70b87dc22eaf9
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2174199
+Reviewed-by: Kentaro Hara <haraken@chromium.org>
+Commit-Queue: Piotr Tworek <ptworek@vewd.com>
+Cr-Commit-Position: refs/heads/master@{#764426}
+---
+ .../core/layout/ng/ng_physical_container_fragment.h  |  6 ++++++
+ .../blink/renderer/platform/wtf/hash_iterators.h     | 12 ++++++++++++
+ third_party/blink/renderer/platform/wtf/hash_table.h |  6 ++++++
+ 3 files changed, 24 insertions(+)
+
+diff --git a/third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h b/third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h
+index b3c7624f4940..61e10460a7b8 100644
+--- a/third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h
++++ b/third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h
+@@ -35,6 +35,12 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
+       STACK_ALLOCATED();
+ 
+      public:
++      using iterator_category = std::bidirectional_iterator_tag;
++      using value_type = NGLink;
++      using difference_type = ptrdiff_t;
++      using pointer = value_type*;
++      using reference = value_type&;
++
+       ConstIterator(const NGLink* current) : current_(current) {}
+ 
+       const NGLink& operator*() const { return *PostLayoutOrCurrent(); }
+diff --git a/third_party/blink/renderer/platform/wtf/hash_iterators.h b/third_party/blink/renderer/platform/wtf/hash_iterators.h
+index f8e66e6be850..6003d02c5090 100644
+--- a/third_party/blink/renderer/platform/wtf/hash_iterators.h
++++ b/third_party/blink/renderer/platform/wtf/hash_iterators.h
+@@ -53,6 +53,12 @@ struct HashTableConstIteratorAdapter<HashTableType,
+   typedef HashTableConstValuesIterator<HashTableType, KeyType, MappedType>
+       ValuesIterator;
+ 
++  using iterator_category = std::bidirectional_iterator_tag;
++  using value_type = HashTableType;
++  using difference_type = ptrdiff_t;
++  using pointer = value_type*;
++  using reference = value_type&;
++
+   HashTableConstIteratorAdapter() = default;
+   HashTableConstIteratorAdapter(
+       const typename HashTableType::const_iterator& impl)
+@@ -94,6 +100,12 @@ struct HashTableIteratorAdapter<HashTableType,
+   typedef HashTableValuesIterator<HashTableType, KeyType, MappedType>
+       ValuesIterator;
+ 
++  using iterator_category = std::bidirectional_iterator_tag;
++  using value_type = HashTableType;
++  using difference_type = ptrdiff_t;
++  using pointer = value_type*;
++  using reference = value_type&;
++
+   HashTableIteratorAdapter() = default;
+   HashTableIteratorAdapter(const typename HashTableType::iterator& impl)
+       : impl_(impl) {}
+diff --git a/third_party/blink/renderer/platform/wtf/hash_table.h b/third_party/blink/renderer/platform/wtf/hash_table.h
+index 1d195f1218bc..9a1087ee11b0 100644
+--- a/third_party/blink/renderer/platform/wtf/hash_table.h
++++ b/third_party/blink/renderer/platform/wtf/hash_table.h
+@@ -2203,6 +2203,12 @@ struct HashTableConstIteratorAdapter {
+   STACK_ALLOCATED();
+ 
+  public:
++  using iterator_category = std::bidirectional_iterator_tag;
++  using value_type = HashTableType;
++  using difference_type = ptrdiff_t;
++  using pointer = value_type*;
++  using reference = value_type&;
++
+   HashTableConstIteratorAdapter() = default;
+   HashTableConstIteratorAdapter(
+       const typename HashTableType::const_iterator& impl)
+-- 
+2.26.2
+

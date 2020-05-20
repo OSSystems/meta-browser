@@ -1,0 +1,40 @@
+Upstream-Status: Backport
+
+backported from https://crrev.com/c/2153111
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 2b04a6c163039fbe6d39a9418817d399df56c515 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Fri, 17 Apr 2020 16:04:12 +0000
+Subject: [PATCH 5/6] IWYU: std::numeric_limits is defined in limits
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Change-Id: Ifbc379adc5bb7242c21e7da0bcfc28f49e4dd06f
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2153111
+Reviewed-by: François Doray <fdoray@chromium.org>
+Commit-Queue: François Doray <fdoray@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#760075}
+---
+ .../graph/policies/background_tab_loading_policy_helpers.cc    | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.cc b/chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.cc
+index 6ab117bc44c8..dc615c1ba058 100644
+--- a/chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.cc
++++ b/chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.cc
+@@ -3,6 +3,9 @@
+ // found in the LICENSE file.
+ 
+ #include "chrome/browser/performance_manager/graph/policies/background_tab_loading_policy_helpers.h"
++
++#include <limits>
++
+ #include "base/logging.h"
+ 
+ namespace performance_manager {
+-- 
+2.26.2
+

@@ -19,9 +19,14 @@ SRC_URI += " \
         file://delete_not_yet_released_clang_warnings.patch \
         file://std_size_t.patch \
         file://stdint.patch \
-        file://include_string.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
+        file://0001-Add-missing-algorithm-header-in-crx_install_error.cc.patch \
+        file://0002-Make-some-of-blink-custom-iterators-STL-compatible.patch \
+        file://0003-libstdc-fix-incomplete-type-in-AXTree-for-NodeSetSiz.patch \
+        file://0004-Include-memory-header-to-get-the-definition-of-std-u.patch \
+        file://0005-IWYU-std-numeric_limits-is-defined-in-limits.patch \
+        file://0006-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
 "
 
 SRC_URI_append_libc-musl = "\

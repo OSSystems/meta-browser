@@ -1,0 +1,38 @@
+Upstream-Status: Backport
+
+backported from https://crrev.com/c/2152333
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 60a0fd40c0876094f8116de5e7d9a4bd902e5239 Mon Sep 17 00:00:00 2001
+From: Daniel Playfair Cal <daniel.playfair.cal@gmail.com>
+Date: Sat, 18 Apr 2020 00:27:38 +0000
+Subject: [PATCH 1/6] Add missing algorithm header in crx_install_error.cc
+
+This is needed for the use of std::find.
+
+Change-Id: I2dc43b3887c467986c5346be5a9e27a987e1e5b3
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2152333
+Reviewed-by: Ken Rockot <rockot@google.com>
+Commit-Queue: Ken Rockot <rockot@google.com>
+Cr-Commit-Position: refs/heads/master@{#760272}
+---
+ extensions/browser/install/crx_install_error.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/extensions/browser/install/crx_install_error.cc b/extensions/browser/install/crx_install_error.cc
+index a9765bb0a5a4..bd0d3e35a167 100644
+--- a/extensions/browser/install/crx_install_error.cc
++++ b/extensions/browser/install/crx_install_error.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "extensions/browser/install/crx_install_error.h"
+ 
++#include <algorithm>
++
+ #include "base/logging.h"
+ #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
+ 
+-- 
+2.26.2
+
