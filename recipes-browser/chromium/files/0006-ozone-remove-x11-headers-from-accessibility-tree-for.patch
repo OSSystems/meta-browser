@@ -1,0 +1,37 @@
+Upstream-Status: Submitted
+
+Pending for review at https://crrev.com/c/2216073
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From ca51c6e7033d1c528e9a9b8a4715366e678906e8 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Tue, 26 May 2020 15:33:06 +0300
+Subject: [PATCH 6/6] ozone: remove x11 headers from accessibility tree
+ formatter for Linux
+
+That source file is platform agnostic and used by X11 and
+Ozone/X11/Wayland. Remove unneseccary includes.
+
+Test: compile test ozone/wayland only
+Change-Id: I9d314988f1dff2ae16043619c947a068229de9f0
+---
+ .../accessibility/accessibility_tree_formatter_auralinux.cc     | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/content/browser/accessibility/accessibility_tree_formatter_auralinux.cc b/content/browser/accessibility/accessibility_tree_formatter_auralinux.cc
+index 35563fac4af5..4cc02bc1c10a 100644
+--- a/content/browser/accessibility/accessibility_tree_formatter_auralinux.cc
++++ b/content/browser/accessibility/accessibility_tree_formatter_auralinux.cc
+@@ -21,8 +21,6 @@
+ #include "content/browser/accessibility/accessibility_tree_formatter_utils_auralinux.h"
+ #include "content/browser/accessibility/browser_accessibility_auralinux.h"
+ #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
+-#include "ui/base/x/x11_util.h"
+-#include "ui/gfx/x/x11.h"
+ 
+ namespace content {
+ 
+-- 
+2.26.2
+
