@@ -27,6 +27,10 @@ This layer depends on:
   - branch: master
   - revision: HEAD
 
+* python2.7 and python on host for HOSTTOOLS
+  - e.g. on newer ubuntu which doesn't install python2 at all by default
+    you need to install python-is-python2 (which will pull python2-minimal/python2.7-minimal)
+
 Contributing
 ------------
 
