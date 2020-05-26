@@ -1,0 +1,4167 @@
+From 7b57cac670cd11ccea83f21052b0563dc856260e Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Tue, 26 May 2020 13:03:20 +0200
+Subject: [PATCH] rust-1.38: Bug 1585099 - Update cssparser on ESR68 to 0.25.5
+ to avoid warning that became a hard error. r=heycam, a=RyanVM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+ # HG changeset patch
+ # User Emilio Cobos Álvarez <emilio@crisal.io>
+ # Date 1569953926 0
+ # Node ID f0020f5178324beb51754fccacfbaa1610bbc266
+ # Parent  b07f17122272ffcf922871593a119f23d92271b0
+
+The changes look big because of the reformatting, but this should be ok, I'd
+think.
+
+I could've manually cherry-picked the particular fix and used [patch] or
+something, but the particular commit didn't apply cleanly and I think it's
+better to just update to a published version.
+
+Differential Revision: https://phabricator.services.mozilla.com/D47796
+
+Upstream-Status: Backport [https://hg.mozilla.org/releases/mozilla-esr68/rev/f0020f517832]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ Cargo.lock                                    |  18 +-
+ .../rust/cssparser/.cargo-checksum.json       |   2 +-
+ third_party/rust/cssparser/Cargo.toml         |   2 +-
+ third_party/rust/cssparser/build.rs           |   9 +-
+ .../rust/cssparser/build/match_byte.rs        |  52 +-
+ third_party/rust/cssparser/src/color.rs       | 127 +--
+ third_party/rust/cssparser/src/cow_rc_str.rs  |  18 +-
+ third_party/rust/cssparser/src/from_bytes.rs  |  40 +-
+ third_party/rust/cssparser/src/lib.rs         |  83 +-
+ third_party/rust/cssparser/src/macros.rs      |  14 +-
+ third_party/rust/cssparser/src/nth.rs         |  67 +-
+ third_party/rust/cssparser/src/parser.rs      | 264 ++++---
+ .../cssparser/src/rules_and_declarations.rs   | 196 +++--
+ third_party/rust/cssparser/src/serializer.rs  | 211 +++--
+ .../rust/cssparser/src/size_of_tests.rs       |  24 +-
+ third_party/rust/cssparser/src/tests.rs       | 727 +++++++++++-------
+ third_party/rust/cssparser/src/tokenizer.rs   | 175 ++---
+ .../rust/cssparser/src/unicode_range.rs       |  36 +-
+ 18 files changed, 1250 insertions(+), 815 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 69169c3739..9c4f3af964 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -736,7 +736,7 @@ dependencies = [
+ 
+ [[package]]
+ name = "cssparser"
+-version = "0.25.3"
++version = "0.25.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ dependencies = [
+  "cssparser-macros 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+@@ -1204,7 +1204,7 @@ name = "geckoservo"
+ version = "0.0.1"
+ dependencies = [
+  "atomic_refcell 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "cstr 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "libc 0.2.51 (registry+https://github.com/rust-lang/crates.io-index)",
+  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+@@ -1681,7 +1681,7 @@ name = "malloc_size_of"
+ version = "0.0.1"
+ dependencies = [
+  "app_units 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "euclid 0.19.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "hashglobe 0.1.0",
+  "selectors 0.21.0",
+@@ -2667,7 +2667,7 @@ name = "selectors"
+ version = "0.21.0"
+ dependencies = [
+  "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "derive_more 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "fxhash 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+@@ -2884,7 +2884,7 @@ dependencies = [
+  "bindgen 0.49.1 (registry+https://github.com/rust-lang/crates.io-index)",
+  "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+  "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "derive_more 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "euclid 0.19.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "fallible 0.0.1",
+@@ -2946,7 +2946,7 @@ version = "0.0.1"
+ dependencies = [
+  "app_units 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "euclid 0.19.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "lazy_static 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "malloc_size_of 0.0.1",
+@@ -2962,7 +2962,7 @@ name = "stylo_tests"
+ version = "0.0.1"
+ dependencies = [
+  "atomic_refcell 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "cstr 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+  "env_logger 0.5.6 (registry+https://github.com/rust-lang/crates.io-index)",
+  "geckoservo 0.0.1",
+@@ -3137,7 +3137,7 @@ dependencies = [
+ name = "to_shmem"
+ version = "0.0.1"
+ dependencies = [
+- "cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)",
++ "cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)",
+  "servo_arc 0.1.1",
+  "smallbitvec 2.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+  "smallvec 0.6.6 (registry+https://github.com/rust-lang/crates.io-index)",
+@@ -3807,7 +3807,7 @@ dependencies = [
+ "checksum crossbeam-utils 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "2760899e32a1d58d5abb31129f8fae5de75220bc2176e77ff7c627ae45c918d9"
+ "checksum crossbeam-utils 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d636a8b3bcc1b409d7ffd3facef8f21dcb4009626adbd0c5e6c4305c07253c7b"
+ "checksum crossbeam-utils 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)" = "41ee4864f4797060e52044376f7d107429ce1fb43460021b126424b7180ee21a"
+-"checksum cssparser 0.25.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ba1ab4e1814be64bf6b6064ff532db0e34087f11b37706d6c96a21d32478761d"
++"checksum cssparser 0.25.5 (registry+https://github.com/rust-lang/crates.io-index)" = "e06795910fc2f585a75bdc9690fbcc51e83519f07b6eb981db43944643c04933"
+ "checksum cssparser-macros 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f3a5383ae18dbfdeb569ed62019f5bddb2a95cd2d3833313c475a0d014777805"
+ "checksum cstr 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "b6557bdb1dc9647eae1cf7f5601b14cd45fc3c7ccf2df618387416fe542da6ea"
+ "checksum cstr-macros 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0472c17c83d3ec1af32fb6ee2b3ad56ae0b6e69355d63d1d30602055c34324a8"
+diff --git a/third_party/rust/cssparser/.cargo-checksum.json b/third_party/rust/cssparser/.cargo-checksum.json
+index c4211a4eaa..3e3c7578ed 100644
+--- a/third_party/rust/cssparser/.cargo-checksum.json
++++ b/third_party/rust/cssparser/.cargo-checksum.json
+@@ -1 +1 @@
+-{"files":{"Cargo.toml":"150d450e43bcb9e523941408be883997ecffce7ff5f224329372edfe56334a55","LICENSE":"fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85","README.md":"b9d6c5dc56ccc267db9e0e2389061dc2524daefa4baed88b36c98efc7a51c2a9","build.rs":"310d6d7b1931ff783a8aa1a4c6baee87b4c9130c858e4694ef69cc96df5e38dc","build/match_byte.rs":"6f7ec4235c9f2da403ea0be9339661ecd8e1f5e1c788cf88a41448b1080c59b8","docs/404.html":"025861f76f8d1f6d67c20ab624c6e418f4f824385e2dd8ad8732c4ea563c6a2e","docs/index.html":"025861f76f8d1f6d67c20ab624c6e418f4f824385e2dd8ad8732c4ea563c6a2e","src/color.rs":"43f996fbd8da54bd8ffa870f5e3610e5ba6e61543f92a129fa6c850e9b10db7e","src/cow_rc_str.rs":"541216f8ef74ee3cc5cbbc1347e5f32ed66588c401851c9a7d68b867aede1de0","src/from_bytes.rs":"331fe63af2123ae3675b61928a69461b5ac77799fff3ce9978c55cf2c558f4ff","src/lib.rs":"a474ee88ef8f73fcb7b7272d426e5eafb4ad10d104797a5a188d1676c8180972","src/macros.rs":"adb9773c157890381556ea83d7942dcc676f99eea71abbb6afeffee1e3f28960","src/nth.rs":"5c70fb542d1376cddab69922eeb4c05e4fcf8f413f27563a2af50f72a47c8f8c","src/parser.rs":"22067562160a1294fa92779b66c25cbccf259a2ef7dcf687c791fecdd020ce7f","src/rules_and_declarations.rs":"622ce07c117a511d40ce595602d4f4730659a59273388f28553d1a2b0fac92ce","src/serializer.rs":"3e2dfc60613f885cb6f99abfc854fde2a1e00de507431bd2e51178b61abfd69b","src/size_of_tests.rs":"385a0d77fbd6f86cb8013fd8d7541886980876a9da1da714bf175954c0e726cf","src/tests.rs":"9d08b3943d453664e01d58e307f79345e240f9f9ce6f8d36a842eff37155563e","src/tokenizer.rs":"adcf5811955e8df57a519e3d1e44fe3afeb5afeb1076daeb8d36fed1abcf1327","src/unicode_range.rs":"ae159d2ebe4123a6666e18dc0362f89b475240a6b7ed5fb6fe21b9e7a4139da8"},"package":"ba1ab4e1814be64bf6b6064ff532db0e34087f11b37706d6c96a21d32478761d"}
+\ No newline at end of file
++{"files":{"Cargo.toml":"26e11f3e55baf0de8784dc3ec88771411ceae587c64e162fed3939b87c3cc591","LICENSE":"fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85","README.md":"b9d6c5dc56ccc267db9e0e2389061dc2524daefa4baed88b36c98efc7a51c2a9","build.rs":"08e4a99d5184b2f22ab93bc0a024fec18dbd8fd38b9db638f19d4defede858ee","build/match_byte.rs":"e8537833ff1599a1bdbd0167f6295af7bd21e42024f32b982af32d58c156685c","docs/404.html":"025861f76f8d1f6d67c20ab624c6e418f4f824385e2dd8ad8732c4ea563c6a2e","docs/index.html":"025861f76f8d1f6d67c20ab624c6e418f4f824385e2dd8ad8732c4ea563c6a2e","src/color.rs":"8d3017ba8d644172908bd80d35e9be1081db477d2e0b0ea13971e29a466d451f","src/cow_rc_str.rs":"89b5dff5cf80eef3fcff0c11799e54a978d02d8b8963a621fbb999d35e7c03a3","src/from_bytes.rs":"b1cf15c4e975523fef46b575598737a39f3c63e5ce0b2bfd6ec627c69c6ea54a","src/lib.rs":"98b28ca7c72b8d20b3d76ae5b841be87bcadfc89e433ecc95fcf37aa15731442","src/macros.rs":"a50a0a7afa43e099dc008e54956e4c1fdfba2e9795d006b22e9eb45065fed61e","src/nth.rs":"a9d5fa0bd2c3ae7c48c851b9f5508ebdb07affdf5d0737bb8d85a7befab2ef9c","src/parser.rs":"fe2eb2be084923bf362de4b95c029beb21f172ad972a6452c400f640b43a583e","src/rules_and_declarations.rs":"712a5e893169e715bbcd18aac87a18ae728dc6bb922e79b237d34ce7a4548fcf","src/serializer.rs":"151305364cb1f20ea2dc0b3ebfbb77937e616ef4441d5dd3c9abda232f79a7af","src/size_of_tests.rs":"a628cacc876f240ac1bb9e287cdae293bffc4b86d45d9307e4fc2f822e8f3e84","src/tests.rs":"bf97071b691c0b0c932af5813e876142ce707ba57774742dbe60889b1dc54069","src/tokenizer.rs":"0450c38d140382161408a8fca5aac343f5a9405603234095dccd93f680831cb7","src/unicode_range.rs":"c4655c817db0dabb1d55669ac61a56ecf7f6a6c4353cf5b539b13bea6511c3dd"},"package":"e06795910fc2f585a75bdc9690fbcc51e83519f07b6eb981db43944643c04933"}
+\ No newline at end of file
+diff --git a/third_party/rust/cssparser/Cargo.toml b/third_party/rust/cssparser/Cargo.toml
+index bab49e8faa..cdd37d457f 100644
+--- a/third_party/rust/cssparser/Cargo.toml
++++ b/third_party/rust/cssparser/Cargo.toml
+@@ -12,7 +12,7 @@
+ 
+ [package]
+ name = "cssparser"
+-version = "0.25.3"
++version = "0.25.5"
+ authors = ["Simon Sapin <simon.sapin@exyr.org>"]
+ build = "build.rs"
+ exclude = ["src/css-parsing-tests/**", "src/big-data-url.css"]
+diff --git a/third_party/rust/cssparser/build.rs b/third_party/rust/cssparser/build.rs
+index 45fd8525a4..c4ca61b294 100644
+--- a/third_party/rust/cssparser/build.rs
++++ b/third_party/rust/cssparser/build.rs
+@@ -33,9 +33,12 @@ mod codegen {
+         println!("cargo:rerun-if-changed={}", input.display());
+ 
+         // We have stack overflows on Servo's CI.
+-        let handle = Builder::new().stack_size(128 * 1024 * 1024).spawn(move || {
+-            match_byte::expand(&input, &output);
+-        }).unwrap();
++        let handle = Builder::new()
++            .stack_size(128 * 1024 * 1024)
++            .spawn(move || {
++                match_byte::expand(&input, &output);
++            })
++            .unwrap();
+ 
+         handle.join().unwrap();
+     }
+diff --git a/third_party/rust/cssparser/build/match_byte.rs b/third_party/rust/cssparser/build/match_byte.rs
+index 5160e7f52e..144628d6a9 100644
+--- a/third_party/rust/cssparser/build/match_byte.rs
++++ b/third_party/rust/cssparser/build/match_byte.rs
+@@ -12,18 +12,27 @@ use syn::parse::{Parse, ParseStream, Result};
+ 
+ use proc_macro2::{Span, TokenStream};
+ 
+-struct MatchByteParser {
+-}
++struct MatchByteParser {}
+ 
+ pub fn expand(from: &Path, to: &Path) {
+     let mut source = String::new();
+-    File::open(from).unwrap().read_to_string(&mut source).unwrap();
++    File::open(from)
++        .unwrap()
++        .read_to_string(&mut source)
++        .unwrap();
+     let ast = syn::parse_file(&source).expect("Parsing rules.rs module");
+     let mut m = MatchByteParser {};
+     let ast = m.fold_file(ast);
+ 
+-    let code = ast.into_token_stream().to_string().replace("{ ", "{\n").replace(" }", "\n}");
+-    File::create(to).unwrap().write_all(code.as_bytes()).unwrap();
++    let code = ast
++        .into_token_stream()
++        .to_string()
++        .replace("{ ", "{\n")
++        .replace(" }", "\n}");
++    File::create(to)
++        .unwrap()
++        .write_all(code.as_bytes())
++        .unwrap();
+ }
+ 
+ struct MatchByte {
+@@ -45,7 +54,7 @@ impl Parse for MatchByte {
+                     arms.push(input.call(syn::Arm::parse)?);
+                 }
+                 arms
+-            }
++            },
+         })
+     }
+ }
+@@ -55,16 +64,14 @@ fn get_byte_from_expr_lit(expr: &Box<syn::Expr>) -> u8 {
+         syn::Expr::Lit(syn::ExprLit { ref lit, .. }) => {
+             if let syn::Lit::Byte(ref byte) = *lit {
+                 byte.value()
+-            }
+-            else {
++            } else {
+                 panic!("Found a pattern that wasn't a byte")
+             }
+-        },
++        }
+         _ => unreachable!(),
+     }
+ }
+ 
+-
+ /// Expand a TokenStream corresponding to the `match_byte` macro.
+ ///
+ /// ## Example
+@@ -93,12 +100,12 @@ fn expand_match_byte(body: &TokenStream) -> syn::Expr {
+ 
+         for pat in &arm.pats {
+             match pat {
+-                &syn::Pat::Lit(syn::PatLit{ref expr}) => {
++                &syn::Pat::Lit(syn::PatLit { ref expr }) => {
+                     let value = get_byte_from_expr_lit(expr);
+                     if table[value as usize] == 0 {
+                         table[value as usize] = case_id as u8;
+                     }
+-                },
++                }
+                 &syn::Pat::Range(syn::PatRange { ref lo, ref hi, .. }) => {
+                     let lo = get_byte_from_expr_lit(lo);
+                     let hi = get_byte_from_expr_lit(hi);
+@@ -110,14 +117,14 @@ fn expand_match_byte(body: &TokenStream) -> syn::Expr {
+                     if table[hi as usize] == 0 {
+                         table[hi as usize] = case_id as u8;
+                     }
+-                },
++                }
+                 &syn::Pat::Wild(_) => {
+                     for byte in table.iter_mut() {
+                         if *byte == 0 {
+                             *byte = case_id as u8;
+                         }
+                     }
+-                },
++                }
+                 &syn::Pat::Ident(syn::PatIdent { ref ident, .. }) => {
+                     assert_eq!(wildcard, None);
+                     wildcard = Some(ident);
+@@ -126,7 +133,7 @@ fn expand_match_byte(body: &TokenStream) -> syn::Expr {
+                             *byte = case_id as u8;
+                         }
+                     }
+-                },
++                }
+                 _ => {
+                     panic!("Unexpected pattern: {:?}. Buggy code ?", pat);
+                 }
+@@ -159,11 +166,14 @@ fn expand_match_byte(body: &TokenStream) -> syn::Expr {
+ impl Fold for MatchByteParser {
+     fn fold_stmt(&mut self, stmt: syn::Stmt) -> syn::Stmt {
+         match stmt {
+-            syn::Stmt::Item(syn::Item::Macro(syn::ItemMacro{ ref mac, .. })) => {
++            syn::Stmt::Item(syn::Item::Macro(syn::ItemMacro { ref mac, .. })) => {
+                 if mac.path == parse_quote!(match_byte) {
+-                    return syn::fold::fold_stmt(self, syn::Stmt::Expr(expand_match_byte(&mac.tts)))
++                    return syn::fold::fold_stmt(
++                        self,
++                        syn::Stmt::Expr(expand_match_byte(&mac.tts)),
++                    );
+                 }
+-            },
++            }
+             _ => {}
+         }
+ 
+@@ -172,11 +182,11 @@ impl Fold for MatchByteParser {
+ 
+     fn fold_expr(&mut self, expr: syn::Expr) -> syn::Expr {
+         match expr {
+-            syn::Expr::Macro(syn::ExprMacro{ ref mac, .. }) => {
++            syn::Expr::Macro(syn::ExprMacro { ref mac, .. }) => {
+                 if mac.path == parse_quote!(match_byte) {
+-                    return syn::fold::fold_expr(self, expand_match_byte(&mac.tts))
++                    return syn::fold::fold_expr(self, expand_match_byte(&mac.tts));
+                 }
+-            },
++            }
+             _ => {}
+         }
+ 
+diff --git a/third_party/rust/cssparser/src/color.rs b/third_party/rust/cssparser/src/color.rs
+index a085324d49..af9c0942ca 100644
+--- a/third_party/rust/cssparser/src/color.rs
++++ b/third_party/rust/cssparser/src/color.rs
+@@ -2,10 +2,10 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-use std::fmt;
+ use std::f32::consts::PI;
++use std::fmt;
+ 
+-use super::{Token, Parser, ToCss, ParseError, BasicParseError};
++use super::{BasicParseError, ParseError, Parser, ToCss, Token};
+ 
+ #[cfg(feature = "serde")]
+ use serde::{Deserialize, Deserializer, Serialize, Serializer};
+@@ -47,7 +47,12 @@ impl RGBA {
+     /// Same thing, but with `u8` values instead of floats in the 0 to 1 range.
+     #[inline]
+     pub fn new(red: u8, green: u8, blue: u8, alpha: u8) -> Self {
+-        RGBA { red: red, green: green, blue: blue, alpha: alpha }
++        RGBA {
++            red: red,
++            green: green,
++            blue: blue,
++            alpha: alpha,
++        }
+     }
+ 
+     /// Returns the red channel in a floating point number form, from 0 to 1.
+@@ -78,7 +83,8 @@ impl RGBA {
+ #[cfg(feature = "serde")]
+ impl Serialize for RGBA {
+     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+-        where S: Serializer
++    where
++        S: Serializer,
+     {
+         (self.red, self.green, self.blue, self.alpha).serialize(serializer)
+     }
+@@ -87,7 +93,8 @@ impl Serialize for RGBA {
+ #[cfg(feature = "serde")]
+ impl<'de> Deserialize<'de> for RGBA {
+     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+-        where D: Deserializer<'de>
++    where
++        D: Deserializer<'de>,
+     {
+         let (r, g, b, a) = Deserialize::deserialize(deserializer)?;
+         Ok(RGBA::new(r, g, b, a))
+@@ -99,7 +106,8 @@ known_heap_size!(0, RGBA);
+ 
+ impl ToCss for RGBA {
+     fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+-        where W: fmt::Write,
++    where
++        W: fmt::Write,
+     {
+         let serialize_alpha = self.alpha != 255;
+ 
+@@ -137,7 +145,10 @@ pub enum Color {
+ known_heap_size!(0, Color);
+ 
+ impl ToCss for Color {
+-    fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write {
++    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++    where
++        W: fmt::Write,
++    {
+         match *self {
+             Color::CurrentColor => dest.write_str("currentcolor"),
+             Color::RGBA(ref rgba) => rgba.to_css(dest),
+@@ -210,7 +221,9 @@ pub trait ColorComponentParser<'i> {
+         let location = input.current_source_location();
+         Ok(match *input.next()? {
+             Token::Number { value, .. } => AngleOrNumber::Number { value },
+-            Token::Dimension { value: v, ref unit, .. } => {
++            Token::Dimension {
++                value: v, ref unit, ..
++            } => {
+                 let degrees = match_ignore_ascii_case! { &*unit,
+                     "deg" => v,
+                     "grad" => v * 360. / 400.,
+@@ -221,7 +234,7 @@ pub trait ColorComponentParser<'i> {
+ 
+                 AngleOrNumber::Angle { degrees }
+             }
+-            ref t => return Err(location.new_unexpected_token_error(t.clone()))
++            ref t => return Err(location.new_unexpected_token_error(t.clone())),
+         })
+     }
+ 
+@@ -252,7 +265,7 @@ pub trait ColorComponentParser<'i> {
+         Ok(match *input.next()? {
+             Token::Number { value, .. } => NumberOrPercentage::Number { value },
+             Token::Percentage { unit_value, .. } => NumberOrPercentage::Percentage { unit_value },
+-            ref t => return Err(location.new_unexpected_token_error(t.clone()))
++            ref t => return Err(location.new_unexpected_token_error(t.clone())),
+         })
+     }
+ }
+@@ -279,21 +292,20 @@ impl Color {
+         match token {
+             Token::Hash(ref value) | Token::IDHash(ref value) => {
+                 Color::parse_hash(value.as_bytes())
+-            },
++            }
+             Token::Ident(ref value) => parse_color_keyword(&*value),
+             Token::Function(ref name) => {
+                 return input.parse_nested_block(|arguments| {
+                     parse_color_function(component_parser, &*name, arguments)
+                 })
+             }
+-            _ => Err(())
+-        }.map_err(|()| location.new_unexpected_token_error(token))
++            _ => Err(()),
++        }
++        .map_err(|()| location.new_unexpected_token_error(token))
+     }
+ 
+     /// Parse a <color> value, per CSS Color Module Level 3.
+-    pub fn parse<'i, 't>(
+-        input: &mut Parser<'i, 't>,
+-    ) -> Result<Color, BasicParseError<'i>> {
++    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, BasicParseError<'i>> {
+         let component_parser = DefaultComponentParser;
+         Self::parse_with(&component_parser, input).map_err(ParseError::basic)
+     }
+@@ -306,25 +318,25 @@ impl Color {
+                 from_hex(value[0])? * 16 + from_hex(value[1])?,
+                 from_hex(value[2])? * 16 + from_hex(value[3])?,
+                 from_hex(value[4])? * 16 + from_hex(value[5])?,
+-                from_hex(value[6])? * 16 + from_hex(value[7])?),
+-            ),
++                from_hex(value[6])? * 16 + from_hex(value[7])?,
++            )),
+             6 => Ok(rgb(
+                 from_hex(value[0])? * 16 + from_hex(value[1])?,
+                 from_hex(value[2])? * 16 + from_hex(value[3])?,
+-                from_hex(value[4])? * 16 + from_hex(value[5])?),
+-            ),
++                from_hex(value[4])? * 16 + from_hex(value[5])?,
++            )),
+             4 => Ok(rgba(
+                 from_hex(value[0])? * 17,
+                 from_hex(value[1])? * 17,
+                 from_hex(value[2])? * 17,
+-                from_hex(value[3])? * 17),
+-            ),
++                from_hex(value[3])? * 17,
++            )),
+             3 => Ok(rgb(
+                 from_hex(value[0])? * 17,
+                 from_hex(value[1])? * 17,
+-                from_hex(value[2])? * 17),
+-            ),
+-            _ => Err(())
++                from_hex(value[2])? * 17,
++            )),
++            _ => Err(()),
+         }
+     }
+ }
+@@ -339,7 +351,6 @@ fn rgba(red: u8, green: u8, blue: u8, alpha: u8) -> Color {
+     Color::RGBA(RGBA::new(red, green, blue, alpha))
+ }
+ 
+-
+ /// Return the named color with the given name.
+ ///
+ /// Matching is case-insensitive in the ASCII range.
+@@ -355,7 +366,7 @@ pub fn parse_color_keyword(ident: &str) -> Result<Color, ()> {
+                 blue: $blue,
+                 alpha: 255,
+             })
+-        }
++        };
+     }
+     ascii_case_insensitive_phf_map! {
+         keyword -> Color = {
+@@ -516,14 +527,13 @@ pub fn parse_color_keyword(ident: &str) -> Result<Color, ()> {
+     keyword(ident).cloned().ok_or(())
+ }
+ 
+-
+ #[inline]
+ fn from_hex(c: u8) -> Result<u8, ()> {
+     match c {
+-        b'0' ... b'9' => Ok(c - b'0'),
+-        b'a' ... b'f' => Ok(c - b'a' + 10),
+-        b'A' ... b'F' => Ok(c - b'A' + 10),
+-        _ => Err(())
++        b'0'...b'9' => Ok(c - b'0'),
++        b'a'...b'f' => Ok(c - b'a' + 10),
++        b'A'...b'F' => Ok(c - b'A' + 10),
++        _ => Err(()),
+     }
+ }
+ 
+@@ -553,7 +563,7 @@ fn clamp_floor_256_f32(val: f32) -> u8 {
+ fn parse_color_function<'i, 't, ComponentParser>(
+     component_parser: &ComponentParser,
+     name: &str,
+-    arguments: &mut Parser<'i, 't>
++    arguments: &mut Parser<'i, 't>,
+ ) -> Result<Color, ParseError<'i, ComponentParser::Error>>
+ where
+     ComponentParser: ColorComponentParser<'i>,
+@@ -570,7 +580,11 @@ where
+         } else {
+             arguments.expect_delim('/')?;
+         };
+-        clamp_unit_f32(component_parser.parse_number_or_percentage(arguments)?.unit_value())
++        clamp_unit_f32(
++            component_parser
++                .parse_number_or_percentage(arguments)?
++                .unit_value(),
++        )
+     } else {
+         255
+     };
+@@ -579,11 +593,10 @@ where
+     Ok(rgba(red, green, blue, alpha))
+ }
+ 
+-
+ #[inline]
+ fn parse_rgb_components_rgb<'i, 't, ComponentParser>(
+     component_parser: &ComponentParser,
+-    arguments: &mut Parser<'i, 't>
++    arguments: &mut Parser<'i, 't>,
+ ) -> Result<(u8, u8, u8, bool), ParseError<'i, ComponentParser::Error>>
+ where
+     ComponentParser: ColorComponentParser<'i>,
+@@ -591,15 +604,11 @@ where
+     // Either integers or percentages, but all the same type.
+     // https://drafts.csswg.org/css-color/#rgb-functions
+     let (red, is_number) = match component_parser.parse_number_or_percentage(arguments)? {
+-        NumberOrPercentage::Number { value } => {
+-            (clamp_floor_256_f32(value), true)
+-        }
+-        NumberOrPercentage::Percentage { unit_value } => {
+-            (clamp_unit_f32(unit_value), false)
+-        }
++        NumberOrPercentage::Number { value } => (clamp_floor_256_f32(value), true),
++        NumberOrPercentage::Percentage { unit_value } => (clamp_unit_f32(unit_value), false),
+     };
+ 
+-    let uses_commas = arguments.try(|i| i.expect_comma()).is_ok();
++    let uses_commas = arguments.try_parse(|i| i.expect_comma()).is_ok();
+ 
+     let green;
+     let blue;
+@@ -623,7 +632,7 @@ where
+ #[inline]
+ fn parse_rgb_components_hsl<'i, 't, ComponentParser>(
+     component_parser: &ComponentParser,
+-    arguments: &mut Parser<'i, 't>
++    arguments: &mut Parser<'i, 't>,
+ ) -> Result<(u8, u8, u8, bool), ParseError<'i, ComponentParser::Error>>
+ where
+     ComponentParser: ColorComponentParser<'i>,
+@@ -638,7 +647,7 @@ where
+ 
+     // Saturation and lightness are clamped to 0% ... 100%
+     // https://drafts.csswg.org/css-color/#the-hsl-notation
+-    let uses_commas = arguments.try(|i| i.expect_comma()).is_ok();
++    let uses_commas = arguments.try_parse(|i| i.expect_comma()).is_ok();
+ 
+     let saturation = component_parser.parse_percentage(arguments)?;
+     let saturation = saturation.max(0.).min(1.);
+@@ -653,16 +662,28 @@ where
+     // https://drafts.csswg.org/css-color/#hsl-color
+     // except with h pre-multiplied by 3, to avoid some rounding errors.
+     fn hue_to_rgb(m1: f32, m2: f32, mut h3: f32) -> f32 {
+-        if h3 < 0. { h3 += 3. }
+-        if h3 > 3. { h3 -= 3. }
++        if h3 < 0. {
++            h3 += 3.
++        }
++        if h3 > 3. {
++            h3 -= 3.
++        }
+ 
+-        if h3 * 2. < 1. { m1 + (m2 - m1) * h3 * 2. }
+-        else if h3 * 2. < 3. { m2 }
+-        else if h3 < 2. { m1 + (m2 - m1) * (2. - h3) * 2. }
+-        else { m1 }
++        if h3 * 2. < 1. {
++            m1 + (m2 - m1) * h3 * 2.
++        } else if h3 * 2. < 3. {
++            m2
++        } else if h3 < 2. {
++            m1 + (m2 - m1) * (2. - h3) * 2.
++        } else {
++            m1
++        }
+     }
+-    let m2 = if lightness <= 0.5 { lightness * (saturation + 1.) }
+-             else { lightness + saturation - lightness * saturation };
++    let m2 = if lightness <= 0.5 {
++        lightness * (saturation + 1.)
++    } else {
++        lightness + saturation - lightness * saturation
++    };
+     let m1 = lightness * 2. - m2;
+     let hue_times_3 = hue * 3.;
+     let red = clamp_unit_f32(hue_to_rgb(m1, m2, hue_times_3 + 1.));
+diff --git a/third_party/rust/cssparser/src/cow_rc_str.rs b/third_party/rust/cssparser/src/cow_rc_str.rs
+index b1e8597963..f89f4cdacf 100644
+--- a/third_party/rust/cssparser/src/cow_rc_str.rs
++++ b/third_party/rust/cssparser/src/cow_rc_str.rs
+@@ -103,16 +103,12 @@ impl<'a> Clone for CowRcStr<'a> {
+     fn clone(&self) -> Self {
+         match self.unpack() {
+             Err(ptr) => {
+-                let rc = unsafe {
+-                    Rc::from_raw(ptr)
+-                };
++                let rc = unsafe { Rc::from_raw(ptr) };
+                 let new_rc = rc.clone();
+-                mem::forget(rc);  // Don’t actually take ownership of this strong reference
++                mem::forget(rc); // Don’t actually take ownership of this strong reference
+                 CowRcStr::from_rc(new_rc)
+             }
+-            Ok(_) => {
+-                CowRcStr { ..*self }
+-            }
++            Ok(_) => CowRcStr { ..*self },
+         }
+     }
+ }
+@@ -121,9 +117,7 @@ impl<'a> Drop for CowRcStr<'a> {
+     #[inline]
+     fn drop(&mut self) {
+         if let Err(ptr) = self.unpack() {
+-            mem::drop(unsafe {
+-                Rc::from_raw(ptr)
+-            })
++            mem::drop(unsafe { Rc::from_raw(ptr) })
+         }
+     }
+ }
+@@ -133,9 +127,7 @@ impl<'a> Deref for CowRcStr<'a> {
+ 
+     #[inline]
+     fn deref(&self) -> &str {
+-        self.unpack().unwrap_or_else(|ptr| unsafe {
+-            &**ptr
+-        })
++        self.unpack().unwrap_or_else(|ptr| unsafe { &**ptr })
+     }
+ }
+ 
+diff --git a/third_party/rust/cssparser/src/from_bytes.rs b/third_party/rust/cssparser/src/from_bytes.rs
+index d71d9efbb5..78a56d3e14 100644
+--- a/third_party/rust/cssparser/src/from_bytes.rs
++++ b/third_party/rust/cssparser/src/from_bytes.rs
+@@ -17,7 +17,6 @@ pub trait EncodingSupport {
+     fn is_utf16_be_or_le(encoding: &Self::Encoding) -> bool;
+ }
+ 
+-
+ /// Determine the character encoding of a CSS stylesheet.
+ ///
+ /// This is based on the presence of a BOM (Byte Order Mark), an `@charset` rule, and
+@@ -30,31 +29,32 @@ pub trait EncodingSupport {
+ ///     (https://drafts.csswg.org/css-syntax/#environment-encoding), if any.
+ ///
+ /// Returns the encoding to use.
+-pub fn stylesheet_encoding<E>(css: &[u8], protocol_encoding_label: Option<&[u8]>,
+-                              environment_encoding: Option<E::Encoding>)
+-                              -> E::Encoding
+-                              where E: EncodingSupport {
++pub fn stylesheet_encoding<E>(
++    css: &[u8],
++    protocol_encoding_label: Option<&[u8]>,
++    environment_encoding: Option<E::Encoding>,
++) -> E::Encoding
++where
++    E: EncodingSupport,
++{
+     // https://drafts.csswg.org/css-syntax/#the-input-byte-stream
+-    match protocol_encoding_label {
+-        None => (),
+-        Some(label) => match E::from_label(label) {
+-            None => (),
+-            Some(protocol_encoding) => return protocol_encoding
+-        }
+-    }
++    if let Some(label) = protocol_encoding_label {
++        if let Some(protocol_encoding) = E::from_label(label) {
++            return protocol_encoding;
++        };
++    };
++
+     let prefix = b"@charset \"";
+     if css.starts_with(prefix) {
+         let rest = &css[prefix.len()..];
+-        match rest.iter().position(|&b| b == b'"') {
+-            None => (),
+-            Some(label_length) => if rest[label_length..].starts_with(b"\";") {
++        if let Some(label_length) = rest.iter().position(|&b| b == b'"') {
++            if rest[label_length..].starts_with(b"\";") {
+                 let label = &rest[..label_length];
+-                match E::from_label(label) {
+-                    None => (),
+-                    Some(charset_encoding) => if E::is_utf16_be_or_le(&charset_encoding) {
+-                        return E::utf8()
++                if let Some(charset_encoding) = E::from_label(label) {
++                    if E::is_utf16_be_or_le(&charset_encoding) {
++                        return E::utf8();
+                     } else {
+-                        return charset_encoding
++                        return charset_encoding;
+                     }
+                 }
+             }
+diff --git a/third_party/rust/cssparser/src/lib.rs b/third_party/rust/cssparser/src/lib.rs
+index 537979c036..4ca80566dd 100644
+--- a/third_party/rust/cssparser/src/lib.rs
++++ b/third_party/rust/cssparser/src/lib.rs
+@@ -4,7 +4,6 @@
+ 
+ #![crate_name = "cssparser"]
+ #![crate_type = "rlib"]
+-
+ #![cfg_attr(feature = "bench", feature(test))]
+ #![deny(missing_docs)]
+ 
+@@ -32,7 +31,7 @@ As a consequence, when calling another parsing function, either:
+ 
+ * Any `Err(())` return value must be propagated.
+   This happens by definition for tail calls,
+-  and can otherwise be done with the `try!` macro.
++  and can otherwise be done with the `?` operator.
+ * Or the call must be wrapped in a `Parser::try` call.
+   `try` takes a closure that takes a `Parser` and returns a `Result`,
+   calls it once,
+@@ -46,7 +45,7 @@ Examples:
+ // 'none' | <image>
+ fn parse_background_image(context: &ParserContext, input: &mut Parser)
+                                     -> Result<Option<Image>, ()> {
+-    if input.try(|input| input.expect_ident_matching("none")).is_ok() {
++    if input.try_parse(|input| input.expect_ident_matching("none")).is_ok() {
+         Ok(None)
+     } else {
+         Image::parse(context, input).map(Some)  // tail call
+@@ -58,50 +57,68 @@ fn parse_background_image(context: &ParserContext, input: &mut Parser)
+ // [ <length> | <percentage> ] [ <length> | <percentage> ]?
+ fn parse_border_spacing(_context: &ParserContext, input: &mut Parser)
+                           -> Result<(LengthOrPercentage, LengthOrPercentage), ()> {
+-    let first = try!(LengthOrPercentage::parse);
+-    let second = input.try(LengthOrPercentage::parse).unwrap_or(first);
++    let first = LengthOrPercentage::parse?;
++    let second = input.try_parse(LengthOrPercentage::parse).unwrap_or(first);
+     (first, second)
+ }
+ ```
+ 
+ */
+ 
+-#![recursion_limit="200"]  // For color::parse_color_keyword
++#![recursion_limit = "200"] // For color::parse_color_keyword
+ 
+ extern crate dtoa_short;
+ extern crate itoa;
+-#[macro_use] extern crate cssparser_macros;
+-#[macro_use] extern crate matches;
+-#[macro_use] extern crate procedural_masquerade;
+-#[doc(hidden)] pub extern crate phf as _internal__phf;
+-#[cfg(test)] extern crate encoding_rs;
+-#[cfg(test)] extern crate difference;
+-#[cfg(test)] extern crate rustc_serialize;
+-#[cfg(feature = "serde")] extern crate serde;
+-#[cfg(feature = "heapsize")] #[macro_use] extern crate heapsize;
++#[macro_use]
++extern crate cssparser_macros;
++#[macro_use]
++extern crate matches;
++#[macro_use]
++extern crate procedural_masquerade;
++#[cfg(test)]
++extern crate difference;
++#[cfg(test)]
++extern crate encoding_rs;
++#[doc(hidden)]
++pub extern crate phf as _internal__phf;
++#[cfg(test)]
++extern crate rustc_serialize;
++#[cfg(feature = "serde")]
++extern crate serde;
++#[cfg(feature = "heapsize")]
++#[macro_use]
++extern crate heapsize;
+ extern crate smallvec;
+ 
+ pub use cssparser_macros::*;
+ 
+-pub use tokenizer::{Token, SourcePosition, SourceLocation};
+-pub use rules_and_declarations::{parse_important};
+-pub use rules_and_declarations::{DeclarationParser, DeclarationListParser, parse_one_declaration};
+-pub use rules_and_declarations::{RuleListParser, parse_one_rule};
+-pub use rules_and_declarations::{AtRuleType, QualifiedRuleParser, AtRuleParser};
++pub use color::{
++    parse_color_keyword, AngleOrNumber, Color, ColorComponentParser, NumberOrPercentage, RGBA,
++};
++pub use cow_rc_str::CowRcStr;
+ pub use from_bytes::{stylesheet_encoding, EncodingSupport};
+-pub use color::{RGBA, Color, parse_color_keyword, AngleOrNumber, NumberOrPercentage, ColorComponentParser};
+ pub use nth::parse_nth;
+-pub use serializer::{ToCss, CssStringWriter, serialize_identifier, serialize_name, serialize_string, TokenSerializationType};
+-pub use parser::{Parser, Delimiter, Delimiters, ParserState, ParserInput};
+-pub use parser::{ParseError, ParseErrorKind, BasicParseError, BasicParseErrorKind};
++pub use parser::{BasicParseError, BasicParseErrorKind, ParseError, ParseErrorKind};
++pub use parser::{Delimiter, Delimiters, Parser, ParserInput, ParserState};
++pub use rules_and_declarations::parse_important;
++pub use rules_and_declarations::{parse_one_declaration, DeclarationListParser, DeclarationParser};
++pub use rules_and_declarations::{parse_one_rule, RuleListParser};
++pub use rules_and_declarations::{AtRuleParser, AtRuleType, QualifiedRuleParser};
++pub use serializer::{
++    serialize_identifier, serialize_name, serialize_string, CssStringWriter, ToCss,
++    TokenSerializationType,
++};
++pub use tokenizer::{SourceLocation, SourcePosition, Token};
+ pub use unicode_range::UnicodeRange;
+-pub use cow_rc_str::CowRcStr;
+ 
+ // For macros
+-#[doc(hidden)] pub use macros::_internal__to_lowercase;
++#[doc(hidden)]
++pub use macros::_internal__to_lowercase;
+ 
+ // For macros when used in this crate. Unsure how $crate works with procedural-masquerade.
+-mod cssparser { pub use _internal__phf; }
++mod cssparser {
++    pub use _internal__phf;
++}
+ 
+ #[macro_use]
+ mod macros;
+@@ -115,13 +132,15 @@ mod tokenizer;
+ mod tokenizer {
+     include!(concat!(env!("OUT_DIR"), "/tokenizer.rs"));
+ }
+-mod parser;
+-mod from_bytes;
+ mod color;
++mod cow_rc_str;
++mod from_bytes;
+ mod nth;
++mod parser;
+ mod serializer;
+ mod unicode_range;
+-mod cow_rc_str;
+ 
+-#[cfg(test)] mod tests;
+-#[cfg(test)] mod size_of_tests;
++#[cfg(test)]
++mod size_of_tests;
++#[cfg(test)]
++mod tests;
+diff --git a/third_party/rust/cssparser/src/macros.rs b/third_party/rust/cssparser/src/macros.rs
+index f3b80f09ad..986c18a4a7 100644
+--- a/third_party/rust/cssparser/src/macros.rs
++++ b/third_party/rust/cssparser/src/macros.rs
+@@ -2,7 +2,7 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-/// See docs of the `procedural-masquerade` crate.
++// See docs of the `procedural-masquerade` crate.
+ define_invoke_proc_macro!(cssparser_internal__invoke_proc_macro);
+ 
+ /// Expands to a `match` expression with string patterns,
+@@ -114,12 +114,10 @@ macro_rules! cssparser_internal__to_lowercase {
+         // which initializes with `copy_from_slice` the part of the buffer it uses,
+         // before it uses it.
+         #[allow(unsafe_code)]
+-        let mut buffer: [u8; $BUFFER_SIZE] = unsafe {
+-            ::std::mem::uninitialized()
+-        };
++        let mut buffer: [u8; $BUFFER_SIZE] = unsafe { ::std::mem::uninitialized() };
+         let input: &str = $input;
+         let $output = $crate::_internal__to_lowercase(&mut buffer, input);
+-    }
++    };
+ }
+ 
+ /// Implementation detail of match_ignore_ascii_case! and ascii_case_insensitive_phf_map! macros.
+@@ -134,12 +132,10 @@ pub fn _internal__to_lowercase<'a>(buffer: &'a mut [u8], input: &'a str) -> Opti
+     if let Some(buffer) = buffer.get_mut(..input.len()) {
+         if let Some(first_uppercase) = input.bytes().position(|byte| matches!(byte, b'A'...b'Z')) {
+             buffer.copy_from_slice(input.as_bytes());
+-            ::std::ascii::AsciiExt::make_ascii_lowercase(&mut buffer[first_uppercase..]);
++            buffer[first_uppercase..].make_ascii_lowercase();
+             // `buffer` was initialized to a copy of `input` (which is &str so well-formed UTF-8)
+             // then lowercased (which preserves UTF-8 well-formedness)
+-            unsafe {
+-                Some(::std::str::from_utf8_unchecked(buffer))
+-            }
++            unsafe { Some(::std::str::from_utf8_unchecked(buffer)) }
+         } else {
+             // Input is already lower-case
+             Some(input)
+diff --git a/third_party/rust/cssparser/src/nth.rs b/third_party/rust/cssparser/src/nth.rs
+index b3a6a600c1..691ff441d5 100644
+--- a/third_party/rust/cssparser/src/nth.rs
++++ b/third_party/rust/cssparser/src/nth.rs
+@@ -2,10 +2,7 @@
+  * License, v. 2.0. If a copy of the MPL was not distributed with this
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+-#[allow(unused_imports)] use std::ascii::AsciiExt;
+-
+-use super::{Token, Parser, ParserInput, BasicParseError};
+-
++use super::{BasicParseError, Parser, ParserInput, Token};
+ 
+ /// Parse the *An+B* notation, as found in the `:nth-child()` selector.
+ /// The input is typically the arguments of a function,
+@@ -14,14 +11,18 @@ use super::{Token, Parser, ParserInput, BasicParseError};
+ pub fn parse_nth<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(i32, i32), BasicParseError<'i>> {
+     // FIXME: remove .clone() when lifetimes are non-lexical.
+     match input.next()?.clone() {
+-        Token::Number { int_value: Some(b), .. } => {
+-            Ok((0, b))
+-        }
+-        Token::Dimension { int_value: Some(a), unit, .. } => {
++        Token::Number {
++            int_value: Some(b), ..
++        } => Ok((0, b)),
++        Token::Dimension {
++            int_value: Some(a),
++            unit,
++            ..
++        } => {
+             match_ignore_ascii_case! {
+                 &unit,
+-                "n" => Ok(try!(parse_b(input, a))),
+-                "n-" => Ok(try!(parse_signless_b(input, a, -1))),
++                "n" => Ok(parse_b(input, a)?),
++                "n-" => Ok(parse_signless_b(input, a, -1)?),
+                 _ => match parse_n_dash_digits(&*unit) {
+                     Ok(b) => Ok((a, b)),
+                     Err(()) => Err(input.new_basic_unexpected_token_error(Token::Ident(unit.clone())))
+@@ -32,10 +33,10 @@ pub fn parse_nth<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(i32, i32), Basic
+             match_ignore_ascii_case! { &value,
+                 "even" => Ok((2, 0)),
+                 "odd" => Ok((2, 1)),
+-                "n" => Ok(try!(parse_b(input, 1))),
+-                "-n" => Ok(try!(parse_b(input, -1))),
+-                "n-" => Ok(try!(parse_signless_b(input, 1, -1))),
+-                "-n-" => Ok(try!(parse_signless_b(input, -1, -1))),
++                "n" => Ok(parse_b(input, 1)?),
++                "-n" => Ok(parse_b(input, -1)?),
++                "n-" => Ok(parse_signless_b(input, 1, -1)?),
++                "-n-" => Ok(parse_signless_b(input, -1, -1)?),
+                 _ => {
+                     let (slice, a) = if value.starts_with("-") {
+                         (&value[1..], -1)
+@@ -67,13 +68,16 @@ pub fn parse_nth<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(i32, i32), Basic
+     }
+ }
+ 
+-
+ fn parse_b<'i, 't>(input: &mut Parser<'i, 't>, a: i32) -> Result<(i32, i32), BasicParseError<'i>> {
+     let start = input.state();
+     match input.next() {
+         Ok(&Token::Delim('+')) => parse_signless_b(input, a, 1),
+         Ok(&Token::Delim('-')) => parse_signless_b(input, a, -1),
+-        Ok(&Token::Number { has_sign: true, int_value: Some(b), .. }) => Ok((a, b)),
++        Ok(&Token::Number {
++            has_sign: true,
++            int_value: Some(b),
++            ..
++        }) => Ok((a, b)),
+         _ => {
+             input.reset(&start);
+             Ok((a, 0))
+@@ -81,21 +85,29 @@ fn parse_b<'i, 't>(input: &mut Parser<'i, 't>, a: i32) -> Result<(i32, i32), Bas
+     }
+ }
+ 
+-fn parse_signless_b<'i, 't>(input: &mut Parser<'i, 't>, a: i32, b_sign: i32) -> Result<(i32, i32), BasicParseError<'i>> {
++fn parse_signless_b<'i, 't>(
++    input: &mut Parser<'i, 't>,
++    a: i32,
++    b_sign: i32,
++) -> Result<(i32, i32), BasicParseError<'i>> {
+     // FIXME: remove .clone() when lifetimes are non-lexical.
+     match input.next()?.clone() {
+-        Token::Number { has_sign: false, int_value: Some(b), .. } => Ok((a, b_sign * b)),
+-        token => Err(input.new_basic_unexpected_token_error(token))
++        Token::Number {
++            has_sign: false,
++            int_value: Some(b),
++            ..
++        } => Ok((a, b_sign * b)),
++        token => Err(input.new_basic_unexpected_token_error(token)),
+     }
+ }
+ 
+ fn parse_n_dash_digits(string: &str) -> Result<i32, ()> {
+     let bytes = string.as_bytes();
+     if bytes.len() >= 3
+-    && bytes[..2].eq_ignore_ascii_case(b"n-")
+-    && bytes[2..].iter().all(|&c| matches!(c, b'0'...b'9'))
++        && bytes[..2].eq_ignore_ascii_case(b"n-")
++        && bytes[2..].iter().all(|&c| matches!(c, b'0'...b'9'))
+     {
+-        Ok(parse_number_saturate(&string[1..]).unwrap())  // Include the minus sign
++        Ok(parse_number_saturate(&string[1..]).unwrap()) // Include the minus sign
+     } else {
+         Err(())
+     }
+@@ -104,14 +116,17 @@ fn parse_n_dash_digits(string: &str) -> Result<i32, ()> {
+ fn parse_number_saturate(string: &str) -> Result<i32, ()> {
+     let mut input = ParserInput::new(string);
+     let mut parser = Parser::new(&mut input);
+-    let int = if let Ok(&Token::Number {int_value: Some(int), ..})
+-                = parser.next_including_whitespace_and_comments() {
++    let int = if let Ok(&Token::Number {
++        int_value: Some(int),
++        ..
++    }) = parser.next_including_whitespace_and_comments()
++    {
+         int
+     } else {
+-        return Err(())
++        return Err(());
+     };
+     if !parser.is_exhausted() {
+-        return Err(())
++        return Err(());
+     }
+     Ok(int)
+ }
+diff --git a/third_party/rust/cssparser/src/parser.rs b/third_party/rust/cssparser/src/parser.rs
+index 2cc73b9886..061040528f 100644
+--- a/third_party/rust/cssparser/src/parser.rs
++++ b/third_party/rust/cssparser/src/parser.rs
+@@ -4,11 +4,9 @@
+ 
+ use cow_rc_str::CowRcStr;
+ use smallvec::SmallVec;
+-use std::ops::Range;
+-#[allow(unused_imports)] use std::ascii::AsciiExt;
+ use std::ops::BitOr;
+-use tokenizer::{Token, Tokenizer, SourcePosition, SourceLocation};
+-
++use std::ops::Range;
++use tokenizer::{SourceLocation, SourcePosition, Token, Tokenizer};
+ 
+ /// A capture of the internal state of a `Parser` (including the position within the input),
+ /// obtained from the `Parser::position` method.
+@@ -114,7 +112,10 @@ pub enum ParseErrorKind<'i, T: 'i> {
+ 
+ impl<'i, T> ParseErrorKind<'i, T> {
+     /// Like `std::convert::Into::into`
+-    pub fn into<U>(self) -> ParseErrorKind<'i, U> where T: Into<U> {
++    pub fn into<U>(self) -> ParseErrorKind<'i, U>
++    where
++        T: Into<U>,
++    {
+         match self {
+             ParseErrorKind::Basic(basic) => ParseErrorKind::Basic(basic),
+             ParseErrorKind::Custom(custom) => ParseErrorKind::Custom(custom.into()),
+@@ -144,7 +145,10 @@ impl<'i, T> ParseError<'i, T> {
+     }
+ 
+     /// Like `std::convert::Into::into`
+-    pub fn into<U>(self) -> ParseError<'i, U> where T: Into<U> {
++    pub fn into<U>(self) -> ParseError<'i, U>
++    where
++        T: Into<U>,
++    {
+         ParseError {
+             kind: self.kind.into(),
+             location: self.location,
+@@ -199,7 +203,6 @@ pub struct Parser<'i: 't, 't> {
+     stop_before: Delimiters,
+ }
+ 
+-
+ #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+ pub(crate) enum BlockType {
+     Parenthesis,
+@@ -207,15 +210,13 @@ pub(crate) enum BlockType {
+     CurlyBracket,
+ }
+ 
+-
+ impl BlockType {
+     fn opening(token: &Token) -> Option<BlockType> {
+         match *token {
+-            Token::Function(_) |
+-            Token::ParenthesisBlock => Some(BlockType::Parenthesis),
++            Token::Function(_) | Token::ParenthesisBlock => Some(BlockType::Parenthesis),
+             Token::SquareBracketBlock => Some(BlockType::SquareBracket),
+             Token::CurlyBracketBlock => Some(BlockType::CurlyBracket),
+-            _ => None
++            _ => None,
+         }
+     }
+ 
+@@ -224,12 +225,11 @@ impl BlockType {
+             Token::CloseParenthesis => Some(BlockType::Parenthesis),
+             Token::CloseSquareBracket => Some(BlockType::SquareBracket),
+             Token::CloseCurlyBracket => Some(BlockType::CurlyBracket),
+-            _ => None
++            _ => None,
+         }
+     }
+ }
+ 
+-
+ /// A set of characters, to be used with the `Parser::parse_until*` methods.
+ ///
+ /// The union of two sets can be obtained with the `|` operator. Example:
+@@ -273,7 +273,9 @@ impl BitOr<Delimiters> for Delimiters {
+ 
+     #[inline]
+     fn bitor(self, other: Delimiters) -> Delimiters {
+-        Delimiters { bits: self.bits | other.bits }
++        Delimiters {
++            bits: self.bits | other.bits,
++        }
+     }
+ }
+ 
+@@ -338,16 +340,21 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     }
+ 
+     /// Check whether the input is exhausted. That is, if `.next()` would return a token.
+-    /// Return a `Result` so that the `try!` macro can be used: `try!(input.expect_exhausted())`
++    /// Return a `Result` so that the `?` operator can be used: `input.expect_exhausted()?`
+     ///
+     /// This ignores whitespace and comments.
+     #[inline]
+     pub fn expect_exhausted(&mut self) -> Result<(), BasicParseError<'i>> {
+         let start = self.state();
+         let result = match self.next() {
+-            Err(BasicParseError { kind: BasicParseErrorKind::EndOfInput, .. }) => Ok(()),
++            Err(BasicParseError {
++                kind: BasicParseErrorKind::EndOfInput,
++                ..
++            }) => Ok(()),
+             Err(e) => unreachable!("Unexpected error encountered: {:?}", e),
+-            Ok(t) => Err(start.source_location().new_basic_unexpected_token_error(t.clone())),
++            Ok(t) => Err(start
++                .source_location()
++                .new_basic_unexpected_token_error(t.clone())),
+         };
+         self.reset(&start);
+         result
+@@ -426,7 +433,7 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     pub fn new_error_for_next_token<E>(&mut self) -> ParseError<'i, E> {
+         let token = match self.next() {
+             Ok(token) => token.clone(),
+-            Err(e) => return e.into()
++            Err(e) => return e.into(),
+         };
+         self.new_error(BasicParseErrorKind::UnexpectedToken(token))
+     }
+@@ -438,7 +445,7 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     pub fn state(&self) -> ParserState {
+         ParserState {
+             at_start_of: self.at_start_of,
+-            .. self.input.tokenizer.state()
++            ..self.input.tokenizer.state()
+         }
+     }
+ 
+@@ -465,7 +472,7 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     pub(crate) fn next_byte(&self) -> Option<u8> {
+         let byte = self.input.tokenizer.next_byte();
+         if self.stop_before.contains(Delimiters::from_byte(byte)) {
+-            return None
++            return None;
+         }
+         byte
+     }
+@@ -495,13 +502,24 @@ impl<'i: 't, 't> Parser<'i, 't> {
+         self.input.tokenizer.seen_var_or_env_functions()
+     }
+ 
++    /// The old name of `try_parse`, which requires raw identifiers in the Rust 2018 edition.
++    #[inline]
++    pub fn try<F, T, E>(&mut self, thing: F) -> Result<T, E>
++    where
++        F: FnOnce(&mut Parser<'i, 't>) -> Result<T, E>,
++    {
++        self.try_parse(thing)
++    }
++
+     /// Execute the given closure, passing it the parser.
+     /// If the result (returned unchanged) is `Err`,
+     /// the internal state of the parser  (including position within the input)
+     /// is restored to what it was before the call.
+     #[inline]
+-    pub fn try<F, T, E>(&mut self, thing: F) -> Result<T, E>
+-    where F: FnOnce(&mut Parser<'i, 't>) -> Result<T, E> {
++    pub fn try_parse<F, T, E>(&mut self, thing: F) -> Result<T, E>
++    where
++        F: FnOnce(&mut Parser<'i, 't>) -> Result<T, E>,
++    {
+         let start = self.state();
+         let result = thing(self);
+         if result.is_err() {
+@@ -543,8 +561,8 @@ impl<'i: 't, 't> Parser<'i, 't> {
+         loop {
+             match self.next_including_whitespace_and_comments() {
+                 Err(e) => return Err(e),
+-                Ok(&Token::Comment(_)) => {},
+-                _ => break
++                Ok(&Token::Comment(_)) => {}
++                _ => break,
+             }
+         }
+         Ok(self.input.cached_token_ref())
+@@ -556,39 +574,47 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     /// where comments are preserved.
+     /// When parsing higher-level values, per the CSS Syntax specification,
+     /// comments should always be ignored between tokens.
+-    pub fn next_including_whitespace_and_comments(&mut self) -> Result<&Token<'i>, BasicParseError<'i>> {
++    pub fn next_including_whitespace_and_comments(
++        &mut self,
++    ) -> Result<&Token<'i>, BasicParseError<'i>> {
+         if let Some(block_type) = self.at_start_of.take() {
+             consume_until_end_of_block(block_type, &mut self.input.tokenizer);
+         }
+ 
+         let byte = self.input.tokenizer.next_byte();
+         if self.stop_before.contains(Delimiters::from_byte(byte)) {
+-            return Err(self.new_basic_error(BasicParseErrorKind::EndOfInput))
++            return Err(self.new_basic_error(BasicParseErrorKind::EndOfInput));
+         }
+ 
+         let token_start_position = self.input.tokenizer.position();
+-        let token;
+-        match self.input.cached_token {
+-            Some(ref cached_token)
+-            if cached_token.start_position == token_start_position => {
+-                self.input.tokenizer.reset(&cached_token.end_state);
+-                match cached_token.token {
+-                    Token::Function(ref name) => self.input.tokenizer.see_function(name),
+-                    _ => {}
+-                }
+-                token = &cached_token.token
++        let using_cached_token = self
++            .input
++            .cached_token
++            .as_ref()
++            .map_or(false, |cached_token| {
++                cached_token.start_position == token_start_position
++            });
++        let token = if using_cached_token {
++            let cached_token = self.input.cached_token.as_ref().unwrap();
++            self.input.tokenizer.reset(&cached_token.end_state);
++            match cached_token.token {
++                Token::Function(ref name) => self.input.tokenizer.see_function(name),
++                _ => {}
+             }
+-            _ => {
+-                let new_token = self.input.tokenizer.next()
+-                    .map_err(|()| self.new_basic_error(BasicParseErrorKind::EndOfInput))?;
+-                self.input.cached_token = Some(CachedToken {
+-                    token: new_token,
+-                    start_position: token_start_position,
+-                    end_state: self.input.tokenizer.state(),
+-                });
+-                token = self.input.cached_token_ref()
+-            }
+-        }
++            &cached_token.token
++        } else {
++            let new_token = self
++                .input
++                .tokenizer
++                .next()
++                .map_err(|()| self.new_basic_error(BasicParseErrorKind::EndOfInput))?;
++            self.input.cached_token = Some(CachedToken {
++                token: new_token,
++                start_position: token_start_position,
++                end_state: self.input.tokenizer.state(),
++            });
++            self.input.cached_token_ref()
++        };
+ 
+         if let Some(block_type) = BlockType::opening(token) {
+             self.at_start_of = Some(block_type);
+@@ -602,7 +628,9 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     /// This can help tell e.g. `color: green;` from `color: green 4px;`
+     #[inline]
+     pub fn parse_entirely<F, T, E>(&mut self, parse: F) -> Result<T, ParseError<'i, E>>
+-    where F: FnOnce(&mut Parser<'i, 't>) -> Result<T, ParseError<'i, E>> {
++    where
++        F: FnOnce(&mut Parser<'i, 't>) -> Result<T, ParseError<'i, E>>,
++    {
+         let result = parse(self)?;
+         self.expect_exhausted()?;
+         Ok(result)
+@@ -619,15 +647,20 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     /// This method retuns `Err(())` the first time that a closure call does,
+     /// or if a closure call leaves some input before the next comma or the end of the input.
+     #[inline]
+-    pub fn parse_comma_separated<F, T, E>(&mut self, mut parse_one: F) -> Result<Vec<T>, ParseError<'i, E>>
+-    where F: for<'tt> FnMut(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++    pub fn parse_comma_separated<F, T, E>(
++        &mut self,
++        mut parse_one: F,
++    ) -> Result<Vec<T>, ParseError<'i, E>>
++    where
++        F: for<'tt> FnMut(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++    {
+         // Vec grows from 0 to 4 by default on first push().  So allocate with
+         // capacity 1, so in the somewhat common case of only one item we don't
+         // way overallocate.  Note that we always push at least one item if
+         // parsing succeeds.
+         let mut values = Vec::with_capacity(1);
+         loop {
+-            self.skip_whitespace();  // Unnecessary for correctness, but may help try() in parse_one rewind less.
++            self.skip_whitespace(); // Unnecessary for correctness, but may help try() in parse_one rewind less.
+             values.push(self.parse_until_before(Delimiter::Comma, &mut parse_one)?);
+             match self.next() {
+                 Err(_) => return Ok(values),
+@@ -649,8 +682,10 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     ///
+     /// The result is overridden to `Err(())` if the closure leaves some input before that point.
+     #[inline]
+-    pub fn parse_nested_block<F, T, E>(&mut self, parse: F) -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++    pub fn parse_nested_block<F, T, E>(&mut self, parse: F) -> Result<T, ParseError<'i, E>>
++    where
++        F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++    {
+         parse_nested_block(self, parse)
+     }
+ 
+@@ -663,9 +698,14 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     ///
+     /// The result is overridden to `Err(())` if the closure leaves some input before that point.
+     #[inline]
+-    pub fn parse_until_before<F, T, E>(&mut self, delimiters: Delimiters, parse: F)
+-                                    -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++    pub fn parse_until_before<F, T, E>(
++        &mut self,
++        delimiters: Delimiters,
++        parse: F,
++    ) -> Result<T, ParseError<'i, E>>
++    where
++        F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++    {
+         parse_until_before(self, delimiters, parse)
+     }
+ 
+@@ -675,9 +715,14 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     /// (e.g. if these is only one in the given set)
+     /// or if it was there at all (as opposed to reaching the end of the input).
+     #[inline]
+-    pub fn parse_until_after<F, T, E>(&mut self, delimiters: Delimiters, parse: F)
+-                                   -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++    pub fn parse_until_after<F, T, E>(
++        &mut self,
++        delimiters: Delimiters,
++        parse: F,
++    ) -> Result<T, ParseError<'i, E>>
++    where
++        F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++    {
+         parse_until_after(self, delimiters, parse)
+     }
+ 
+@@ -687,7 +732,7 @@ impl<'i: 't, 't> Parser<'i, 't> {
+         let start_location = self.current_source_location();
+         match *self.next_including_whitespace()? {
+             Token::WhiteSpace(value) => Ok(value),
+-            ref t => Err(start_location.new_basic_unexpected_token_error(t.clone()))
++            ref t => Err(start_location.new_basic_unexpected_token_error(t.clone())),
+         }
+     }
+ 
+@@ -707,7 +752,10 @@ impl<'i: 't, 't> Parser<'i, 't> {
+ 
+     /// Parse a <ident-token> whose unescaped value is an ASCII-insensitive match for the given value.
+     #[inline]
+-    pub fn expect_ident_matching(&mut self, expected_value: &str) -> Result<(), BasicParseError<'i>> {
++    pub fn expect_ident_matching(
++        &mut self,
++        expected_value: &str,
++    ) -> Result<(), BasicParseError<'i>> {
+         expect! {self,
+             Token::Ident(ref value) if value.eq_ignore_ascii_case(expected_value) => Ok(()),
+         }
+@@ -744,8 +792,10 @@ impl<'i: 't, 't> Parser<'i, 't> {
+             Token::UnquotedUrl(ref value) => return Ok(value.clone()),
+             Token::Function(ref name) if name.eq_ignore_ascii_case("url") => {}
+         }
+-        self.parse_nested_block(|input| input.expect_string().map_err(Into::into).map(|s| s.clone()))
+-            .map_err(ParseError::<()>::basic)
++        self.parse_nested_block(|input| {
++            input.expect_string().map_err(Into::into).map(|s| s.clone())
++        })
++        .map_err(ParseError::<()>::basic)
+     }
+ 
+     /// Parse either a <url-token> or a <string-token>, and return the unescaped value.
+@@ -757,8 +807,10 @@ impl<'i: 't, 't> Parser<'i, 't> {
+             Token::QuotedString(ref value) => return Ok(value.clone()),
+             Token::Function(ref name) if name.eq_ignore_ascii_case("url") => {}
+         }
+-        self.parse_nested_block(|input| input.expect_string().map_err(Into::into).map(|s| s.clone()))
+-            .map_err(ParseError::<()>::basic)
++        self.parse_nested_block(|input| {
++            input.expect_string().map_err(Into::into).map(|s| s.clone())
++        })
++        .map_err(ParseError::<()>::basic)
+     }
+ 
+     /// Parse a <number-token> and return the integer value.
+@@ -862,7 +914,10 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     ///
+     /// If the result is `Ok`, you can then call the `Parser::parse_nested_block` method.
+     #[inline]
+-    pub fn expect_function_matching(&mut self, expected_name: &str) -> Result<(), BasicParseError<'i>> {
++    pub fn expect_function_matching(
++        &mut self,
++        expected_name: &str,
++    ) -> Result<(), BasicParseError<'i>> {
+         expect! {self,
+             Token::Function(ref name) if name.eq_ignore_ascii_case(expected_name) => Ok(()),
+         }
+@@ -877,21 +932,22 @@ impl<'i: 't, 't> Parser<'i, 't> {
+         let token;
+         loop {
+             match self.next_including_whitespace_and_comments() {
+-                Ok(&Token::Function(_)) |
+-                Ok(&Token::ParenthesisBlock) |
+-                Ok(&Token::SquareBracketBlock) |
+-                Ok(&Token::CurlyBracketBlock) => {}
++                Ok(&Token::Function(_))
++                | Ok(&Token::ParenthesisBlock)
++                | Ok(&Token::SquareBracketBlock)
++                | Ok(&Token::CurlyBracketBlock) => {}
+                 Ok(t) => {
+                     if t.is_parse_error() {
+                         token = t.clone();
+-                        break
++                        break;
+                     }
+-                    continue
++                    continue;
+                 }
+-                Err(_) => return Ok(())
++                Err(_) => return Ok(()),
+             }
+-            let result = self.parse_nested_block(|input| input.expect_no_error_token()
+-                                                 .map_err(|e| Into::into(e)));
++            let result = self.parse_nested_block(|input| {
++                input.expect_no_error_token().map_err(|e| Into::into(e))
++            });
+             result.map_err(ParseError::<()>::basic)?
+         }
+         // FIXME: maybe these should be separate variants of BasicParseError instead?
+@@ -899,11 +955,14 @@ impl<'i: 't, 't> Parser<'i, 't> {
+     }
+ }
+ 
+-pub fn parse_until_before<'i: 't, 't, F, T, E>(parser: &mut Parser<'i, 't>,
+-                                               delimiters: Delimiters,
+-                                               parse: F)
+-                                               -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++pub fn parse_until_before<'i: 't, 't, F, T, E>(
++    parser: &mut Parser<'i, 't>,
++    delimiters: Delimiters,
++    parse: F,
++) -> Result<T, ParseError<'i, E>>
++where
++    F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++{
+     let delimiters = parser.stop_before | delimiters;
+     let result;
+     // Introduce a new scope to limit duration of nested_parser’s borrow
+@@ -921,27 +980,34 @@ pub fn parse_until_before<'i: 't, 't, F, T, E>(parser: &mut Parser<'i, 't>,
+     // FIXME: have a special-purpose tokenizer method for this that does less work.
+     loop {
+         if delimiters.contains(Delimiters::from_byte(parser.input.tokenizer.next_byte())) {
+-            break
++            break;
+         }
+         if let Ok(token) = parser.input.tokenizer.next() {
+             if let Some(block_type) = BlockType::opening(&token) {
+                 consume_until_end_of_block(block_type, &mut parser.input.tokenizer);
+             }
+         } else {
+-            break
++            break;
+         }
+     }
+     result
+ }
+ 
+-pub fn parse_until_after<'i: 't, 't, F, T, E>(parser: &mut Parser<'i, 't>,
+-                                              delimiters: Delimiters,
+-                                              parse: F)
+-                                              -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
++pub fn parse_until_after<'i: 't, 't, F, T, E>(
++    parser: &mut Parser<'i, 't>,
++    delimiters: Delimiters,
++    parse: F,
++) -> Result<T, ParseError<'i, E>>
++where
++    F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++{
+     let result = parser.parse_until_before(delimiters, parse);
+     let next_byte = parser.input.tokenizer.next_byte();
+-    if next_byte.is_some() && !parser.stop_before.contains(Delimiters::from_byte(next_byte)) {
++    if next_byte.is_some()
++        && !parser
++            .stop_before
++            .contains(Delimiters::from_byte(next_byte))
++    {
+         debug_assert!(delimiters.contains(Delimiters::from_byte(next_byte)));
+         // We know this byte is ASCII.
+         parser.input.tokenizer.advance(1);
+@@ -952,14 +1018,20 @@ pub fn parse_until_after<'i: 't, 't, F, T, E>(parser: &mut Parser<'i, 't>,
+     result
+ }
+ 
+-pub fn parse_nested_block<'i: 't, 't, F, T, E>(parser: &mut Parser<'i, 't>, parse: F)
+-                                               -> Result <T, ParseError<'i, E>>
+-    where F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>> {
+-    let block_type = parser.at_start_of.take().expect("\
+-        A nested parser can only be created when a Function, \
+-        ParenthesisBlock, SquareBracketBlock, or CurlyBracketBlock \
+-        token was just consumed.\
+-        ");
++pub fn parse_nested_block<'i: 't, 't, F, T, E>(
++    parser: &mut Parser<'i, 't>,
++    parse: F,
++) -> Result<T, ParseError<'i, E>>
++where
++    F: for<'tt> FnOnce(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i, E>>,
++{
++    let block_type = parser.at_start_of.take().expect(
++        "\
++         A nested parser can only be created when a Function, \
++         ParenthesisBlock, SquareBracketBlock, or CurlyBracketBlock \
++         token was just consumed.\
++         ",
++    );
+     let closing_delimiter = match block_type {
+         BlockType::CurlyBracket => ClosingDelimiter::CloseCurlyBracket,
+         BlockType::SquareBracket => ClosingDelimiter::CloseSquareBracket,
+diff --git a/third_party/rust/cssparser/src/rules_and_declarations.rs b/third_party/rust/cssparser/src/rules_and_declarations.rs
+index b8bc1c8896..230f2d3418 100644
+--- a/third_party/rust/cssparser/src/rules_and_declarations.rs
++++ b/third_party/rust/cssparser/src/rules_and_declarations.rs
+@@ -4,15 +4,14 @@
+ 
+ // https://drafts.csswg.org/css-syntax/#parsing
+ 
+-use cow_rc_str::CowRcStr;
+-use parser::{parse_until_before, parse_until_after, parse_nested_block, ParserState};
+-#[allow(unused_imports)] use std::ascii::AsciiExt;
+ use super::{BasicParseError, BasicParseErrorKind, Delimiter};
+ use super::{ParseError, Parser, SourceLocation, Token};
++use cow_rc_str::CowRcStr;
++use parser::{parse_nested_block, parse_until_after, parse_until_before, ParserState};
+ 
+ /// Parse `!important`.
+ ///
+-/// Typical usage is `input.try(parse_important).is_ok()`
++/// Typical usage is `input.try_parse(parse_important).is_ok()`
+ /// at the end of a `DeclarationParser::parse_value` implementation.
+ pub fn parse_important<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(), BasicParseError<'i>> {
+     input.expect_delim('!')?;
+@@ -61,10 +60,13 @@ pub trait DeclarationParser<'i> {
+     /// (In declaration lists, before the next semicolon or end of the current block.)
+     ///
+     /// If `!important` can be used in a given context,
+-    /// `input.try(parse_important).is_ok()` should be used at the end
++    /// `input.try_parse(parse_important).is_ok()` should be used at the end
+     /// of the implementation of this method and the result should be part of the return value.
+-    fn parse_value<'t>(&mut self, name: CowRcStr<'i>, input: &mut Parser<'i, 't>)
+-                       -> Result<Self::Declaration, ParseError<'i, Self::Error>>;
++    fn parse_value<'t>(
++        &mut self,
++        name: CowRcStr<'i>,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<Self::Declaration, ParseError<'i, Self::Error>>;
+ }
+ 
+ /// A trait to provide various parsing of at-rules.
+@@ -106,9 +108,12 @@ pub trait AtRuleParser<'i> {
+     /// The given `input` is a "delimited" parser
+     /// that ends wherever the prelude should end.
+     /// (Before the next semicolon, the next `{`, or the end of the current block.)
+-    fn parse_prelude<'t>(&mut self, name: CowRcStr<'i>, input: &mut Parser<'i, 't>)
+-                     -> Result<AtRuleType<Self::PreludeNoBlock, Self::PreludeBlock>,
+-                               ParseError<'i, Self::Error>> {
++    fn parse_prelude<'t>(
++        &mut self,
++        name: CowRcStr<'i>,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<AtRuleType<Self::PreludeNoBlock, Self::PreludeBlock>, ParseError<'i, Self::Error>>
++    {
+         let _ = name;
+         let _ = input;
+         Err(input.new_error(BasicParseErrorKind::AtRuleInvalid(name)))
+@@ -129,8 +134,10 @@ pub trait AtRuleParser<'i> {
+     ) -> Self::AtRule {
+         let _ = prelude;
+         let _ = location;
+-        panic!("The `AtRuleParser::rule_without_block` method must be overriden \
+-                if `AtRuleParser::parse_prelude` ever returns `AtRuleType::WithoutBlock`.")
++        panic!(
++            "The `AtRuleParser::rule_without_block` method must be overriden \
++             if `AtRuleParser::parse_prelude` ever returns `AtRuleType::WithoutBlock`."
++        )
+     }
+ 
+     /// Parse the content of a `{ /* ... */ }` block for the body of the at-rule.
+@@ -185,8 +192,10 @@ pub trait QualifiedRuleParser<'i> {
+     ///
+     /// The given `input` is a "delimited" parser
+     /// that ends where the prelude should end (before the next `{`).
+-    fn parse_prelude<'t>(&mut self, input: &mut Parser<'i, 't>)
+-                         -> Result<Self::Prelude, ParseError<'i, Self::Error>> {
++    fn parse_prelude<'t>(
++        &mut self,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<Self::Prelude, ParseError<'i, Self::Error>> {
+         let _ = input;
+         Err(input.new_error(BasicParseErrorKind::QualifiedRuleInvalid))
+     }
+@@ -211,7 +220,6 @@ pub trait QualifiedRuleParser<'i> {
+     }
+ }
+ 
+-
+ /// Provides an iterator for declaration list parsing.
+ pub struct DeclarationListParser<'i: 't, 't: 'a, 'a, P> {
+     /// The input given to `DeclarationListParser::new`
+@@ -221,10 +229,10 @@ pub struct DeclarationListParser<'i: 't, 't: 'a, 'a, P> {
+     pub parser: P,
+ }
+ 
+-
+ impl<'i: 't, 't: 'a, 'a, I, P, E: 'i> DeclarationListParser<'i, 't, 'a, P>
+-where P: DeclarationParser<'i, Declaration = I, Error = E> +
+-         AtRuleParser<'i, AtRule = I, Error = E> {
++where
++    P: DeclarationParser<'i, Declaration = I, Error = E> + AtRuleParser<'i, AtRule = I, Error = E>,
++{
+     /// Create a new `DeclarationListParser` for the given `input` and `parser`.
+     ///
+     /// Note that all CSS declaration lists can on principle contain at-rules.
+@@ -250,8 +258,9 @@ where P: DeclarationParser<'i, Declaration = I, Error = E> +
+ /// `DeclarationListParser` is an iterator that yields `Ok(_)` for a valid declaration or at-rule
+ /// or `Err(())` for an invalid one.
+ impl<'i: 't, 't: 'a, 'a, I, P, E: 'i> Iterator for DeclarationListParser<'i, 't, 'a, P>
+-where P: DeclarationParser<'i, Declaration = I, Error = E> +
+-         AtRuleParser<'i, AtRule = I, Error = E> {
++where
++    P: DeclarationParser<'i, Declaration = I, Error = E> + AtRuleParser<'i, AtRule = I, Error = E>,
++{
+     type Item = Result<I, (ParseError<'i, E>, &'i str)>;
+ 
+     fn next(&mut self) -> Option<Self::Item> {
+@@ -259,7 +268,9 @@ where P: DeclarationParser<'i, Declaration = I, Error = E> +
+             let start = self.input.state();
+             // FIXME: remove intermediate variable when lifetimes are non-lexical
+             let ident = match self.input.next_including_whitespace_and_comments() {
+-                Ok(&Token::WhiteSpace(_)) | Ok(&Token::Comment(_)) | Ok(&Token::Semicolon) => continue,
++                Ok(&Token::WhiteSpace(_)) | Ok(&Token::Comment(_)) | Ok(&Token::Semicolon) => {
++                    continue
++                }
+                 Ok(&Token::Ident(ref name)) => Ok(Ok(name.clone())),
+                 Ok(&Token::AtKeyword(ref name)) => Ok(Err(name.clone())),
+                 Ok(token) => Err(token.clone()),
+@@ -271,29 +282,34 @@ where P: DeclarationParser<'i, Declaration = I, Error = E> +
+                     let result = {
+                         let parser = &mut self.parser;
+                         // FIXME: https://github.com/rust-lang/rust/issues/42508
+-                        parse_until_after::<'i, 't, _, _, _>(self.input, Delimiter::Semicolon, |input| {
+-                            input.expect_colon()?;
+-                            parser.parse_value(name, input)
+-                        })
++                        parse_until_after::<'i, 't, _, _, _>(
++                            self.input,
++                            Delimiter::Semicolon,
++                            |input| {
++                                input.expect_colon()?;
++                                parser.parse_value(name, input)
++                            },
++                        )
+                     };
+-                    return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))))
++                    return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))));
+                 }
+                 Ok(Err(name)) => {
+                     // At-keyword
+-                    return Some(parse_at_rule(&start, name, self.input, &mut self.parser))
++                    return Some(parse_at_rule(&start, name, self.input, &mut self.parser));
+                 }
+                 Err(token) => {
+                     let result = self.input.parse_until_after(Delimiter::Semicolon, |_| {
+-                        Err(start.source_location().new_unexpected_token_error(token.clone()))
++                        Err(start
++                            .source_location()
++                            .new_unexpected_token_error(token.clone()))
+                     });
+-                    return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))))
++                    return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))));
+                 }
+             }
+         }
+     }
+ }
+ 
+-
+ /// Provides an iterator for rule list parsing.
+ pub struct RuleListParser<'i: 't, 't: 'a, 'a, P> {
+     /// The input given to `RuleListParser::new`
+@@ -306,10 +322,11 @@ pub struct RuleListParser<'i: 't, 't: 'a, 'a, P> {
+     any_rule_so_far: bool,
+ }
+ 
+-
+ impl<'i: 't, 't: 'a, 'a, R, P, E: 'i> RuleListParser<'i, 't, 'a, P>
+-where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+-         AtRuleParser<'i, AtRule = R, Error = E> {
++where
++    P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E>
++        + AtRuleParser<'i, AtRule = R, Error = E>,
++{
+     /// Create a new `RuleListParser` for the given `input` at the top-level of a stylesheet
+     /// and the given `parser`.
+     ///
+@@ -345,12 +362,12 @@ where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+     }
+ }
+ 
+-
+-
+ /// `RuleListParser` is an iterator that yields `Ok(_)` for a rule or `Err(())` for an invalid one.
+ impl<'i: 't, 't: 'a, 'a, R, P, E: 'i> Iterator for RuleListParser<'i, 't, 'a, P>
+-where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+-         AtRuleParser<'i, AtRule = R, Error = E> {
++where
++    P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E>
++        + AtRuleParser<'i, AtRule = R, Error = E>,
++{
+     type Item = Result<R, (ParseError<'i, E>, &'i str)>;
+ 
+     fn next(&mut self) -> Option<Self::Item> {
+@@ -375,7 +392,7 @@ where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+                     }
+                 }
+                 Some(_) => at_keyword = None,
+-                None => return None
++                None => return None,
+             }
+ 
+             if let Some(name) = at_keyword {
+@@ -383,40 +400,52 @@ where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+                 self.any_rule_so_far = true;
+                 if first_stylesheet_rule && name.eq_ignore_ascii_case("charset") {
+                     let delimiters = Delimiter::Semicolon | Delimiter::CurlyBracketBlock;
+-                    let _: Result<(), ParseError<()>> = self.input.parse_until_after(delimiters, |_| Ok(()));
++                    let _: Result<(), ParseError<()>> =
++                        self.input.parse_until_after(delimiters, |_| Ok(()));
+                 } else {
+-                    return Some(parse_at_rule(&start, name.clone(), self.input, &mut self.parser))
++                    return Some(parse_at_rule(
++                        &start,
++                        name.clone(),
++                        self.input,
++                        &mut self.parser,
++                    ));
+                 }
+             } else {
+                 self.any_rule_so_far = true;
+                 let result = parse_qualified_rule(self.input, &mut self.parser);
+-                return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))))
++                return Some(result.map_err(|e| (e, self.input.slice_from(start.position()))));
+             }
+         }
+     }
+ }
+ 
+-
+ /// Parse a single declaration, such as an `( /* ... */ )` parenthesis in an `@supports` prelude.
+-pub fn parse_one_declaration<'i, 't, P, E>(input: &mut Parser<'i, 't>, parser: &mut P)
+-                                           -> Result<<P as DeclarationParser<'i>>::Declaration,
+-                                                     (ParseError<'i, E>, &'i str)>
+-                                           where P: DeclarationParser<'i, Error = E> {
++pub fn parse_one_declaration<'i, 't, P, E>(
++    input: &mut Parser<'i, 't>,
++    parser: &mut P,
++) -> Result<<P as DeclarationParser<'i>>::Declaration, (ParseError<'i, E>, &'i str)>
++where
++    P: DeclarationParser<'i, Error = E>,
++{
+     let start_position = input.position();
+-    input.parse_entirely(|input| {
+-        let name = input.expect_ident()?.clone();
+-        input.expect_colon()?;
+-        parser.parse_value(name, input)
+-    })
+-    .map_err(|e| (e, input.slice_from(start_position)))
++    input
++        .parse_entirely(|input| {
++            let name = input.expect_ident()?.clone();
++            input.expect_colon()?;
++            parser.parse_value(name, input)
++        })
++        .map_err(|e| (e, input.slice_from(start_position)))
+ }
+ 
+-
+ /// Parse a single rule, such as for CSSOM’s `CSSStyleSheet.insertRule`.
+-pub fn parse_one_rule<'i, 't, R, P, E>(input: &mut Parser<'i, 't>, parser: &mut P)
+-                                       -> Result<R, ParseError<'i, E>>
+-where P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E> +
+-         AtRuleParser<'i, AtRule = R, Error = E> {
++pub fn parse_one_rule<'i, 't, R, P, E>(
++    input: &mut Parser<'i, 't>,
++    parser: &mut P,
++) -> Result<R, ParseError<'i, E>>
++where
++    P: QualifiedRuleParser<'i, QualifiedRule = R, Error = E>
++        + AtRuleParser<'i, AtRule = R, Error = E>,
++{
+     input.parse_entirely(|input| {
+         input.skip_whitespace();
+         let start = input.state();
+@@ -450,7 +479,7 @@ fn parse_at_rule<'i: 't, 't, P, E>(
+     parser: &mut P,
+ ) -> Result<<P as AtRuleParser<'i>>::AtRule, (ParseError<'i, E>, &'i str)>
+ where
+-    P: AtRuleParser<'i, Error = E>
++    P: AtRuleParser<'i, Error = E>,
+ {
+     let location = input.current_source_location();
+     let delimiters = Delimiter::Semicolon | Delimiter::CurlyBracketBlock;
+@@ -459,67 +488,64 @@ where
+         parser.parse_prelude(name, input)
+     });
+     match result {
+-        Ok(AtRuleType::WithoutBlock(prelude)) => {
+-            match input.next() {
+-                Ok(&Token::Semicolon) | Err(_) => Ok(parser.rule_without_block(prelude, location)),
+-                Ok(&Token::CurlyBracketBlock) => Err((
+-                    input.new_unexpected_token_error(Token::CurlyBracketBlock),
+-                    input.slice_from(start.position()),
+-                )),
+-                Ok(_) => unreachable!()
+-            }
+-        }
++        Ok(AtRuleType::WithoutBlock(prelude)) => match input.next() {
++            Ok(&Token::Semicolon) | Err(_) => Ok(parser.rule_without_block(prelude, location)),
++            Ok(&Token::CurlyBracketBlock) => Err((
++                input.new_unexpected_token_error(Token::CurlyBracketBlock),
++                input.slice_from(start.position()),
++            )),
++            Ok(_) => unreachable!(),
++        },
+         Ok(AtRuleType::WithBlock(prelude)) => {
+             match input.next() {
+                 Ok(&Token::CurlyBracketBlock) => {
+                     // FIXME: https://github.com/rust-lang/rust/issues/42508
+-                    parse_nested_block::<'i, 't, _, _, _>(
+-                        input,
+-                        move |input| parser.parse_block(prelude, location, input)
+-                    ).map_err(|e| (e, input.slice_from(start.position())))
++                    parse_nested_block::<'i, 't, _, _, _>(input, move |input| {
++                        parser.parse_block(prelude, location, input)
++                    })
++                    .map_err(|e| (e, input.slice_from(start.position())))
+                 }
+                 Ok(&Token::Semicolon) => Err((
+                     input.new_unexpected_token_error(Token::Semicolon),
+                     input.slice_from(start.position()),
+                 )),
+                 Err(e) => Err((e.into(), input.slice_from(start.position()))),
+-                Ok(_) => unreachable!()
++                Ok(_) => unreachable!(),
+             }
+         }
+         Err(error) => {
+             let end_position = input.position();
+             match input.next() {
+-                Ok(&Token::CurlyBracketBlock) | Ok(&Token::Semicolon) | Err(_) => {},
+-                _ => unreachable!()
++                Ok(&Token::CurlyBracketBlock) | Ok(&Token::Semicolon) | Err(_) => {}
++                _ => unreachable!(),
+             };
+             Err((error, input.slice(start.position()..end_position)))
+         }
+     }
+ }
+ 
+-
+ fn parse_qualified_rule<'i, 't, P, E>(
+     input: &mut Parser<'i, 't>,
+     parser: &mut P,
+ ) -> Result<<P as QualifiedRuleParser<'i>>::QualifiedRule, ParseError<'i, E>>
+ where
+-    P: QualifiedRuleParser<'i, Error = E>
++    P: QualifiedRuleParser<'i, Error = E>,
+ {
+     let location = input.current_source_location();
+     // FIXME: https://github.com/rust-lang/rust/issues/42508
+-    let prelude = parse_until_before::<'i, 't, _, _, _>(input, Delimiter::CurlyBracketBlock, |input| {
+-        parser.parse_prelude(input)
+-    });
++    let prelude =
++        parse_until_before::<'i, 't, _, _, _>(input, Delimiter::CurlyBracketBlock, |input| {
++            parser.parse_prelude(input)
++        });
+     match *input.next()? {
+         Token::CurlyBracketBlock => {
+             // Do this here so that we consume the `{` even if the prelude is `Err`.
+             let prelude = prelude?;
+             // FIXME: https://github.com/rust-lang/rust/issues/42508
+-            parse_nested_block::<'i, 't, _, _, _>(
+-                input,
+-                move |input| parser.parse_block(prelude, location, input),
+-            )
++            parse_nested_block::<'i, 't, _, _, _>(input, move |input| {
++                parser.parse_block(prelude, location, input)
++            })
+         }
+-        _ => unreachable!()
++        _ => unreachable!(),
+     }
+ }
+diff --git a/third_party/rust/cssparser/src/serializer.rs b/third_party/rust/cssparser/src/serializer.rs
+index 34f5569d0b..0ae7ef406b 100644
+--- a/third_party/rust/cssparser/src/serializer.rs
++++ b/third_party/rust/cssparser/src/serializer.rs
+@@ -4,18 +4,18 @@
+ 
+ use dtoa_short::{self, Notation};
+ use itoa;
+-#[allow(unused_imports)] use std::ascii::AsciiExt;
+ use std::fmt::{self, Write};
+ use std::io;
+ use std::str;
+ 
+ use super::Token;
+ 
+-
+ /// Trait for things the can serialize themselves in CSS syntax.
+ pub trait ToCss {
+     /// Serialize `self` in CSS syntax, writing to `dest`.
+-    fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write;
++    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++    where
++        W: fmt::Write;
+ 
+     /// Serialize `self` in CSS syntax and return a string.
+     ///
+@@ -29,8 +29,10 @@ pub trait ToCss {
+ }
+ 
+ #[inline]
+-fn write_numeric<W>(value: f32, int_value: Option<i32>, has_sign: bool, dest: &mut W)
+-                    -> fmt::Result where W: fmt::Write {
++fn write_numeric<W>(value: f32, int_value: Option<i32>, has_sign: bool, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     // `value.value >= 0` is true for negative 0.
+     if has_sign && value.is_sign_positive() {
+         dest.write_str("+")?;
+@@ -39,7 +41,10 @@ fn write_numeric<W>(value: f32, int_value: Option<i32>, has_sign: bool, dest: &m
+     let notation = if value == 0.0 && value.is_sign_negative() {
+         // Negative zero. Work around #20596.
+         dest.write_str("-0")?;
+-        Notation { decimal_point: false, scientific: false }
++        Notation {
++            decimal_point: false,
++            scientific: false,
++        }
+     } else {
+         dtoa_short::write(dest, value)?
+     };
+@@ -52,19 +57,21 @@ fn write_numeric<W>(value: f32, int_value: Option<i32>, has_sign: bool, dest: &m
+     Ok(())
+ }
+ 
+-
+ impl<'a> ToCss for Token<'a> {
+-    fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write {
++    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++    where
++        W: fmt::Write,
++    {
+         match *self {
+             Token::Ident(ref value) => serialize_identifier(&**value, dest)?,
+             Token::AtKeyword(ref value) => {
+                 dest.write_str("@")?;
+                 serialize_identifier(&**value, dest)?;
+-            },
++            }
+             Token::Hash(ref value) => {
+                 dest.write_str("#")?;
+                 serialize_name(value, dest)?;
+-            },
++            }
+             Token::IDHash(ref value) => {
+                 dest.write_str("#")?;
+                 serialize_identifier(&**value, dest)?;
+@@ -74,17 +81,28 @@ impl<'a> ToCss for Token<'a> {
+                 dest.write_str("url(")?;
+                 serialize_unquoted_url(&**value, dest)?;
+                 dest.write_str(")")?;
+-            },
++            }
+             Token::Delim(value) => dest.write_char(value)?,
+ 
+-            Token::Number { value, int_value, has_sign } => {
+-                write_numeric(value, int_value, has_sign, dest)?
+-            }
+-            Token::Percentage { unit_value, int_value, has_sign } => {
++            Token::Number {
++                value,
++                int_value,
++                has_sign,
++            } => write_numeric(value, int_value, has_sign, dest)?,
++            Token::Percentage {
++                unit_value,
++                int_value,
++                has_sign,
++            } => {
+                 write_numeric(unit_value * 100., int_value, has_sign, dest)?;
+                 dest.write_str("%")?;
+-            },
+-            Token::Dimension { value, int_value, has_sign, ref unit } => {
++            }
++            Token::Dimension {
++                value,
++                int_value,
++                has_sign,
++                ref unit,
++            } => {
+                 write_numeric(value, int_value, has_sign, dest)?;
+                 // Disambiguate with scientific notation.
+                 let unit = &**unit;
+@@ -94,7 +112,7 @@ impl<'a> ToCss for Token<'a> {
+                 } else {
+                     serialize_identifier(unit, dest)?;
+                 }
+-            },
++            }
+ 
+             Token::WhiteSpace(content) => dest.write_str(content)?,
+             Token::Comment(content) => {
+@@ -116,7 +134,7 @@ impl<'a> ToCss for Token<'a> {
+             Token::Function(ref name) => {
+                 serialize_identifier(&**name, dest)?;
+                 dest.write_str("(")?;
+-            },
++            }
+             Token::ParenthesisBlock => dest.write_str("(")?,
+             Token::SquareBracketBlock => dest.write_str("[")?,
+             Token::CurlyBracketBlock => dest.write_str("{")?,
+@@ -134,7 +152,7 @@ impl<'a> ToCss for Token<'a> {
+                 // and therefore does not have a closing quote.
+                 dest.write_char('"')?;
+                 CssStringWriter::new(dest).write_str(value)?;
+-            },
++            }
+             Token::CloseParenthesis => dest.write_str(")")?,
+             Token::CloseSquareBracket => dest.write_str("]")?,
+             Token::CloseCurlyBracket => dest.write_str("}")?,
+@@ -143,7 +161,10 @@ impl<'a> ToCss for Token<'a> {
+     }
+ }
+ 
+-fn hex_escape<W>(ascii_byte: u8, dest: &mut W) -> fmt::Result where W:fmt::Write {
++fn hex_escape<W>(ascii_byte: u8, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     static HEX_DIGITS: &'static [u8; 16] = b"0123456789abcdef";
+     let b3;
+     let b4;
+@@ -159,15 +180,21 @@ fn hex_escape<W>(ascii_byte: u8, dest: &mut W) -> fmt::Result where W:fmt::Write
+     dest.write_str(unsafe { str::from_utf8_unchecked(&bytes) })
+ }
+ 
+-fn char_escape<W>(ascii_byte: u8, dest: &mut W) -> fmt::Result where W:fmt::Write {
++fn char_escape<W>(ascii_byte: u8, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     let bytes = [b'\\', ascii_byte];
+     dest.write_str(unsafe { str::from_utf8_unchecked(&bytes) })
+ }
+ 
+ /// Write a CSS identifier, escaping characters as necessary.
+-pub fn serialize_identifier<W>(mut value: &str, dest: &mut W) -> fmt::Result where W:fmt::Write {
++pub fn serialize_identifier<W>(mut value: &str, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     if value.is_empty() {
+-        return Ok(())
++        return Ok(());
+     }
+ 
+     if value.starts_with("--") {
+@@ -192,7 +219,10 @@ pub fn serialize_identifier<W>(mut value: &str, dest: &mut W) -> fmt::Result whe
+ ///
+ /// You should only use this when you know what you're doing, when in doubt,
+ /// consider using `serialize_identifier`.
+-pub fn serialize_name<W>(value: &str, dest: &mut W) -> fmt::Result where W:fmt::Write {
++pub fn serialize_name<W>(value: &str, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     let mut chunk_start = 0;
+     for (i, b) in value.bytes().enumerate() {
+         let escaped = match b {
+@@ -214,14 +244,16 @@ pub fn serialize_name<W>(value: &str, dest: &mut W) -> fmt::Result where W:fmt::
+     dest.write_str(&value[chunk_start..])
+ }
+ 
+-
+-fn serialize_unquoted_url<W>(value: &str, dest: &mut W) -> fmt::Result where W:fmt::Write {
++fn serialize_unquoted_url<W>(value: &str, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     let mut chunk_start = 0;
+     for (i, b) in value.bytes().enumerate() {
+         let hex = match b {
+-            b'\0' ... b' ' | b'\x7F' => true,
++            b'\0'...b' ' | b'\x7F' => true,
+             b'(' | b')' | b'"' | b'\'' | b'\\' => false,
+-            _ => continue
++            _ => continue,
+         };
+         dest.write_str(&value[chunk_start..i])?;
+         if hex {
+@@ -234,16 +266,17 @@ fn serialize_unquoted_url<W>(value: &str, dest: &mut W) -> fmt::Result where W:f
+     dest.write_str(&value[chunk_start..])
+ }
+ 
+-
+ /// Write a double-quoted CSS string token, escaping content as necessary.
+-pub fn serialize_string<W>(value: &str, dest: &mut W) -> fmt::Result where W: fmt::Write {
++pub fn serialize_string<W>(value: &str, dest: &mut W) -> fmt::Result
++where
++    W: fmt::Write,
++{
+     dest.write_str("\"")?;
+     CssStringWriter::new(dest).write_str(value)?;
+     dest.write_str("\"")?;
+     Ok(())
+ }
+ 
+-
+ /// A `fmt::Write` adapter that escapes text for writing as a double-quoted CSS string.
+ /// Quotes are not included.
+ ///
+@@ -251,12 +284,12 @@ pub fn serialize_string<W>(value: &str, dest: &mut W) -> fmt::Result where W: fm
+ ///
+ /// ```{rust,ignore}
+ /// fn write_foo<W>(foo: &Foo, dest: &mut W) -> fmt::Result where W: fmt::Write {
+-///     try!(dest.write_str("\""));
++///     dest.write_str("\"")?;
+ ///     {
+ ///         let mut string_dest = CssStringWriter::new(dest);
+ ///         // Write into string_dest...
+ ///     }
+-///     try!(dest.write_str("\""));
++///     dest.write_str("\"")?;
+ ///     Ok(())
+ /// }
+ /// ```
+@@ -264,14 +297,20 @@ pub struct CssStringWriter<'a, W: 'a> {
+     inner: &'a mut W,
+ }
+ 
+-impl<'a, W> CssStringWriter<'a, W> where W: fmt::Write {
++impl<'a, W> CssStringWriter<'a, W>
++where
++    W: fmt::Write,
++{
+     /// Wrap a text writer to create a `CssStringWriter`.
+     pub fn new(inner: &'a mut W) -> CssStringWriter<'a, W> {
+         CssStringWriter { inner: inner }
+     }
+ }
+ 
+-impl<'a, W> fmt::Write for CssStringWriter<'a, W> where W: fmt::Write {
++impl<'a, W> fmt::Write for CssStringWriter<'a, W>
++where
++    W: fmt::Write,
++{
+     fn write_str(&mut self, s: &str) -> fmt::Result {
+         let mut chunk_start = 0;
+         for (i, b) in s.bytes().enumerate() {
+@@ -293,11 +332,13 @@ impl<'a, W> fmt::Write for CssStringWriter<'a, W> where W: fmt::Write {
+     }
+ }
+ 
+-
+ macro_rules! impl_tocss_for_int {
+     ($T: ty) => {
+         impl<'a> ToCss for $T {
+-            fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write {
++            fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++            where
++                W: fmt::Write,
++            {
+                 struct AssumeUtf8<W: fmt::Write>(W);
+ 
+                 impl<W: fmt::Write> io::Write for AssumeUtf8<W> {
+@@ -305,7 +346,8 @@ macro_rules! impl_tocss_for_int {
+                     fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
+                         // Safety: itoa only emits ASCII, which is also well-formed UTF-8.
+                         debug_assert!(buf.is_ascii());
+-                        self.0.write_str(unsafe { str::from_utf8_unchecked(buf) })
++                        self.0
++                            .write_str(unsafe { str::from_utf8_unchecked(buf) })
+                             .map_err(|_| io::ErrorKind::Other.into())
+                     }
+ 
+@@ -323,11 +365,11 @@ macro_rules! impl_tocss_for_int {
+ 
+                 match itoa::write(AssumeUtf8(dest), *self) {
+                     Ok(_) => Ok(()),
+-                    Err(_) => Err(fmt::Error)
++                    Err(_) => Err(fmt::Error),
+                 }
+             }
+         }
+-    }
++    };
+ }
+ 
+ impl_tocss_for_int!(i8);
+@@ -342,11 +384,14 @@ impl_tocss_for_int!(u64);
+ macro_rules! impl_tocss_for_float {
+     ($T: ty) => {
+         impl<'a> ToCss for $T {
+-            fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write {
++            fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++            where
++                W: fmt::Write,
++            {
+                 dtoa_short::write(dest, *self).map(|_| ())
+             }
+         }
+-    }
++    };
+ }
+ 
+ impl_tocss_for_float!(f32);
+@@ -381,22 +426,33 @@ impl TokenSerializationType {
+     pub fn needs_separator_when_before(self, other: TokenSerializationType) -> bool {
+         use self::TokenSerializationTypeVariants::*;
+         match self.0 {
+-            Ident => matches!(other.0,
+-                Ident | Function | UrlOrBadUrl | DelimMinus | Number | Percentage | Dimension |
+-                CDC | OpenParen),
+-            AtKeywordOrHash | Dimension => matches!(other.0,
+-                Ident | Function | UrlOrBadUrl | DelimMinus | Number | Percentage | Dimension |
+-                CDC),
+-            DelimHash | DelimMinus | Number => matches!(other.0,
+-                Ident | Function | UrlOrBadUrl | DelimMinus | Number | Percentage | Dimension),
+-            DelimAt => matches!(other.0,
+-                Ident | Function | UrlOrBadUrl | DelimMinus),
++            Ident => matches!(
++                other.0,
++                Ident
++                    | Function
++                    | UrlOrBadUrl
++                    | DelimMinus
++                    | Number
++                    | Percentage
++                    | Dimension
++                    | CDC
++                    | OpenParen
++            ),
++            AtKeywordOrHash | Dimension => matches!(
++                other.0,
++                Ident | Function | UrlOrBadUrl | DelimMinus | Number | Percentage | Dimension | CDC
++            ),
++            DelimHash | DelimMinus | Number => matches!(
++                other.0,
++                Ident | Function | UrlOrBadUrl | DelimMinus | Number | Percentage | Dimension
++            ),
++            DelimAt => matches!(other.0, Ident | Function | UrlOrBadUrl | DelimMinus),
+             DelimDotOrPlus => matches!(other.0, Number | Percentage | Dimension),
+             DelimAssorted | DelimAsterisk => matches!(other.0, DelimEquals),
+             DelimBar => matches!(other.0, DelimEquals | DelimBar | DashMatch),
+             DelimSlash => matches!(other.0, DelimAsterisk | SubstringMatch),
+-            Nothing | WhiteSpace | Percentage | UrlOrBadUrl | Function | CDC | OpenParen |
+-            DashMatch | SubstringMatch | DelimQuestion | DelimEquals | Other => false,
++            Nothing | WhiteSpace | Percentage | UrlOrBadUrl | Function | CDC | OpenParen
++            | DashMatch | SubstringMatch | DelimQuestion | DelimEquals | Other => false,
+         }
+     }
+ }
+@@ -415,18 +471,18 @@ enum TokenSerializationTypeVariants {
+     CDC,
+     DashMatch,
+     SubstringMatch,
+-    OpenParen,         // '('
+-    DelimHash,         // '#'
+-    DelimAt,           // '@'
+-    DelimDotOrPlus,    // '.', '+'
+-    DelimMinus,        // '-'
+-    DelimQuestion,     // '?'
+-    DelimAssorted,     // '$', '^', '~'
+-    DelimEquals,       // '='
+-    DelimBar,          // '|'
+-    DelimSlash,        // '/'
+-    DelimAsterisk,     // '*'
+-    Other,             // anything else
++    OpenParen,      // '('
++    DelimHash,      // '#'
++    DelimAt,        // '@'
++    DelimDotOrPlus, // '.', '+'
++    DelimMinus,     // '-'
++    DelimQuestion,  // '?'
++    DelimAssorted,  // '$', '^', '~'
++    DelimEquals,    // '='
++    DelimBar,       // '|'
++    DelimSlash,     // '/'
++    DelimAsterisk,  // '*'
++    Other,          // anything else
+ }
+ 
+ impl<'a> Token<'a> {
+@@ -460,12 +516,21 @@ impl<'a> Token<'a> {
+             Token::CDC => CDC,
+             Token::Function(_) => Function,
+             Token::ParenthesisBlock => OpenParen,
+-            Token::SquareBracketBlock | Token::CurlyBracketBlock |
+-            Token::CloseParenthesis | Token::CloseSquareBracket | Token::CloseCurlyBracket |
+-            Token::QuotedString(_) | Token::BadString(_) |
+-            Token::Delim(_) | Token::Colon | Token::Semicolon | Token::Comma | Token::CDO |
+-            Token::IncludeMatch | Token::PrefixMatch | Token::SuffixMatch
+-            => Other,
++            Token::SquareBracketBlock
++            | Token::CurlyBracketBlock
++            | Token::CloseParenthesis
++            | Token::CloseSquareBracket
++            | Token::CloseCurlyBracket
++            | Token::QuotedString(_)
++            | Token::BadString(_)
++            | Token::Delim(_)
++            | Token::Colon
++            | Token::Semicolon
++            | Token::Comma
++            | Token::CDO
++            | Token::IncludeMatch
++            | Token::PrefixMatch
++            | Token::SuffixMatch => Other,
+         })
+     }
+ }
+diff --git a/third_party/rust/cssparser/src/size_of_tests.rs b/third_party/rust/cssparser/src/size_of_tests.rs
+index e59e9498cf..6a1ee32878 100644
+--- a/third_party/rust/cssparser/src/size_of_tests.rs
++++ b/third_party/rust/cssparser/src/size_of_tests.rs
+@@ -16,18 +16,24 @@ macro_rules! size_of_test {
+                 panic!(
+                     "Your changes have decreased the stack size of {} from {} to {}. \
+                      Good work! Please update the expected size in {}.",
+-                    stringify!($t), old, new, file!()
++                    stringify!($t),
++                    old,
++                    new,
++                    file!()
+                 )
+             } else if new > old {
+                 panic!(
+                     "Your changes have increased the stack size of {} from {} to {}. \
+                      Please consider choosing a design which avoids this increase. \
+                      If you feel that the increase is necessary, update the size in {}.",
+-                    stringify!($t), old, new, file!()
++                    stringify!($t),
++                    old,
++                    new,
++                    file!()
+                 )
+             }
+         }
+-    }
++    };
+ }
+ 
+ // Some of these assume 64-bit
+@@ -36,10 +42,18 @@ size_of_test!(std_cow_str, Cow<'static, str>, 32);
+ size_of_test!(cow_rc_str, CowRcStr, 16);
+ 
+ size_of_test!(tokenizer, ::tokenizer::Tokenizer, 72);
+-size_of_test!(parser_input, ::parser::ParserInput, if cfg!(rustc_has_pr45225) { 136 } else { 144 });
++size_of_test!(
++    parser_input,
++    ::parser::ParserInput,
++    if cfg!(rustc_has_pr45225) { 136 } else { 144 }
++);
+ size_of_test!(parser, ::parser::Parser, 16);
+ size_of_test!(source_position, ::SourcePosition, 8);
+ size_of_test!(parser_state, ::ParserState, 24);
+ 
+ size_of_test!(basic_parse_error, ::BasicParseError, 48);
+-size_of_test!(parse_error_lower_bound, ::ParseError<()>, if cfg!(rustc_has_pr45225) { 48 } else { 56 });
++size_of_test!(
++    parse_error_lower_bound,
++    ::ParseError<()>,
++    if cfg!(rustc_has_pr45225) { 48 } else { 56 }
++);
+diff --git a/third_party/rust/cssparser/src/tests.rs b/third_party/rust/cssparser/src/tests.rs
+index 926713e854..39e86219b6 100644
+--- a/third_party/rust/cssparser/src/tests.rs
++++ b/third_party/rust/cssparser/src/tests.rs
+@@ -11,14 +11,13 @@ use rustc_serialize::json::{self, Json, ToJson};
+ #[cfg(feature = "bench")]
+ use self::test::Bencher;
+ 
+-use super::{Parser, Delimiter, Token, SourceLocation,
+-            ParseError, ParseErrorKind, BasicParseError, BasicParseErrorKind,
+-            DeclarationListParser, DeclarationParser, RuleListParser,
+-            AtRuleType, AtRuleParser, QualifiedRuleParser, ParserInput,
+-            parse_one_declaration, parse_one_rule, parse_important,
+-            stylesheet_encoding, EncodingSupport,
+-            TokenSerializationType, CowRcStr,
+-            Color, RGBA, parse_nth, UnicodeRange, ToCss};
++use super::{
++    parse_important, parse_nth, parse_one_declaration, parse_one_rule, stylesheet_encoding,
++    AtRuleParser, AtRuleType, BasicParseError, BasicParseErrorKind, Color, CowRcStr,
++    DeclarationListParser, DeclarationParser, Delimiter, EncodingSupport, ParseError,
++    ParseErrorKind, Parser, ParserInput, QualifiedRuleParser, RuleListParser, SourceLocation,
++    ToCss, Token, TokenSerializationType, UnicodeRange, RGBA,
++};
+ 
+ macro_rules! JArray {
+     ($($e: expr,)*) => { JArray![ $( $e ),* ] };
+@@ -37,9 +36,11 @@ fn almost_equals(a: &Json, b: &Json) -> bool {
+         (&Json::Boolean(a), &Json::Boolean(b)) => a == b,
+         (&Json::String(ref a), &Json::String(ref b)) => a == b,
+         (&Json::Array(ref a), &Json::Array(ref b)) => {
+-            a.len() == b.len() &&
+-            a.iter().zip(b.iter()).all(|(ref a, ref b)| almost_equals(*a, *b))
+-        },
++            a.len() == b.len()
++                && a.iter()
++                    .zip(b.iter())
++                    .all(|(ref a, ref b)| almost_equals(*a, *b))
++        }
+         (&Json::Object(_), &Json::Object(_)) => panic!("Not implemented"),
+         (&Json::Null, &Json::Null) => true,
+         _ => false,
+@@ -65,11 +66,14 @@ fn normalize(json: &mut Json) {
+ fn assert_json_eq(results: json::Json, mut expected: json::Json, message: &str) {
+     normalize(&mut expected);
+     if !almost_equals(&results, &expected) {
+-        println!("{}", ::difference::Changeset::new(
+-            &results.pretty().to_string(),
+-            &expected.pretty().to_string(),
+-            "\n",
+-        ));
++        println!(
++            "{}",
++            ::difference::Changeset::new(
++                &results.pretty().to_string(),
++                &expected.pretty().to_string(),
++                "\n",
++            )
++        );
+         panic!("{}", message)
+     }
+ }
+@@ -77,7 +81,7 @@ fn assert_json_eq(results: json::Json, mut expected: json::Json, message: &str)
+ fn run_raw_json_tests<F: Fn(Json, Json) -> ()>(json_data: &str, run: F) {
+     let items = match Json::from_str(json_data) {
+         Ok(Json::Array(items)) => items,
+-        _ => panic!("Invalid JSON")
++        _ => panic!("Invalid JSON"),
+     };
+     assert!(items.len() % 2 == 0);
+     let mut input = None;
+@@ -87,83 +91,89 @@ fn run_raw_json_tests<F: Fn(Json, Json) -> ()>(json_data: &str, run: F) {
+             (&Some(_), expected) => {
+                 let input = input.take().unwrap();
+                 run(input, expected)
+-            },
++            }
+         };
+     }
+ }
+ 
+-
+ fn run_json_tests<F: Fn(&mut Parser) -> Json>(json_data: &str, parse: F) {
+-    run_raw_json_tests(json_data, |input, expected| {
+-        match input {
+-            Json::String(input) => {
+-                let mut parse_input = ParserInput::new(&input);
+-                let result = parse(&mut Parser::new(&mut parse_input));
+-                assert_json_eq(result, expected, &input);
+-            },
+-            _ => panic!("Unexpected JSON")
++    run_raw_json_tests(json_data, |input, expected| match input {
++        Json::String(input) => {
++            let mut parse_input = ParserInput::new(&input);
++            let result = parse(&mut Parser::new(&mut parse_input));
++            assert_json_eq(result, expected, &input);
+         }
++        _ => panic!("Unexpected JSON"),
+     });
+ }
+ 
+-
+ #[test]
+ fn component_value_list() {
+-    run_json_tests(include_str!("css-parsing-tests/component_value_list.json"), |input| {
+-        Json::Array(component_values_to_json(input))
+-    });
++    run_json_tests(
++        include_str!("css-parsing-tests/component_value_list.json"),
++        |input| Json::Array(component_values_to_json(input)),
++    );
+ }
+ 
+-
+ #[test]
+ fn one_component_value() {
+-    run_json_tests(include_str!("css-parsing-tests/one_component_value.json"), |input| {
+-        let result: Result<Json, ParseError<()>> = input.parse_entirely(|input| {
+-            Ok(one_component_value_to_json(input.next()?.clone(), input))
+-        });
+-        result.unwrap_or(JArray!["error", "invalid"])
+-    });
++    run_json_tests(
++        include_str!("css-parsing-tests/one_component_value.json"),
++        |input| {
++            let result: Result<Json, ParseError<()>> = input.parse_entirely(|input| {
++                Ok(one_component_value_to_json(input.next()?.clone(), input))
++            });
++            result.unwrap_or(JArray!["error", "invalid"])
++        },
++    );
+ }
+ 
+-
+ #[test]
+ fn declaration_list() {
+-    run_json_tests(include_str!("css-parsing-tests/declaration_list.json"), |input| {
+-        Json::Array(DeclarationListParser::new(input, JsonParser).map(|result| {
+-            result.unwrap_or(JArray!["error", "invalid"])
+-        }).collect())
+-    });
++    run_json_tests(
++        include_str!("css-parsing-tests/declaration_list.json"),
++        |input| {
++            Json::Array(
++                DeclarationListParser::new(input, JsonParser)
++                    .map(|result| result.unwrap_or(JArray!["error", "invalid"]))
++                    .collect(),
++            )
++        },
++    );
+ }
+ 
+-
+ #[test]
+ fn one_declaration() {
+-    run_json_tests(include_str!("css-parsing-tests/one_declaration.json"), |input| {
+-        parse_one_declaration(input, &mut JsonParser).unwrap_or(JArray!["error", "invalid"])
+-    });
++    run_json_tests(
++        include_str!("css-parsing-tests/one_declaration.json"),
++        |input| {
++            parse_one_declaration(input, &mut JsonParser).unwrap_or(JArray!["error", "invalid"])
++        },
++    );
+ }
+ 
+-
+ #[test]
+ fn rule_list() {
+     run_json_tests(include_str!("css-parsing-tests/rule_list.json"), |input| {
+-        Json::Array(RuleListParser::new_for_nested_rule(input, JsonParser).map(|result| {
+-            result.unwrap_or(JArray!["error", "invalid"])
+-        }).collect())
++        Json::Array(
++            RuleListParser::new_for_nested_rule(input, JsonParser)
++                .map(|result| result.unwrap_or(JArray!["error", "invalid"]))
++                .collect(),
++        )
+     });
+ }
+ 
+-
+ #[test]
+ fn stylesheet() {
+     run_json_tests(include_str!("css-parsing-tests/stylesheet.json"), |input| {
+-        Json::Array(RuleListParser::new_for_stylesheet(input, JsonParser).map(|result| {
+-            result.unwrap_or(JArray!["error", "invalid"])
+-        }).collect())
++        Json::Array(
++            RuleListParser::new_for_stylesheet(input, JsonParser)
++                .map(|result| result.unwrap_or(JArray!["error", "invalid"]))
++                .collect(),
++        )
+     });
+ }
+ 
+-
+ #[test]
+ fn one_rule() {
+     run_json_tests(include_str!("css-parsing-tests/one_rule.json"), |input| {
+@@ -171,7 +181,6 @@ fn one_rule() {
+     });
+ }
+ 
+-
+ #[test]
+ fn stylesheet_from_bytes() {
+     pub struct EncodingRs;
+@@ -184,8 +193,7 @@ fn stylesheet_from_bytes() {
+         }
+ 
+         fn is_utf16_be_or_le(encoding: &Self::Encoding) -> bool {
+-            *encoding == encoding_rs::UTF_16LE ||
+-            *encoding == encoding_rs::UTF_16BE
++            *encoding == encoding_rs::UTF_16LE || *encoding == encoding_rs::UTF_16BE
+         }
+ 
+         fn from_label(ascii_label: &[u8]) -> Option<Self::Encoding> {
+@@ -193,37 +201,45 @@ fn stylesheet_from_bytes() {
+         }
+     }
+ 
++    run_raw_json_tests(
++        include_str!("css-parsing-tests/stylesheet_bytes.json"),
++        |input, expected| {
++            let map = match input {
++                Json::Object(map) => map,
++                _ => panic!("Unexpected JSON"),
++            };
+ 
+-    run_raw_json_tests(include_str!("css-parsing-tests/stylesheet_bytes.json"),
+-                       |input, expected| {
+-        let map = match input {
+-            Json::Object(map) => map,
+-            _ => panic!("Unexpected JSON")
+-        };
+-
+-        let result = {
+-            let css = get_string(&map, "css_bytes").unwrap().chars().map(|c| {
+-                assert!(c as u32 <= 0xFF);
+-                c as u8
+-            }).collect::<Vec<u8>>();
+-            let protocol_encoding_label = get_string(&map, "protocol_encoding")
+-                .map(|s| s.as_bytes());
+-            let environment_encoding = get_string(&map, "environment_encoding")
+-                .map(|s| s.as_bytes())
+-                .and_then(EncodingRs::from_label);
+-
+-            let encoding = stylesheet_encoding::<EncodingRs>(
+-                &css, protocol_encoding_label, environment_encoding);
+-            let (css_unicode, used_encoding, _) = encoding.decode(&css);
+-            let mut input = ParserInput::new(&css_unicode);
+-            let input = &mut Parser::new(&mut input);
+-            let rules = RuleListParser::new_for_stylesheet(input, JsonParser)
+-                        .map(|result| result.unwrap_or(JArray!["error", "invalid"]))
+-                        .collect::<Vec<_>>();
+-            JArray![rules, used_encoding.name().to_lowercase()]
+-        };
+-        assert_json_eq(result, expected, &Json::Object(map).to_string());
+-    });
++            let result = {
++                let css = get_string(&map, "css_bytes")
++                    .unwrap()
++                    .chars()
++                    .map(|c| {
++                        assert!(c as u32 <= 0xFF);
++                        c as u8
++                    })
++                    .collect::<Vec<u8>>();
++                let protocol_encoding_label =
++                    get_string(&map, "protocol_encoding").map(|s| s.as_bytes());
++                let environment_encoding = get_string(&map, "environment_encoding")
++                    .map(|s| s.as_bytes())
++                    .and_then(EncodingRs::from_label);
++
++                let encoding = stylesheet_encoding::<EncodingRs>(
++                    &css,
++                    protocol_encoding_label,
++                    environment_encoding,
++                );
++                let (css_unicode, used_encoding, _) = encoding.decode(&css);
++                let mut input = ParserInput::new(&css_unicode);
++                let input = &mut Parser::new(&mut input);
++                let rules = RuleListParser::new_for_stylesheet(input, JsonParser)
++                    .map(|result| result.unwrap_or(JArray!["error", "invalid"]))
++                    .collect::<Vec<_>>();
++                JArray![rules, used_encoding.name().to_lowercase()]
++            };
++            assert_json_eq(result, expected, &Json::Object(map).to_string());
++        },
++    );
+ 
+     fn get_string<'a>(map: &'a json::Object, key: &str) -> Option<&'a str> {
+         match map.get(key) {
+@@ -235,7 +251,6 @@ fn stylesheet_from_bytes() {
+     }
+ }
+ 
+-
+ #[test]
+ fn expect_no_error_token() {
+     let mut input = ParserInput::new("foo 4px ( / { !bar }");
+@@ -256,16 +271,17 @@ fn expect_no_error_token() {
+     assert!(Parser::new(&mut input).expect_no_error_token().is_err());
+ }
+ 
+-
+ /// https://github.com/servo/rust-cssparser/issues/71
+ #[test]
+ fn outer_block_end_consumed() {
+     let mut input = ParserInput::new("(calc(true))");
+     let mut input = Parser::new(&mut input);
+     assert!(input.expect_parenthesis_block().is_ok());
+-    assert!(input.parse_nested_block(|input| {
+-        input.expect_function_matching("calc").map_err(Into::<ParseError<()>>::into)
+-    }).is_ok());
++    assert!(input
++        .parse_nested_block(|input| input
++            .expect_function_matching("calc")
++            .map_err(Into::<ParseError<()>>::into))
++        .is_ok());
+     println!("{:?}", input.position());
+     assert!(input.next().is_err());
+ }
+@@ -275,7 +291,7 @@ fn outer_block_end_consumed() {
+ fn bad_url_slice_out_of_bounds() {
+     let mut input = ParserInput::new("url(\u{1}\\");
+     let mut parser = Parser::new(&mut input);
+-    let result = parser.next_including_whitespace_and_comments();  // This used to panic
++    let result = parser.next_including_whitespace_and_comments(); // This used to panic
+     assert_eq!(result, Ok(&Token::BadUrl("\u{1}\\".into())));
+ }
+ 
+@@ -284,27 +300,33 @@ fn bad_url_slice_out_of_bounds() {
+ fn bad_url_slice_not_at_char_boundary() {
+     let mut input = ParserInput::new("url(9\n۰");
+     let mut parser = Parser::new(&mut input);
+-    let result = parser.next_including_whitespace_and_comments();  // This used to panic
++    let result = parser.next_including_whitespace_and_comments(); // This used to panic
+     assert_eq!(result, Ok(&Token::BadUrl("9\n۰".into())));
+ }
+ 
+ #[test]
+ fn unquoted_url_escaping() {
+-    let token = Token::UnquotedUrl("\
+-        \x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\
+-        \x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f \
+-        !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]\
+-        ^_`abcdefghijklmnopqrstuvwxyz{|}~\x7fé\
+-    ".into());
++    let token = Token::UnquotedUrl(
++        "\
++         \x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\
++         \x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f \
++         !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]\
++         ^_`abcdefghijklmnopqrstuvwxyz{|}~\x7fé\
++         "
++        .into(),
++    );
+     let serialized = token.to_css_string();
+-    assert_eq!(serialized, "\
+-        url(\
+-            \\1 \\2 \\3 \\4 \\5 \\6 \\7 \\8 \\9 \\a \\b \\c \\d \\e \\f \\10 \
+-            \\11 \\12 \\13 \\14 \\15 \\16 \\17 \\18 \\19 \\1a \\1b \\1c \\1d \\1e \\1f \\20 \
+-            !\\\"#$%&\\'\\(\\)*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]\
+-            ^_`abcdefghijklmnopqrstuvwxyz{|}~\\7f é\
+-        )\
+-        ");
++    assert_eq!(
++        serialized,
++        "\
++         url(\
++         \\1 \\2 \\3 \\4 \\5 \\6 \\7 \\8 \\9 \\a \\b \\c \\d \\e \\f \\10 \
++         \\11 \\12 \\13 \\14 \\15 \\16 \\17 \\18 \\19 \\1a \\1b \\1c \\1d \\1e \\1f \\20 \
++         !\\\"#$%&\\'\\(\\)*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]\
++         ^_`abcdefghijklmnopqrstuvwxyz{|}~\\7f é\
++         )\
++         "
++    );
+     let mut input = ParserInput::new(&serialized);
+     assert_eq!(Parser::new(&mut input).next(), Ok(&token));
+ }
+@@ -332,43 +354,47 @@ fn test_expect_url() {
+     assert!(parse(&mut input).is_err());
+ }
+ 
+-
+ fn run_color_tests<F: Fn(Result<Color, ()>) -> Json>(json_data: &str, to_json: F) {
+     run_json_tests(json_data, |input| {
+-        let result: Result<_, ParseError<()>> = input.parse_entirely(|i| {
+-            Color::parse(i).map_err(Into::into)
+-        });
++        let result: Result<_, ParseError<()>> =
++            input.parse_entirely(|i| Color::parse(i).map_err(Into::into));
+         to_json(result.map_err(|_| ()))
+     });
+ }
+ 
+-
+ #[test]
+ fn color3() {
+-    run_color_tests(include_str!("css-parsing-tests/color3.json"), |c| c.ok().to_json())
++    run_color_tests(include_str!("css-parsing-tests/color3.json"), |c| {
++        c.ok().to_json()
++    })
+ }
+ 
+-
+ #[test]
+ fn color3_hsl() {
+-    run_color_tests(include_str!("css-parsing-tests/color3_hsl.json"), |c| c.ok().to_json())
++    run_color_tests(include_str!("css-parsing-tests/color3_hsl.json"), |c| {
++        c.ok().to_json()
++    })
+ }
+ 
+-
+ /// color3_keywords.json is different: R, G and B are in 0..255 rather than 0..1
+ #[test]
+ fn color3_keywords() {
+-    run_color_tests(include_str!("css-parsing-tests/color3_keywords.json"), |c| c.ok().to_json())
++    run_color_tests(
++        include_str!("css-parsing-tests/color3_keywords.json"),
++        |c| c.ok().to_json(),
++    )
+ }
+ 
+-
+ #[test]
+ fn nth() {
+     run_json_tests(include_str!("css-parsing-tests/An+B.json"), |input| {
+-        input.parse_entirely(|i| {
+-            let result: Result<_, ParseError<()>> = parse_nth(i).map_err(Into::into);
+-            result
+-        }).ok().to_json()
++        input
++            .parse_entirely(|i| {
++                let result: Result<_, ParseError<()>> = parse_nth(i).map_err(Into::into);
++                result
++            })
++            .ok()
++            .to_json()
+     });
+ }
+ 
+@@ -388,7 +414,6 @@ fn unicode_range() {
+     });
+ }
+ 
+-
+ #[test]
+ fn serializer_not_preserving_comments() {
+     serializer(false)
+@@ -400,44 +425,59 @@ fn serializer_preserving_comments() {
+ }
+ 
+ fn serializer(preserve_comments: bool) {
+-    run_json_tests(include_str!("css-parsing-tests/component_value_list.json"), |input| {
+-        fn write_to(mut previous_token: TokenSerializationType,
+-                    input: &mut Parser,
+-                    string: &mut String,
+-                    preserve_comments: bool) {
+-            while let Ok(token) = if preserve_comments {
+-                input.next_including_whitespace_and_comments().map(|t| t.clone())
+-            } else {
+-                input.next_including_whitespace().map(|t| t.clone())
+-            } {
+-                let token_type = token.serialization_type();
+-                if !preserve_comments && previous_token.needs_separator_when_before(token_type) {
+-                    string.push_str("/**/")
+-                }
+-                previous_token = token_type;
+-                token.to_css(string).unwrap();
+-                let closing_token = match token {
+-                    Token::Function(_) | Token::ParenthesisBlock => Some(Token::CloseParenthesis),
+-                    Token::SquareBracketBlock => Some(Token::CloseSquareBracket),
+-                    Token::CurlyBracketBlock => Some(Token::CloseCurlyBracket),
+-                    _ => None
+-                };
+-                if let Some(closing_token) = closing_token {
+-                    let result: Result<_, ParseError<()>> = input.parse_nested_block(|input| {
+-                        write_to(previous_token, input, string, preserve_comments);
+-                        Ok(())
+-                    });
+-                    result.unwrap();
+-                    closing_token.to_css(string).unwrap();
++    run_json_tests(
++        include_str!("css-parsing-tests/component_value_list.json"),
++        |input| {
++            fn write_to(
++                mut previous_token: TokenSerializationType,
++                input: &mut Parser,
++                string: &mut String,
++                preserve_comments: bool,
++            ) {
++                while let Ok(token) = if preserve_comments {
++                    input
++                        .next_including_whitespace_and_comments()
++                        .map(|t| t.clone())
++                } else {
++                    input.next_including_whitespace().map(|t| t.clone())
++                } {
++                    let token_type = token.serialization_type();
++                    if !preserve_comments && previous_token.needs_separator_when_before(token_type)
++                    {
++                        string.push_str("/**/")
++                    }
++                    previous_token = token_type;
++                    token.to_css(string).unwrap();
++                    let closing_token = match token {
++                        Token::Function(_) | Token::ParenthesisBlock => {
++                            Some(Token::CloseParenthesis)
++                        }
++                        Token::SquareBracketBlock => Some(Token::CloseSquareBracket),
++                        Token::CurlyBracketBlock => Some(Token::CloseCurlyBracket),
++                        _ => None,
++                    };
++                    if let Some(closing_token) = closing_token {
++                        let result: Result<_, ParseError<()>> = input.parse_nested_block(|input| {
++                            write_to(previous_token, input, string, preserve_comments);
++                            Ok(())
++                        });
++                        result.unwrap();
++                        closing_token.to_css(string).unwrap();
++                    }
+                 }
+             }
+-        }
+-        let mut serialized = String::new();
+-        write_to(TokenSerializationType::nothing(), input, &mut serialized, preserve_comments);
+-        let mut input = ParserInput::new(&serialized);
+-        let parser = &mut Parser::new(&mut input);
+-        Json::Array(component_values_to_json(parser))
+-    });
++            let mut serialized = String::new();
++            write_to(
++                TokenSerializationType::nothing(),
++                input,
++                &mut serialized,
++                preserve_comments,
++            );
++            let mut input = ParserInput::new(&serialized);
++            let parser = &mut Parser::new(&mut input);
++            Json::Array(component_values_to_json(parser))
++        },
++    );
+ }
+ 
+ #[test]
+@@ -497,36 +537,90 @@ fn line_numbers() {
+         "b\""
+     ));
+     let mut input = Parser::new(&mut input);
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 0, column: 1 });
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::Ident("fo00o".into())));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 1, column: 3 });
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::WhiteSpace(" ")));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 1, column: 4 });
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::Ident("bar".into())));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 1, column: 7 });
+-    assert_eq!(input.next_including_whitespace_and_comments(), Ok(&Token::Comment("\n")));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 2, column: 3 });
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::Ident("baz".into())));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 2, column: 6 });
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 0, column: 1 }
++    );
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::Ident("fo00o".into()))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 1, column: 3 }
++    );
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::WhiteSpace(" "))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 1, column: 4 }
++    );
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::Ident("bar".into()))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 1, column: 7 }
++    );
++    assert_eq!(
++        input.next_including_whitespace_and_comments(),
++        Ok(&Token::Comment("\n"))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 2, column: 3 }
++    );
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::Ident("baz".into()))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 2, column: 6 }
++    );
+     let state = input.state();
+ 
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::WhiteSpace("\r\n\n")));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 4, column: 1 });
+-
+-    assert_eq!(state.source_location(), SourceLocation { line: 2, column: 6 });
+-
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::UnquotedUrl("u".into())));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 6, column: 2 });
+-
+-    assert_eq!(input.next_including_whitespace(), Ok(&Token::QuotedString("ab".into())));
+-    assert_eq!(input.current_source_location(), SourceLocation { line: 7, column: 3 });
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::WhiteSpace("\r\n\n"))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 4, column: 1 }
++    );
++
++    assert_eq!(
++        state.source_location(),
++        SourceLocation { line: 2, column: 6 }
++    );
++
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::UnquotedUrl("u".into()))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 6, column: 2 }
++    );
++
++    assert_eq!(
++        input.next_including_whitespace(),
++        Ok(&Token::QuotedString("ab".into()))
++    );
++    assert_eq!(
++        input.current_source_location(),
++        SourceLocation { line: 7, column: 3 }
++    );
+     assert!(input.next_including_whitespace().is_err());
+ }
+ 
+ #[test]
+ fn overflow() {
+-    use std::iter::repeat;
+     use std::f32;
++    use std::iter::repeat;
+ 
+     let css = r"
+          2147483646
+@@ -551,7 +645,8 @@ fn overflow() {
+          -3.40282347e+38
+          -3.402824e+38
+ 
+-    ".replace("{309 zeros}", &repeat('0').take(309).collect::<String>());
++    "
++    .replace("{309 zeros}", &repeat('0').take(309).collect::<String>());
+     let mut input = ParserInput::new(&css);
+     let mut input = Parser::new(&mut input);
+ 
+@@ -586,9 +681,11 @@ fn line_delimited() {
+     let mut input = Parser::new(&mut input);
+     assert_eq!(input.next(), Ok(&Token::CurlyBracketBlock));
+     assert!({
+-        let result: Result<_, ParseError<()>> = input.parse_until_after(Delimiter::Semicolon, |_| Ok(42));
++        let result: Result<_, ParseError<()>> =
++            input.parse_until_after(Delimiter::Semicolon, |_| Ok(42));
+         result
+-    }.is_err());
++    }
++    .is_err());
+     assert_eq!(input.next(), Ok(&Token::Comma));
+     assert!(input.next().is_err());
+ }
+@@ -603,9 +700,18 @@ fn identifier_serialization() {
+ 
+     // Replacement character
+     assert_eq!(Token::Ident("\u{FFFD}".into()).to_css_string(), "\u{FFFD}");
+-    assert_eq!(Token::Ident("a\u{FFFD}".into()).to_css_string(), "a\u{FFFD}");
+-    assert_eq!(Token::Ident("\u{FFFD}b".into()).to_css_string(), "\u{FFFD}b");
+-    assert_eq!(Token::Ident("a\u{FFFD}b".into()).to_css_string(), "a\u{FFFD}b");
++    assert_eq!(
++        Token::Ident("a\u{FFFD}".into()).to_css_string(),
++        "a\u{FFFD}"
++    );
++    assert_eq!(
++        Token::Ident("\u{FFFD}b".into()).to_css_string(),
++        "\u{FFFD}b"
++    );
++    assert_eq!(
++        Token::Ident("a\u{FFFD}b".into()).to_css_string(),
++        "a\u{FFFD}b"
++    );
+ 
+     // Number prefix
+     assert_eq!(Token::Ident("0a".into()).to_css_string(), "\\30 a");
+@@ -647,30 +753,52 @@ fn identifier_serialization() {
+     assert_eq!(Token::Ident("--a".into()).to_css_string(), "--a");
+ 
+     // Various tests
+-    assert_eq!(Token::Ident("\x01\x02\x1E\x1F".into()).to_css_string(), "\\1 \\2 \\1e \\1f ");
+-    assert_eq!(Token::Ident("\u{0080}\x2D\x5F\u{00A9}".into()).to_css_string(), "\u{0080}\x2D\x5F\u{00A9}");
++    assert_eq!(
++        Token::Ident("\x01\x02\x1E\x1F".into()).to_css_string(),
++        "\\1 \\2 \\1e \\1f "
++    );
++    assert_eq!(
++        Token::Ident("\u{0080}\x2D\x5F\u{00A9}".into()).to_css_string(),
++        "\u{0080}\x2D\x5F\u{00A9}"
++    );
+     assert_eq!(Token::Ident("\x7F\u{0080}\u{0081}\u{0082}\u{0083}\u{0084}\u{0085}\u{0086}\u{0087}\u{0088}\u{0089}\
+         \u{008A}\u{008B}\u{008C}\u{008D}\u{008E}\u{008F}\u{0090}\u{0091}\u{0092}\u{0093}\u{0094}\u{0095}\u{0096}\
+         \u{0097}\u{0098}\u{0099}\u{009A}\u{009B}\u{009C}\u{009D}\u{009E}\u{009F}".into()).to_css_string(),
+         "\\7f \u{0080}\u{0081}\u{0082}\u{0083}\u{0084}\u{0085}\u{0086}\u{0087}\u{0088}\u{0089}\u{008A}\u{008B}\u{008C}\
+         \u{008D}\u{008E}\u{008F}\u{0090}\u{0091}\u{0092}\u{0093}\u{0094}\u{0095}\u{0096}\u{0097}\u{0098}\u{0099}\
+         \u{009A}\u{009B}\u{009C}\u{009D}\u{009E}\u{009F}");
+-    assert_eq!(Token::Ident("\u{00A0}\u{00A1}\u{00A2}".into()).to_css_string(), "\u{00A0}\u{00A1}\u{00A2}");
+-    assert_eq!(Token::Ident("a0123456789b".into()).to_css_string(), "a0123456789b");
+-    assert_eq!(Token::Ident("abcdefghijklmnopqrstuvwxyz".into()).to_css_string(), "abcdefghijklmnopqrstuvwxyz");
+-    assert_eq!(Token::Ident("ABCDEFGHIJKLMNOPQRSTUVWXYZ".into()).to_css_string(), "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+-    assert_eq!(Token::Ident("\x20\x21\x78\x79".into()).to_css_string(), "\\ \\!xy");
++    assert_eq!(
++        Token::Ident("\u{00A0}\u{00A1}\u{00A2}".into()).to_css_string(),
++        "\u{00A0}\u{00A1}\u{00A2}"
++    );
++    assert_eq!(
++        Token::Ident("a0123456789b".into()).to_css_string(),
++        "a0123456789b"
++    );
++    assert_eq!(
++        Token::Ident("abcdefghijklmnopqrstuvwxyz".into()).to_css_string(),
++        "abcdefghijklmnopqrstuvwxyz"
++    );
++    assert_eq!(
++        Token::Ident("ABCDEFGHIJKLMNOPQRSTUVWXYZ".into()).to_css_string(),
++        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
++    );
++    assert_eq!(
++        Token::Ident("\x20\x21\x78\x79".into()).to_css_string(),
++        "\\ \\!xy"
++    );
+ 
+     // astral symbol (U+1D306 TETRAGRAM FOR CENTRE)
+-    assert_eq!(Token::Ident("\u{1D306}".into()).to_css_string(), "\u{1D306}");
++    assert_eq!(
++        Token::Ident("\u{1D306}".into()).to_css_string(),
++        "\u{1D306}"
++    );
+ }
+ 
+ impl ToJson for Color {
+     fn to_json(&self) -> json::Json {
+         match *self {
+-            Color::RGBA(ref rgba) => {
+-                [rgba.red, rgba.green, rgba.blue, rgba.alpha].to_json()
+-            },
++            Color::RGBA(ref rgba) => [rgba.red, rgba.green, rgba.blue, rgba.alpha].to_json(),
+             Color::CurrentColor => "currentcolor".to_json(),
+         }
+     }
+@@ -687,7 +815,7 @@ fn unquoted_url(b: &mut Bencher) {
+         let mut input = Parser::new(&mut input);
+         input.look_for_var_or_env_functions();
+ 
+-        let result = input.try(|input| input.expect_url());
++        let result = input.try_parse(|input| input.expect_url());
+ 
+         assert!(result.is_ok());
+ 
+@@ -696,7 +824,6 @@ fn unquoted_url(b: &mut Bencher) {
+     })
+ }
+ 
+-
+ #[cfg(feature = "bench")]
+ #[bench]
+ fn numeric(b: &mut Bencher) {
+@@ -720,15 +847,18 @@ fn no_stack_overflow_multiple_nested_blocks() {
+     }
+     let mut input = ParserInput::new(&input);
+     let mut input = Parser::new(&mut input);
+-    while let Ok(..) = input.next() { }
++    while let Ok(..) = input.next() {}
+ }
+ 
+ impl<'i> DeclarationParser<'i> for JsonParser {
+     type Declaration = Json;
+     type Error = ();
+ 
+-    fn parse_value<'t>(&mut self, name: CowRcStr<'i>, input: &mut Parser<'i, 't>)
+-                       -> Result<Json, ParseError<'i, ()>> {
++    fn parse_value<'t>(
++        &mut self,
++        name: CowRcStr<'i>,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<Json, ParseError<'i, ()>> {
+         let mut value = vec![];
+         let mut important = false;
+         loop {
+@@ -743,7 +873,7 @@ impl<'i> DeclarationParser<'i> for JsonParser {
+                     if parse_important(input).is_ok() {
+                         if input.is_exhausted() {
+                             important = true;
+-                            break
++                            break;
+                         }
+                     }
+                     input.reset(&start);
+@@ -751,15 +881,10 @@ impl<'i> DeclarationParser<'i> for JsonParser {
+                 }
+                 value.push(one_component_value_to_json(token, input));
+             } else {
+-                break
++                break;
+             }
+         }
+-        Ok(JArray![
+-            "declaration",
+-            name,
+-            value,
+-            important,
+-        ])
++        Ok(JArray!["declaration", name, value, important,])
+     }
+ }
+ 
+@@ -769,8 +894,11 @@ impl<'i> AtRuleParser<'i> for JsonParser {
+     type AtRule = Json;
+     type Error = ();
+ 
+-    fn parse_prelude<'t>(&mut self, name: CowRcStr<'i>, input: &mut Parser<'i, 't>)
+-                         -> Result<AtRuleType<Vec<Json>, Vec<Json>>, ParseError<'i, ()>> {
++    fn parse_prelude<'t>(
++        &mut self,
++        name: CowRcStr<'i>,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<AtRuleType<Vec<Json>, Vec<Json>>, ParseError<'i, ()>> {
+         let prelude = vec![
+             "at-rule".to_json(),
+             name.to_json(),
+@@ -785,11 +913,7 @@ impl<'i> AtRuleParser<'i> for JsonParser {
+         }
+     }
+ 
+-    fn rule_without_block(
+-        &mut self,
+-        mut prelude: Vec<Json>,
+-        _location: SourceLocation,
+-    ) -> Json {
++    fn rule_without_block(&mut self, mut prelude: Vec<Json>, _location: SourceLocation) -> Json {
+         prelude.push(Json::Null);
+         Json::Array(prelude)
+     }
+@@ -810,7 +934,10 @@ impl<'i> QualifiedRuleParser<'i> for JsonParser {
+     type QualifiedRule = Json;
+     type Error = ();
+ 
+-    fn parse_prelude<'t>(&mut self, input: &mut Parser<'i, 't>) -> Result<Vec<Json>, ParseError<'i, ()>> {
++    fn parse_prelude<'t>(
++        &mut self,
++        input: &mut Parser<'i, 't>,
++    ) -> Result<Vec<Json>, ParseError<'i, ()>> {
+         Ok(component_values_to_json(input))
+     }
+ 
+@@ -843,16 +970,24 @@ fn one_component_value_to_json(token: Token, input: &mut Parser) -> Json {
+                 value: value,
+                 int_value: int_value,
+                 has_sign: has_sign,
+-            }.to_css_string().to_json(),
+-            match int_value { Some(i) => i.to_json(), None => value.to_json() },
+-            match int_value { Some(_) => "integer", None => "number" }.to_json()
++            }
++            .to_css_string()
++            .to_json(),
++            match int_value {
++                Some(i) => i.to_json(),
++                None => value.to_json(),
++            },
++            match int_value {
++                Some(_) => "integer",
++                None => "number",
++            }
++            .to_json(),
+         ]
+     }
+ 
+     fn nested(input: &mut Parser) -> Vec<Json> {
+-        let result: Result<_, ParseError<()>> = input.parse_nested_block(|input| {
+-            Ok(component_values_to_json(input))
+-        });
++        let result: Result<_, ParseError<()>> =
++            input.parse_nested_block(|input| Ok(component_values_to_json(input)));
+         result.unwrap()
+     }
+ 
+@@ -866,17 +1001,30 @@ fn one_component_value_to_json(token: Token, input: &mut Parser) -> Json {
+         Token::Delim('\\') => "\\".to_json(),
+         Token::Delim(value) => value.to_string().to_json(),
+ 
+-        Token::Number { value, int_value, has_sign } => Json::Array({
++        Token::Number {
++            value,
++            int_value,
++            has_sign,
++        } => Json::Array({
+             let mut v = vec!["number".to_json()];
+             v.extend(numeric(value, int_value, has_sign));
+             v
+         }),
+-        Token::Percentage { unit_value, int_value, has_sign } => Json::Array({
++        Token::Percentage {
++            unit_value,
++            int_value,
++            has_sign,
++        } => Json::Array({
+             let mut v = vec!["percentage".to_json()];
+             v.extend(numeric(unit_value * 100., int_value, has_sign));
+             v
+         }),
+-        Token::Dimension { value, int_value, has_sign, unit } => Json::Array({
++        Token::Dimension {
++            value,
++            int_value,
++            has_sign,
++            unit,
++        } => Json::Array({
+             let mut v = vec!["dimension".to_json()];
+             v.extend(numeric(value, int_value, has_sign));
+             v.push(unit.to_json());
+@@ -955,12 +1103,13 @@ fn parse_until_before_stops_at_delimiter_or_end_of_input() {
+     // For all j and k, inputs[i].1[j] should parse the same as inputs[i].1[k]
+     // when we use delimiters inputs[i].0.
+     let inputs = vec![
+-        (Delimiter::Bang | Delimiter::Semicolon,
+-         // Note that the ';extra' is fine, because the ';' acts the same as
+-         // the end of input.
+-         vec!["token stream;extra", "token stream!", "token stream"]),
+-        (Delimiter::Bang | Delimiter::Semicolon,
+-         vec![";", "!", ""]),
++        (
++            Delimiter::Bang | Delimiter::Semicolon,
++            // Note that the ';extra' is fine, because the ';' acts the same as
++            // the end of input.
++            vec!["token stream;extra", "token stream!", "token stream"],
++        ),
++        (Delimiter::Bang | Delimiter::Semicolon, vec![";", "!", ""]),
+     ];
+     for equivalent in inputs {
+         for (j, x) in equivalent.1.iter().enumerate() {
+@@ -978,7 +1127,7 @@ fn parse_until_before_stops_at_delimiter_or_end_of_input() {
+                             let oy = iy.next();
+                             assert_eq!(ox, oy);
+                             if let Err(_) = ox {
+-                                break
++                                break;
+                             }
+                         }
+                         Ok(())
+@@ -1012,14 +1161,46 @@ fn parser_maintains_current_line() {
+ fn parser_with_line_number_offset() {
+     let mut input = ParserInput::new_with_line_number_offset("ident\nident", 72);
+     let mut parser = Parser::new(&mut input);
+-    assert_eq!(parser.current_source_location(), SourceLocation { line: 72, column: 1 });
+-    assert_eq!(parser.next_including_whitespace_and_comments(), Ok(&Token::Ident("ident".into())));
+-    assert_eq!(parser.current_source_location(), SourceLocation { line: 72, column: 6 });
+-    assert_eq!(parser.next_including_whitespace_and_comments(),
+-               Ok(&Token::WhiteSpace("\n".into())));
+-    assert_eq!(parser.current_source_location(), SourceLocation { line: 73, column: 1 });
+-    assert_eq!(parser.next_including_whitespace_and_comments(), Ok(&Token::Ident("ident".into())));
+-    assert_eq!(parser.current_source_location(), SourceLocation { line: 73, column: 6 });
++    assert_eq!(
++        parser.current_source_location(),
++        SourceLocation {
++            line: 72,
++            column: 1
++        }
++    );
++    assert_eq!(
++        parser.next_including_whitespace_and_comments(),
++        Ok(&Token::Ident("ident".into()))
++    );
++    assert_eq!(
++        parser.current_source_location(),
++        SourceLocation {
++            line: 72,
++            column: 6
++        }
++    );
++    assert_eq!(
++        parser.next_including_whitespace_and_comments(),
++        Ok(&Token::WhiteSpace("\n".into()))
++    );
++    assert_eq!(
++        parser.current_source_location(),
++        SourceLocation {
++            line: 73,
++            column: 1
++        }
++    );
++    assert_eq!(
++        parser.next_including_whitespace_and_comments(),
++        Ok(&Token::Ident("ident".into()))
++    );
++    assert_eq!(
++        parser.current_source_location(),
++        SourceLocation {
++            line: 73,
++            column: 6
++        }
++    );
+ }
+ 
+ #[test]
+@@ -1028,23 +1209,31 @@ fn cdc_regression_test() {
+     let mut parser = Parser::new(&mut input);
+     parser.skip_cdc_and_cdo();
+     assert_eq!(parser.next(), Ok(&Token::Ident("x".into())));
+-    assert_eq!(parser.next(), Err(BasicParseError {
+-        kind: BasicParseErrorKind::EndOfInput,
+-        location: SourceLocation { line: 0, column: 5 }
+-    }));
++    assert_eq!(
++        parser.next(),
++        Err(BasicParseError {
++            kind: BasicParseErrorKind::EndOfInput,
++            location: SourceLocation { line: 0, column: 5 }
++        })
++    );
+ }
+ 
+ #[test]
+ fn parse_entirely_reports_first_error() {
+     #[derive(PartialEq, Debug)]
+-    enum E { Foo }
++    enum E {
++        Foo,
++    }
+     let mut input = ParserInput::new("ident");
+     let mut parser = Parser::new(&mut input);
+     let result: Result<(), _> = parser.parse_entirely(|p| Err(p.new_custom_error(E::Foo)));
+-    assert_eq!(result, Err(ParseError {
+-        kind: ParseErrorKind::Custom(E::Foo),
+-        location: SourceLocation { line: 0, column: 1 },
+-    }));
++    assert_eq!(
++        result,
++        Err(ParseError {
++            kind: ParseErrorKind::Custom(E::Foo),
++            location: SourceLocation { line: 0, column: 1 },
++        })
++    );
+ }
+ 
+ #[test]
+@@ -1053,21 +1242,23 @@ fn parse_sourcemapping_comments() {
+         ("/*# sourceMappingURL=here*/", Some("here")),
+         ("/*# sourceMappingURL=here  */", Some("here")),
+         ("/*@ sourceMappingURL=here*/", Some("here")),
+-        ("/*@ sourceMappingURL=there*/ /*# sourceMappingURL=here*/", Some("here")),
++        (
++            "/*@ sourceMappingURL=there*/ /*# sourceMappingURL=here*/",
++            Some("here"),
++        ),
+         ("/*# sourceMappingURL=here there  */", Some("here")),
+         ("/*# sourceMappingURL=  here  */", Some("")),
+         ("/*# sourceMappingURL=*/", Some("")),
+         ("/*# sourceMappingUR=here  */", None),
+         ("/*! sourceMappingURL=here  */", None),
+         ("/*# sourceMappingURL = here  */", None),
+-        ("/*   # sourceMappingURL=here   */", None)
++        ("/*   # sourceMappingURL=here   */", None),
+     ];
+ 
+     for test in tests {
+         let mut input = ParserInput::new(test.0);
+         let mut parser = Parser::new(&mut input);
+-        while let Ok(_) = parser.next_including_whitespace() {
+-        }
++        while let Ok(_) = parser.next_including_whitespace() {}
+         assert_eq!(parser.current_source_map_url(), test.1);
+     }
+ }
+@@ -1085,14 +1276,13 @@ fn parse_sourceurl_comments() {
+         ("/*# sourceMappingUR=here  */", None),
+         ("/*! sourceURL=here  */", None),
+         ("/*# sourceURL = here  */", None),
+-        ("/*   # sourceURL=here   */", None)
++        ("/*   # sourceURL=here   */", None),
+     ];
+ 
+     for test in tests {
+         let mut input = ParserInput::new(test.0);
+         let mut parser = Parser::new(&mut input);
+-        while let Ok(_) = parser.next_including_whitespace() {
+-        }
++        while let Ok(_) = parser.next_including_whitespace() {}
+         assert_eq!(parser.current_source_url(), test.1);
+     }
+ }
+@@ -1158,8 +1348,15 @@ fn utf16_columns() {
+         // Read all tokens.
+         loop {
+             match parser.next() {
+-                Err(BasicParseError { kind: BasicParseErrorKind::EndOfInput, .. }) => { break; }
+-                Err(_) => { assert!(false); }
++                Err(BasicParseError {
++                    kind: BasicParseErrorKind::EndOfInput,
++                    ..
++                }) => {
++                    break;
++                }
++                Err(_) => {
++                    assert!(false);
++                }
+                 Ok(_) => {}
+             };
+         }
+diff --git a/third_party/rust/cssparser/src/tokenizer.rs b/third_party/rust/cssparser/src/tokenizer.rs
+index 61c4fd80c0..00f0c933ad 100644
+--- a/third_party/rust/cssparser/src/tokenizer.rs
++++ b/third_party/rust/cssparser/src/tokenizer.rs
+@@ -4,15 +4,13 @@
+ 
+ // https://drafts.csswg.org/css-syntax/#tokenization
+ 
+-use std::ops::Range;
+ use std::char;
+-#[allow(unused_imports)] use std::ascii::AsciiExt;
+ use std::i32;
++use std::ops::Range;
+ 
+-use parser::ParserState;
+-use cow_rc_str::CowRcStr;
+ use self::Token::*;
+-
++use cow_rc_str::CowRcStr;
++use parser::ParserState;
+ 
+ /// One of the pieces the CSS input is broken into.
+ ///
+@@ -20,7 +18,6 @@ use self::Token::*;
+ /// and avoid allocating/copying when possible.
+ #[derive(PartialEq, Debug, Clone)]
+ pub enum Token<'a> {
+-
+     /// A [`<ident-token>`](https://drafts.csswg.org/css-syntax/#ident-token-diagram)
+     Ident(CowRcStr<'a>),
+ 
+@@ -37,7 +34,7 @@ pub enum Token<'a> {
+     /// A [`<hash-token>`](https://drafts.csswg.org/css-syntax/#hash-token-diagram) with the type flag set to "id"
+     ///
+     /// The value does not include the `#` marker.
+-    IDHash(CowRcStr<'a>),  // Hash that is a valid ID selector.
++    IDHash(CowRcStr<'a>), // Hash that is a valid ID selector.
+ 
+     /// A [`<string-token>`](https://drafts.csswg.org/css-syntax/#string-token-diagram)
+     ///
+@@ -94,7 +91,7 @@ pub enum Token<'a> {
+         int_value: Option<i32>,
+ 
+         /// The unit, e.g. "px" in `12px`
+-        unit: CowRcStr<'a>
++        unit: CowRcStr<'a>,
+     },
+ 
+     /// A [`<whitespace-token>`](https://drafts.csswg.org/css-syntax/#whitespace-token-diagram)
+@@ -109,13 +106,13 @@ pub enum Token<'a> {
+     Comment(&'a str),
+ 
+     /// A `:` `<colon-token>`
+-    Colon,  // :
++    Colon, // :
+ 
+     /// A `;` `<semicolon-token>`
+-    Semicolon,  // ;
++    Semicolon, // ;
+ 
+     /// A `,` `<comma-token>`
+-    Comma,  // ,
++    Comma, // ,
+ 
+     /// A `~=` [`<include-match-token>`](https://drafts.csswg.org/css-syntax/#include-match-token-diagram)
+     IncludeMatch,
+@@ -181,7 +178,6 @@ pub enum Token<'a> {
+     CloseCurlyBracket,
+ }
+ 
+-
+ impl<'a> Token<'a> {
+     /// Return whether this token represents a parse error.
+     ///
+@@ -197,7 +193,6 @@ impl<'a> Token<'a> {
+     }
+ }
+ 
+-
+ #[derive(Clone)]
+ pub struct Tokenizer<'a> {
+     input: &'a str,
+@@ -220,7 +215,6 @@ enum SeenStatus {
+     SeenAtLeastOne,
+ }
+ 
+-
+ impl<'a> Tokenizer<'a> {
+     #[inline]
+     pub fn new(input: &str) -> Tokenizer {
+@@ -255,9 +249,7 @@ impl<'a> Tokenizer<'a> {
+     #[inline]
+     pub fn see_function(&mut self, name: &str) {
+         if self.var_or_env_functions == SeenStatus::LookingForThem {
+-            if name.eq_ignore_ascii_case("var") ||
+-                name.eq_ignore_ascii_case("env")
+-            {
++            if name.eq_ignore_ascii_case("var") || name.eq_ignore_ascii_case("env") {
+                 self.var_or_env_functions = SeenStatus::SeenAtLeastOne;
+             }
+         }
+@@ -340,12 +332,16 @@ impl<'a> Tokenizer<'a> {
+ 
+     // If false, `tokenizer.next_char()` will not panic.
+     #[inline]
+-    fn is_eof(&self) -> bool { !self.has_at_least(0) }
++    fn is_eof(&self) -> bool {
++        !self.has_at_least(0)
++    }
+ 
+     // If true, the input has at least `n` bytes left *after* the current one.
+     // That is, `tokenizer.char_at(n)` will not panic.
+     #[inline]
+-    fn has_at_least(&self, n: usize) -> bool { self.position + n < self.input.len() }
++    fn has_at_least(&self, n: usize) -> bool {
++        self.position + n < self.input.len()
++    }
+ 
+     // Advance over N bytes in the input.  This function can advance
+     // over ASCII bytes (excluding newlines), or UTF-8 sequence
+@@ -367,7 +363,9 @@ impl<'a> Tokenizer<'a> {
+ 
+     // Assumes non-EOF
+     #[inline]
+-    fn next_byte_unchecked(&self) -> u8 { self.byte_at(0) }
++    fn next_byte_unchecked(&self) -> u8 {
++        self.byte_at(0)
++    }
+ 
+     #[inline]
+     fn byte_at(&self, offset: usize) -> u8 {
+@@ -435,8 +433,8 @@ impl<'a> Tokenizer<'a> {
+ 
+     #[inline]
+     fn has_newline_at(&self, offset: usize) -> bool {
+-        self.position + offset < self.input.len() &&
+-        matches!(self.byte_at(offset), b'\n' | b'\r' | b'\x0C')
++        self.position + offset < self.input.len()
++            && matches!(self.byte_at(offset), b'\n' | b'\r' | b'\x0C')
+     }
+ 
+     #[inline]
+@@ -446,7 +444,9 @@ impl<'a> Tokenizer<'a> {
+         self.position += len_utf8;
+         // Note that due to the special case for the 4-byte sequence
+         // intro, we must use wrapping add here.
+-        self.current_line_start_position = self.current_line_start_position.wrapping_add(len_utf8 - c.len_utf16());
++        self.current_line_start_position = self
++            .current_line_start_position
++            .wrapping_add(len_utf8 - c.len_utf16());
+         c
+     }
+ 
+@@ -520,7 +520,6 @@ impl<'a> Tokenizer<'a> {
+ #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
+ pub struct SourcePosition(pub(crate) usize);
+ 
+-
+ /// The line and column number for a given position within the input.
+ #[derive(PartialEq, Eq, Debug, Clone, Copy)]
+ pub struct SourceLocation {
+@@ -532,10 +531,9 @@ pub struct SourceLocation {
+     pub column: u32,
+ }
+ 
+-
+ fn next_token<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>, ()> {
+     if tokenizer.is_eof() {
+-        return Err(())
++        return Err(());
+     }
+     let b = tokenizer.next_byte_unchecked();
+     let token = match_byte! { b,
+@@ -671,7 +669,6 @@ fn next_token<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>, ()> {
+     Ok(token)
+ }
+ 
+-
+ fn consume_whitespace<'a>(tokenizer: &mut Tokenizer<'a>, newline: bool) -> Token<'a> {
+     let start_position = tokenizer.position();
+     if newline {
+@@ -696,7 +693,6 @@ fn consume_whitespace<'a>(tokenizer: &mut Tokenizer<'a>, newline: bool) -> Token
+     WhiteSpace(tokenizer.slice_from(start_position))
+ }
+ 
+-
+ // Check for sourceMappingURL or sourceURL comments and update the
+ // tokenizer appropriately.
+ fn check_for_source_map<'a>(tokenizer: &mut Tokenizer<'a>, contents: &'a str) {
+@@ -706,9 +702,9 @@ fn check_for_source_map<'a>(tokenizer: &mut Tokenizer<'a>, contents: &'a str) {
+     // If there is a source map directive, extract the URL.
+     if contents.starts_with(directive) || contents.starts_with(directive_old) {
+         let contents = &contents[directive.len()..];
+-        tokenizer.source_map_url = contents.split(|c| {
+-            c == ' ' || c == '\t' || c == '\x0C' || c == '\r' || c == '\n'
+-        }).next()
++        tokenizer.source_map_url = contents
++            .split(|c| c == ' ' || c == '\t' || c == '\x0C' || c == '\r' || c == '\n')
++            .next()
+     }
+ 
+     let directive = "# sourceURL=";
+@@ -717,14 +713,14 @@ fn check_for_source_map<'a>(tokenizer: &mut Tokenizer<'a>, contents: &'a str) {
+     // If there is a source map directive, extract the URL.
+     if contents.starts_with(directive) || contents.starts_with(directive_old) {
+         let contents = &contents[directive.len()..];
+-        tokenizer.source_url = contents.split(|c| {
+-            c == ' ' || c == '\t' || c == '\x0C' || c == '\r' || c == '\n'
+-        }).next()
++        tokenizer.source_url = contents
++            .split(|c| c == ' ' || c == '\t' || c == '\x0C' || c == '\r' || c == '\n')
++            .next()
+     }
+ }
+ 
+ fn consume_comment<'a>(tokenizer: &mut Tokenizer<'a>) -> &'a str {
+-    tokenizer.advance(2);  // consume "/*"
++    tokenizer.advance(2); // consume "/*"
+     let start_position = tokenizer.position();
+     while !tokenizer.is_eof() {
+         match_byte! { tokenizer.next_byte_unchecked(),
+@@ -757,21 +753,22 @@ fn consume_comment<'a>(tokenizer: &mut Tokenizer<'a>) -> &'a str {
+ fn consume_string<'a>(tokenizer: &mut Tokenizer<'a>, single_quote: bool) -> Token<'a> {
+     match consume_quoted_string(tokenizer, single_quote) {
+         Ok(value) => QuotedString(value),
+-        Err(value) => BadString(value)
++        Err(value) => BadString(value),
+     }
+ }
+ 
+-
+ /// Return `Err(())` on syntax error (ie. unescaped newline)
+-fn consume_quoted_string<'a>(tokenizer: &mut Tokenizer<'a>, single_quote: bool)
+-                             -> Result<CowRcStr<'a>, CowRcStr<'a>> {
+-    tokenizer.advance(1);  // Skip the initial quote
+-    // start_pos is at code point boundary, after " or '
++fn consume_quoted_string<'a>(
++    tokenizer: &mut Tokenizer<'a>,
++    single_quote: bool,
++) -> Result<CowRcStr<'a>, CowRcStr<'a>> {
++    tokenizer.advance(1); // Skip the initial quote
++                          // start_pos is at code point boundary, after " or '
+     let start_pos = tokenizer.position();
+     let mut string_bytes;
+     loop {
+         if tokenizer.is_eof() {
+-            return Ok(tokenizer.slice_from(start_pos).into())
++            return Ok(tokenizer.slice_from(start_pos).into());
+         }
+         match_byte! { tokenizer.next_byte_unchecked(),
+             b'"' => {
+@@ -869,30 +866,29 @@ fn consume_quoted_string<'a>(tokenizer: &mut Tokenizer<'a>, single_quote: bool)
+ 
+     Ok(
+         // string_bytes is well-formed UTF-8, see other comments.
+-        unsafe { from_utf8_release_unchecked(string_bytes) }.into()
++        unsafe { from_utf8_release_unchecked(string_bytes) }.into(),
+     )
+ }
+ 
+-
+ #[inline]
+ fn is_ident_start(tokenizer: &mut Tokenizer) -> bool {
+-    !tokenizer.is_eof() && match_byte! { tokenizer.next_byte_unchecked(),
+-        b'a'...b'z' | b'A'...b'Z' | b'_' | b'\0' => { true },
+-        b'-' => {
+-            tokenizer.has_at_least(1) && match_byte! { tokenizer.byte_at(1),
+-                b'a'...b'z' | b'A'...b'Z' | b'-' | b'_' | b'\0' => {
+-                    true
++    !tokenizer.is_eof()
++        && match_byte! { tokenizer.next_byte_unchecked(),
++            b'a'...b'z' | b'A'...b'Z' | b'_' | b'\0' => { true },
++            b'-' => {
++                tokenizer.has_at_least(1) && match_byte! { tokenizer.byte_at(1),
++                    b'a'...b'z' | b'A'...b'Z' | b'-' | b'_' | b'\0' => {
++                        true
++                    }
++                    b'\\' => { !tokenizer.has_newline_at(1) }
++                    b => { !b.is_ascii() },
+                 }
+-                b'\\' => { !tokenizer.has_newline_at(1) }
+-                b => { !b.is_ascii() },
+-            }
+-        },
+-        b'\\' => { !tokenizer.has_newline_at(1) },
+-        b => { !b.is_ascii() },
+-    }
++            },
++            b'\\' => { !tokenizer.has_newline_at(1) },
++            b => { !b.is_ascii() },
++        }
+ }
+ 
+-
+ fn consume_ident_like<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+     let value = consume_name(tokenizer);
+     if !tokenizer.is_eof() && tokenizer.next_byte_unchecked() == b'(' {
+@@ -914,7 +910,7 @@ fn consume_name<'a>(tokenizer: &mut Tokenizer<'a>) -> CowRcStr<'a> {
+     let mut value_bytes;
+     loop {
+         if tokenizer.is_eof() {
+-            return tokenizer.slice_from(start_pos).into()
++            return tokenizer.slice_from(start_pos).into();
+         }
+         match_byte! { tokenizer.next_byte_unchecked(),
+             b'a'...b'z' | b'A'...b'Z' | b'0'...b'9' | b'_' | b'-' => { tokenizer.advance(1) },
+@@ -1019,37 +1015,37 @@ fn consume_numeric<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+         integral_part = integral_part * 10. + digit as f64;
+         tokenizer.advance(1);
+         if tokenizer.is_eof() {
+-            break
++            break;
+         }
+     }
+ 
+     let mut is_integer = true;
+ 
+     let mut fractional_part: f64 = 0.;
+-    if tokenizer.has_at_least(1) && tokenizer.next_byte_unchecked() == b'.'
+-            && matches!(tokenizer.byte_at(1), b'0'...b'9') {
++    if tokenizer.has_at_least(1)
++        && tokenizer.next_byte_unchecked() == b'.'
++        && matches!(tokenizer.byte_at(1), b'0'...b'9')
++    {
+         is_integer = false;
+-        tokenizer.advance(1);  // Consume '.'
++        tokenizer.advance(1); // Consume '.'
+         let mut factor = 0.1;
+         while let Some(digit) = byte_to_decimal_digit(tokenizer.next_byte_unchecked()) {
+             fractional_part += digit as f64 * factor;
+             factor *= 0.1;
+             tokenizer.advance(1);
+             if tokenizer.is_eof() {
+-                break
++                break;
+             }
+         }
+     }
+ 
+     let mut value = sign * (integral_part + fractional_part);
+ 
+-    if tokenizer.has_at_least(1)
+-       && matches!(tokenizer.next_byte_unchecked(), b'e' | b'E') {
+-
+-        if matches!(tokenizer.byte_at(1), b'0'...b'9') ||
+-           (tokenizer.has_at_least(2)
+-            && matches!(tokenizer.byte_at(1), b'+' | b'-')
+-            && matches!(tokenizer.byte_at(2), b'0'...b'9'))
++    if tokenizer.has_at_least(1) && matches!(tokenizer.next_byte_unchecked(), b'e' | b'E') {
++        if matches!(tokenizer.byte_at(1), b'0'...b'9')
++            || (tokenizer.has_at_least(2)
++                && matches!(tokenizer.byte_at(1), b'+' | b'-')
++                && matches!(tokenizer.byte_at(2), b'0'...b'9'))
+         {
+             is_integer = false;
+             tokenizer.advance(1);
+@@ -1066,7 +1062,7 @@ fn consume_numeric<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+                 exponent = exponent * 10. + digit as f64;
+                 tokenizer.advance(1);
+                 if tokenizer.is_eof() {
+-                    break
++                    break;
+                 }
+             }
+             value *= f64::powf(10., sign * exponent);
+@@ -1091,7 +1087,7 @@ fn consume_numeric<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+             unit_value: (value / 100.) as f32,
+             int_value: int_value,
+             has_sign: has_sign,
+-        }
++        };
+     }
+     let value = value as f32;
+     if is_ident_start(tokenizer) {
+@@ -1111,7 +1107,6 @@ fn consume_numeric<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+     }
+ }
+ 
+-
+ #[inline]
+ unsafe fn from_utf8_release_unchecked(string_bytes: Vec<u8>) -> String {
+     if cfg!(debug_assertions) {
+@@ -1134,7 +1129,7 @@ fn consume_unquoted_url<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>,
+             Some(item) => item,
+             None => {
+                 tokenizer.position = tokenizer.input.len();
+-                break
++                break;
+             }
+         };
+         match_byte! { b,
+@@ -1176,9 +1171,9 @@ fn consume_unquoted_url<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>,
+     if found_printable_char {
+         // This function only consumed ASCII (whitespace) bytes,
+         // so the current position is a code point boundary.
+-        return Ok(consume_unquoted_url_internal(tokenizer))
++        return Ok(consume_unquoted_url_internal(tokenizer));
+     } else {
+-        return Ok(UnquotedUrl("".into()))
++        return Ok(UnquotedUrl("".into()));
+     }
+ 
+     fn consume_unquoted_url_internal<'a>(tokenizer: &mut Tokenizer<'a>) -> Token<'a> {
+@@ -1187,7 +1182,7 @@ fn consume_unquoted_url<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>,
+         let mut string_bytes: Vec<u8>;
+         loop {
+             if tokenizer.is_eof() {
+-                return UnquotedUrl(tokenizer.slice_from(start_pos).into())
++                return UnquotedUrl(tokenizer.slice_from(start_pos).into());
+             }
+             match_byte! { tokenizer.next_byte_unchecked(),
+                 b' ' | b'\t' | b'\n' | b'\r' | b'\x0C' => {
+@@ -1274,14 +1269,15 @@ fn consume_unquoted_url<'a>(tokenizer: &mut Tokenizer<'a>) -> Result<Token<'a>,
+         }
+         UnquotedUrl(
+             // string_bytes is well-formed UTF-8, see other comments.
+-            unsafe { from_utf8_release_unchecked(string_bytes) }.into()
++            unsafe { from_utf8_release_unchecked(string_bytes) }.into(),
+         )
+     }
+ 
+-    fn consume_url_end<'a>(tokenizer: &mut Tokenizer<'a>,
+-                           start_pos: SourcePosition,
+-                           string: CowRcStr<'a>)
+-                           -> Token<'a> {
++    fn consume_url_end<'a>(
++        tokenizer: &mut Tokenizer<'a>,
++        start_pos: SourcePosition,
++        string: CowRcStr<'a>,
++    ) -> Token<'a> {
+         while !tokenizer.is_eof() {
+             match_byte! { tokenizer.next_byte_unchecked(),
+                 b')' => {
+@@ -1339,24 +1335,29 @@ fn consume_hex_digits<'a>(tokenizer: &mut Tokenizer<'a>) -> (u32, u32) {
+                 digits += 1;
+                 tokenizer.advance(1);
+             }
+-            None => break
++            None => break,
+         }
+     }
+     (value, digits)
+ }
+ 
+-
+ // Same constraints as consume_escape except it writes into `bytes` the result
+ // instead of returning it.
+ fn consume_escape_and_write(tokenizer: &mut Tokenizer, bytes: &mut Vec<u8>) {
+-    bytes.extend(consume_escape(tokenizer).encode_utf8(&mut [0; 4]).as_bytes())
++    bytes.extend(
++        consume_escape(tokenizer)
++            .encode_utf8(&mut [0; 4])
++            .as_bytes(),
++    )
+ }
+ 
+ // Assumes that the U+005C REVERSE SOLIDUS (\) has already been consumed
+ // and that the next input character has already been verified
+ // to not be a newline.
+ fn consume_escape(tokenizer: &mut Tokenizer) -> char {
+-    if tokenizer.is_eof() { return '\u{FFFD}' }  // Escaped EOF
++    if tokenizer.is_eof() {
++        return '\u{FFFD}';
++    } // Escaped EOF
+     match_byte! { tokenizer.next_byte_unchecked(),
+         b'0'...b'9' | b'A'...b'F' | b'a'...b'f' => {
+             let (c, _) = consume_hex_digits(tokenizer);
+diff --git a/third_party/rust/cssparser/src/unicode_range.rs b/third_party/rust/cssparser/src/unicode_range.rs
+index 7b24d69672..f5325a0c9b 100644
+--- a/third_party/rust/cssparser/src/unicode_range.rs
++++ b/third_party/rust/cssparser/src/unicode_range.rs
+@@ -4,10 +4,10 @@
+ 
+ //! https://drafts.csswg.org/css-syntax/#urange
+ 
+-use {Parser, ToCss, BasicParseError};
+ use std::char;
+ use std::fmt;
+ use tokenizer::Token;
++use {BasicParseError, Parser, ToCss};
+ 
+ /// One contiguous range of code points.
+ ///
+@@ -44,7 +44,10 @@ impl UnicodeRange {
+ 
+         let range = match parse_concatenated(concatenated_tokens.as_bytes()) {
+             Ok(range) => range,
+-            Err(()) => return Err(input.new_basic_unexpected_token_error(Token::Ident(concatenated_tokens.into()))),
++            Err(()) => {
++                return Err(input
++                    .new_basic_unexpected_token_error(Token::Ident(concatenated_tokens.into())))
++            }
+         };
+         if range.end > char::MAX as u32 || range.start > range.end {
+             Err(input.new_basic_unexpected_token_error(Token::Ident(concatenated_tokens.into())))
+@@ -61,23 +64,21 @@ fn parse_tokens<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(), BasicParseErro
+             match input.next_including_whitespace()?.clone() {
+                 Token::Ident(_) => {}
+                 Token::Delim('?') => {}
+-                t => return Err(input.new_basic_unexpected_token_error(t))
++                t => return Err(input.new_basic_unexpected_token_error(t)),
+             }
+             parse_question_marks(input)
+         }
+-        Token::Dimension { .. } => {
+-            parse_question_marks(input)
+-        }
++        Token::Dimension { .. } => parse_question_marks(input),
+         Token::Number { .. } => {
+             let after_number = input.state();
+             match input.next_including_whitespace() {
+                 Ok(&Token::Delim('?')) => parse_question_marks(input),
+                 Ok(&Token::Dimension { .. }) => {}
+                 Ok(&Token::Number { .. }) => {}
+-                _ => input.reset(&after_number)
++                _ => input.reset(&after_number),
+             }
+         }
+-        t => return Err(input.new_basic_unexpected_token_error(t))
++        t => return Err(input.new_basic_unexpected_token_error(t)),
+     }
+     Ok(())
+ }
+@@ -90,7 +91,7 @@ fn parse_question_marks(input: &mut Parser) {
+             Ok(&Token::Delim('?')) => {}
+             _ => {
+                 input.reset(&start);
+-                return
++                return;
+             }
+         }
+     }
+@@ -99,13 +100,13 @@ fn parse_question_marks(input: &mut Parser) {
+ fn parse_concatenated(text: &[u8]) -> Result<UnicodeRange, ()> {
+     let mut text = match text.split_first() {
+         Some((&b'+', text)) => text,
+-        _ => return Err(())
++        _ => return Err(()),
+     };
+     let (first_hex_value, hex_digit_count) = consume_hex(&mut text);
+     let question_marks = consume_question_marks(&mut text);
+     let consumed = hex_digit_count + question_marks;
+     if consumed == 0 || consumed > 6 {
+-        return Err(())
++        return Err(());
+     }
+ 
+     if question_marks > 0 {
+@@ -113,13 +114,13 @@ fn parse_concatenated(text: &[u8]) -> Result<UnicodeRange, ()> {
+             return Ok(UnicodeRange {
+                 start: first_hex_value << (question_marks * 4),
+                 end: ((first_hex_value + 1) << (question_marks * 4)) - 1,
+-            })
++            });
+         }
+     } else if text.is_empty() {
+         return Ok(UnicodeRange {
+             start: first_hex_value,
+             end: first_hex_value,
+-        })
++        });
+     } else {
+         if let Some((&b'-', mut text)) = text.split_first() {
+             let (second_hex_value, hex_digit_count) = consume_hex(&mut text);
+@@ -127,7 +128,7 @@ fn parse_concatenated(text: &[u8]) -> Result<UnicodeRange, ()> {
+                 return Ok(UnicodeRange {
+                     start: first_hex_value,
+                     end: second_hex_value,
+-                })
++                });
+             }
+         }
+     }
+@@ -143,7 +144,7 @@ fn consume_hex(text: &mut &[u8]) -> (u32, usize) {
+             digits += 1;
+             *text = rest
+         } else {
+-            break
++            break;
+         }
+     }
+     (value, digits)
+@@ -165,7 +166,10 @@ impl fmt::Debug for UnicodeRange {
+ }
+ 
+ impl ToCss for UnicodeRange {
+-    fn to_css<W>(&self, dest: &mut W) -> fmt::Result where W: fmt::Write {
++    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
++    where
++        W: fmt::Write,
++    {
+         write!(dest, "U+{:X}", self.start)?;
+         if self.end != self.start {
+             write!(dest, "-{:X}", self.end)?;
