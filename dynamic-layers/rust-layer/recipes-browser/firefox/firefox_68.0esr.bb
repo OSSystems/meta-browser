@@ -55,6 +55,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
+           file://0001-rust-1.38-Bug-1585099-Update-cssparser-on-ESR68-to-0.patch \
            "
 
 SRC_URI[archive.md5sum] = "63190d5f5d197fd1a3d375a54d833e13"
