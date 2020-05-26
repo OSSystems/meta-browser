@@ -56,6 +56,9 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
            file://0001-rust-1.38-Bug-1585099-Update-cssparser-on-ESR68-to-0.patch \
+           file://0002-rust-1.39-Bug-1560700-Change-how-the-rust-target-is-.patch \
+           file://0003-rust-1.39-Bug-1587913-Fix-rust-target-detection-for-.patch \
+           file://0004-rust-1.39-Bug-1595218-Update-rust-target-detection-f.patch \
            "
 
 SRC_URI[archive.md5sum] = "63190d5f5d197fd1a3d375a54d833e13"

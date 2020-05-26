@@ -1,0 +1,83 @@
+From 68d157d466fc94d522f41e8a0c68f5ae924cb21e Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Wed, 27 May 2020 19:01:44 +0200
+Subject: [PATCH] rust-1.39: Bug 1595218 - Update rust target detection for
+ rustc 1.39. r=glandium, a=jcristau
+
+ # HG changeset patch
+ # User Chris Manchester <cmanchester@mozilla.com>
+ # Date 1575521591 0
+ # Node ID 22b959bfc4953156d396ca6c4c7fb79b193a72e6
+ # Parent  e422e27f3e927e7f3d0ea274c6904fbc7da0f77a
+
+Differential Revision: https://phabricator.services.mozilla.com/D53901
+
+Upstream-Status: Backport [https://hg.mozilla.org/releases/mozilla-esr68/rev/22b959bfc4953156d396ca6c4c7fb79b193a72e6]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ build/moz.configure/rust.configure            |  5 +++--
+ .../configure/test_toolchain_configure.py     | 19 ++++++++++++++++++-
+ 2 files changed, 21 insertions(+), 3 deletions(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index d62ce70533..417ce98d6e 100644
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -292,9 +292,10 @@ def rust_triple_alias(host_or_target):
+                 elif narrowed:
+                     candidates = narrowed
+ 
+-                vendor_aliases = {'pc': 'w64'}
++                vendor_aliases = {'pc': ('w64', 'windows')}
+                 narrowed = [c for c in candidates
+-                            if vendor_aliases.get(c.target.vendor) == host_or_target.vendor]
++                            if host_or_target.vendor in vendor_aliases.get(c.target.vendor, ())]
++
+                 if len(narrowed) == 1:
+                     return narrowed[0].rust_target
+ 
+diff --git a/python/mozbuild/mozbuild/test/configure/test_toolchain_configure.py b/python/mozbuild/mozbuild/test/configure/test_toolchain_configure.py
+index 95d6629930..15cf0b22f7 100755
+--- a/python/mozbuild/mozbuild/test/configure/test_toolchain_configure.py
++++ b/python/mozbuild/mozbuild/test/configure/test_toolchain_configure.py
+@@ -1578,6 +1578,22 @@ def gen_invoke_rustc(version, rustup_wrapper=False):
+                     'x86_64-uwp-windows-gnu',
+                     'x86_64-wrs-vxworks',
+                 ]
++            # Additional targets from 1.38
++            if Version(version) >= '1.39.0':
++                rust_targets += [
++                    'aarch64-uwp-windows-msvc',
++                    'armv7-wrs-vxworks-eabihf',
++                    'i686-unknown-uefi',
++                    'i686-uwp-windows-msvc',
++                    'mips64-unknown-linux-muslabi64',
++                    'mips64el-unknown-linux-muslabi64',
++                    'sparc64-unknown-openbsd',
++                    'x86_64-linux-kernel',
++                    'x86_64-uwp-windows-msvc',
++                ]
++                rust_targets.remove('armv7-wrs-vxworks')
++                rust_targets.remove('i586-wrs-vxworks')
++
+             return 0, '\n'.join(sorted(rust_targets)), ''
+         if (len(args) == 6 and args[:2] == ('--crate-type', 'staticlib') and
+             args[2].startswith('--target=') and args[3] == '-o'):
+@@ -1589,7 +1605,7 @@ def gen_invoke_rustc(version, rustup_wrapper=False):
+ 
+ 
+ class RustTest(BaseConfigureTest):
+-    def get_rust_target(self, target, compiler_type='gcc', version='1.38.0',
++    def get_rust_target(self, target, compiler_type='gcc', version='1.39.0',
+                         arm_target=None):
+         environ = {
+             'PATH': os.pathsep.join(
+@@ -1673,6 +1689,7 @@ class RustTest(BaseConfigureTest):
+             ('x86_64-pc-mingw32', 'clang', 'x86_64-pc-windows-gnu'),
+             ('i686-w64-mingw32', 'clang', 'i686-pc-windows-gnu'),
+             ('x86_64-w64-mingw32', 'clang', 'x86_64-pc-windows-gnu'),
++            ('aarch64-windows-mingw32', 'clang-cl', 'aarch64-pc-windows-msvc'),
+         ):
+             self.assertEqual(self.get_rust_target(autoconf, building_with_gcc), rust)
+ 
