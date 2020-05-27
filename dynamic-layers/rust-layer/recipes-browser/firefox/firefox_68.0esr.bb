@@ -175,3 +175,5 @@ PRIVATE_LIBS += " \
     libssl3.so \
     libsoftokn3.so \
 "
+
+CLEANBROKEN = "1"
