@@ -1,4 +1,4 @@
-From 8107e1cf4f6987e4d08f96dd381882493e138549 Mon Sep 17 00:00:00 2001
+From 534f750f66cb985dbf0bcf760257687614800d36 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 21 Nov 2016 08:15:38 +0900
 Subject: [PATCH] Work around Debian bug #844357

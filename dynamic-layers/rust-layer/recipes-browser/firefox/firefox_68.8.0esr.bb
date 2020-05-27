@@ -28,17 +28,13 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://fixes/avoid-running-autoconf2.13.patch \
            file://fixes/pre-generated-old-configure.patch \
            file://fixes/link-with-libpangoft.patch \
-           file://fixes/fix-camera-permission-dialg-doesnot-close.patch \
-           file://fixes/0001-Bug-1554949-Fix-WebRTC-build-failure-with-newer-linu.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
            file://porting/NSS-Fix-FTBFS-on-Hurd-because-of-MAXPATHLEN.patch \
            file://porting/Work-around-Debian-bug-844357.patch \
            file://porting/Use-NEON_FLAGS-instead-of-VPX_ASFLAGS-for-libaom-neo.patch \
-           file://porting/Work-around-GCC-ICE-on-mips-i386-and-s390x.patch \
            file://prefs/Set-javascript.options.showInConsole.patch \
            file://prefs/Set-DPI-to-system-settings.patch \
            file://prefs/Don-t-auto-disable-extensions-in-system-directories.patch \
-           file://debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Don-t-register-plugins-if-the-MOZILLA_DISABLE_PLUGIN.patch \
            file://debian-hacks/Don-t-error-out-when-run-time-libsqlite-is-older-tha.patch \
@@ -54,15 +50,13 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
-           file://0001-rust-1.38-Bug-1585099-Update-cssparser-on-ESR68-to-0.patch \
            file://0002-rust-1.39-Bug-1560700-Change-how-the-rust-target-is-.patch \
            file://0003-rust-1.39-Bug-1587913-Fix-rust-target-detection-for-.patch \
            file://0004-rust-1.39-Bug-1595218-Update-rust-target-detection-f.patch \
-           file://0001-mozbuild-fix-parallel-build.patch \
            "
 
-SRC_URI[archive.md5sum] = "63190d5f5d197fd1a3d375a54d833e13"
-SRC_URI[archive.sha256sum] = "dbb494521b3e246b367e453cc8d438b82b9fd2e05da273f5901391f0c52008b5"
+SRC_URI[archive.md5sum] = "12d50aaca2b5f32b49114f05187af342"
+SRC_URI[archive.sha256sum] = "fa5b2266d225878d4b35694678f79fd7e7a6d3c62759a40326129bd90f63e842"
 S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"

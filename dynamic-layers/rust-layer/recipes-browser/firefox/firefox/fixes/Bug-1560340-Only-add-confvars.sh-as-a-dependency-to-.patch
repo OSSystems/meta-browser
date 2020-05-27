@@ -1,4 +1,4 @@
-From c4d2e2252052c2b8370246ec5d3ae1d5d879c15f Mon Sep 17 00:00:00 2001
+From 57e2369de2b8507eca59167d1915d82a19a1f7cc Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh+mozilla@glandium.org>
 Date: Thu, 20 Jun 2019 18:43:25 +0000
 Subject: [PATCH] Bug 1560340 - Only add confvars.sh as a dependency to

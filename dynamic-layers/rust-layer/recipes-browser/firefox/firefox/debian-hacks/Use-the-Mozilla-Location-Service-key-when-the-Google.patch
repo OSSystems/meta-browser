@@ -1,4 +1,4 @@
-From 83287593f00fcf585004d44f49bcd522a2770d5f Mon Sep 17 00:00:00 2001
+From 7940801238f00c30772768e4eec76cf7d429abd0 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 2 Apr 2017 06:33:19 +0900
 Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
@@ -9,10 +9,10 @@ Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index c86448b3a4..eb98fa3d49 100644
+index d735929909..778d29763f 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
-@@ -1393,7 +1393,7 @@ pref("dom.debug.propagate_gesture_events_through_content", false);
+@@ -1394,7 +1394,7 @@ pref("dom.debug.propagate_gesture_events_through_content", false);
  
  // All the Geolocation preferences are here.
  //

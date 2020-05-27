@@ -1,4 +1,4 @@
-From 71e05ead389e252bc5aaaed1858177c7d3174ce3 Mon Sep 17 00:00:00 2001
+From d20219d0b9cd991557a8333ac5a45e5e4c483005 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 13 Jan 2014 12:00:25 +0900
 Subject: [PATCH] Fix FTBFS on Hurd because of MAXPATHLEN

@@ -1,4 +1,4 @@
-From b082887200c258dbad4bcfbe9c204a9f3f9aa3ec Mon Sep 17 00:00:00 2001
+From a5864faaab9980a41e52c2aa1a73c1c4a927d8ce Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 12 Jul 2019 18:37:52 +0900
 Subject: [PATCH] Use build id as langpack version for reproducibility

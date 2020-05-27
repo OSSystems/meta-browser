@@ -1,4 +1,4 @@
-From 9913aff89163bc355b7475195a432dceaa8cb1ca Mon Sep 17 00:00:00 2001
+From 3e23f82f46577d10754e99a1971300dbec4b1e70 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 3 Sep 2018 07:37:40 +0900
 Subject: [PATCH] Use remoting name for call to gdk_set_program_class

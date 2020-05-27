@@ -1,4 +1,4 @@
-From 5297e8d1ca742715efb9d0429f267f0c17fb7955 Mon Sep 17 00:00:00 2001
+From 4ade484081301d6e5eee3875cd562ecd8fe04d54 Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Sun, 14 Jul 2019 14:26:44 +0900
 Subject: [PATCH] Bug 1451816 - Workarround for grabbing focus on weston

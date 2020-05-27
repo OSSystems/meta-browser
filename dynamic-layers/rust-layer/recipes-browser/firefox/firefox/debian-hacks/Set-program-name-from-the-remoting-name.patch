@@ -1,4 +1,4 @@
-From 024b519f8ca615746c0d1f9d146b59dd737be90f Mon Sep 17 00:00:00 2001
+From c5c1607d6c09994a49341702bc473b52b80846fb Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 5 Feb 2017 08:41:22 +0900
 Subject: [PATCH] Set program name from the remoting name
@@ -8,10 +8,10 @@ Subject: [PATCH] Set program name from the remoting name
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/toolkit/xre/nsAppRunner.cpp b/toolkit/xre/nsAppRunner.cpp
-index cdca60f125..5c07823a8a 100644
+index d3d2d66d5d..3dddf5cdd0 100644
 --- a/toolkit/xre/nsAppRunner.cpp
 +++ b/toolkit/xre/nsAppRunner.cpp
-@@ -3798,7 +3798,7 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
+@@ -3763,7 +3763,7 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
  
    // Set program name to the one defined in application.ini.
    {

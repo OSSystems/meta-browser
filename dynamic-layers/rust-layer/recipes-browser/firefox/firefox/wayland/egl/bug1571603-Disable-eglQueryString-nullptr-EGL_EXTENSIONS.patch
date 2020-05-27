@@ -1,4 +1,4 @@
-From 78d8718e69724d1893749dfae66f6384f7a1cbfe Mon Sep 17 00:00:00 2001
+From 44bd472942218be8a5ffcc25b6a0388ec454883e Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@homa.ne.jp>
 Date: Wed, 8 May 2019 14:42:24 +0900
 Subject: [PATCH] Disable eglQueryString(nullptr, EGL_EXTENSIONS)
@@ -38,7 +38,7 @@ index 0ee98f3fce..ac6f29a2eb 100644
  
  // hold a reference to the given surface
 diff --git a/gfx/gl/GLLibraryEGL.cpp b/gfx/gl/GLLibraryEGL.cpp
-index 0ecd6f67b4..9876719ca8 100644
+index 812a66c79e..679b5426e9 100644
 --- a/gfx/gl/GLLibraryEGL.cpp
 +++ b/gfx/gl/GLLibraryEGL.cpp
 @@ -834,12 +834,14 @@ void GLLibraryEGL::InitClientExtensions() {

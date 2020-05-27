@@ -1,4 +1,4 @@
-From 4cd0fb83224f02ae92018bd92782c27c7e197bfd Mon Sep 17 00:00:00 2001
+From 81bbf5d1517b3d85841e801e05d31654203cee71 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Thu, 13 Mar 2008 20:30:19 +0100
 Subject: [PATCH] Set DPI to system settings
@@ -8,10 +8,10 @@ Subject: [PATCH] Set DPI to system settings
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
-index c7b245b50c..7173f34286 100644
+index 9714c8d563..8e5d48b19f 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
-@@ -3029,7 +3029,7 @@ pref("layout.css.report_errors", true);
+@@ -3035,7 +3035,7 @@ pref("layout.css.report_errors", true);
  // A value of 0 means use the system DPI. A positive value is used as the DPI.
  // This sets the physical size of a device pixel and thus controls the
  // interpretation of physical units such as "pt".

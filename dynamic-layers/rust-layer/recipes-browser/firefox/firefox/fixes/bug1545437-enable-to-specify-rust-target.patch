@@ -1,4 +1,4 @@
-From 34f22192efe148f17298cd3128ad8c6746a209f7 Mon Sep 17 00:00:00 2001
+From a2634ea6f9c2bf23cda8732519aea17e7e0e66a6 Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Thu, 18 Apr 2019 23:15:16 +0900
 Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name

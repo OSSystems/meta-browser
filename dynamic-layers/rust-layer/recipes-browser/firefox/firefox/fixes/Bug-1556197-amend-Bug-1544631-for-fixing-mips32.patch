@@ -1,4 +1,4 @@
-From baf63f8583b6386bde06984d75049f61f3e180ba Mon Sep 17 00:00:00 2001
+From 8f51f056e7feaf5d351bbbc24b36beb5b474cb3b Mon Sep 17 00:00:00 2001
 From: qiaopengcheng <qiaopengcheng-hf@loongson.cn>
 Date: Sun, 2 Jun 2019 07:28:24 +0900
 Subject: [PATCH] Bug 1556197 - amend Bug-1544631 for fixing mips32.

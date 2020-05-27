@@ -1,4 +1,4 @@
-From e53b0a29d6e8f3e736306032d55706ca588fe413 Mon Sep 17 00:00:00 2001
+From 7a1d38d309bf5fa427e557711d4c8b8ebefefa75 Mon Sep 17 00:00:00 2001
 From: KSR_Yasuda <yasuda@kyoto-sr.co.jp>
 Date: Wed, 23 Aug 2017 15:39:07 +0900
 Subject: [PATCH] GLLibraryLoader: Use given symbol lookup function first
