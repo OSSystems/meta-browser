@@ -1,4 +1,4 @@
-From 0bf0d2415916cd59fdd0ecfc66c1c88c6ec4a4e3 Mon Sep 17 00:00:00 2001
+From 25403a1e7099331f419eb2cfd1f3b0cb1d526c8d Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 22 Mar 2010 11:45:42 +0100
 Subject: [PATCH] Don't error-out when run-time libsqlite is older than

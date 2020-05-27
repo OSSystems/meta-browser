@@ -1,4 +1,4 @@
-From acd89f132eb22f2ee3a5150c37779d2deef416de Mon Sep 17 00:00:00 2001
+From e5f6257247afea992cb674dd88608b84ac00ba47 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Thu, 9 Jun 2016 14:45:44 +0900
 Subject: [PATCH] Don't build image/ gtests
@@ -11,7 +11,7 @@ is shipped, and not currently run either, just skip building them.
  1 file changed, 2 deletions(-)
 
 diff --git a/image/moz.build b/image/moz.build
-index 9b96b57347..cc4a09b95e 100644
+index 6902f167cf..0a40d043a5 100644
 --- a/image/moz.build
 +++ b/image/moz.build
 @@ -5,8 +5,6 @@

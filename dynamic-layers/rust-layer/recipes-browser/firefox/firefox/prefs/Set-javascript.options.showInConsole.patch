@@ -1,4 +1,4 @@
-From 207c9ccf67ed4936839496ca55a37db88ee23b06 Mon Sep 17 00:00:00 2001
+From 9fc7f8a399dc205c002fb309cfd9d9c672f22f02 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 8 Dec 2007 19:24:40 +0100
 Subject: [PATCH] Set javascript.options.showInConsole
@@ -8,7 +8,7 @@ Subject: [PATCH] Set javascript.options.showInConsole
  1 file changed, 1 insertion(+)
 
 diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
-index 5703ffd8f4..c7b245b50c 100644
+index 782638b2bb..9714c8d563 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
 @@ -1434,6 +1434,7 @@ pref("javascript.options.ion.threshold",    1000);

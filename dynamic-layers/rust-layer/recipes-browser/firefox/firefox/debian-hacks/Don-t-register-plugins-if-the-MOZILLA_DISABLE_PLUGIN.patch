@@ -1,4 +1,4 @@
-From 7f04dfd517c933f211493c2b32730038d2b43f50 Mon Sep 17 00:00:00 2001
+From acccfb152425fdd1bde2e8ed8633310e28ce6e26 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 27 Sep 2008 17:17:39 +0200
 Subject: [PATCH] Don't register plugins if the MOZILLA_DISABLE_PLUGINS

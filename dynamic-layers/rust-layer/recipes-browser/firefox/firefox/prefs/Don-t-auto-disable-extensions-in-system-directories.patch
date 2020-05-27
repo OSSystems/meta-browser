@@ -1,4 +1,4 @@
-From 40e8d45135296848b8d633d1e2082174a3e336c8 Mon Sep 17 00:00:00 2001
+From 0f87e73f51ee3fa0034eca281abc17f1c111d959 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 17 Feb 2012 17:47:15 +0100
 Subject: [PATCH] Don't auto-disable extensions in system directories
@@ -8,7 +8,7 @@ Subject: [PATCH] Don't auto-disable extensions in system directories
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index 217b4bebd0..c86448b3a4 100644
+index 04fd609ac9..d735929909 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
 @@ -62,7 +62,7 @@ pref("extensions.systemAddon.update.enabled", true);

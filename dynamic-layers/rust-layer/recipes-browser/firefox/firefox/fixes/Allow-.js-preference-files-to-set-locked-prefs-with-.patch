@@ -1,4 +1,4 @@
-From cf20f52f964ed073e597ef2e6f9ca14ed0bd6c40 Mon Sep 17 00:00:00 2001
+From 9368590d555193726e21c6ee27523742d93b4075 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 02:48:46 +0200
 Subject: [PATCH] Allow .js preference files to set locked prefs with

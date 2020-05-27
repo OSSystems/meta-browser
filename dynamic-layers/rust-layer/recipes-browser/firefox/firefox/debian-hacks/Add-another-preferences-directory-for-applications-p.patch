@@ -1,4 +1,4 @@
-From a2a2d7c961059925e77d061a0fed326f197fc19a Mon Sep 17 00:00:00 2001
+From aa4a930bd6ce72d6af5ccd7ab57752b4b49f1166 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 03:09:21 +0200
 Subject: [PATCH] Add another preferences directory for applications:
@@ -15,7 +15,7 @@ to disable the "set as default browser" dialog.
  1 file changed, 2 insertions(+)
 
 diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
-index 7018658cb4..bdbe6cab68 100644
+index 4fd58c7585..c065b6fdc9 100644
 --- a/toolkit/xre/nsXREDirProvider.cpp
 +++ b/toolkit/xre/nsXREDirProvider.cpp
 @@ -848,6 +848,7 @@ static nsresult DeleteDirIfExists(nsIFile* dir) {
