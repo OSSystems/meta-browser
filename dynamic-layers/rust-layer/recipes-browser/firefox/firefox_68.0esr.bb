@@ -49,7 +49,6 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://debian-hacks/Use-the-Mozilla-Location-Service-key-when-the-Google.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
            file://debian-hacks/Use-remoting-name-for-call-to-gdk_set_program_class.patch \
-           file://debian-hacks/Attempt-to-work-around-make-issue-happening-on-arch-.patch \
            file://debian-hacks/Use-build-id-as-langpack-version-for-reproducibility.patch \
            file://wayland/bug1451816-workaround-for-grabbing-popup.patch \
            file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
@@ -59,6 +58,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://0002-rust-1.39-Bug-1560700-Change-how-the-rust-target-is-.patch \
            file://0003-rust-1.39-Bug-1587913-Fix-rust-target-detection-for-.patch \
            file://0004-rust-1.39-Bug-1595218-Update-rust-target-detection-f.patch \
+           file://0001-mozbuild-fix-parallel-build.patch \
            "
 
 SRC_URI[archive.md5sum] = "63190d5f5d197fd1a3d375a54d833e13"
