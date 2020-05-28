@@ -1,4 +1,4 @@
-From 712bf8717c55a2b100cb734e6ceffef4236f733f Mon Sep 17 00:00:00 2001
+From 5297e8d1ca742715efb9d0429f267f0c17fb7955 Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Sun, 14 Jul 2019 14:26:44 +0900
 Subject: [PATCH] Bug 1451816 - Workarround for grabbing focus on weston
@@ -9,12 +9,13 @@ detail.
 Upstream-Status: Denied [Fixed by GTK-3.24's new feature]
 
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
 ---
  widget/gtk/nsWindow.cpp | 17 +++++++++++++++++
  1 file changed, 17 insertions(+)
 
 diff --git a/widget/gtk/nsWindow.cpp b/widget/gtk/nsWindow.cpp
-index b64fc87a946b..8d661794db6e 100644
+index b64fc87a94..8d661794db 100644
 --- a/widget/gtk/nsWindow.cpp
 +++ b/widget/gtk/nsWindow.cpp
 @@ -145,6 +145,10 @@ using namespace mozilla::layers;
@@ -62,6 +63,3 @@ index b64fc87a946b..8d661794db6e 100644
      return;
    }
  
--- 
-2.20.1
-

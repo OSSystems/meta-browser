@@ -1,18 +1,21 @@
+From 608e2c28a1e88e1b3c91b0d9b596126bcb1e5766 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Thu, 12 Nov 2009 17:18:31 +0100
-Subject: Avoid wrong sessionstore data to keep windows out of user sight
+Subject: [PATCH] Avoid wrong sessionstore data to keep windows out of user
+ sight
 
 It happens that sessionstore can keep wrong information for the window
 position or minimized state. Workaround this until the real bug is found
 and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
+
 ---
  browser/components/sessionstore/SessionStore.jsm | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/browser/components/sessionstore/SessionStore.jsm b/browser/components/sessionstore/SessionStore.jsm
-index b9c57df12a30..5918b2bdfc11 100644
+index b9c57df12a..5918b2bdfc 100644
 --- a/browser/components/sessionstore/SessionStore.jsm
 +++ b/browser/components/sessionstore/SessionStore.jsm
 @@ -4486,7 +4486,7 @@ var SessionStoreInternal = {

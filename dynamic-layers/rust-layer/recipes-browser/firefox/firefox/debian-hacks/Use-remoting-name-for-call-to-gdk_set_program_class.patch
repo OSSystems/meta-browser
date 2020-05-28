@@ -1,14 +1,16 @@
+From 9913aff89163bc355b7475195a432dceaa8cb1ca Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 3 Sep 2018 07:37:40 +0900
-Subject: Use remoting name for call to gdk_set_program_class
+Subject: [PATCH] Use remoting name for call to gdk_set_program_class
 
 Closes: #907574
+
 ---
  widget/gtk/nsAppShell.cpp | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/widget/gtk/nsAppShell.cpp b/widget/gtk/nsAppShell.cpp
-index b4010bf38d91..2af4072ebe17 100644
+index b4010bf38d..2af4072ebe 100644
 --- a/widget/gtk/nsAppShell.cpp
 +++ b/widget/gtk/nsAppShell.cpp
 @@ -24,6 +24,7 @@

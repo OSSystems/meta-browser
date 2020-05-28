@@ -1,14 +1,16 @@
+From 79ab0ce09f078e27460ee800ba0616054ab4c6d9 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 12 Jul 2019 18:28:34 +0900
-Subject: Work around GCC ICE on mips*, i386 and s390x
+Subject: [PATCH] Work around GCC ICE on mips*, i386 and s390x
 
 Closes: #931757
+
 ---
  gfx/skia/skia/third_party/skcms/src/Transform_inl.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/gfx/skia/skia/third_party/skcms/src/Transform_inl.h b/gfx/skia/skia/third_party/skcms/src/Transform_inl.h
-index 69efc9838408..3035a23c9e5f 100644
+index 69efc98384..3035a23c9e 100644
 --- a/gfx/skia/skia/third_party/skcms/src/Transform_inl.h
 +++ b/gfx/skia/skia/third_party/skcms/src/Transform_inl.h
 @@ -559,7 +559,7 @@ SI void sample_clut_16(const skcms_A2B* a2b, I32 ix, F* r, F* g, F* b) {

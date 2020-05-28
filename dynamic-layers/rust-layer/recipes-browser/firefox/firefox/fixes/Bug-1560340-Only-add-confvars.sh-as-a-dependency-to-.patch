@@ -1,15 +1,17 @@
+From c4d2e2252052c2b8370246ec5d3ae1d5d879c15f Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh+mozilla@glandium.org>
 Date: Thu, 20 Jun 2019 18:43:25 +0000
-Subject: Bug 1560340 - Only add confvars.sh as a dependency to config.status
- when it exists. r=chmanchester
+Subject: [PATCH] Bug 1560340 - Only add confvars.sh as a dependency to
+ config.status when it exists. r=chmanchester
 
 Differential Revision: https://phabricator.services.mozilla.com/D35447
+
 ---
  moz.configure | 12 +++++++-----
  1 file changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/moz.configure b/moz.configure
-index 2484ad553645..8cbc4f28a3ac 100755
+index 2484ad5536..8cbc4f28a3 100755
 --- a/moz.configure
 +++ b/moz.configure
 @@ -640,20 +640,22 @@ include('js/sub.configure', when=compile_environment & toolkit)

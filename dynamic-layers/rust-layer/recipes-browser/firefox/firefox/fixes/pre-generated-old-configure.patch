@@ -1,6 +1,19 @@
-diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' firefox-68.0-bak/js/src/old-configure firefox-68.0/js/src/old-configure
---- firefox-68.0-bak/js/src/old-configure	1970-01-01 09:00:00.000000000 +0900
-+++ firefox-68.0/js/src/old-configure	2019-07-14 20:32:27.318145584 +0900
+From 0aa235515aed43db8edd60c33a91884d50c8b828 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Mon, 20 Aug 2018 10:16:20 +0900
+Subject: [PATCH] firefox: Update to 60.0esr :tada:
+
+---
+ js/src/old-configure | 8987 ++++++++++++++++++++++++++++++++++++++++++
+ old-configure        |   14 +-
+ 2 files changed, 8995 insertions(+), 6 deletions(-)
+ create mode 100644 js/src/old-configure
+
+diff --git a/js/src/old-configure b/js/src/old-configure
+new file mode 100644
+index 0000000000..ff8d5bf12c
+--- /dev/null
++++ b/js/src/old-configure
 @@ -0,0 +1,8987 @@
 +#! /bin/sh
 +
@@ -8989,10 +9002,11 @@ diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' 
 +
 +
 +rm -fr confdefs* $ac_clean_files
-diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' firefox-68.0-bak/old-configure firefox-68.0/old-configure
---- firefox-68.0-bak/old-configure	2019-07-06 10:44:51.000000000 +0900
-+++ firefox-68.0/old-configure	2019-07-14 20:32:19.242245533 +0900
-@@ -12320,7 +12320,9 @@
+diff --git a/old-configure b/old-configure
+index e3d5d057bf..af7883bfc1 100644
+--- a/old-configure
++++ b/old-configure
+@@ -12320,7 +12320,9 @@ if test -n "$USE_ICU"; then
      # TODO: the l is actually endian-dependent
      # We could make this set as 'l' or 'b' for little or big, respectively,
      # but we'd need to check in a big-endian version of the file.
@@ -9003,7 +9017,7 @@ diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' 
  fi
  
  
-@@ -12462,12 +12464,12 @@
+@@ -12462,12 +12464,12 @@ if test -n "$COMPILE_ENVIRONMENT"; then
  for ac_func in posix_fadvise posix_fallocate
  do
  echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
@@ -9018,7 +9032,7 @@ diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' 
  #define $ac_func innocuous_$ac_func
  #include "confdefs.h"
  #undef $ac_func
-@@ -12494,7 +12496,7 @@
+@@ -12494,7 +12496,7 @@ $ac_func();
  
  ; return 0; }
  EOF
@@ -9027,7 +9041,7 @@ diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' 
    rm -rf conftest*
    eval "ac_cv_func_$ac_func=yes"
  else
-@@ -12526,7 +12528,7 @@
+@@ -12526,7 +12528,7 @@ if test "$MOZ_X11"; then
                  _SAVE_CFLAGS=$CFLAGS
      CFLAGS="$CFLAGS $XCFLAGS"
      cat > conftest.$ac_ext <<EOF
@@ -9036,7 +9050,7 @@ diff -Nur '--exclude=mozconfig' '--exclude=firefox-build-dir' '--exclude=*.pyc' 
  #include "confdefs.h"
  
          #include <stdio.h>
-@@ -12545,7 +12547,7 @@
+@@ -12545,7 +12547,7 @@ int main() {
      
  ; return 0; }
  EOF
