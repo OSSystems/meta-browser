@@ -1,4 +1,4 @@
-From 857b63e0b0d7669eef4d18a1f57fb804713143ba Mon Sep 17 00:00:00 2001
+From 73a6e49c5ef6d4faeb6ac2eabd5601f1bc7b1a5d Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sat, 1 Jun 2019 09:06:01 +0900
 Subject: [PATCH] Bug 1526653 - Include struct definitions for user_vfp and

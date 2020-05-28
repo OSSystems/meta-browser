@@ -1,4 +1,4 @@
-From aa4a930bd6ce72d6af5ccd7ab57752b4b49f1166 Mon Sep 17 00:00:00 2001
+From 4a71d4e6d6a1272c5581ffab97c82f5f2dc063bd Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 03:09:21 +0200
 Subject: [PATCH] Add another preferences directory for applications:

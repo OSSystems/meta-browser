@@ -1,4 +1,4 @@
-From b5b6d05d8bb2a61bb987beabe844e8b065143b7d Mon Sep 17 00:00:00 2001
+From 1a0ad7cf0cadece2714edb4a218d5a79dc88e3a3 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Fri, 30 Apr 2010 11:03:50 +0200
 Subject: [PATCH] Add xptcall support for SH4 processors

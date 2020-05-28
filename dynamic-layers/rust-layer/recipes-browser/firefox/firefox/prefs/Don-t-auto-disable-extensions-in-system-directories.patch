@@ -1,4 +1,4 @@
-From 0f87e73f51ee3fa0034eca281abc17f1c111d959 Mon Sep 17 00:00:00 2001
+From 2cbaf81a1525540f199d661cef7d8eb7d3560378 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 17 Feb 2012 17:47:15 +0100
 Subject: [PATCH] Don't auto-disable extensions in system directories

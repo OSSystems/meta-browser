@@ -1,4 +1,4 @@
-From 5e4cafd3e646dbf73624282215409e6cda082ea1 Mon Sep 17 00:00:00 2001
+From e991ca5495bf413f76fab965475f3849283e1213 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Tue, 21 Aug 2018 21:48:11 -0700
 Subject: [PATCH] firefox: Fix build issues on x86_64 host and target

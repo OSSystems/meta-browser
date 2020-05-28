@@ -1,4 +1,4 @@
-From c5c1607d6c09994a49341702bc473b52b80846fb Mon Sep 17 00:00:00 2001
+From 7cd00cf69e5766ab59760c6d9c4ed89a3fb02628 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 5 Feb 2017 08:41:22 +0900
 Subject: [PATCH] Set program name from the remoting name

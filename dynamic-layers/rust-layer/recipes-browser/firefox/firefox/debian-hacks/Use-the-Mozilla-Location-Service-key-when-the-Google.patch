@@ -1,4 +1,4 @@
-From 7940801238f00c30772768e4eec76cf7d429abd0 Mon Sep 17 00:00:00 2001
+From fb5aa421cba3581f483dacdf90074e3c4e8b0d40 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 2 Apr 2017 06:33:19 +0900
 Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is

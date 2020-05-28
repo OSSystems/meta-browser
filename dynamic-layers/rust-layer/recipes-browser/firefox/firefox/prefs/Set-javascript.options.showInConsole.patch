@@ -1,4 +1,4 @@
-From 9fc7f8a399dc205c002fb309cfd9d9c672f22f02 Mon Sep 17 00:00:00 2001
+From 2fac140f228182023dc62261c3f5d626c9272614 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 8 Dec 2007 19:24:40 +0100
 Subject: [PATCH] Set javascript.options.showInConsole
