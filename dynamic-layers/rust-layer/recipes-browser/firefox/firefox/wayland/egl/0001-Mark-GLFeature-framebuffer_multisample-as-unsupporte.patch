@@ -1,15 +1,16 @@
-From 9964f1fae72c612f17c6a44c0427b1e2dfd2ee1a Mon Sep 17 00:00:00 2001
+From f92d766bf583ed683a3c8b91e587a6d7756d4bc4 Mon Sep 17 00:00:00 2001
 From: Hiroshi Hatake <hatake@clear-code.com>
 Date: Mon, 25 Jun 2018 11:41:19 +0900
 Subject: [PATCH] Mark GLFeature::framebuffer_multisample as unsupported
 
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
 ---
  gfx/gl/GLContext.cpp | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
 diff --git a/gfx/gl/GLContext.cpp b/gfx/gl/GLContext.cpp
-index 597c089eb70f..1ce805753343 100644
+index 5759aa5af2..6a377d5343 100644
 --- a/gfx/gl/GLContext.cpp
 +++ b/gfx/gl/GLContext.cpp
 @@ -705,6 +705,16 @@ bool GLContext::InitImpl() {
@@ -29,6 +30,3 @@ index 597c089eb70f..1ce805753343 100644
  #ifdef XP_MACOSX
      // The Mac Nvidia driver, for versions up to and including 10.8,
      // don't seem to properly support this.  See 814839
--- 
-2.17.1
-

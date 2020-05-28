@@ -1,13 +1,14 @@
+From 4cd0fb83224f02ae92018bd92782c27c7e197bfd Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Thu, 13 Mar 2008 20:30:19 +0100
-Subject: Set DPI to system settings
+Subject: [PATCH] Set DPI to system settings
 
 ---
  modules/libpref/init/all.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
-index c7b245b50c16..7173f342862c 100644
+index c7b245b50c..7173f34286 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
 @@ -3029,7 +3029,7 @@ pref("layout.css.report_errors", true);

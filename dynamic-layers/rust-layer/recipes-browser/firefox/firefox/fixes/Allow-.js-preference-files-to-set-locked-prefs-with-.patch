@@ -1,13 +1,15 @@
+From cf20f52f964ed073e597ef2e6f9ca14ed0bd6c40 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 02:48:46 +0200
-Subject: Allow .js preference files to set locked prefs with lockPref()
+Subject: [PATCH] Allow .js preference files to set locked prefs with
+ lockPref()
 
 ---
  modules/libpref/parser/src/lib.rs | 16 +++++++++-------
  1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/parser/src/lib.rs b/modules/libpref/parser/src/lib.rs
-index ca253e2b0190..35bdaed67491 100644
+index ca253e2b01..35bdaed674 100644
 --- a/modules/libpref/parser/src/lib.rs
 +++ b/modules/libpref/parser/src/lib.rs
 @@ -10,7 +10,7 @@

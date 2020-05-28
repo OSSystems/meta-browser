@@ -1,13 +1,15 @@
+From 83287593f00fcf585004d44f49bcd522a2770d5f Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 2 Apr 2017 06:33:19 +0900
-Subject: Use the Mozilla Location Service key when the Google Key is not there
+Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
+ not there
 
 ---
  browser/app/profile/firefox.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index dd570566c913..6224a69c13af 100644
+index c86448b3a4..eb98fa3d49 100644
 --- a/browser/app/profile/firefox.js
 +++ b/browser/app/profile/firefox.js
 @@ -1393,7 +1393,7 @@ pref("dom.debug.propagate_gesture_events_through_content", false);

@@ -1,6 +1,7 @@
+From a2a2d7c961059925e77d061a0fed326f197fc19a Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 03:09:21 +0200
-Subject: Add another preferences directory for applications:
+Subject: [PATCH] Add another preferences directory for applications:
  preferences/syspref
 
 It was existing in previous versions of iceweasel as a symlink to
@@ -8,12 +9,13 @@ It was existing in previous versions of iceweasel as a symlink to
 
 This has the side effect to make these preferences there work again, and
 to disable the "set as default browser" dialog.
+
 ---
  toolkit/xre/nsXREDirProvider.cpp | 2 ++
  1 file changed, 2 insertions(+)
 
 diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
-index 7018658cb4e6..bdbe6cab68b6 100644
+index 7018658cb4..bdbe6cab68 100644
 --- a/toolkit/xre/nsXREDirProvider.cpp
 +++ b/toolkit/xre/nsXREDirProvider.cpp
 @@ -848,6 +848,7 @@ static nsresult DeleteDirIfExists(nsIFile* dir) {

@@ -1,13 +1,14 @@
+From 76519ef7a1d858a91e2cca3eb15710b5bbbd7867 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 27 Dec 2010 10:44:28 +0100
-Subject: Add a 2 minutes timeout on xpcshell tests
+Subject: [PATCH] Add a 2 minutes timeout on xpcshell tests
 
 ---
  testing/xpcshell/runxpcshelltests.py | 21 ++++++++++++++++++---
  1 file changed, 18 insertions(+), 3 deletions(-)
 
 diff --git a/testing/xpcshell/runxpcshelltests.py b/testing/xpcshell/runxpcshelltests.py
-index cb3902be42d2..384d4e918b7f 100755
+index cb3902be42..384d4e918b 100755
 --- a/testing/xpcshell/runxpcshelltests.py
 +++ b/testing/xpcshell/runxpcshelltests.py
 @@ -13,6 +13,7 @@ import os

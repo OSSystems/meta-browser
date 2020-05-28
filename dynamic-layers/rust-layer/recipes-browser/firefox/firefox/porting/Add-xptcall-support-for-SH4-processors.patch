@@ -1,9 +1,11 @@
+From aae620d4e55a6072a4265aae4d864d60d34237ed Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Fri, 30 Apr 2010 11:03:50 +0200
-Subject: Add xptcall support for SH4 processors
+Subject: [PATCH] Add xptcall support for SH4 processors
 
 Closes: #553593
 https://bugzilla.mozilla.org/show_bug.cgi?id=382214
+
 ---
  xpcom/reflect/xptcall/md/unix/moz.build       |   5 +
  .../src/md/unix/xptcinvoke_linux_sh.cpp       | 203 +++++++++++++
@@ -13,7 +15,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=382214
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index 61a364abb6a1..52b79889249c 100644
+index 61a364abb6..52b7988924 100644
 --- a/xpcom/reflect/xptcall/md/unix/moz.build
 +++ b/xpcom/reflect/xptcall/md/unix/moz.build
 @@ -252,6 +252,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
@@ -30,7 +32,7 @@ index 61a364abb6a1..52b79889249c 100644
  
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 new file mode 100644
-index 000000000000..ca4807daca89
+index 0000000000..ca4807daca
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 @@ -0,0 +1,203 @@
@@ -239,7 +241,7 @@ index 000000000000..ca4807daca89
 +
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 new file mode 100644
-index 000000000000..cf9fceabd81c
+index 0000000000..cf9fceabd8
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 @@ -0,0 +1,271 @@

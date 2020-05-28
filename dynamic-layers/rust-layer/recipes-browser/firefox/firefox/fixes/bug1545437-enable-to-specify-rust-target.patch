@@ -1,25 +1,23 @@
-# HG changeset patch
-# User Takuro Ashie <ashie@clear-code.com>
-# Date 1555596916 -32400
-#      Thu Apr 18 23:15:16 2019 +0900
-# Node ID 47e4ea055911f33c24260f871a0c8397a3366516
-# Parent  02b89c29412b6c1444fe32a4847e5261e2bb3d00
-Bug 1545437 - Add options to specify Rust target name r?glandium
+From 34f22192efe148f17298cd3128ad8c6746a209f7 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Thu, 18 Apr 2019 23:15:16 +0900
+Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name
+ r?glandium
 
 Certain build systems such as Yocto know more suitable Rust target name, so it
 would be better that there is a way to pass it to Mozilla's build system.
 
 Differential Revision: https://phabricator.services.mozilla.com/D28069
 
+---
+ build/moz.configure/rust.configure | 37 ++++++++++++++++++++++++++----
+ 1 file changed, 33 insertions(+), 4 deletions(-)
+
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index 9647cbc40e..5aed73fb26 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
-@@ -188,37 +188,66 @@ def rust_supported_targets(rustc):
-             if raw_os == 'androideabi':
-                 raw_os = 'linux-androideabi'
-             per_raw_os[(t.cpu, endianness, raw_os)] = t
-         else:
-             per_os[key] = t
+@@ -218,6 +218,28 @@ def rust_supported_targets(rustc):
      return namespace(per_os=per_os, per_raw_os=per_raw_os)
  
  
@@ -48,10 +46,7 @@ diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.confi
  @template
  def rust_triple_alias(host_or_target):
      """Template defining the alias used for rustc's --target flag.
-     `host_or_target` is either `host` or `target` (the @depends functions
-     from init.configure).
-     """
-     assert host_or_target in {host, target}
+@@ -228,8 +250,9 @@ def rust_triple_alias(host_or_target):
  
      host_or_target_str = {host: 'host', target: 'target'}[host_or_target]
  
@@ -63,7 +58,7 @@ diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.confi
      @checking('for rust %s triplet' % host_or_target_str)
      @imports('os')
      @imports('subprocess')
-     @imports(_from='mozbuild.configure.util', _import='LineIO')
+@@ -237,8 +260,14 @@ def rust_triple_alias(host_or_target):
      @imports(_from='mozbuild.shellutil', _import='quote')
      @imports(_from='tempfile', _import='mkstemp')
      @imports(_from='textwrap', _import='dedent')
@@ -80,8 +75,3 @@ diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.confi
          # Rust's --target options are similar to, but not exactly the same
          # as, the autoconf-derived targets we use.  An example would be that
          # Rust uses distinct target triples for targetting the GNU C++ ABI
-         # and the MSVC C++ ABI on Win32, whereas autoconf has a single
-         # triple and relies on the user to ensure that everything is
-         # compiled for the appropriate ABI.  We need to perform appropriate
-         # munging to get the correct option to rustc.
-         # We correlate the autoconf-derived targets with the list of targets
