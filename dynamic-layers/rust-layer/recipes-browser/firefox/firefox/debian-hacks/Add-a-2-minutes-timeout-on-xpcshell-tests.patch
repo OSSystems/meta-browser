@@ -1,4 +1,4 @@
-From 9bbdf6b9de2049d072a70644de552b5d0929065b Mon Sep 17 00:00:00 2001
+From 16d5eeab623fd5b3524f44d600c44e1dc628a0c4 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 27 Dec 2010 10:44:28 +0100
 Subject: [PATCH] Add a 2 minutes timeout on xpcshell tests

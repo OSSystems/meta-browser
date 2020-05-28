@@ -1,4 +1,4 @@
-From 66e70ee27d3920d5ab9900444f52e88040c074f9 Mon Sep 17 00:00:00 2001
+From 8100de51ff570389589537e2bb78e09cbb21a14a Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Mon, 20 Aug 2018 10:16:20 +0900
 Subject: [PATCH] firefox: Update to 60.0esr :tada:
@@ -9003,7 +9003,7 @@ index 0000000000..ff8d5bf12c
 +
 +rm -fr confdefs* $ac_clean_files
 diff --git a/old-configure b/old-configure
-index 00b1d07006..90e68b7f31 100644
+index 2764da7b72..dfee8727ea 100644
 --- a/old-configure
 +++ b/old-configure
 @@ -12320,7 +12320,9 @@ if test -n "$USE_ICU"; then

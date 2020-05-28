@@ -1,4 +1,4 @@
-From 81bbf5d1517b3d85841e801e05d31654203cee71 Mon Sep 17 00:00:00 2001
+From 651f74efd75c06d4160f075362ee8141b4f1227a Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Thu, 13 Mar 2008 20:30:19 +0100
 Subject: [PATCH] Set DPI to system settings

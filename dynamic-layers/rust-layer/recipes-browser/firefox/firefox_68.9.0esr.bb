@@ -15,7 +15,7 @@ LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=33;md5=35d7fa1c4
 
 CVE_PRODUCT = "mozilla:firefox"
 
-SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${PV}.source.tar.xz;name=archive \
+SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${PV}.source.tar.xz \
            file://mozconfig \
            file://mozilla-firefox.png \
            file://mozilla-firefox.desktop \
@@ -50,13 +50,9 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
-           file://0002-rust-1.39-Bug-1560700-Change-how-the-rust-target-is-.patch \
-           file://0003-rust-1.39-Bug-1587913-Fix-rust-target-detection-for-.patch \
-           file://0004-rust-1.39-Bug-1595218-Update-rust-target-detection-f.patch \
            "
 
-SRC_URI[archive.md5sum] = "12d50aaca2b5f32b49114f05187af342"
-SRC_URI[archive.sha256sum] = "fa5b2266d225878d4b35694678f79fd7e7a6d3c62759a40326129bd90f63e842"
+SRC_URI[sha256sum] = "935105e1a8a97d64daffb372690e2b566b5f07641f01470929dbbc82d20d4407"
 S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"

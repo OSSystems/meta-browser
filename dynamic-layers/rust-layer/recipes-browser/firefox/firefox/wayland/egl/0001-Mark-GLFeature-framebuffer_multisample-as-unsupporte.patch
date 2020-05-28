@@ -1,4 +1,4 @@
-From eb6bb208a64d246a4f8bdf63ba245771473cadba Mon Sep 17 00:00:00 2001
+From 3d64bee51528bd55c4ebb146cd96de3126fd8594 Mon Sep 17 00:00:00 2001
 From: Hiroshi Hatake <hatake@clear-code.com>
 Date: Mon, 25 Jun 2018 11:41:19 +0900
 Subject: [PATCH] Mark GLFeature::framebuffer_multisample as unsupported

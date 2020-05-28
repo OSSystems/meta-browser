@@ -1,4 +1,4 @@
-From e5f6257247afea992cb674dd88608b84ac00ba47 Mon Sep 17 00:00:00 2001
+From 1a58448e215c0097ddc2cf0a291f0b4cd0bc3ffe Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Thu, 9 Jun 2016 14:45:44 +0900
 Subject: [PATCH] Don't build image/ gtests

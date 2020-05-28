@@ -1,7 +1,8 @@
-From a2634ea6f9c2bf23cda8732519aea17e7e0e66a6 Mon Sep 17 00:00:00 2001
+From 2817f07563070d71b624b4397af32d820efec244 Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Thu, 18 Apr 2019 23:15:16 +0900
 Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name
+
  r?glandium
 
 Certain build systems such as Yocto know more suitable Rust target name, so it
@@ -14,11 +15,11 @@ Differential Revision: https://phabricator.services.mozilla.com/D28069
  1 file changed, 33 insertions(+), 4 deletions(-)
 
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index 9647cbc40e..5aed73fb26 100644
+index dc23355253..e2d9a8552f 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
-@@ -218,6 +218,28 @@ def rust_supported_targets(rustc):
-     return namespace(per_os=per_os, per_raw_os=per_raw_os)
+@@ -211,6 +211,28 @@ def rust_supported_targets(rustc):
+     return data
  
  
 +option(env='RUST_HOST',
@@ -46,7 +47,7 @@ index 9647cbc40e..5aed73fb26 100644
  @template
  def rust_triple_alias(host_or_target):
      """Template defining the alias used for rustc's --target flag.
-@@ -228,8 +250,9 @@ def rust_triple_alias(host_or_target):
+@@ -221,8 +243,9 @@ def rust_triple_alias(host_or_target):
  
      host_or_target_str = {host: 'host', target: 'target'}[host_or_target]
  
@@ -58,7 +59,7 @@ index 9647cbc40e..5aed73fb26 100644
      @checking('for rust %s triplet' % host_or_target_str)
      @imports('os')
      @imports('subprocess')
-@@ -237,8 +260,14 @@ def rust_triple_alias(host_or_target):
+@@ -230,8 +253,14 @@ def rust_triple_alias(host_or_target):
      @imports(_from='mozbuild.shellutil', _import='quote')
      @imports(_from='tempfile', _import='mkstemp')
      @imports(_from='textwrap', _import='dedent')

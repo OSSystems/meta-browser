@@ -1,4 +1,4 @@
-From 6780d3132cec3faf81c79e7f8ed4ca71d1ebf917 Mon Sep 17 00:00:00 2001
+From 385639786b1988a6848691d929f00449aa0a7431 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 26 Nov 2018 09:59:56 +0900
 Subject: [PATCH] Use NEON_FLAGS instead of VPX_ASFLAGS for libaom neon code
