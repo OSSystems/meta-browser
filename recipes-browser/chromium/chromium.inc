@@ -18,7 +18,7 @@ TOOLCHAIN = "clang"
 # to build the native recipes (e.g. GN) with clang too.
 TOOLCHAIN_class-native = "clang"
 
-inherit python3native
+inherit pythonnative setuptools
 
 # Chromium itself is licensed under the 3-clause BSD license. However, it
 # depends upon several other projects whose copyright files are listed in

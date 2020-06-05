@@ -1,0 +1,91 @@
+Upstream-Status: Submitted
+
+Pending for review at https://crrev.com/c/2241671
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From df55807483fbddf1b3817afdae0d6c95564e8562 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 11 Jun 2020 14:40:55 +0300
+Subject: [PATCH] stl_util: support older clang.
+
+This error doesn't happen with the clang 11 that Chromium uses,
+but older downstream projects or recipes may uses clang 8. And
+the following patch resolves the visibility of the EraseIf functions.
+Basically, fixes the order of definitions of EraseIf functions
+
+../../base/stl_util.h:587:10: error: call to function 'EraseIf' that is neither visible in the template definition nor found by argument-dependent lookup
+  return EraseIf(container, [&](const T& cur) { return cur == value; });
+         ^
+../../net/url_request/url_request_test_job.cc:181:9: note: in instantiation of function template specialization 'base::Erase<net::URLRequestTestJob *, std::allocator<net::URLRequestTestJob *>, net::URLRequestTestJob *>' requested here
+  base::Erase(g_pending_jobs.Get(), this);
+        ^
+../../base/stl_util.h:591:8: note: 'EraseIf' should be declared prior to the call site or in namespace 'net'
+size_t EraseIf(std::list<T, Allocator>& container, Predicate pred) {
+       ^
+
+Change-Id: I1e67f75bef2e5a983468f175d6e9c2ec56bafa54
+---
+ base/stl_util.h | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/base/stl_util.h b/base/stl_util.h
+index 8269b0b38ec3..47cf6f8e7985 100644
+--- a/base/stl_util.h
++++ b/base/stl_util.h
+@@ -561,14 +561,6 @@ size_t EraseIf(std::vector<T, Allocator>& container, Predicate pred) {
+   return removed;
+ }
+ 
+-template <class T, class Allocator, class Value>
+-size_t Erase(std::forward_list<T, Allocator>& container, const Value& value) {
+-  // Unlike std::forward_list::remove, this function template accepts
+-  // heterogeneous types and does not force a conversion to the container's
+-  // value type before invoking the == operator.
+-  return EraseIf(container, [&](const T& cur) { return cur == value; });
+-}
+-
+ template <class T, class Allocator, class Predicate>
+ size_t EraseIf(std::forward_list<T, Allocator>& container, Predicate pred) {
+   // Note: std::forward_list does not have a size() API, thus we need to use the
+@@ -579,14 +571,6 @@ size_t EraseIf(std::forward_list<T, Allocator>& container, Predicate pred) {
+   return old_size - std::distance(container.begin(), container.end());
+ }
+ 
+-template <class T, class Allocator, class Value>
+-size_t Erase(std::list<T, Allocator>& container, const Value& value) {
+-  // Unlike std::list::remove, this function template accepts heterogeneous
+-  // types and does not force a conversion to the container's value type before
+-  // invoking the == operator.
+-  return EraseIf(container, [&](const T& cur) { return cur == value; });
+-}
+-
+ template <class T, class Allocator, class Predicate>
+ size_t EraseIf(std::list<T, Allocator>& container, Predicate pred) {
+   size_t old_size = container.size();
+@@ -661,6 +645,22 @@ size_t EraseIf(
+   return internal::IterateAndEraseIf(container, pred);
+ }
+ 
++template <class T, class Allocator, class Value>
++size_t Erase(std::forward_list<T, Allocator>& container, const Value& value) {
++  // Unlike std::forward_list::remove, this function template accepts
++  // heterogeneous types and does not force a conversion to the container's
++  // value type before invoking the == operator.
++  return EraseIf(container, [&](const T& cur) { return cur == value; });
++}
++
++template <class T, class Allocator, class Value>
++size_t Erase(std::list<T, Allocator>& container, const Value& value) {
++  // Unlike std::list::remove, this function template accepts heterogeneous
++  // types and does not force a conversion to the container's value type before
++  // invoking the == operator.
++  return EraseIf(container, [&](const T& cur) { return cur == value; });
++}
++
+ // A helper class to be used as the predicate with |EraseIf| to implement
+ // in-place set intersection. Helps implement the algorithm of going through
+ // each container an element at a time, erasing elements from the first
+-- 
+2.26.2
+

@@ -27,6 +27,7 @@ SRC_URI += " \
         file://0004-Include-memory-header-to-get-the-definition-of-std-u.patch \
         file://0005-IWYU-std-numeric_limits-is-defined-in-limits.patch \
         file://0006-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
+        file://0001-stl_util-support-older-clang.patch \
 "
 
 SRC_URI_append_libc-musl = "\
