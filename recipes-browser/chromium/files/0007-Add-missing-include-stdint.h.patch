@@ -1,0 +1,36 @@
+From ddfd6b11ea107ab2d7ba7c3662862ca72a7fc630 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@gmail.com>
+Date: Fri, 12 Jun 2020 09:59:24 +0200
+Subject: [PATCH] Add missing #include <stdint.h>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Possibly caused by gcc10 it fixes the following build error:
+
+| In file included from ../../ui/gfx/linux/drm_util_linux.cc:5:
+| ../../ui/gfx/linux/drm_util_linux.h:16:26: error: unknown type name 'uint32_t'
+| bool IsValidBufferFormat(uint32_t current_format);
+
+Upstream-Status: Pending
+
+Signed-off-by: Andreas Müller <schnitzeltony@gmail.com>
+---
+ ui/gfx/linux/drm_util_linux.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/gfx/linux/drm_util_linux.h b/ui/gfx/linux/drm_util_linux.h
+index 86ff2eb20..dd99aebb1 100644
+--- a/ui/gfx/linux/drm_util_linux.h
++++ b/ui/gfx/linux/drm_util_linux.h
+@@ -5,6 +5,7 @@
+ #ifndef UI_GFX_LINUX_DRM_UTIL_LINUX_H_
+ #define UI_GFX_LINUX_DRM_UTIL_LINUX_H_
+ 
++#include <stdint.h>
+ #include "ui/gfx/buffer_types.h"
+ 
+ namespace ui {
+-- 
+2.26.2
+
