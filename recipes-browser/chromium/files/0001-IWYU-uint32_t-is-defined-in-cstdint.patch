@@ -1,0 +1,38 @@
+Upstream-Status: Backport
+
+Backported from https://crrev.com/c/2174486
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 6d42d6eacce85aab3a964aa25b90778bb938acd6 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 7 May 2020 16:08:25 +0000
+Subject: [PATCH] IWYU: uint32_t is defined in cstdint
+
+This is required for gcc-10.
+
+Change-Id: I6659a14f885011941887702171f6e49b8740f049
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2174486
+Reviewed-by: Michael Spang <spang@chromium.org>
+Commit-Queue: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#766427}
+---
+ ui/gfx/linux/drm_util_linux.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ui/gfx/linux/drm_util_linux.h b/ui/gfx/linux/drm_util_linux.h
+index 86ff2eb20610..25aa65f417fa 100644
+--- a/ui/gfx/linux/drm_util_linux.h
++++ b/ui/gfx/linux/drm_util_linux.h
+@@ -5,6 +5,8 @@
+ #ifndef UI_GFX_LINUX_DRM_UTIL_LINUX_H_
+ #define UI_GFX_LINUX_DRM_UTIL_LINUX_H_
+ 
++#include <cstdint>
++
+ #include "ui/gfx/buffer_types.h"
+ 
+ namespace ui {
+-- 
+2.25.4
+
