@@ -28,7 +28,7 @@ SRC_URI += " \
         file://0005-IWYU-std-numeric_limits-is-defined-in-limits.patch \
         file://0006-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
         file://0001-stl_util-support-older-clang.patch \
-        file://0007-Add-missing-include-stdint.h.patch \
+        file://0001-IWYU-uint32_t-is-defined-in-cstdint.patch \
 "
 
 SRC_URI_append_libc-musl = "\
