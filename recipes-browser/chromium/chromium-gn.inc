@@ -17,8 +17,6 @@ SRC_URI += " \
         file://do-not-specify-march-on-arm.patch \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
-        file://std_size_t.patch \
-        file://stdint.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
         file://0001-Add-missing-algorithm-header-in-crx_install_error.cc.patch \
@@ -29,6 +27,9 @@ SRC_URI += " \
         file://0006-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
         file://0001-stl_util-support-older-clang.patch \
         file://0001-IWYU-uint32_t-is-defined-in-cstdint.patch \
+        file://0001-IWYU-size_t-is-defined-in-stddef.h-webrtc.patch \
+        file://0001-IWYU-size_t-is-defined-in-stddef.h.patch \
+        file://0001-IWYU-uint32_t-is-defined-in-cstdint-webrtc.patch \
 "
 
 SRC_URI_append_libc-musl = "\

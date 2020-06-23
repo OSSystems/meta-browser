@@ -1,0 +1,36 @@
+Upstream-status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From c1800a9316490bd09f7ad8c4f33d56bf4a0c7bce Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Thu, 28 May 2020 19:50:57 +0000
+Subject: [PATCH] IWYU: size_t is defined in stddef.h
+
+This is required with gcc-10.
+
+Change-Id: Ie5985bb0cfedb17debd350aaf51922158d4540d7
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2174485
+Reviewed-by: Lei Zhang <thestig@chromium.org>
+Commit-Queue: Lei Zhang <thestig@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#772837}
+---
+ chrome/browser/search/background/ntp_backgrounds.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/chrome/browser/search/background/ntp_backgrounds.h b/chrome/browser/search/background/ntp_backgrounds.h
+index 7afc0a230b0d..0ddbf381f29f 100644
+--- a/chrome/browser/search/background/ntp_backgrounds.h
++++ b/chrome/browser/search/background/ntp_backgrounds.h
+@@ -5,6 +5,8 @@
+ #ifndef CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUNDS_H_
+ #define CHROME_BROWSER_SEARCH_BACKGROUND_NTP_BACKGROUNDS_H_
+ 
++#include <stddef.h>
++
+ #include <array>
+ 
+ class GURL;
+-- 
+2.25.4
+

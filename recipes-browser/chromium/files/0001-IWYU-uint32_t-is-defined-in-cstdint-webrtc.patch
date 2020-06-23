@@ -1,0 +1,49 @@
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+From 03fade52dae736275c4f4e7fe1cbd6fe82d7aa4c Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sat, 2 May 2020 12:17:05 +0000
+Subject: [PATCH] IWYU: uint32_t is defined in cstdint
+
+This is required for gcc-10.
+
+Bug: None
+Change-Id: I0d04f720d09b42e1d54e058b897ddc047ef64bf6
+Reviewed-on: https://webrtc-review.googlesource.com/c/src/+/174204
+Reviewed-by: Magnus Flodman <mflodman@webrtc.org>
+Commit-Queue: Mirko Bonadei <mbonadei@webrtc.org>
+Cr-Commit-Position: refs/heads/master@{#31184}
+---
+ AUTHORS                   | 1 +
+ call/rtx_receive_stream.h | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/AUTHORS b/AUTHORS
+index ae9d4e2e14..97db345ad1 100644
+--- a/third_party/webrtc/AUTHORS
++++ b/third_party/webrtc/AUTHORS
+@@ -89,6 +89,7 @@ Ramprakash Jelari <ennajelari@gmail.com>
+ CZ Theng <cz.theng@gmail.com>
+ Miguel Paris <mparisdiaz@gmail.com>
+ Raman Budny <budnyjj@gmail.com>
++Stephan Hartmann <stha09@googlemail.com>
+ 
+ &yet LLC <*@andyet.com>
+ Agora IO <*@agora.io>
+diff --git a/call/rtx_receive_stream.h b/call/rtx_receive_stream.h
+index 8ffa4400a9..a389fc2a57 100644
+--- a/third_party/webrtc/call/rtx_receive_stream.h
++++ b/third_party/webrtc/call/rtx_receive_stream.h
+@@ -11,6 +11,7 @@
+ #ifndef CALL_RTX_RECEIVE_STREAM_H_
+ #define CALL_RTX_RECEIVE_STREAM_H_
+ 
++#include <cstdint>
+ #include <map>
+ 
+ #include "call/rtp_packet_sink_interface.h"
+-- 
+2.25.4
+
