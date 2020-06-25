@@ -3,6 +3,7 @@ require chromium-gn.inc
 REQUIRED_DISTRO_FEATURES = "wayland"
 
 DEPENDS += "\
+        at-spi2-atk \
         libxkbcommon \
         virtual/egl \
         wayland \
