@@ -2,20 +2,15 @@
 # It is not released separately, and each Chromium release is only expected to
 # work with the GN version provided with it.
 
-require chromium.inc
-
 inherit native
 
-S = "${WORKDIR}/chromium-${PV}"
+SRC_URI = "git://gn.googlesource.com/gn;protocol=https;rev=cd3869be2477f7ee1aa3f27f43ee934e74722dfb"
+S = "${WORKDIR}/git"
+B = "${WORKDIR}/build"
 
-# bootstrap.py --no_clean hardcodes the build location to out_bootstrap.
-# Omitting --no_clean causes the script to create a temporary directory with a
-# random name outside the build directory, so we choose the lesser of the two
-# evils.
-B = "${S}/out_bootstrap"
-
-SRC_URI += " \
-        file://0001-Pass-no-static-libstdc-to-gen.py.patch \
+LICENSE = "BSD-3-Clause & LGPL-2.0 & LGPL-2.1"
+LIC_FILES_CHKSUM = "\
+    file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
 "
 
 # The build system expects the linker to be invoked via the compiler. If we use
@@ -32,12 +27,13 @@ DEPENDS = "clang-native ninja-native"
 do_configure[noexec] = "1"
 
 do_compile() {
-	python ${S}/tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
+        python ${S}/build/gen.py --no-static-libstdc++ --out-path=${B}
+        ninja -C ${B}
 }
 
 do_install() {
 	install -d ${D}${bindir}
-	install -m 0755 ${S}/out/Release/gn ${D}${bindir}/gn
+	install -m 0755 ${B}/gn ${D}${bindir}/gn
 }
 
 INSANE_SKIP_${PN} += "already-stripped"

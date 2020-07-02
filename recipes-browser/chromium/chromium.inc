@@ -3,11 +3,11 @@ HOMEPAGE = "https://www.chromium.org/Home"
 
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
-SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
+SRC_URI = "gclient://chromium.googlesource.com/chromium/src.git;tag=${PV};jobs=8;download_path=src"
 SRC_URI[md5sum] = "aa180a004af1cc542d5a50c36bfcabd6"
 SRC_URI[sha256sum] = "bb0c7e8dfee9f3a5e30eca7f34fc9f21caefa82a86c058c552f52b1ae2da2ac3"
 
-S = "${WORKDIR}/chromium-${PV}"
+S = "${WORKDIR}/src"
 
 # GCC is not tested or officially supported upstream, and supporting it here
 # requires an ever-growing amount of backports and custom patches, without any
@@ -18,7 +18,7 @@ TOOLCHAIN = "clang"
 # to build the native recipes (e.g. GN) with clang too.
 TOOLCHAIN_class-native = "clang"
 
-inherit pythonnative setuptools
+inherit pythonnative setuptools gclient-fetch
 
 # Chromium itself is licensed under the 3-clause BSD license. However, it
 # depends upon several other projects whose copyright files are listed in
