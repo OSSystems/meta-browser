@@ -3,7 +3,7 @@ DEPENDS += "gnu-config-native virtual/libintl libxt libxi zip-native gtk+"
 
 SRC_URI += "file://mozconfig"
 
-inherit pkgconfig
+inherit pkgconfig pythonnative
 
 EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
                 --with-toolchain-prefix=${TARGET_SYS}- \
@@ -62,6 +62,15 @@ mozilla_do_configure() {
 }
 
 mozilla_do_compile() {
+
+	# This is a hack/workaround necessary for building firefox 68esr on
+	# Centos 7.6/Fedora
+	# It doesn't do any harm on other distros - like Ubuntu 18.04 or Debian 10
+	# Moreover, it mimics 'include pythonnative', which cannot be used as it
+	# causes errors during firefox 68esr configuration stage
+	ln -snf python-native/python2.7 ${STAGING_BINDIR_NATIVE}/python2.7
+	ln -snf python-native/python2.7 ${STAGING_BINDIR_NATIVE}/python
+
 	mozilla_run_mach build
 }
 
