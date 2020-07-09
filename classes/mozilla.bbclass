@@ -62,6 +62,16 @@ mozilla_do_configure() {
 }
 
 mozilla_do_compile() {
+
+# This is a hack/workaround necessary for building firefox 68esr on
+# Centos 7.6/Fedora
+# It shall not do any harm on other distros - like Ubuntu 18.04 or Debian 10
+# It mimics 'include pythonnative', which causes errors during firefox 68esr
+# configure stage
+	cd ${STAGING_BINDIR_NATIVE}
+	ln -sf ./python-native/python2.7 python2.7
+	cd -
+
 	mozilla_run_mach build
 }
 
