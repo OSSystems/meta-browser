@@ -1,0 +1,41 @@
+Upstream-Status: Backport
+
+https://crrev.com/c/2252000
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 1ccf963f41cdf0d2c6477262a7f8c578a318ab14 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Fri, 19 Jun 2020 23:00:08 +0000
+Subject: [PATCH] IWYU: include cstring for memset and memcpy calls in evdev
+ event_device_info.cc
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Bug: 819294
+Change-Id: Ibf5b13cdccaa371b7f5972bf511aeb20ed1bf9c8
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2252000
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#780493}
+---
+ ui/events/ozone/evdev/event_device_info.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ui/events/ozone/evdev/event_device_info.cc b/ui/events/ozone/evdev/event_device_info.cc
+index efbc258b19b0..956ea8091430 100644
+--- a/ui/events/ozone/evdev/event_device_info.cc
++++ b/ui/events/ozone/evdev/event_device_info.cc
+@@ -6,6 +6,8 @@
+ 
+ #include <linux/input.h>
+ 
++#include <cstring>
++
+ #include "base/files/file_path.h"
+ #include "base/logging.h"
+ #include "base/stl_util.h"
+-- 
+2.25.1
+

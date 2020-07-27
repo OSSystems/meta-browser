@@ -8,9 +8,12 @@ before overriding these
 Upstream-Status: Inappropriate [OE-Specific]
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index 0092e81c3cf0..8ac2495ee7ee 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -758,16 +758,6 @@ config("compiler_cpu_abi") {
+@@ -720,16 +720,6 @@ config("compiler_cpu_abi") {
            "-mmmx",
          ]
        }

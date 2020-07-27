@@ -19,14 +19,15 @@ Upstream-Status: Inappropriate [OE-Specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Rebased-by: Maksim Sisov <msisov@igalia.com>
 ---
+
  build/config/compiler/BUILD.gn | 26 --------------------------
  1 file changed, 26 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index ca6ff2b13809..e610fa7254a1 100644
+index 01d97a3605ff..0092e81c3cf0 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -743,10 +743,6 @@ config("compiler_cpu_abi") {
+@@ -721,10 +721,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -37,7 +38,7 @@ index ca6ff2b13809..e610fa7254a1 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -756,11 +752,6 @@ config("compiler_cpu_abi") {
+@@ -734,11 +730,6 @@ config("compiler_cpu_abi") {
        if (arm_tune != "") {
          cflags += [ "-mtune=$arm_tune" ]
        }
@@ -49,7 +50,7 @@ index ca6ff2b13809..e610fa7254a1 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -768,9 +759,6 @@ config("compiler_cpu_abi") {
+@@ -746,9 +737,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +60,7 @@ index ca6ff2b13809..e610fa7254a1 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -850,8 +838,6 @@ config("compiler_cpu_abi") {
+@@ -828,8 +816,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +69,7 @@ index ca6ff2b13809..e610fa7254a1 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -899,9 +885,6 @@ config("compiler_cpu_abi") {
+@@ -877,9 +863,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -78,7 +79,7 @@ index ca6ff2b13809..e610fa7254a1 100644
            }
          } else {
            cflags += [
-@@ -959,8 +942,6 @@ config("compiler_cpu_abi") {
+@@ -937,8 +920,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -87,7 +88,7 @@ index ca6ff2b13809..e610fa7254a1 100644
          } else {
            cflags += [
              "-EB",
-@@ -1135,13 +1116,6 @@ config("compiler_deterministic") {
+@@ -1103,13 +1084,6 @@ config("compiler_deterministic") {
        }
      }
    }

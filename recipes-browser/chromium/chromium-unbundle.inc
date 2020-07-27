@@ -4,5 +4,4 @@ GN_UNBUNDLE_LIBS = " \
         flac \
         libjpeg \
         libxslt \
-        yasm \
 "
