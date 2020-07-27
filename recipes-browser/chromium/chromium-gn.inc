@@ -9,8 +9,6 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://0001-Do-not-use-nullptr-initalization-of-fwd-declared-typ.patch \
-        file://0002-media-do-not-use-fwd-decl-with-nullptr-instantiation.patch \
         file://oe-clang-fixes.patch \
         file://v8-qemu-wrapper.patch \
         file://wrapper-extra-flags.patch \
@@ -19,17 +17,19 @@ SRC_URI += " \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-Add-missing-algorithm-header-in-crx_install_error.cc.patch \
-        file://0002-Make-some-of-blink-custom-iterators-STL-compatible.patch \
-        file://0003-libstdc-fix-incomplete-type-in-AXTree-for-NodeSetSiz.patch \
-        file://0004-Include-memory-header-to-get-the-definition-of-std-u.patch \
-        file://0005-IWYU-std-numeric_limits-is-defined-in-limits.patch \
-        file://0006-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
         file://0001-stl_util-support-older-clang.patch \
-        file://0001-IWYU-uint32_t-is-defined-in-cstdint.patch \
         file://0001-IWYU-size_t-is-defined-in-stddef.h-webrtc.patch \
         file://0001-IWYU-size_t-is-defined-in-stddef.h.patch \
-        file://0001-IWYU-uint32_t-is-defined-in-cstdint-webrtc.patch \
+        file://0001-Remove-X11-deps-from-accessibility.patch \
+        file://0001-Update-Crashpad-to-7a70b0f1513d2787437aafc6593c97cbd.patch \
+        file://0001-scoped_nss_types.h-Include-certt.h-instead-of-nss-ce.patch \
+        file://0001-libstdc-std-vector-must-have-non-const-value_type.patch \
+        file://0001-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
+        file://0001-GCC-Fix-DHECK_EQ.patch \
+        file://0001-Make-blink-AXObject-AncestorsIterator-STL-compatible.patch \
+        file://0001-IWYU-include-cstring-for-memset-and-memcpy-calls-in-.patch \
+        file://0001-Add-xcbproto-to-third_party.patch \
+        file://0002-Build-with-third-party-xcbproto.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -87,8 +87,6 @@ DEPENDS += " \
     qemu-native \
     virtual/libgl \
 "
-DEPENDS_append_x86 = " yasm-native"
-DEPENDS_append_x86-64 = " yasm-native"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS_${PN} = "bash"

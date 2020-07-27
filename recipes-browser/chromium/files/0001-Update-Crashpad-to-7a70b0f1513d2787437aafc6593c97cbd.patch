@@ -1,0 +1,483 @@
+Upstream-Status: Backport
+
+https://crrev.com/c/2231880
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 67bafe7354bd1b234b3fd37dd0a263a4d65cf882 Mon Sep 17 00:00:00 2001
+From: Joshua Peraza <jperaza@chromium.org>
+Date: Fri, 5 Jun 2020 05:14:24 +0000
+Subject: [PATCH] Update Crashpad to 7a70b0f1513d2787437aafc6593c97cbd0f2d94e
+
+a8ff62676466 Add a bunch of missing string.h includes
+4b5a5bac26be win: Make CreatePipe compatible with UWP apps
+686852d9d87d linux: update test expectations
+86c28287d23a linux: add section header string table to test module
+294d233ca09e elf: adjust small DT_STRTAB addresses by load bias
+7a70b0f1513d android: correct executable placement in debug rendezvous
+
+Change-Id: Ie34272e560e92779661d804c8664f52e72a86349
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2231880
+Commit-Queue: Mark Mentovai <mark@chromium.org>
+Auto-Submit: Joshua Peraza <jperaza@chromium.org>
+Reviewed-by: Mark Mentovai <mark@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#775439}
+---
+ third_party/crashpad/README.chromium          |  2 +-
+ .../crashpad/client/crashpad_client_win.cc    |  9 ++-
+ .../client/simple_address_range_bag.h         |  1 +
+ .../crashpad/snapshot/elf/elf_image_reader.cc |  8 +++
+ .../snapshot/linux/debug_rendezvous.cc        | 16 +++++
+ .../snapshot/linux/debug_rendezvous_test.cc   | 23 +++++--
+ .../snapshot/linux/process_reader_linux.cc    |  4 +-
+ .../linux/process_reader_linux_test.cc        | 65 ++++++++++++++-----
+ .../minidump/minidump_context_converter.cc    |  2 +
+ .../crashpad/util/linux/ptrace_client.cc      |  1 +
+ .../util/net/http_multipart_builder.cc        |  1 +
+ .../util/net/http_transport_socket.cc         |  1 +
+ .../crashpad/util/process/process_memory.cc   |  2 +
+ .../crashpad/util/stream/log_output_stream.cc |  2 +
+ 14 files changed, 109 insertions(+), 28 deletions(-)
+
+diff --git a/third_party/crashpad/README.chromium b/third_party/crashpad/README.chromium
+index 21e2033ded62..3077037e484a 100644
+--- a/third_party/crashpad/README.chromium
++++ b/third_party/crashpad/README.chromium
+@@ -2,7 +2,7 @@ Name: Crashpad
+ Short Name: crashpad
+ URL: https://crashpad.chromium.org/
+ Version: unknown
+-Revision: c7d1d2a1dd7cf2442cbb8aa8da7348fa01d54182
++Revision: 7a70b0f1513d2787437aafc6593c97cbd0f2d94e
+ License: Apache 2.0
+ License File: crashpad/LICENSE
+ Security Critical: yes
+diff --git a/third_party/crashpad/crashpad/client/crashpad_client_win.cc b/third_party/crashpad/crashpad/client/crashpad_client_win.cc
+index 4963f24f9259..e1bdf72cc4d2 100644
+--- a/third_party/crashpad/crashpad/client/crashpad_client_win.cc
++++ b/third_party/crashpad/crashpad/client/crashpad_client_win.cc
+@@ -274,8 +274,13 @@ void AddUint64(std::vector<unsigned char>* data_vector, uint64_t data) {
+ //! \param[out] pipe_handle The first pipe instance corresponding for the pipe.
+ void CreatePipe(std::wstring* pipe_name, ScopedFileHANDLE* pipe_instance) {
+   int tries = 5;
+-  std::string pipe_name_base =
+-      base::StringPrintf("\\\\.\\pipe\\crashpad_%lu_", GetCurrentProcessId());
++  std::string pipe_name_base = base::StringPrintf(
++#if defined(WINDOWS_UWP)
++      "\\\\.\\pipe\\LOCAL\\crashpad_%lu_",
++#else
++      "\\\\.\\pipe\\crashpad_%lu_",
++#endif
++      GetCurrentProcessId());
+   do {
+     *pipe_name = base::UTF8ToUTF16(pipe_name_base + RandomString());
+ 
+diff --git a/third_party/crashpad/crashpad/client/simple_address_range_bag.h b/third_party/crashpad/crashpad/client/simple_address_range_bag.h
+index c69fa5afd8b2..d288303c4d5b 100644
+--- a/third_party/crashpad/crashpad/client/simple_address_range_bag.h
++++ b/third_party/crashpad/crashpad/client/simple_address_range_bag.h
+@@ -16,6 +16,7 @@
+ #define CRASHPAD_CLIENT_SIMPLE_ADDRESS_RANGE_BAG_H_
+ 
+ #include <stdint.h>
++#include <string.h>
+ 
+ #include <type_traits>
+ 
+diff --git a/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc b/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
+index 7f6d7c7e661b..1f361ac785cc 100644
+--- a/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
++++ b/third_party/crashpad/crashpad/snapshot/elf/elf_image_reader.cc
+@@ -589,6 +589,14 @@ bool ElfImageReader::ReadDynamicStringTableAtOffset(VMSize offset,
+     return false;
+   }
+ 
++  // GNU ld.so doesn't adjust the vdso's dynamic array entries by the load bias.
++  // If the address is too small to point into the loaded module range and is
++  // small enough to be an offset from the base of the module, adjust it now.
++  if (string_table_address < memory_.Base() &&
++      string_table_address < memory_.Size()) {
++    string_table_address += GetLoadBias();
++  }
++
+   if (!memory_.ReadCStringSizeLimited(
+           string_table_address + offset, string_table_size - offset, string)) {
+     LOG(ERROR) << "missing nul-terminator";
+diff --git a/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous.cc b/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous.cc
+index e27768dd4ce9..42384f743353 100644
+--- a/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous.cc
++++ b/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous.cc
+@@ -19,6 +19,11 @@
+ #include <set>
+ 
+ #include "base/logging.h"
++#include "build/build_config.h"
++
++#if defined(OS_ANDROID)
++#include <android/api-level.h>
++#endif
+ 
+ namespace crashpad {
+ 
+@@ -137,6 +142,17 @@ bool DebugRendezvous::InitializeSpecific(const ProcessMemoryRange& memory,
+     modules_.push_back(entry);
+   }
+ 
++#if defined(OS_ANDROID)
++  // Android P (API 28) mistakenly places the vdso in the first entry in the
++  // link map.
++  const int android_runtime_api = android_get_device_api_level();
++  if (android_runtime_api == 28 && executable_.name == "[vdso]") {
++    LinkEntry executable = modules_[0];
++    modules_[0] = executable_;
++    executable_ = executable;
++  }
++#endif  // OS_ANDROID
++
+   return true;
+ }
+ 
+diff --git a/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous_test.cc b/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous_test.cc
+index be22c903133a..71a0a7ba30b2 100644
+--- a/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous_test.cc
++++ b/third_party/crashpad/crashpad/snapshot/linux/debug_rendezvous_test.cc
+@@ -74,6 +74,13 @@ void TestAgainstTarget(PtraceConnection* connection) {
+   LinuxVMAddress debug_address;
+   ASSERT_TRUE(exe_reader.GetDebugAddress(&debug_address));
+ 
++  VMAddress exe_dynamic_address = 0;
++  if (exe_reader.GetDynamicArrayAddress(&exe_dynamic_address)) {
++    CheckedLinuxAddressRange exe_range(
++        connection->Is64Bit(), exe_reader.Address(), exe_reader.Size());
++    EXPECT_TRUE(exe_range.ContainsValue(exe_dynamic_address));
++  }
++
+   // start the actual tests
+   DebugRendezvous debug;
+   ASSERT_TRUE(debug.Initialize(range, debug_address));
+@@ -85,8 +92,13 @@ void TestAgainstTarget(PtraceConnection* connection) {
+   EXPECT_NE(debug.Executable()->name.find("crashpad_snapshot_test"),
+             std::string::npos);
+ 
+-  // Android's loader never sets the dynamic array for the executable.
+-  EXPECT_EQ(debug.Executable()->dynamic_array, 0u);
++  // Android's loader doesn't set the dynamic array for the executable in the
++  // link map until Android 10.0 (API 29).
++  if (android_runtime_api >= 29) {
++    EXPECT_EQ(debug.Executable()->dynamic_array, exe_dynamic_address);
++  } else {
++    EXPECT_EQ(debug.Executable()->dynamic_array, 0u);
++  }
+ #else
+   // glibc's loader implements most of the tested features that Android's was
+   // missing but has since gained.
+@@ -94,9 +106,7 @@ void TestAgainstTarget(PtraceConnection* connection) {
+ 
+   // glibc's loader does not set the name for the executable.
+   EXPECT_TRUE(debug.Executable()->name.empty());
+-  CheckedLinuxAddressRange exe_range(
+-      connection->Is64Bit(), exe_reader.Address(), exe_reader.Size());
+-  EXPECT_TRUE(exe_range.ContainsValue(debug.Executable()->dynamic_array));
++  EXPECT_EQ(debug.Executable()->dynamic_array, exe_dynamic_address);
+ #endif  // OS_ANDROID
+ 
+   // Android's loader doesn't set the load bias until Android 4.3 (API 18).
+@@ -137,7 +147,8 @@ void TestAgainstTarget(PtraceConnection* connection) {
+     while ((mapping = possible_mappings->Next())) {
+       auto parsed_module = std::make_unique<ElfImageReader>();
+       VMAddress dynamic_address;
+-      if (parsed_module->Initialize(range, mapping->range.Base()) &&
++      if (parsed_module->Initialize(
++              range, mapping->range.Base(), possible_mappings->Count() == 0) &&
+           parsed_module->GetDynamicArrayAddress(&dynamic_address) &&
+           dynamic_address == module.dynamic_array) {
+         module_reader = std::move(parsed_module);
+diff --git a/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux.cc b/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux.cc
+index b96abfe74fe8..ee246e8bcbe0 100644
+--- a/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux.cc
++++ b/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux.cc
+@@ -439,7 +439,7 @@ void ProcessReaderLinux::InitializeModules() {
+       if (parsed_exe->Initialize(
+               range,
+               mapping->range.Base(),
+-              /* verbose= */ possible_mappings->Count() == 1) &&
++              /* verbose= */ possible_mappings->Count() == 0) &&
+           parsed_exe->GetProgramHeaderTableAddress() == phdrs) {
+         exe_mapping = mapping;
+         exe_reader = std::move(parsed_exe);
+@@ -508,7 +508,7 @@ void ProcessReaderLinux::InitializeModules() {
+         if (parsed_module->Initialize(
+                 range,
+                 mapping->range.Base(),
+-                /* verbose= */ possible_mappings->Count() == 1) &&
++                /* verbose= */ possible_mappings->Count() == 0) &&
+             parsed_module->GetDynamicArrayAddress(&dynamic_address) &&
+             dynamic_address == entry.dynamic_array) {
+           module_mapping = mapping;
+diff --git a/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux_test.cc b/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux_test.cc
+index 5b5723616fc1..73e350dbf8d1 100644
+--- a/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux_test.cc
++++ b/third_party/crashpad/crashpad/snapshot/linux/process_reader_linux_test.cc
+@@ -491,23 +491,29 @@ int ExpectFindModule(dl_phdr_info* info, size_t size, void* data) {
+   auto modules =
+       reinterpret_cast<const std::vector<ProcessReaderLinux::Module>*>(data);
+ 
+-  auto phdr_addr = FromPointerCast<LinuxVMAddress>(info->dlpi_phdr);
+ 
+ #if defined(OS_ANDROID)
+-  // Bionic includes a null entry.
+-  if (!phdr_addr) {
+-    EXPECT_EQ(info->dlpi_name, nullptr);
++  // Prior to API 27, Bionic includes a null entry for /system/bin/linker.
++  if (!info->dlpi_name) {
+     EXPECT_EQ(info->dlpi_addr, 0u);
+     EXPECT_EQ(info->dlpi_phnum, 0u);
++    EXPECT_EQ(info->dlpi_phdr, nullptr);
+     return 0;
+   }
+ #endif
+ 
++  // Bionic doesn't always set both of these addresses for the vdso and
++  // /system/bin/linker, but it does always set one of them.
++  VMAddress module_addr = info->dlpi_phdr
++                              ? FromPointerCast<LinuxVMAddress>(info->dlpi_phdr)
++                              : info->dlpi_addr;
++
+   // TODO(jperaza): This can use a range map when one is available.
+   bool found = false;
+   for (const auto& module : *modules) {
+-    if (module.elf_reader && phdr_addr >= module.elf_reader->Address() &&
+-        phdr_addr < module.elf_reader->Address() + module.elf_reader->Size()) {
++    if (module.elf_reader && module_addr >= module.elf_reader->Address() &&
++        module_addr <
++            module.elf_reader->Address() + module.elf_reader->Size()) {
+       found = true;
+       break;
+     }
+@@ -535,7 +541,8 @@ void ExpectModulesFromSelf(
+ #endif  // !OS_ANDROID || !ARCH_CPU_ARMEL || __ANDROID_API__ >= 21
+ }
+ 
+-bool WriteTestModule(const base::FilePath& module_path) {
++bool WriteTestModule(const base::FilePath& module_path,
++                     const std::string& soname) {
+ #if defined(ARCH_CPU_64_BITS)
+   using Ehdr = Elf64_Ehdr;
+   using Phdr = Elf64_Phdr;
+@@ -565,6 +572,7 @@ bool WriteTestModule(const base::FilePath& module_path) {
+       Dyn symtab;
+       Dyn strsz;
+       Dyn syment;
++      Dyn soname;
+       Dyn null;
+     } dynamic_array;
+     struct {
+@@ -573,8 +581,9 @@ bool WriteTestModule(const base::FilePath& module_path) {
+       Elf32_Word bucket;
+       Elf32_Word chain;
+     } hash_table;
++    char string_table[32];
+     struct {
+-    } string_table;
++    } section_header_string_table;
+     struct {
+       Sym und_symbol;
+     } symbol_table;
+@@ -582,6 +591,7 @@ bool WriteTestModule(const base::FilePath& module_path) {
+       Shdr null;
+       Shdr dynamic;
+       Shdr string_table;
++      Shdr section_header_string_table;
+     } shdr_table;
+   } module = {};
+ 
+@@ -624,7 +634,9 @@ bool WriteTestModule(const base::FilePath& module_path) {
+   module.ehdr.e_shoff = offsetof(decltype(module), shdr_table);
+   module.ehdr.e_shentsize = sizeof(Shdr);
+   module.ehdr.e_shnum = sizeof(module.shdr_table) / sizeof(Shdr);
+-  module.ehdr.e_shstrndx = SHN_UNDEF;
++  module.ehdr.e_shstrndx =
++      offsetof(decltype(module.shdr_table), section_header_string_table) /
++      sizeof(Shdr);
+ 
+   constexpr size_t load2_vaddr = 0x200000;
+ 
+@@ -666,6 +678,9 @@ bool WriteTestModule(const base::FilePath& module_path) {
+   module.dynamic_array.strsz.d_un.d_val = sizeof(module.string_table);
+   module.dynamic_array.syment.d_tag = DT_SYMENT;
+   module.dynamic_array.syment.d_un.d_val = sizeof(Sym);
++  constexpr size_t kSonameOffset = 1;
++  module.dynamic_array.soname.d_tag = DT_SONAME;
++  module.dynamic_array.soname.d_un.d_val = kSonameOffset;
+ 
+   module.dynamic_array.null.d_tag = DT_NULL;
+ 
+@@ -674,6 +689,10 @@ bool WriteTestModule(const base::FilePath& module_path) {
+   module.hash_table.bucket = 0;
+   module.hash_table.chain = 0;
+ 
++  CHECK_GE(sizeof(module.string_table), soname.size() + 2);
++  module.string_table[0] = '\0';
++  memcpy(&module.string_table[kSonameOffset], soname.c_str(), soname.size());
++
+   module.shdr_table.null.sh_type = SHT_NULL;
+ 
+   module.shdr_table.dynamic.sh_name = 0;
+@@ -689,6 +708,14 @@ bool WriteTestModule(const base::FilePath& module_path) {
+   module.shdr_table.string_table.sh_type = SHT_STRTAB;
+   module.shdr_table.string_table.sh_offset =
+       offsetof(decltype(module), string_table);
++  module.shdr_table.string_table.sh_size = sizeof(module.string_table);
++
++  module.shdr_table.section_header_string_table.sh_name = 0;
++  module.shdr_table.section_header_string_table.sh_type = SHT_STRTAB;
++  module.shdr_table.section_header_string_table.sh_offset =
++      offsetof(decltype(module), section_header_string_table);
++  module.shdr_table.section_header_string_table.sh_size =
++      sizeof(module.section_header_string_table);
+ 
+   FileWriter writer;
+   if (!writer.Open(module_path,
+@@ -706,11 +733,12 @@ bool WriteTestModule(const base::FilePath& module_path) {
+   return true;
+ }
+ 
+-ScopedModuleHandle LoadTestModule(const std::string& module_name) {
++ScopedModuleHandle LoadTestModule(const std::string& module_name,
++                                  const std::string& module_soname) {
+   base::FilePath module_path(
+       TestPaths::Executable().DirName().Append(module_name));
+ 
+-  if (!WriteTestModule(module_path)) {
++  if (!WriteTestModule(module_path, module_soname)) {
+     return ScopedModuleHandle(nullptr);
+   }
+   EXPECT_TRUE(IsRegularFile(module_path));
+@@ -746,7 +774,9 @@ void ExpectTestModule(ProcessReaderLinux* reader,
+ 
+ TEST(ProcessReaderLinux, SelfModules) {
+   const std::string module_name = "test_module.so";
+-  ScopedModuleHandle empty_test_module(LoadTestModule(module_name));
++  const std::string module_soname = "test_module_soname";
++  ScopedModuleHandle empty_test_module(
++      LoadTestModule(module_name, module_soname));
+   ASSERT_TRUE(empty_test_module.valid());
+ 
+   FakePtraceConnection connection;
+@@ -756,12 +786,12 @@ TEST(ProcessReaderLinux, SelfModules) {
+   ASSERT_TRUE(process_reader.Initialize(&connection));
+ 
+   ExpectModulesFromSelf(process_reader.Modules());
+-  ExpectTestModule(&process_reader, module_name);
++  ExpectTestModule(&process_reader, module_soname);
+ }
+ 
+ class ChildModuleTest : public Multiprocess {
+  public:
+-  ChildModuleTest() : Multiprocess(), module_name_("test_module.so") {}
++  ChildModuleTest() : Multiprocess(), module_soname_("test_module_soname") {}
+   ~ChildModuleTest() = default;
+ 
+  private:
+@@ -776,11 +806,12 @@ class ChildModuleTest : public Multiprocess {
+     ASSERT_TRUE(process_reader.Initialize(&connection));
+ 
+     ExpectModulesFromSelf(process_reader.Modules());
+-    ExpectTestModule(&process_reader, module_name_);
++    ExpectTestModule(&process_reader, module_soname_);
+   }
+ 
+   void MultiprocessChild() override {
+-    ScopedModuleHandle empty_test_module(LoadTestModule(module_name_));
++    ScopedModuleHandle empty_test_module(
++        LoadTestModule("test_module.so", module_soname_));
+     ASSERT_TRUE(empty_test_module.valid());
+ 
+     char c = 0;
+@@ -789,7 +820,7 @@ class ChildModuleTest : public Multiprocess {
+     CheckedReadFileAtEOF(ReadPipeHandle());
+   }
+ 
+-  const std::string module_name_;
++  const std::string module_soname_;
+ 
+   DISALLOW_COPY_AND_ASSIGN(ChildModuleTest);
+ };
+diff --git a/third_party/crashpad/crashpad/snapshot/minidump/minidump_context_converter.cc b/third_party/crashpad/crashpad/snapshot/minidump/minidump_context_converter.cc
+index 0c840deac227..24d2585b376e 100644
+--- a/third_party/crashpad/crashpad/snapshot/minidump/minidump_context_converter.cc
++++ b/third_party/crashpad/crashpad/snapshot/minidump/minidump_context_converter.cc
+@@ -14,6 +14,8 @@
+ 
+ #include "snapshot/minidump/minidump_context_converter.h"
+ 
++#include <string.h>
++
+ #include "base/stl_util.h"
+ #include "minidump/minidump_context.h"
+ 
+diff --git a/third_party/crashpad/crashpad/util/linux/ptrace_client.cc b/third_party/crashpad/crashpad/util/linux/ptrace_client.cc
+index f097ad98593d..43214a18af20 100644
+--- a/third_party/crashpad/crashpad/util/linux/ptrace_client.cc
++++ b/third_party/crashpad/crashpad/util/linux/ptrace_client.cc
+@@ -16,6 +16,7 @@
+ 
+ #include <errno.h>
+ #include <stdio.h>
++#include <string.h>
+ 
+ #include <string>
+ 
+diff --git a/third_party/crashpad/crashpad/util/net/http_multipart_builder.cc b/third_party/crashpad/crashpad/util/net/http_multipart_builder.cc
+index 267960b274f9..dda46aa3ce9b 100644
+--- a/third_party/crashpad/crashpad/util/net/http_multipart_builder.cc
++++ b/third_party/crashpad/crashpad/util/net/http_multipart_builder.cc
+@@ -14,6 +14,7 @@
+ 
+ #include "util/net/http_multipart_builder.h"
+ 
++#include <string.h>
+ #include <sys/types.h>
+ 
+ #include <utility>
+diff --git a/third_party/crashpad/crashpad/util/net/http_transport_socket.cc b/third_party/crashpad/crashpad/util/net/http_transport_socket.cc
+index 4dd01b6e7a69..b9c6c9c5e064 100644
+--- a/third_party/crashpad/crashpad/util/net/http_transport_socket.cc
++++ b/third_party/crashpad/crashpad/util/net/http_transport_socket.cc
+@@ -17,6 +17,7 @@
+ #include <fcntl.h>
+ #include <netdb.h>
+ #include <poll.h>
++#include <string.h>
+ #include <sys/socket.h>
+ 
+ #include "base/logging.h"
+diff --git a/third_party/crashpad/crashpad/util/process/process_memory.cc b/third_party/crashpad/crashpad/util/process/process_memory.cc
+index ab87b940fa14..3125e6f3852c 100644
+--- a/third_party/crashpad/crashpad/util/process/process_memory.cc
++++ b/third_party/crashpad/crashpad/util/process/process_memory.cc
+@@ -14,6 +14,8 @@
+ 
+ #include "util/process/process_memory.h"
+ 
++#include <string.h>
++
+ #include <algorithm>
+ 
+ #include "base/logging.h"
+diff --git a/third_party/crashpad/crashpad/util/stream/log_output_stream.cc b/third_party/crashpad/crashpad/util/stream/log_output_stream.cc
+index 03c0a5a02dbe..e35bb3b32fc1 100644
+--- a/third_party/crashpad/crashpad/util/stream/log_output_stream.cc
++++ b/third_party/crashpad/crashpad/util/stream/log_output_stream.cc
+@@ -14,6 +14,8 @@
+ 
+ #include "util/stream/log_output_stream.h"
+ 
++#include <string.h>
++
+ #include <algorithm>
+ 
+ #include "base/logging.h"
+-- 
+2.25.1
+

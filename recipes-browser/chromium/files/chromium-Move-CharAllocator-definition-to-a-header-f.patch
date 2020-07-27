@@ -1,4 +1,4 @@
-From 3324558fb02b720cd394e0cc270d10dc6db0c915 Mon Sep 17 00:00:00 2001
+From 18db835a589abff34d0d48afaf06559e69547f68 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Thu, 2 Jan 2020 17:13:55 -0800
 Subject: [PATCH] chromium: Move CharAllocator definition to a header file
@@ -8,14 +8,16 @@ error: invalid application of 'sizeof' to an incomplete type 'cc::ListContainerH
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- chromium/cc/base/list_container_helper.cc | 245 ---------------------
- chromium/cc/base/list_container_helper.h  | 250 ++++++++++++++++++++++
- 2 files changed, 250 insertions(+), 245 deletions(-)
+ cc/base/list_container_helper.cc | 246 ------------------------------
+ cc/base/list_container_helper.h  | 253 +++++++++++++++++++++++++++++++
+ 2 files changed, 253 insertions(+), 246 deletions(-)
 
+diff --git a/cc/base/list_container_helper.cc b/cc/base/list_container_helper.cc
+index 7b594b4a4580..0a9e49dcda8b 100644
 --- a/cc/base/list_container_helper.cc
 +++ b/cc/base/list_container_helper.cc
-@@ -12,258 +12,12 @@
- #include "base/logging.h"
+@@ -13,258 +13,12 @@
+ #include "base/check_op.h"
  #include "base/memory/aligned_memory.h"
  
 -namespace {
@@ -273,13 +275,16 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
  // PositionInCharAllocator
  //////////////////////////////////////////////////////
+diff --git a/cc/base/list_container_helper.h b/cc/base/list_container_helper.h
+index 31658bc84863..47f718aa3cc2 100644
 --- a/cc/base/list_container_helper.h
 +++ b/cc/base/list_container_helper.h
-@@ -8,9 +8,18 @@
+@@ -8,9 +8,19 @@
  #include <stddef.h>
  
  #include <memory>
 +#include <algorithm>
++#include <cstring>
 +#include <vector>
 +
 +#include "base/logging.h"
@@ -294,7 +299,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  namespace cc {
  
  // Helper class for ListContainer non-templated logic. All methods are private,
-@@ -174,6 +183,249 @@ class CC_BASE_EXPORT ListContainerHelper
+@@ -174,6 +184,249 @@ class CC_BASE_EXPORT ListContainerHelper final {
    std::unique_ptr<CharAllocator> data_;
  };
  
@@ -544,3 +549,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  }  // namespace cc
  
  #endif  // CC_BASE_LIST_CONTAINER_HELPER_H_
+-- 
+2.25.1
+
