@@ -30,6 +30,7 @@ SRC_URI += " \
         file://0001-IWYU-include-cstring-for-memset-and-memcpy-calls-in-.patch \
         file://0001-Add-xcbproto-to-third_party.patch \
         file://0002-Build-with-third-party-xcbproto.patch \
+        file://0001-content-Avoid-calling-DeleteForCurrentDocument-from-.patch \
 "
 
 SRC_URI_append_libc-musl = "\
