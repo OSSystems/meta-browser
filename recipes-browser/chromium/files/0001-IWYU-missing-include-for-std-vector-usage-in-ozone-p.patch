@@ -1,0 +1,40 @@
+Upstream-Status: Backport
+
+https://crrev.com/c/2283315
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 0225d1edbd8faaaeddfbb74125f860dfc424230b Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 7 Jul 2020 17:20:38 +0000
+Subject: [PATCH] IWYU: missing include for std::vector usage in ozone platform
+ screen
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Bug: 819294
+Change-Id: I04fb2cb5d939b9181ec8e42b0d0a9595b43c365a
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2283315
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#785825}
+---
+ ui/ozone/public/platform_screen.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ui/ozone/public/platform_screen.h b/ui/ozone/public/platform_screen.h
+index 9ce293c0afff..ba20597d8c51 100644
+--- a/ui/ozone/public/platform_screen.h
++++ b/ui/ozone/public/platform_screen.h
+@@ -7,6 +7,7 @@
+ 
+ #include <set>
+ #include <string>
++#include <vector>
+ 
+ #include "base/component_export.h"
+ #include "base/macros.h"
+-- 
+2.25.1
+

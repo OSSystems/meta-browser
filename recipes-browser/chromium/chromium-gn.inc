@@ -17,20 +17,9 @@ SRC_URI += " \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-stl_util-support-older-clang.patch \
-        file://0001-IWYU-size_t-is-defined-in-stddef.h-webrtc.patch \
-        file://0001-IWYU-size_t-is-defined-in-stddef.h.patch \
-        file://0001-Remove-X11-deps-from-accessibility.patch \
-        file://0001-Update-Crashpad-to-7a70b0f1513d2787437aafc6593c97cbd.patch \
-        file://0001-scoped_nss_types.h-Include-certt.h-instead-of-nss-ce.patch \
-        file://0001-libstdc-std-vector-must-have-non-const-value_type.patch \
-        file://0001-ozone-remove-x11-headers-from-accessibility-tree-for.patch \
-        file://0001-GCC-Fix-DHECK_EQ.patch \
-        file://0001-Make-blink-AXObject-AncestorsIterator-STL-compatible.patch \
-        file://0001-IWYU-include-cstring-for-memset-and-memcpy-calls-in-.patch \
-        file://0001-Add-xcbproto-to-third_party.patch \
-        file://0002-Build-with-third-party-xcbproto.patch \
-        file://0001-content-Avoid-calling-DeleteForCurrentDocument-from-.patch \
+        file://0001-IWYU-int8_t-used-in-nearby-share-encrypted-metadata-.patch \
+        file://0001-IWYU-missing-include-for-std-vector-usage-in-ozone-p.patch \
+        file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -140,7 +129,8 @@ GN_ARGS = " \
 
 # Closure_compile needs to be disabled to avoid pulling in java dependencies,
 # which are typicaly not wanted. It started to happen after https://crrev.com/c/1278470
-GN_ARGS += "closure_compile=false"
+# This argument was renamed to enable_js_type_check after https://crrev.com/c/2248564
+GN_ARGS += "enable_js_type_check=false"
 
 # Make sure pkg-config, when used with the host's toolchain to build the
 # binaries we need to run on the host, uses the right pkg-config to avoid
