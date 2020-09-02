@@ -1,0 +1,40 @@
+Upstream-Status: Backport
+
+https://crrev.com/c/2283508
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 684575f4815fa34c9b69f020baac266005892d12 Mon Sep 17 00:00:00 2001
+From: Jose Dapena Paz <jdapena@igalia.com>
+Date: Tue, 7 Jul 2020 14:43:40 +0000
+Subject: [PATCH] IWYU: int8_t used in nearby share encrypted metadata key
+ requires cstdint
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Bug: 819294
+Change-Id: I90f88cf35e85a8a0ab1811e5533347d329365b21
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2283508
+Reviewed-by: Alex Chau <alexchau@chromium.org>
+Commit-Queue: José Dapena Paz <jdapena@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#785727}
+---
+ .../certificates/nearby_share_encrypted_metadata_key.h           | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h b/chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h
+index 2893bdeef985..8e1758fb0e4e 100644
+--- a/chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h
++++ b/chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h
+@@ -5,6 +5,7 @@
+ #ifndef CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_ENCRYPTED_METADATA_KEY_H_
+ #define CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_ENCRYPTED_METADATA_KEY_H_
+ 
++#include <cstdint>
+ #include <vector>
+ 
+ // Holds the encrypted symmetric key--the key used to encrypt user/device
+-- 
+2.25.1
+
