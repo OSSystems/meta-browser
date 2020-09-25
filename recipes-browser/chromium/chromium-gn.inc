@@ -20,6 +20,7 @@ SRC_URI += " \
         file://0001-IWYU-int8_t-used-in-nearby-share-encrypted-metadata-.patch \
         file://0001-IWYU-missing-include-for-std-vector-usage-in-ozone-p.patch \
         file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
+        file://0001-Turn-TouchMove-to-async-after-the-first-GestureScrol.patch \
 "
 
 SRC_URI_append_libc-musl = "\
