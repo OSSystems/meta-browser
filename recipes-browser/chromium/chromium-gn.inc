@@ -21,6 +21,7 @@ SRC_URI += " \
         file://0001-IWYU-missing-include-for-std-vector-usage-in-ozone-p.patch \
         file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
         file://0001-Turn-TouchMove-to-async-after-the-first-GestureScrol.patch \
+        file://0001-IWYU-add-includes-for-uint64_t-and-std-string.patch \
 "
 
 SRC_URI_append_libc-musl = "\
