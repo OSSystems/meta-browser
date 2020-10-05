@@ -1,0 +1,37 @@
+Upstream-Status: Backport
+
+Signed-off-by: Stacy Gaikovaia <stacy.gaikovaia@windriver.com>
+---
+From af06ca9d46d46302c100f07e499d8aaa9ab32364^! Tue Jan 30 15:58:38 2020
+Author:     Stephan Hartmann <stha09@googlemail.com>
+AuthorDate: 2020-06-30 15:58:38 +0000
+Commit:     Commit Bot <commit-bot@chromium.org>
+CommitDate: 2020-06-30 15:58:38 +0000
+
+IWYU: add includes for uint64_t and std::string
+
+
+Bug: 819294
+Change-Id: Iae844f8b6cf6bba879cb320c95ebf88f65e1385f
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2273161
+Reviewed-by: Yao Xiao <yaoxia@chromium.org>
+Commit-Queue: Yao Xiao <yaoxia@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#783978}
+---
+ components/federated_learning/sim_hash.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/components/federated_learning/sim_hash.h b/components/federated_learning/sim_hash.h
+index 55030d9..26087e7 100644
+--- a/components/federated_learning/sim_hash.h
++++ b/components/federated_learning/sim_hash.h
+@@ -5,7 +5,9 @@
+ #ifndef COMPONENTS_FEDERATED_LEARNING_SIM_HASH_H_
+ #define COMPONENTS_FEDERATED_LEARNING_SIM_HASH_H_
+ 
++#include <stdint.h>
+ #include <set>
++#include <string>
+ #include <unordered_set>
+ 
+ namespace federated_learning {
