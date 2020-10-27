@@ -1,0 +1,49 @@
+Upstream-Status: Inappropriate
+
+Signed-of-by: Maksim Sisov <msisov@igalia.com>
+---
+From e5f288d4807b63381e497475de316926479ec427 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 26 Oct 2020 11:06:56 +0200
+Subject: [PATCH] Remove dead-reloc-in-nonalloc LD flags
+
+This flag has been recently added and not yet supported by yocto's lld.
+
+See https://github.com/llvm/llvm-project-staging/commit/4ce56b8122219f7b79d75d33184e3ec890a6e222
+
+The approach is copied from https://aur.archlinux.org/cgit/aur.git/tree/remove-dead-reloc-in-nonalloc-LD-flags.patch?h=chromium-no-extras
+
+Fixes the following error -
+
+[651/46570] ccache arm-poky-linux-gnueabi-clang++ -target arm-poky-linux-gnueabi   -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7   -mlittle-endian -Qunused-arguments -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=/home/msisov/code/yocto-rpi/poky/rpi3-build/tmp/work/cortexa7t2hf-neon-vfpv4-poky-linux-gnueabi/chromium-ozone-wayland/86.0.4240.111-r0/recipe-sysroot -Wl,--fatal-warnings -Wl,--build-id=sha1 -fPIC -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,-z,defs -Wl,--as-needed -Wl,-z,dead-reloc-in-nonalloc=\*=0 -Wl,-z,dead-reloc-in-nonalloc=.debug_ranges=1 -fuse-ld=lld -Wl,--icf=all -Wl,--color-diagnostics -Wl,--no-call-graph-profile-sort -Wl,-O2 -Wl,--gc-sections -rdynamic -pie -Wl,--disable-new-dtags -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -fstack-protector-strong -Wl,-z,relro,-z,now -o "./chrome_sandbox" -Wl,--start-group @"./chrome_sandbox.rsp"  -Wl,--end-group  -latomic -ldl -lpthread -lrt
+FAILED: chrome_sandbox
+ccache arm-poky-linux-gnueabi-clang++ -target arm-poky-linux-gnueabi   -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7   -mlittle-endian -Qunused-arguments -fstack-protector-strong  -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=/home/msisov/code/yocto-rpi/poky/rpi3-build/tmp/work/cortexa7t2hf-neon-vfpv4-poky-linux-gnueabi/chromium-ozone-wayland/86.0.4240.111-r0/recipe-sysroot -Wl,--fatal-warnings -Wl,--build-id=sha1 -fPIC -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,-z,defs -Wl,--as-needed -Wl,-z,dead-reloc-in-nonalloc=\*=0 -Wl,-z,dead-reloc-in-nonalloc=.debug_ranges=1 -fuse-ld=lld -Wl,--icf=all -Wl,--color-diagnostics -Wl,--no-call-graph-profile-sort -Wl,-O2 -Wl,--gc-sections -rdynamic -pie -Wl,--disable-new-dtags -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed -fstack-protector-strong -Wl,-z,relro,-z,now -o "./chrome_sandbox" -Wl,--start-group @"./chrome_sandbox.rsp"  -Wl,--end-group  -latomic -ldl -lpthread -lrt
+arm-poky-linux-gnueabi-ld.lld: error: unknown -z value: dead-reloc-in-nonalloc=*=0
+arm-poky-linux-gnueabi-ld.lld: error: unknown -z value: dead-reloc-in-nonalloc=.debug_ranges=1
+
+---
+ build/config/compiler/BUILD.gn | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index 9022c0415d94..f90f612c492a 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -399,14 +399,6 @@ config("compiler") {
+         "-Wl,--as-needed",
+       ]
+     }
+-    if (use_lld && !is_chromeos_device) {
+-      # TODO(thakis): Fix dump_syms to not need this and then remove it,
+-      # https://crbug.com/1105559
+-      ldflags += [
+-        "-Wl,-z,dead-reloc-in-nonalloc=*=0",
+-        "-Wl,-z,dead-reloc-in-nonalloc=.debug_ranges=1",
+-      ]
+-    }
+   }
+ 
+   # Linux-specific compiler flags setup.
+-- 
+2.25.1
+
