@@ -17,11 +17,10 @@ SRC_URI += " \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-IWYU-int8_t-used-in-nearby-share-encrypted-metadata-.patch \
-        file://0001-IWYU-missing-include-for-std-vector-usage-in-ozone-p.patch \
         file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
         file://0001-Turn-TouchMove-to-async-after-the-first-GestureScrol.patch \
-        file://0001-IWYU-add-includes-for-uint64_t-and-std-string.patch \
+        file://0001-Remove-dead-reloc-in-nonalloc-LD-flags.patch \
+        file://0001-add-missing-cstring-include.patch \
 "
 
 SRC_URI_append_libc-musl = "\

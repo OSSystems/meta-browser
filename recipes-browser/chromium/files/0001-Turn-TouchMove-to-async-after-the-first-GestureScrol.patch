@@ -4,7 +4,11 @@ Fixes unintended throttling of TouchMoves.
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-BACKPORT: Turn TouchMove to async after the first GestureScroll has been consumed
+From d23e41321ed9159d64a1989fa12334d9e556a078 Mon Sep 17 00:00:00 2001
+From: Stephen Nusko <nuskos@chromium.org>
+Date: Wed, 23 Sep 2020 17:31:34 +0000
+Subject: [PATCH] Turn TouchMove to async after the first GestureScroll has
+ been consumed
 
 This is a reland of http://crrev/c/2182426 which was reverted in
 http://crrev/c/2413491. This was due to unintended side effect of
@@ -17,6 +21,7 @@ this avoids the problem in the initial CL since a touch stream that
 starts by overscrolling will remain blocking and thus won't throttle
 touchmove notifications to the page.
 
+
 Bug: 1123304,1072364
 Change-Id: I84ada1754c80f6c5254b21beabb8980c6043094e
 Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2410531
@@ -27,15 +32,16 @@ Auto-Submit: Stephen Nusko <nuskos@chromium.org>
 Cr-Commit-Position: refs/heads/master@{#809827}
 ---
  .../renderer_host/input/input_router_impl.cc  |  1 -
- .../input/passthrough_touch_event_queue.cc    | 12 +---
+ .../input/input_router_impl_unittest.cc       | 48 ++++++++++++++-
+ .../input/passthrough_touch_event_queue.cc    | 20 +++----
  .../input/passthrough_touch_event_queue.h     |  1 -
  .../passthrough_touch_event_queue_unittest.cc | 60 +++++--------------
  .../render_widget_host_browsertest.cc         | 33 +++++-----
  .../render_widget_host_view_mac_unittest.mm   |  3 +-
- 6 files changed, 37 insertions(+), 73 deletions(-)
+ 7 files changed, 88 insertions(+), 78 deletions(-)
 
 diff --git a/content/browser/renderer_host/input/input_router_impl.cc b/content/browser/renderer_host/input/input_router_impl.cc
-index fffec86cf973..4041d69d4690 100644
+index af95eb2a41e2..69bf35ba67bc 100644
 --- a/content/browser/renderer_host/input/input_router_impl.cc
 +++ b/content/browser/renderer_host/input/input_router_impl.cc
 @@ -200,7 +200,6 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
@@ -46,17 +52,88 @@ index fffec86cf973..4041d69d4690 100644
    }
  
    if (gesture_event.event.IsTouchpadZoomEvent() &&
+diff --git a/content/browser/renderer_host/input/input_router_impl_unittest.cc b/content/browser/renderer_host/input/input_router_impl_unittest.cc
+index 6359065f0bb1..666f2c7344ef 100644
+--- a/content/browser/renderer_host/input/input_router_impl_unittest.cc
++++ b/content/browser/renderer_host/input/input_router_impl_unittest.cc
+@@ -1647,6 +1647,9 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
+   dispatched_messages[0]->ToEvent()->CallCallback(
+       blink::mojom::InputEventResultState::kConsumed);
+   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
++  EXPECT_EQ(WebInputEvent::Type::kTouchStart,
++            disposition_handler_->ack_event_type());
++
+   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
+                        blink::WebGestureDevice::kTouchscreen);
+   dispatched_messages = GetAndResetDispatchedMessages();
+@@ -1655,14 +1658,55 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
+   dispatched_messages[0]->ToEvent()->CallCallback(
+       blink::mojom::InputEventResultState::kConsumed);
+   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
++  EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin,
++            disposition_handler_->ack_event_type());
++
+   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
+                        blink::WebGestureDevice::kTouchscreen);
+   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
+-  EXPECT_EQ(2U, GetAndResetDispatchedMessages().size());
++  dispatched_messages = GetAndResetDispatchedMessages();
++  EXPECT_EQ(2U, dispatched_messages.size());
++  EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
++            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
++  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
++            dispatched_messages[1]->ToEvent()->Event()->Event().GetType());
++  // Ack the GestureScrollUpdate.
++  dispatched_messages[1]->ToEvent()->CallCallback(
++      blink::mojom::InputEventResultState::kConsumed);
++  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
++            disposition_handler_->ack_event_type());
++  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+ 
+-  // Now send an async move.
++  // Now since we're scrolling send an async move.
+   MoveTouchPoint(0, 5, 5);
+   SendTouchEvent();
++  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
++            disposition_handler_->ack_event_type());
++  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
++  EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
++
++  // To catch crbug/1072364 send another scroll which returns kNoConsumerExists
++  // and ensure we're still async scrolling since we've already started the
++  // scroll.
++  SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
++                       blink::WebGestureDevice::kTouchscreen);
++  EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
++  dispatched_messages = GetAndResetDispatchedMessages();
++  EXPECT_EQ(1U, dispatched_messages.size());
++  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
++            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
++  // Ack the GestureScrollUpdate.
++  dispatched_messages[0]->ToEvent()->CallCallback(
++      blink::mojom::InputEventResultState::kNoConsumerExists);
++  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
++            disposition_handler_->ack_event_type());
++  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
++
++  // Now since we're scrolling (even with NoConsumerExists) send an async move.
++  MoveTouchPoint(0, 10, 5);
++  SendTouchEvent();
++  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
++            disposition_handler_->ack_event_type());
+   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
+ }
 diff --git a/content/browser/renderer_host/input/passthrough_touch_event_queue.cc b/content/browser/renderer_host/input/passthrough_touch_event_queue.cc
-index 558fc1872de6..97e518d4bdc8 100644
+index bcdb5e919e73..37411acfd58e 100644
 --- a/content/browser/renderer_host/input/passthrough_touch_event_queue.cc
 +++ b/content/browser/renderer_host/input/passthrough_touch_event_queue.cc
-@@ -154,15 +154,6 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
+@@ -143,22 +143,16 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
    AckCompletedEvents();
  }
  
 -void PassthroughTouchEventQueue::OnGestureScrollEvent(
 -    const GestureEventWithLatencyInfo& gesture_event) {
--  // Turn events sent during gesture scrolls to be async.
 -  if (gesture_event.event.GetType() ==
 -      blink::WebInputEvent::Type::kGestureScrollUpdate) {
 -    send_touch_events_async_ = true;
@@ -66,18 +143,23 @@ index 558fc1872de6..97e518d4bdc8 100644
  void PassthroughTouchEventQueue::OnGestureEventAck(
      const GestureEventWithLatencyInfo& event,
      blink::mojom::InputEventResultState ack_result) {
-@@ -170,7 +161,8 @@ void PassthroughTouchEventQueue::OnGestureEventAck(
-   if (event.event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd) {
-     send_touch_events_async_ = false;
-   } else if (event.event.GetType() ==
--             blink::WebInputEvent::Type::kGestureScrollUpdate) {
+-  // Turn events sent during gesture scrolls to be async.
+-  if (event.event.GetType() ==
+-      blink::WebInputEvent::Type::kGestureScrollUpdate) {
+-    send_touch_events_async_ =
+-        (ack_result == blink::mojom::InputEventResultState::kConsumed);
++  // When the scroll finishes allow TouchEvents to be blocking again.
++  if (event.event.GetType() == blink::WebInputEvent::Type::kGestureScrollEnd) {
++    send_touch_events_async_ = false;
++  } else if (event.event.GetType() ==
 +                 blink::WebInputEvent::Type::kGestureScrollUpdate &&
 +             ack_result == blink::mojom::InputEventResultState::kConsumed) {
-     send_touch_events_async_ = true;
++    send_touch_events_async_ = true;
    }
  }
+ 
 diff --git a/content/browser/renderer_host/input/passthrough_touch_event_queue.h b/content/browser/renderer_host/input/passthrough_touch_event_queue.h
-index 024bea927d45..82ddc301dc8c 100644
+index 119ce038e0d2..e86094543a65 100644
 --- a/content/browser/renderer_host/input/passthrough_touch_event_queue.h
 +++ b/content/browser/renderer_host/input/passthrough_touch_event_queue.h
 @@ -102,7 +102,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
@@ -252,7 +334,7 @@ index 7f67166e2bfc..a3457beddb93 100644
    ASSERT_EQ(1U, GetAndResetSentEventCount());
  
 diff --git a/content/browser/renderer_host/render_widget_host_browsertest.cc b/content/browser/renderer_host/render_widget_host_browsertest.cc
-index 37bef5f7e140..365861745ec5 100644
+index b3a0d710e559..69ac8a560251 100644
 --- a/content/browser/renderer_host/render_widget_host_browsertest.cc
 +++ b/content/browser/renderer_host/render_widget_host_browsertest.cc
 @@ -267,14 +267,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
