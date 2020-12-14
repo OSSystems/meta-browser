@@ -7,10 +7,10 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index 400a2de58c79..88bc03265e78 100644
+index c238e7e3837e..2a900fca2646 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
-@@ -53,6 +53,7 @@ if (use_v8_context_snapshot) {
+@@ -56,6 +56,7 @@ if (use_v8_context_snapshot) {
      output_path = rebase_path(output_file, root_build_dir)
  
      args = [
@@ -21,10 +21,10 @@ index 400a2de58c79..88bc03265e78 100644
 
 
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 167e63503c..3c3e7054ff 100644
+index 94b598bc9a..c9c62ad468 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -1243,6 +1243,7 @@ template("run_torque") {
+@@ -1359,6 +1359,7 @@ template("run_torque") {
      }
  
      args = [
@@ -32,7 +32,7 @@ index 167e63503c..3c3e7054ff 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -1351,6 +1352,7 @@ action("generate_bytecode_builtins_list") {
+@@ -1467,6 +1468,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -40,7 +40,7 @@ index 167e63503c..3c3e7054ff 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1392,6 +1394,7 @@ template("run_mksnapshot") {
+@@ -1512,6 +1514,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
@@ -48,7 +48,7 @@ index 167e63503c..3c3e7054ff 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -4338,6 +4341,7 @@ if (v8_enable_i18n_support) {
+@@ -4617,6 +4620,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
  
      args = [

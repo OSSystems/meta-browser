@@ -16,11 +16,13 @@ SRC_URI += " \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
+        file://remove-enable-dse-memoryssa-command-line-flag.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
         file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
-        file://0001-Turn-TouchMove-to-async-after-the-first-GestureScrol.patch \
-        file://0001-Remove-dead-reloc-in-nonalloc-LD-flags.patch \
         file://0001-add-missing-cstring-include.patch \
+        file://0001-drop-dep-on-ui-ozone-for-building-without-ozone.patch \
+        file://0001-Fix-local-build.patch \
+        file://0001-IWYU-ui-CursorFactory-is-required-without-Ozone.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -221,6 +223,12 @@ GN_ARGS += "is_cfi=false"
 # production.
 # See https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/ECWC57W7E0k/9Kc5UAmyDAAJ
 GN_ARGS += "fieldtrial_testing_like_official_build=true"
+
+# Disable PGO optimization as generated profdata requires the same version of
+# clang that upstream uses. Otherwise, clang-llvm produces the following error:
+# Unsupported instrumentation profile format version.
+# See https://crrev.com/c/2424669
+GN_ARGS += "chrome_pgo_phase=0"
 
 # API keys for accessing Google services. By default, we use an invalid key
 # only to prevent the "you are missing an API key" infobar from being shown on
