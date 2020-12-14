@@ -10,10 +10,10 @@ Upstream-Status: Inappropriate [OE-Specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 0092e81c3cf0..8ac2495ee7ee 100644
+index f7f5f6b3b721..1a1a6756e058 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -720,16 +720,6 @@ config("compiler_cpu_abi") {
+@@ -761,16 +761,6 @@ config("compiler_cpu_abi") {
            "-mmmx",
          ]
        }
@@ -28,5 +28,5 @@ index 0092e81c3cf0..8ac2495ee7ee 100644
 -        cflags += [ "-mtune=$arm_tune" ]
 -      }
      } else if (current_cpu == "mipsel" && !is_nacl) {
-       ldflags += [ "-Wl,--hash-style=sysv" ]
+       ldflags += [ "-wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {

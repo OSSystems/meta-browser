@@ -1,0 +1,47 @@
+Upstream-Status: Backport
+
+Backported from https://crrev.com/c/2576237
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 3a19dbc40ff05dc37679870109834db95db7a9b4 Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Sun, 6 Dec 2020 14:46:57 +0000
+Subject: [PATCH] IWYU: ui::CursorFactory is required without Ozone
+
+Bug: None
+Change-Id: Ieebcc426ec76f3f85a52c2dd3dcee17b07d1f02b
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2576237
+Reviewed-by: Peter Kasting <pkasting@chromium.org>
+Commit-Queue: Peter Kasting <pkasting@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#834075}
+---
+ .../ui/views/chrome_browser_main_extra_parts_views_linux.cc  | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.cc b/chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.cc
+index 5a97d615a093..ccedd2a2af63 100644
+--- a/chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.cc
++++ b/chrome/browser/ui/views/chrome_browser_main_extra_parts_views_linux.cc
+@@ -7,6 +7,7 @@
+ #include "chrome/browser/themes/theme_service_aura_linux.h"
+ #include "chrome/browser/ui/browser_list.h"
+ #include "chrome/browser/ui/views/theme_profile_key.h"
++#include "ui/base/cursor/cursor_factory.h"
+ #include "ui/display/screen.h"
+ #include "ui/views/linux_ui/linux_ui.h"
+ 
+@@ -15,10 +16,6 @@
+ #include "ui/gtk/gtk_ui_delegate.h"
+ #endif
+ 
+-#if defined(USE_OZONE)
+-#include "ui/base/cursor/cursor_factory.h"
+-#endif
+-
+ #if defined(USE_X11)
+ #include "ui/gfx/x/connection.h"  // nogncheck
+ #if BUILDFLAG(USE_GTK)
+-- 
+2.25.1
+

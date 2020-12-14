@@ -1,0 +1,36 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 436fdba1d682a6fc7341897f4f7aa785ff831f93 Mon Sep 17 00:00:00 2001
+From: Jordan Bayles <jophba@chromium.org>
+Date: Wed, 2 Dec 2020 10:45:26 -0800
+Subject: [PATCH] Fix local build
+
+This patch fixes a local build issue due to uint8_t not being defined.
+
+TBR=miu@chromium.org
+
+Change-Id: I8b4ab03b82c95a68fbbf173a6dab09d40f8e1d08
+Reviewed-on: https://chromium-review.googlesource.com/c/openscreen/+/2569888
+Reviewed-by: Jordan Bayles <jophba@chromium.org>
+Commit-Queue: Jordan Bayles <jophba@chromium.org>
+---
+ third_party/openscreen/src/util/crypto/random_bytes.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/openscreen/src/util/crypto/random_bytes.h b/third_party/openscreen/src/util/crypto/random_bytes.h
+index 3cb2fa8e..362d58d4 100644
+--- a/third_party/openscreen/src/util/crypto/random_bytes.h
++++ b/third_party/openscreen/src/util/crypto/random_bytes.h
+@@ -6,6 +6,7 @@
+ #define UTIL_CRYPTO_RANDOM_BYTES_H_
+ 
+ #include <array>
++#include <cstdint>
+ 
+ namespace openscreen {
+ 
+-- 
+2.25.1
+
