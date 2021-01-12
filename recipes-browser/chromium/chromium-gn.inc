@@ -18,7 +18,6 @@ SRC_URI += " \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://remove-enable-dse-memoryssa-command-line-flag.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-Revert-ui-gfx-linux-Remove-2-unnecessary-preprocesso.patch \
         file://0001-add-missing-cstring-include.patch \
         file://0001-drop-dep-on-ui-ozone-for-building-without-ozone.patch \
         file://0001-Fix-local-build.patch \

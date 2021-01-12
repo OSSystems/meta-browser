@@ -28,5 +28,5 @@ index f7f5f6b3b721..1a1a6756e058 100644
 -        cflags += [ "-mtune=$arm_tune" ]
 -      }
      } else if (current_cpu == "mipsel" && !is_nacl) {
-       ldflags += [ "-wl,--hash-style=sysv" ]
+       ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {

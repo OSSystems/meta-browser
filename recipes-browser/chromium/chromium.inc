@@ -4,8 +4,8 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "017cef5555c7a957091ce12bdd98c821"
-SRC_URI[sha256sum] = "3e4645328735ef60db78d1a313efb3770a3edeaede90d076414df52f567a09c0"
+SRC_URI[md5sum] = "53a595e1512bbadfde98dd334f28ce26"
+SRC_URI[sha256sum] = "147591d7fc21e1a173701d28bbf35baddb91e64dd96ec16d8eee9a5113403375"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -196,7 +196,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/android_deps/libs/com_google_protobuf_protobuf_javalite/LICENSE;md5=37b5762e07f0af8c74ce80a8bda4266b \
     file://${S}/third_party/android_deps/libs/javax_inject_javax_inject/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/android_media/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/android_ndk/NOTICE;md5=5552da59999006962cb94f01f7f42081 \
     file://${S}/third_party/android_opengl/LICENSE;md5=d10e92761a860d4113a7a525c78daf13 \
     file://${S}/third_party/android_provider/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/android_sdk/LICENSE;md5=a9559ed17808a8b10eec6672f993ce75 \
