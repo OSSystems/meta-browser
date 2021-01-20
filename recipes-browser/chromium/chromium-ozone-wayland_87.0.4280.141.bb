@@ -10,6 +10,14 @@ DEPENDS += "\
         wayland-native \
 "
 
+SRC_URI += "\
+        file://0001-ozone-add-va-api-support-to-wayland.patch \
+"
+
+# Enables VA-API for Ozone/Wayland. Remember to also use proprietary codecs
+# (see chromium-gn.inc).
+PACKAGECONFIG[use-vaapi] = "use_vaapi=true,use_vaapi=false,libva"
+
 GN_ARGS += "\
         ${PACKAGECONFIG_CONFARGS} \
         use_ozone=true \
@@ -35,3 +43,11 @@ GN_ARGS += "use_x11=false"
 
 # The chromium binary must always be started with those arguments.
 CHROMIUM_EXTRA_ARGS_append = " --ozone-platform=wayland"
+
+addtask do_check_config before do_configure
+
+python do_check_config() {
+  if bb.utils.contains('PACKAGECONFIG', 'use-vaapi', True, False, d) and \
+    not bb.utils.contains('PACKAGECONFIG', 'proprietary-codecs', True, False, d):
+        bb.fatal("use-vaapi requires the proprietary-codecs option to be set")
+}
