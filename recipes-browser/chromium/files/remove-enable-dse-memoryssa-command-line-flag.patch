@@ -7,9 +7,13 @@ This should be revisited when our supported yocto branches have newer
 clang version.
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
+Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
 ---
+ build/config/compiler/BUILD.gn | 19 -------------------
+ 1 file changed, 19 deletions(-)
+
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 85fbbbe614bf..fba9fd10426e 100644
+index 4f6461b6b..63eb15f13 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
 @@ -489,25 +489,6 @@ config("compiler") {
@@ -36,5 +40,8 @@ index 85fbbbe614bf..fba9fd10426e 100644
 -      ]
 -    }
    }
+ 
+   # C11/C++11 compiler flags setup.
 -- 
-2.25.1
+2.29.2
+
