@@ -2,6 +2,10 @@ require chromium-gn.inc
 
 REQUIRED_DISTRO_FEATURES = "x11"
 
+SRC_URI += " \
+    file://0001-remove-link-to-libatomic-from-BUILD.gn.patch \
+"
+
 DEPENDS += "\
         libx11 \
         libxcomposite \
@@ -27,3 +31,9 @@ GN_ARGS += "use_ozone=false"
 # chromium-ozone-wayland recipes, and the former used to be called just
 # "chromium".
 PROVIDES = "chromium"
+
+# Since chromium use clang as toolchain and clang delegates atomics to
+# runtime library instead of builtins, Link with latomic in TARGET_LDFLAGS
+# rather than in BUILD.gn, to avoid build failure due to no libatomic on host
+# (such as CentOS 8)
+TARGET_LDFLAGS_append_toolchain-clang = " -latomic"

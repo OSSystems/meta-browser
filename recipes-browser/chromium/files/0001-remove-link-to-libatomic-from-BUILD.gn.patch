@@ -1,0 +1,60 @@
+From 01c899455bff7ab0322542c832d4f7c3359e9139 Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Thu, 21 Jan 2021 17:07:28 +0800
+Subject: [PATCH] remove link to libatomic from BUILD.gn
+
+In BUILD.gn, the compile option does not distinguish target and native, such as
+-latomic works for both of target and native, if no libatomic on host (such as
+CentOS 8), there will be a link failure on native tool, even though the native
+tool does not require -latomic.
+
+Remove -latomic from BUILD.gn, and we will set it for target from recipe
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ base/BUILD.gn               | 9 ---------
+ build/config/linux/BUILD.gn | 6 ------
+ 2 files changed, 15 deletions(-)
+
+diff --git a/base/BUILD.gn b/base/BUILD.gn
+index 1d97f72..ba755fb 100644
+--- a/base/BUILD.gn
++++ b/base/BUILD.gn
+@@ -1291,15 +1291,6 @@ component("base") {
+     "//third_party/abseil-cpp:absl",
+   ]
+ 
+-  # Needed for <atomic> if using newer C++ library than sysroot, except if
+-  # building inside the cros_sdk environment - use host_toolchain as a
+-  # more robust check for this.
+-  if (!use_sysroot &&
+-      (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
+-      host_toolchain != "//build/toolchain/cros:host") {
+-    libs += [ "atomic" ]
+-  }
+-
+   if (use_allocator_shim) {
+     sources += [
+       "allocator/allocator_shim.cc",
+diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
+index 80c5318..8a51542 100644
+--- a/build/config/linux/BUILD.gn
++++ b/build/config/linux/BUILD.gn
+@@ -27,12 +27,6 @@ config("runtime_library") {
+   if (is_chromeos) {
+     defines = [ "OS_CHROMEOS" ]
+   }
+-
+-  if ((!(is_chromeos || chromeos_is_browser_only) ||
+-       default_toolchain != "//build/toolchain/cros:target") &&
+-      (!use_custom_libcxx || current_cpu == "mipsel")) {
+-    libs = [ "atomic" ]
+-  }
+ }
+ 
+ config("x11") {
+-- 
+2.18.2
+
