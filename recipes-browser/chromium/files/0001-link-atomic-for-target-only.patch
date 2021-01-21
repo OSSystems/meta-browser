@@ -1,0 +1,45 @@
+When host (such as CentOS 8) did not install libatomic, there was a
+link failure on native. In fact, only target requires to link atomic,
+the native does not. So link atomic for target only
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ base/BUILD.gn               | 2 ++
+ build/config/linux/BUILD.gn | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/base/BUILD.gn b/base/BUILD.gn
+index 1d97f72..aa3acb8 100644
+--- a/base/BUILD.gn
++++ b/base/BUILD.gn
+@@ -1294,8 +1294,10 @@ component("base") {
+   # Needed for <atomic> if using newer C++ library than sysroot, except if
+   # building inside the cros_sdk environment - use host_toolchain as a
+   # more robust check for this.
++  # Only target requires <atomic>
+   if (!use_sysroot &&
+       (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
++      (current_toolchain != host_toolchain) &&
+       host_toolchain != "//build/toolchain/cros:host") {
+     libs += [ "atomic" ]
+   }
+diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
+index 80c5318..f05c0aa 100644
+--- a/build/config/linux/BUILD.gn
++++ b/build/config/linux/BUILD.gn
+@@ -28,8 +28,10 @@ config("runtime_library") {
+     defines = [ "OS_CHROMEOS" ]
+   }
+ 
++  # Only target requires <atomic>
+   if ((!(is_chromeos || chromeos_is_browser_only) ||
+        default_toolchain != "//build/toolchain/cros:target") &&
++      (current_toolchain != host_toolchain) &&
+       (!use_custom_libcxx || current_cpu == "mipsel")) {
+     libs = [ "atomic" ]
+   }
+-- 
+2.18.2
+
