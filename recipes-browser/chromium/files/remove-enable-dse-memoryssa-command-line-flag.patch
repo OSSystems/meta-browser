@@ -36,5 +36,8 @@ index 85fbbbe614bf..fba9fd10426e 100644
 -      ]
 -    }
    }
+ 
+   # C11/C++11 compiler flags setup.
 -- 
 2.25.1
+
