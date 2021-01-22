@@ -424,6 +424,14 @@ do_install() {
 	# modifying the dummy "CHROME_EXTRA_ARGS" line
 	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
 
+	# This is ANGLE, not to be confused with the similarly named files under swiftshader/
+	if [ -e libEGL.so ]; then
+		install -m 0755 libEGL.so ${D}${libdir}/chromium/
+	fi
+	if [ -e libGLESv2.so ]; then
+		install -m 0755 libGLESv2.so ${D}${libdir}/chromium/
+	fi
+
 	if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
 		install -m 0755 *.so ${D}${libdir}/chromium/
 	fi
