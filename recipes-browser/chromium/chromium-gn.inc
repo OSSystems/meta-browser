@@ -110,7 +110,6 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
 PACKAGECONFIG[impl-side-painting] = ""
-PACKAGECONFIG[jumbo-build] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
@@ -122,7 +121,6 @@ GN_ARGS = " \
         ${PACKAGECONFIG_CONFARGS} \
         is_component_build=${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'true', 'false', d)} \
         use_gnome_keyring=false \
-        use_jumbo_build=${@bb.utils.contains('PACKAGECONFIG', 'jumbo-build', 'true', 'false', d)} \
         use_kerberos=false \
         use_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'true', 'false', d)} \
         use_system_freetype=true \
