@@ -1,0 +1,37 @@
+Upstream-Status: Inappropriate
+
+This is not applicable as the upstream code has been changed.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 7a213ed69c70e7ac9c0fe1222ab9bbe3cc8d54f4 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 28 Jan 2021 10:59:55 +0200
+Subject: [PATCH] ozone: fix include.
+
+Fixes:
+../../content/browser/gpu/gpu_internals_ui.cc:397:18: error: no member named 'IsUsingOzonePlatform' in namespace 'features'
+  if (!features::IsUsingOzonePlatform()) {
+       ~~~~~~~~~~^
+
+The patch is not applicable as the upstream code has been changed.
+---
+ content/browser/gpu/gpu_internals_ui.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/content/browser/gpu/gpu_internals_ui.cc b/content/browser/gpu/gpu_internals_ui.cc
+index ce93594132fd..9d6908fbbb9a 100644
+--- a/content/browser/gpu/gpu_internals_ui.cc
++++ b/content/browser/gpu/gpu_internals_ui.cc
+@@ -67,7 +67,7 @@
+ #include "ui/gfx/x/x11_atom_cache.h"  // nogncheck
+ #endif
+ 
+-#if defined(USE_OZONE)
++#if defined(USE_OZONE) || defined(USE_X11)
+ #include "ui/base/ui_base_features.h"
+ #endif
+ 
+-- 
+2.25.1
+

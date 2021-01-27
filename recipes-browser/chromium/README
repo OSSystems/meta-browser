@@ -67,10 +67,12 @@ PACKAGECONFIG knobs
   are desirable on embedded platforms. With this packageconfig, EGL and OpenGL
   ES 2.x are used instead.
 
-* use-vaapi: (off by default, chromium-ozone-wayland only)
-  Enables VA-API support with Ozone/Wayland backend that allows hardware accelerated
-  media playback on GPUs that support VA-API. Requires proprietary-codecs to be
-  set. Otherwise, h.264 decoding is not possible.
+* use-vaapi: (off by default)
+  Enables VA-API support with that allows hardware accelerated media playback on
+  GPUs that support VA-API. If h.264 codec is required, proprietary-codecs must
+  also be enabled. Please note that not all the possible hardware configs are
+  tested and supported.
+
 
 Google API keys
 ---------------
