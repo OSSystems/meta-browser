@@ -60,10 +60,10 @@ index 3c67b1247869..e6e989d7b49e 100644
    }
  
 diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
-index b6c8c637746c..81972a9d9984 100644
+index 4bbfc7e53b6f..540149b67d95 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
-@@ -60,6 +60,12 @@ class RestrictClockIdPolicy : public bpf_dsl::Policy {
+@@ -61,6 +61,12 @@ class RestrictClockIdPolicy : public bpf_dsl::Policy {
        case __NR_clock_gettime:
        case __NR_clock_getres:
        case __NR_clock_nanosleep:
@@ -131,4 +131,3 @@ index ddbf97f3d8b5..fa01b3bbc668 100644
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_SYSCALLS_H_
 -- 
 2.25.1
-

@@ -1,0 +1,37 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 048e1dc9844c1a96185a43b2beb9f8b71ef1a86e Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 27 Jan 2021 15:50:52 +0200
+Subject: [PATCH] IWYU: add missing include for std::vector and std::unique_ptr
+
+Bug: None
+Change-Id: I89857bb55b18084fb9845e212be58e8819a2b8d5
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2582047
+Commit-Queue: Avi Drissman <avi@chromium.org>
+Reviewed-by: Dominic Mazzoni <dmazzoni@chromium.org>
+Reviewed-by: Avi Drissman <avi@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#836188}
+---
+ ui/accessibility/platform/inspect/tree_formatter.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ui/accessibility/platform/inspect/tree_formatter.h b/ui/accessibility/platform/inspect/tree_formatter.h
+index 4a70a4d54395..532da613a746 100644
+--- a/ui/accessibility/platform/inspect/tree_formatter.h
++++ b/ui/accessibility/platform/inspect/tree_formatter.h
+@@ -5,6 +5,9 @@
+ #ifndef UI_ACCESSIBILITY_PLATFORM_INSPECT_TREE_FORMATTER_H_
+ #define UI_ACCESSIBILITY_PLATFORM_INSPECT_TREE_FORMATTER_H_
+ 
++#include <vector>
++#include <memory>
++
+ #include "ui/accessibility/platform/inspect/inspect.h"
+ 
+ #include "ui/gfx/native_widget_types.h"
+-- 
+2.25.1
+

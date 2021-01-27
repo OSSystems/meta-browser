@@ -16,13 +16,13 @@ SRC_URI += " \
         file://add_internal_define_armv7ve.patch \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
-        file://remove-enable-dse-memoryssa-command-line-flag.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-add-missing-cstring-include.patch \
-        file://0001-drop-dep-on-ui-ozone-for-building-without-ozone.patch \
         file://0001-Fix-local-build.patch \
         file://0001-IWYU-ui-CursorFactory-is-required-without-Ozone.patch \
         file://0001-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
+        file://0001-Build-fix-for-libstdc.patch \
+        file://0001-IWYU-add-missing-include-for-std-vector-and-std-uniq.patch \
+        file://0001-ozone-fix-include.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -116,6 +116,13 @@ PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
         ffmpeg_branding="Chromium" proprietary_codecs=false \
 '
+
+# Disable VA-API by default. It is compile time enabled since M88, but it's not
+# desired to make all the users of the Chromium meta-browser recipe depend on
+# libva without a real need. Both X11 (non-Ozone) and Wayland (Ozone) can use it,
+# but remember to also use proprietary codecs so that H.264 is supported. Also note
+# that not all the hardware configs might be supported.
+PACKAGECONFIG[use-vaapi] = "use_vaapi=true,use_vaapi=false,libva"
 
 # Base GN arguments, mostly related to features we want to enable or disable.
 GN_ARGS = " \
