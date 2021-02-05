@@ -23,6 +23,7 @@ SRC_URI += " \
         file://0001-Build-fix-for-libstdc.patch \
         file://0001-IWYU-add-missing-include-for-std-vector-and-std-uniq.patch \
         file://0001-ozone-fix-include.patch \
+        file://CVE-2021-21148.patch \
 "
 
 SRC_URI_append_libc-musl = "\
