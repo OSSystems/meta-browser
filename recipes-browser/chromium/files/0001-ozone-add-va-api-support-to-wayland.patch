@@ -24,10 +24,10 @@ we will switch to a new path, which should be more stable.
  6 files changed, 58 insertions(+), 33 deletions(-)
 
 diff --git a/media/gpu/vaapi/vaapi_picture_factory.cc b/media/gpu/vaapi/vaapi_picture_factory.cc
-index 7d850cc1d1a8..6be6f2e3704d 100644
+index 50d5f245f83c..093070deec83 100644
 --- a/media/gpu/vaapi/vaapi_picture_factory.cc
 +++ b/media/gpu/vaapi/vaapi_picture_factory.cc
-@@ -27,10 +27,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
+@@ -46,10 +46,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
        std::make_pair(gl::kGLImplementationEGLGLES2,
                       VaapiPictureFactory::kVaapiImplementationDrm));
  #if defined(USE_X11)
@@ -41,7 +41,7 @@ index 7d850cc1d1a8..6be6f2e3704d 100644
      vaapi_impl_pairs_.insert(
          std::make_pair(gl::kGLImplementationDesktopGL,
                         VaapiPictureFactory::kVaapiImplementationX11));
-@@ -90,8 +90,12 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
+@@ -104,8 +104,12 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
  
  gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
  #if defined(USE_OZONE)
@@ -91,10 +91,10 @@ index 941f24cc5959..42975746b5fb 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 3772ad5859e2..8ad259827d61 100644
+index 9d9cb7a1713c..212e236581b8 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-@@ -183,12 +183,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
+@@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                               Client* client) {
    DCHECK(task_runner_->BelongsToCurrentThread());
  
@@ -107,7 +107,7 @@ index 3772ad5859e2..8ad259827d61 100644
    if (config.is_encrypted()) {
      NOTREACHED() << "Encrypted streams are not supported for this VDA";
      return false;
-@@ -559,12 +553,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
+@@ -565,12 +559,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
    requested_visible_rect_ = visible_rect;
    if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
      // Add one to the reference frames for the one being currently egressed.
@@ -122,7 +122,7 @@ index 3772ad5859e2..8ad259827d61 100644
      requested_num_pics_ = num_pics - num_reference_frames + 1;
    } else {
      requested_num_reference_frames_ = 0;
-@@ -1205,19 +1199,22 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles(
+@@ -1213,19 +1207,22 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles(
  VaapiVideoDecodeAccelerator::BufferAllocationMode
  VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
  #if defined(USE_X11)
@@ -158,7 +158,7 @@ index 3772ad5859e2..8ad259827d61 100644
    // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
    // |output_mode_| as well.
    if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
-@@ -1252,7 +1249,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+@@ -1260,7 +1257,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
    // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
    // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
    return BufferAllocationMode::kSuperReduced;
@@ -167,10 +167,10 @@ index 3772ad5859e2..8ad259827d61 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 2751b144624d..a206f02c8243 100644
+index 78133749fe64..b967d69bc12b 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -582,8 +582,8 @@ bool VADisplayState::InitializeOnce() {
+@@ -626,8 +626,8 @@ bool VADisplayState::InitializeOnce() {
  
  #if defined(USE_X11)
    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -181,7 +181,7 @@ index 2751b144624d..a206f02c8243 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2245,8 +2245,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2632,8 +2632,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -189,10 +189,10 @@ index 2751b144624d..a206f02c8243 100644
 -    paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
 +  paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
  #endif
- 
-   // InitializeStubs dlopen() VA-API libraries
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+   paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index c78ca1d02aae..9435b2f4de88 100644
+index 0e419c88b06d..334c51512933 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 @@ -16,6 +16,7 @@
@@ -229,10 +229,10 @@ index c78ca1d02aae..9435b2f4de88 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index e344054c251d..e2d2d65dbd7b 100644
+index a9b3932b1a80..9cdf4a990d75 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -70,6 +70,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+@@ -71,6 +71,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
    // A unique ID to identify the buffer for this pixmap.
    const uint32_t buffer_id_;
  

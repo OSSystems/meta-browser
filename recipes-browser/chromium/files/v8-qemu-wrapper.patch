@@ -7,12 +7,12 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index c238e7e3837e..2a900fca2646 100644
+index 6e86a543558c..eee89b37064e 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -56,6 +56,7 @@ if (use_v8_context_snapshot) {
      output_path = rebase_path(output_file, root_build_dir)
- 
+
      args = [
 +      "./v8-qemu-wrapper.sh",
        "./" + rebase_path(
@@ -20,18 +20,18 @@ index c238e7e3837e..2a900fca2646 100644
                        ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
 
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 1dc6c7d5ac..22bfc29213 100644
+index f39529a3a9..8bceaa498a 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -1397,6 +1397,7 @@ template("run_torque") {
+@@ -1434,6 +1434,7 @@ template("run_torque") {
      }
- 
+
      args = [
 +      "./v8-qemu-wrapper.sh",
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -1514,6 +1515,7 @@ action("generate_bytecode_builtins_list") {
+@@ -1550,6 +1551,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -39,17 +39,17 @@ index 1dc6c7d5ac..22bfc29213 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1559,6 +1561,7 @@ template("run_mksnapshot") {
+@@ -1595,6 +1597,7 @@ template("run_mksnapshot") {
      data = []
- 
+
      args = [
 +      "./v8-qemu-wrapper.sh",
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -4716,6 +4719,7 @@ if (v8_enable_i18n_support) {
+@@ -4809,6 +4812,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
- 
+
      args = [
 +      "./v8-qemu-wrapper.sh",
        "./" + rebase_path(

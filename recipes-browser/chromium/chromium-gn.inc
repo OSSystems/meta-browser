@@ -17,14 +17,10 @@ SRC_URI += " \
         file://delete_not_yet_released_clang_warnings.patch \
         file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
         file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-Fix-local-build.patch \
-        file://0001-IWYU-ui-CursorFactory-is-required-without-Ozone.patch \
         file://0001-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
-        file://0001-Build-fix-for-libstdc.patch \
-        file://0001-IWYU-add-missing-include-for-std-vector-and-std-uniq.patch \
-        file://0001-ozone-fix-include.patch \
-        file://0001-Fix-ill-formed-C-code.patch \
         file://0001-link-atomic-for-target-only.patch \
+        file://0001-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
+        file://0001-IWYU-add-ctime-for-std-time.patch \
 "
 
 SRC_URI_append_libc-musl = "\

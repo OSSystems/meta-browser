@@ -40,7 +40,7 @@ Signed-off-by: Andreas Müller <schnitzeltony@gmail.com>
  5 files changed, 36 insertions(+), 1 deletion(-)
 
 diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-index 3c67b1247869..e6e989d7b49e 100644
+index e00e3125993e..87d3ecfba99b 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 @@ -157,7 +157,14 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
