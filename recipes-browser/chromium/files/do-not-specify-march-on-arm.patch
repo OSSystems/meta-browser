@@ -10,11 +10,11 @@ Upstream-Status: Inappropriate [OE-Specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 17ed94ac66a1..7fd44e5e2b59 100644
+index aed313f59c5a..815bf3148e91 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -762,16 +762,6 @@ config("compiler_cpu_abi") {
-           "-mmmx",
+@@ -781,16 +781,6 @@ config("compiler_cpu_abi") {
+           "-msse3",
          ]
        }
 -    } else if (current_cpu == "arm") {

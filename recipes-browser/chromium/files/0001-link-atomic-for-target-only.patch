@@ -11,10 +11,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 1d97f72..aa3acb8 100644
+index 21e4ee1d3efb..a8c1d8c4a764 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1294,8 +1294,10 @@ component("base") {
+@@ -1300,8 +1300,10 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -26,20 +26,20 @@ index 1d97f72..aa3acb8 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index 80c5318..f05c0aa 100644
+index 64b6325387ce..ed653088566c 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
-@@ -28,8 +28,10 @@ config("runtime_library") {
+@@ -30,8 +30,10 @@ config("runtime_library") {
      defines = [ "OS_CHROMEOS" ]
    }
  
 +  # Only target requires <atomic>
-   if ((!(is_chromeos || chromeos_is_browser_only) ||
+   if ((!(is_chromeos_ash || is_chromeos_lacros) ||
         default_toolchain != "//build/toolchain/cros:target") &&
 +      (current_toolchain != host_toolchain) &&
        (!use_custom_libcxx || current_cpu == "mipsel")) {
      libs = [ "atomic" ]
    }
 -- 
-2.18.2
+2.25.1
 
