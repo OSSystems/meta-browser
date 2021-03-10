@@ -7,7 +7,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-@@ -46,8 +46,9 @@
+@@ -51,8 +51,9 @@
  #endif  // defined(OS_ANDROID) && defined(__arm__)
  
  #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -18,16 +18,16 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include "base/linux_util.h"
  #include "base/strings/string_split.h"
  #include "base/strings/string_util.h"
-@@ -238,7 +239,7 @@ void RecordStartupMetrics() {
-                             shell_integration::NUM_DEFAULT_STATES);
+@@ -229,7 +230,7 @@ void RecordStartupMetrics() {
+ #endif
  }
  
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
- void RecordLinuxDistro() {
-   UMALinuxDistro distro_result = UMA_LINUX_DISTRO_UNKNOWN;
- 
-@@ -348,7 +349,7 @@ void RecordLinuxDistro() {
+ void RecordLinuxDistroSpecific(const std::string& version_string,
+                                size_t parts,
+                                const char* histogram_name) {
+@@ -308,7 +309,7 @@ void RecordLinuxDistro() {
  #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
  
  void RecordLinuxGlibcVersion() {
@@ -36,12 +36,12 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-@@ -569,7 +570,7 @@ void ChromeBrowserMainExtraPartsMetrics:
-   constexpr base::TaskTraits background_task_traits = {
-       base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+@@ -565,7 +566,7 @@ void ChromeBrowserMainExtraPartsMetrics:
+   constexpr base::TaskTraits kBestEffortTaskTraits = {
+       base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 -#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 +#if defined(__GLIBC__) && !defined(OS_CHROMEOS)
-   base::PostTask(FROM_HERE, background_task_traits,
-                  base::BindOnce(&RecordLinuxDistro));
+   base::ThreadPool::PostTask(FROM_HERE, kBestEffortTaskTraits,
+                              base::BindOnce(&RecordLinuxDistro));
  #endif

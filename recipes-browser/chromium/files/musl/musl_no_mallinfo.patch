@@ -4,39 +4,26 @@ Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -110,7 +110,7 @@ size_t ProcessMetrics::GetMallocUsage()
+@@ -119,7 +119,7 @@ size_t ProcessMetrics::GetMallocUsage()
    malloc_statistics_t stats = {0};
    malloc_zone_statistics(nullptr, &stats);
    return stats.size_in_use;
--#elif defined(OS_LINUX) || defined(OS_ANDROID)
-+#elif defined(__GLIBC__) || defined(OS_ANDROID)
+-#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
++#elif defined(__GLIBC__) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
    struct mallinfo minfo = mallinfo();
  #if BUILDFLAG(USE_TCMALLOC)
    return minfo.uordblks;
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -132,7 +132,7 @@ bool MallocDumpProvider::OnMemoryDump(co
+@@ -163,7 +163,7 @@ bool MallocDumpProvider::OnMemoryDump(co
    }
  #elif defined(OS_FUCHSIA)
  // TODO(fuchsia): Port, see https://crbug.com/706592.
 -#else
 +#elif defined(__GLIBC__)
    struct mallinfo info = mallinfo();
- #if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
-   // Sanitizers override mallinfo.
---- a/third_party/swiftshader/third_party/llvm-7.0/configs/linux/include/llvm/Config/config.h
-+++ b/third_party/swiftshader/third_party/llvm-7.0/configs/linux/include/llvm/Config/config.h
-@@ -122,8 +122,9 @@
- /* #undef HAVE_MALLCTL */
- 
- /* Define to 1 if you have the `mallinfo' function. */
-+#ifdef __GLIBC__
- #define HAVE_MALLINFO 1
--
-+#endif
- /* Define to 1 if you have the <malloc.h> header file. */
- #define HAVE_MALLOC_H 1
- 
+   // In case of Android's jemalloc |arena| is 0 and the outer pages size is
+   // reported by |hblkhd|. In case of dlmalloc the total is given by
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 @@ -130,7 +130,7 @@

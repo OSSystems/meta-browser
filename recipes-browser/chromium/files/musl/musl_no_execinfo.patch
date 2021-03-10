@@ -14,7 +14,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include <execinfo.h>
  #endif
  
-@@ -86,7 +86,7 @@ void DemangleSymbols(std::string* text)
+@@ -88,7 +88,7 @@ void DemangleSymbols(std::string* text)
    // Note: code in this function is NOT async-signal safe (std::string uses
    // malloc internally).
  
@@ -23,7 +23,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    std::string::size_type search_from = 0;
    while (search_from < text->size()) {
      // Look for the start of a mangled symbol, from search_from.
-@@ -133,7 +133,7 @@ class BacktraceOutputHandler {
+@@ -135,7 +135,7 @@ class BacktraceOutputHandler {
    virtual ~BacktraceOutputHandler() = default;
  };
  
@@ -32,7 +32,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
    // This should be more than enough to store a 64-bit number in hex:
    // 16 hex digits + 1 for null-terminator.
-@@ -812,7 +812,7 @@ size_t CollectStackTrace(void** trace, s
+@@ -827,7 +827,7 @@ size_t CollectStackTrace(void** trace, s
    // NOTE: This code MUST be async-signal safe (it's used by in-process
    // stack dumping signal handler). NO malloc or stdio is allowed here.
  
@@ -41,7 +41,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    // Though the backtrace API man page does not list any possible negative
    // return values, we take no chance.
    return base::saturated_cast<size_t>(backtrace(trace, count));
-@@ -825,13 +825,13 @@ void StackTrace::PrintWithPrefix(const c
+@@ -840,13 +840,13 @@ void StackTrace::PrintWithPrefix(const c
  // NOTE: This code MUST be async-signal safe (it's used by in-process
  // stack dumping signal handler). NO malloc or stdio is allowed here.
  
@@ -59,22 +59,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    StreamBacktraceOutputHandler handler(os);
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
-@@ -8,13 +8,13 @@
- #define BUG_REPORT_URL "http://llvm.org/bugs/"
- 
- /* Define to 1 to enable backtraces, and to 0 otherwise. */
--#define ENABLE_BACKTRACES 1
-+#define ENABLE_BACKTRACES 0
- 
- /* Define to 1 to enable crash overrides, and to 0 otherwise. */
- #define ENABLE_CRASH_OVERRIDES 1
- 
- /* Define to 1 if you have the `backtrace' function. */
--#define HAVE_BACKTRACE 1
-+#define HAVE_BACKTRACE 0
- 
- /* Define to 1 if you have the <CrashReporterClient.h> header file. */
- /* #undef HAVE_CRASHREPORTERCLIENT_H */
 @@ -55,7 +55,7 @@
  #define HAVE_ERRNO_H 1
  
