@@ -1,0 +1,31 @@
+From 9b923d4155516fda5bfcf83e9da71b517dac024b Mon Sep 17 00:00:00 2001
+From: Stephan Hartmann <stha09@googlemail.com>
+Date: Mon, 23 Nov 2020 16:00:55 +0000
+Subject: [PATCH] IWYU: include limits for std::numeric_limits
+
+Change-Id: I1b6b07ebb397a29c84d3ed51ae41523e3ecab497
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2552862
+Reviewed-by: Josh Karlin <jkarlin@chromium.org>
+Commit-Queue: Josh Karlin <jkarlin@chromium.org>
+Cr-Commit-Position: refs/heads/master@{#830190}
+---
+Upstream-Status: Backport [https://chromium-review.googlesource.com/c/chromium/src/+/2552862]
+ components/federated_learning/floc_constants.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/components/federated_learning/floc_constants.cc b/components/federated_learning/floc_constants.cc
+index df66e5dccd11..2eb50f1cbe35 100644
+--- a/components/federated_learning/floc_constants.cc
++++ b/components/federated_learning/floc_constants.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "components/federated_learning/floc_constants.h"
+ 
++#include <limits>
++
+ namespace federated_learning {
+ 
+ // This is only for experimentation and won't be served to websites.
+-- 
+2.30.2
+

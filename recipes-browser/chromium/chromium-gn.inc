@@ -25,6 +25,9 @@ SRC_URI += " \
         file://0001-ozone-fix-include.patch \
         file://0001-Fix-ill-formed-C-code.patch \
         file://0001-link-atomic-for-target-only.patch \
+        file://0001-IWYU-include-limits-for-std-numeric_limits.patch \
+        file://0001-IWYU-include-limits-for-std-numeric_limits-2.patch \
+        file://0001-mojo-Include-string.h-for-strncpy-declaration.patch \
 "
 
 SRC_URI_append_libc-musl = "\
