@@ -46,7 +46,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  namespace {
 --- a/net/dns/dns_config_service_posix.cc
 +++ b/net/dns/dns_config_service_posix.cc
-@@ -42,6 +42,36 @@
+@@ -43,6 +43,36 @@
  #include "net/base/network_interfaces.h"
  #endif
  

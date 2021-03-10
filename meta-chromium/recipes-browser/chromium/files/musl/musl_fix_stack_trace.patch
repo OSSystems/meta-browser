@@ -11,7 +11,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/base/debug/stack_trace.cc
 +++ b/base/debug/stack_trace.cc
-@@ -233,14 +233,14 @@ std::string StackTrace::ToString() const
+@@ -225,14 +225,14 @@ std::string StackTrace::ToString() const
  }
  std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
    std::stringstream stream;

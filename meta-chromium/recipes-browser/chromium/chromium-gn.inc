@@ -34,9 +34,7 @@ SRC_URI_append_libc-musl = "\
         file://musl/musl_gnu_libc-version.patch \
         file://musl/musl_resolver.patch \
         file://musl/musl_off64_t.patch \
-        file://musl/musl_lss-match_syscalls.patch \
         file://musl/musl_crashpad.patch \
-        file://musl/musl_replace_libc_fpstate.patch \
         file://musl/musl_fix_stack_trace.patch \
         file://musl/musl_portable_msghdr.patch \
         file://musl/musl_no__environ.patch \

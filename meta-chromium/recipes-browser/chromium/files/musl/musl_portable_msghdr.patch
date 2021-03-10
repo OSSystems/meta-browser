@@ -18,7 +18,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/net/socket/udp_socket_posix.cc
 +++ b/net/socket/udp_socket_posix.cc
-@@ -1193,8 +1193,12 @@ SendResult UDPSocketPosixSender::Interna
+@@ -1151,8 +1151,12 @@ SendResult UDPSocketPosixSender::Interna
    for (auto& buffer : buffers)
      msg_iov->push_back({const_cast<char*>(buffer->data()), buffer->length()});
    msgvec->reserve(buffers.size());

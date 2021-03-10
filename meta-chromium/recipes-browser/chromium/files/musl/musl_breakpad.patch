@@ -6,8 +6,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
 +++ b/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
-@@ -36,6 +36,7 @@
- #include <elf.h>
+@@ -37,6 +37,7 @@
+ #include <limits.h>
  #include <link.h>
  #include <stddef.h>
 +#include <sys/reg.h>
