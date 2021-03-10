@@ -21,6 +21,7 @@ SRC_URI += " \
         file://0001-link-atomic-for-target-only.patch \
         file://0001-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
         file://0001-IWYU-add-ctime-for-std-time.patch \
+        file://0001-mojo-Include-string.h-for-strncpy-declaration.patch \
 "
 
 SRC_URI_append_libc-musl = "\
