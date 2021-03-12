@@ -1,5 +1,56 @@
-Chromium recipe
-===============
+OpenEmbedded/Yocto BSP layer for Chromium Browsers
+==================================================
+
+This layer provides web browser recipes for use with OpenEmbedded
+and/or Yocto.
+
+This layer depends on:
+
+* URI: git://git.openembedded.org/openembedded-core
+  - branch: master
+  - revision: HEAD
+
+* URI: git://git.openembedded.org/meta-openembedded
+  - layers: meta-oe
+  - branch: master
+  - revision: HEAD
+
+* URI: git://github.com/kraj/meta-clang
+  - branch: master
+  - revision: HEAD
+
+* URI: git://git.openembedded.org/meta-python2
+  - branch: master
+  - revision: HEAD
+
+Contributing
+------------
+
+The preferred way to contribute to this layer is to send GitHub pull requests or
+report problems in GitHub's issue tracker.
+
+Alternatively there is the classic way of review on the OpenEmbedded dev mailing
+list openembedded-devel@lists.openembedded.org (you have to be subscribed to
+post to the list). Please cc the maintainers if you send your patches.
+
+Maintainers
+-----------
+* Fabio Berton <fabio.berton@ossystems.com.br>
+* Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+* Khem Raj <raj.khem@gmail.com>
+* Otavio Salvador <otavio@ossystems.com.br>
+* Maksim Sisov <msisov@igalia.com>
+* Takuro Ashie <ashie@clear-code.com>
+
+When sending single patches, please use something like:
+```
+git send-email -1 -s --to openembedded-devel@lists.openembedded.org --subject-prefix='meta-browser][PATCH'
+```
+
+Recipes
+-------
+recipes-browser/chromium:
+Chromium browser.
 
 This recipe provides a package for the Chromium web browser. It strives to
 always follow the latest stable Linux release as listed in
