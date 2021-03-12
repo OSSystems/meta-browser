@@ -25,6 +25,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://fixes/Bug-1556197-amend-Bug-1544631-for-fixing-mips32.patch \
            file://fixes/Bug-1560340-Only-add-confvars.sh-as-a-dependency-to-.patch \
            file://fixes/bug1545437-enable-to-specify-rust-target.patch \
+           file://fixes/Bug-1640982-SetCARGO_PROFILE_RELEASE_LTO-true-when-e.patch \
            file://fixes/avoid-running-autoconf2.13.patch \
            file://fixes/pre-generated-old-configure.patch \
            file://fixes/link-with-libpangoft.patch \
