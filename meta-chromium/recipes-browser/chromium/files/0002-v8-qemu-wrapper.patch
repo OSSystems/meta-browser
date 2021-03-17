@@ -1,0 +1,65 @@
+From b611909b9cc2b29afa64ace5933fcf8dffc0b623 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Tue, 7 Nov 2017 15:24:32 +0100
+Subject: [PATCH] v8: qemu wrapper
+
+The patch below makes the V8 binaries run during the build be invoked through
+QEMU, as they are built for the target.
+
+Upstream-Status: Inappropriate [embedder specific]
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ tools/v8_context_snapshot/BUILD.gn | 1 +
+ v8/BUILD.gn                        | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
+index 6e86a54355..eee89b3706 100644
+--- a/tools/v8_context_snapshot/BUILD.gn
++++ b/tools/v8_context_snapshot/BUILD.gn
+@@ -56,6 +56,7 @@ if (use_v8_context_snapshot) {
+     output_path = rebase_path(output_file, root_build_dir)
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(
+                       ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
+diff --git a/v8/BUILD.gn b/v8/BUILD.gn
+index f39529a3a9..8bceaa498a 100644
+--- a/v8/BUILD.gn
++++ b/v8/BUILD.gn
+@@ -1434,6 +1434,7 @@ template("run_torque") {
+     }
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
+               root_build_dir),
+@@ -1550,6 +1551,7 @@ action("generate_bytecode_builtins_list") {
+   outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
+   deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
+   args = [
++    "./v8-qemu-wrapper.sh",
+     "./" + rebase_path(
+             get_label_info(
+                     ":bytecode_builtins_list_generator($v8_generator_toolchain)",
+@@ -1595,6 +1597,7 @@ template("run_mksnapshot") {
+     data = []
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
+                                         "root_out_dir") + "/mksnapshot",
+                          root_build_dir),
+@@ -4809,6 +4812,7 @@ if (v8_enable_i18n_support) {
+     outputs = [ output_file ]
+ 
+     args = [
++      "./v8-qemu-wrapper.sh",
+       "./" + rebase_path(
+               get_label_info(
+                       ":gen-regexp-special-case($v8_generator_toolchain)",

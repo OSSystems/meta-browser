@@ -1,0 +1,27 @@
+From ebb198b30155624eba5ec76431668a9e50e23e6e Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 13 Feb 2019 09:51:14 -0800
+Subject: [PATCH] tcmalloc: no __sbrk
+
+__sbrk does not exist on musl as well therefore check for __GLIBC__
+to enable it
+
+Upstream-Status: Inappropriate
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h b/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
+index 2a97dfae2f..71af62c181 100644
+--- a/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
++++ b/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
+@@ -214,7 +214,7 @@ extern "C" void* mremap(void* old_addr, size_t old_size, size_t new_size,
+   return result;
+ }
+ 
+-#ifndef __UCLIBC__
++#ifdef __GLIBC__
+ // libc's version:
+ extern "C" void* __sbrk(intptr_t increment);
+ 

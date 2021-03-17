@@ -1,0 +1,30 @@
+From 68a502b62666bcc6f3446895463b23320f34a251 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 27 Jan 2021 10:31:55 +0100
+Subject: [PATCH] RandBytes: Stop including sys/random.h on Linux
+
+Upstream-Status: Backport
+
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+ base/rand_util_posix.cc | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/base/rand_util_posix.cc b/base/rand_util_posix.cc
+index f121db7fcb..b58c374062 100644
+--- a/base/rand_util_posix.cc
++++ b/base/rand_util_posix.cc
+@@ -17,11 +17,9 @@
+ #include "base/posix/eintr_wrapper.h"
+ #include "build/build_config.h"
+ 
+-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
++#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(OS_NACL)
+ #include "third_party/lss/linux_syscall_support.h"
+-#endif
+-
+-#if !defined(OS_IOS) && !defined(OS_NACL)
++#elif defined(OS_MAC)
+ // TODO(crbug.com/995996): Waiting for this header to appear in the iOS SDK.
+ // (See below.)
+ #include <sys/random.h>

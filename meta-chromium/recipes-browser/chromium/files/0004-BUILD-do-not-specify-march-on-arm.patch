@@ -1,0 +1,40 @@
+From 6510aaf312a9ab8c14a11a3a47b411e79d62acbf Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Tue, 22 Jan 2019 00:17:41 -0800
+Subject: [PATCH] BUILD: do not specify march on arm
+
+Do not try to set the guessed values for march/mtune/float-abi
+OE config machinary has computed these values already and fed it
+via compiler cmdline to chromium build
+
+I think upstream should check for the values on compiler cmdline
+before overriding these
+
+Upstream-Status: Inappropriate [OE-Specific]
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ build/config/compiler/BUILD.gn | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index aed313f59c..815bf3148e 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -781,16 +781,6 @@ config("compiler_cpu_abi") {
+           "-msse3",
+         ]
+       }
+-    } else if (current_cpu == "arm") {
+-      if (!is_nacl) {
+-        cflags += [
+-          "-march=$arm_arch",
+-          "-mfloat-abi=$arm_float_abi",
+-        ]
+-      }
+-      if (arm_tune != "") {
+-        cflags += [ "-mtune=$arm_tune" ]
+-      }
+     } else if (current_cpu == "mipsel" && !is_nacl) {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {

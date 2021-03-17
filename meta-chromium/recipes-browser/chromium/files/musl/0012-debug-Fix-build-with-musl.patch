@@ -1,0 +1,40 @@
+From 15ad0a146688bc62f91d44a776e5d9f1081361d3 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 13 Feb 2019 09:51:14 -0800
+Subject: [PATCH] debug: Fix build with musl
+
+Check for glibc instead of assuming it to be default since same may not hold
+for musl
+
+This fixes build errors like
+
+base/debug/stack_trace.cc:237: undefined reference to `base::debug::StackTrace::OutputToStreamWithPrefix(std::__1::basic_ostream<char, std::__1::char_traits<char> >*, char const*) const'
+clang-8: error: linker command failed with exit code 1 (use -v to see invocation)
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ base/debug/stack_trace.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/base/debug/stack_trace.cc b/base/debug/stack_trace.cc
+index f5e2dbba14..6691e32d01 100644
+--- a/base/debug/stack_trace.cc
++++ b/base/debug/stack_trace.cc
+@@ -225,14 +225,14 @@ std::string StackTrace::ToString() const {
+ }
+ std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
+   std::stringstream stream;
+-#if !defined(__UCLIBC__) && !defined(_AIX)
++#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(_AIX)
+   OutputToStreamWithPrefix(&stream, prefix_string);
+ #endif
+   return stream.str();
+ }
+ 
+ std::ostream& operator<<(std::ostream& os, const StackTrace& s) {
+-#if !defined(__UCLIBC__) & !defined(_AIX)
++#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(_AIX)
+   s.OutputToStream(&os);
+ #else
+   os << "StackTrace::OutputToStream not implemented.";

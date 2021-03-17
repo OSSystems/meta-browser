@@ -1,0 +1,36 @@
+From 113c9aa3bf88637a0021f074be6021941e208cfe Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 13 Feb 2019 09:51:14 -0800
+Subject: [PATCH] tcmalloc: undef mmap64
+
+mmap is aliased to mmap64 on musl, this helps to undefine both
+and redefined without causing signature conflicts
+
+../../third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h:175:18: error: redefinition of 'mmap'
+extern "C" void* mmap(void *start, size_t length, int prot, int flags,
+                 ^
+../../third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h:161:18: note: previous definition is here
+extern "C" void* mmap64(void *start, size_t length, int prot, int flags,
+                 ^
+/mnt/b/yoe/build/tmp/work/cortexa7t2hf-neon-vfpv4-yoe-linux-musleabi/chromium-ozone-wayland/78.0.3904.108-r0/recipe-sysroot/usr/include/sys/mman.h:141:16: note: expanded from macro 'mmap64'
+               ^
+1 error generated.
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h b/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
+index 5e5480c748..2a97dfae2f 100644
+--- a/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
++++ b/third_party/tcmalloc/chromium/src/malloc_hook_mmap_linux.h
+@@ -141,6 +141,7 @@ static inline void* do_mmap64(void *start, size_t length,
+ 
+ // Make sure mmap doesn't get #define'd away by <sys/mman.h>
+ # undef mmap
++# undef mmap64
+ 
+ extern "C" {
+   void* mmap64(void *start, size_t length, int prot, int flags,

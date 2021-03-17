@@ -1,0 +1,25 @@
+From 90b952f9ecb4c32f5a7668d60ff0a0f1f3e07e60 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 3 Mar 2021 12:03:36 +0200
+Subject: [PATCH] Fix use of DCHECK with std::unique_ptr
+
+Upstream-Status: Backport [https://quiche.googlesource.com/quiche/+/4f43a02b2a83a0d836f8fdd6863bb9523f9c1748]
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+ net/third_party/quiche/src/quic/core/quic_path_validator.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/third_party/quiche/src/quic/core/quic_path_validator.cc b/net/third_party/quiche/src/quic/core/quic_path_validator.cc
+index ee446cc241..0cc387f686 100644
+--- a/net/third_party/quiche/src/quic/core/quic_path_validator.cc
++++ b/net/third_party/quiche/src/quic/core/quic_path_validator.cc
+@@ -68,7 +68,7 @@ void QuicPathValidator::OnPathResponse(const QuicPathFrameBuffer& probing_data,
+ void QuicPathValidator::StartPathValidation(
+     std::unique_ptr<QuicPathValidationContext> context,
+     std::unique_ptr<ResultDelegate> result_delegate) {
+-  DCHECK_NE(nullptr, context);
++  DCHECK(context);
+   QUIC_DLOG(INFO) << "Start validating path " << *context
+                   << " via writer: " << context->WriterToUse();
+   if (path_context_ != nullptr) {
