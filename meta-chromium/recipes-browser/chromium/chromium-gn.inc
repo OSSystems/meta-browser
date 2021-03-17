@@ -9,39 +9,39 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
-        file://oe-clang-fixes.patch \
-        file://v8-qemu-wrapper.patch \
-        file://wrapper-extra-flags.patch \
-        file://do-not-specify-march-on-arm.patch \
-        file://add_internal_define_armv7ve.patch \
-        file://delete_not_yet_released_clang_warnings.patch \
-        file://chromium-Move-CharAllocator-definition-to-a-header-f.patch \
-        file://0003-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-        file://0001-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
-        file://0001-link-atomic-for-target-only.patch \
-        file://0001-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
-        file://0001-IWYU-add-ctime-for-std-time.patch \
-        file://0001-mojo-Include-string.h-for-strncpy-declaration.patch \
+    file://0001-Remove-the-GN-settings-done-for-clang-that-conflict-.patch \
+    file://0002-v8-qemu-wrapper.patch \
+    file://0003-wrapper-extra-flags.patch \
+    file://0004-BUILD-do-not-specify-march-on-arm.patch \
+    file://0005-Consider-armv7ve-define.patch \
+    file://0006-Delete-compiler-options-not-available-in-release-ver.patch \
+    file://0007-Move-CharAllocator-definition-to-a-header-file.patch \
+    file://0008-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
+    file://0009-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
+    file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
+    file://0011-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
+    file://0012-IWYU-add-ctime-for-std-time.patch \
+    file://0013-mojo-Include-string.h-for-strncpy-declaration.patch \
 "
 
 SRC_URI_append_libc-musl = "\
-        file://musl/musl_no_mallinfo.patch \
-        file://musl/musl_no_execinfo.patch \
-        file://musl/musl_TEMP_FAILURE_RETRY.patch \
-        file://musl/musl_fix-stack.patch \
-        file://musl/musl_breakpad.patch \
-        file://musl/musl_fontconfig.patch \
-        file://musl/musl_libc_malloc.patch \
-        file://musl/musl_gnu_libc-version.patch \
-        file://musl/musl_resolver.patch \
-        file://musl/musl_off64_t.patch \
-        file://musl/musl_crashpad.patch \
-        file://musl/musl_fix_stack_trace.patch \
-        file://musl/musl_portable_msghdr.patch \
-        file://musl/musl_no__environ.patch \
-        file://musl/musl_no_mallopt.patch \
-        file://musl/musl_undef_mmap64.patch \
-        file://musl/musl_no_sbrk.patch \
+    file://musl/0001-mallinfo-implementation-is-glibc-specific.patch \
+    file://musl/0002-execinfo-implementation-is-glibc-specific.patch \
+    file://musl/0003-Define-TEMP_FAILURE_RETRY-and-__si_fields.patch \
+    file://musl/0004-blink-Fix-build-with-musl.patch \
+    file://musl/0005-breakpad-Fix-build-with-musl.patch \
+    file://musl/0006-fontconfig-Musl-does-not-have-rand_r-API.patch \
+    file://musl/0007-__libc_malloc-is-internal-to-glibc.patch \
+    file://musl/0008-gnu_libc_version-API-is-glibc-specific.patch \
+    file://musl/0009-provide-res_ninit-and-nclose-APIs-on-non-glibc-linux.patch \
+    file://musl/0010-__off64_t-is-internal-private-define-from-glibc.patch \
+    file://musl/0011-crashpad-Fix-build-with-musl.patch \
+    file://musl/0012-debug-Fix-build-with-musl.patch \
+    file://musl/0013-socket-initialize-msghdr-in-a-compatible-manner.patch \
+    file://musl/0014-no-__environ-in-musl.patch \
+    file://musl/0015-mallopt-is-glibc-specific-API.patch \
+    file://musl/0016-tcmalloc-undef-mmap64.patch \
+    file://musl/0017-tcmalloc-no-__sbrk.patch \
 "
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also

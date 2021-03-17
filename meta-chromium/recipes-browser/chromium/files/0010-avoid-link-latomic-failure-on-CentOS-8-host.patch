@@ -1,0 +1,47 @@
+From b39c31589f64b82c5ec3b9cb4ace94289835a94a Mon Sep 17 00:00:00 2001
+From: Hongxu Jia <hongxu.jia@windriver.com>
+Date: Fri, 22 Jan 2021 00:02:25 +0800
+Subject: [PATCH] avoid link latomic failure on CentOS 8 host
+
+When host (such as CentOS 8) did not install libatomic, there was a
+link failure on native. In fact, only target requires to link atomic,
+the native does not. So link atomic for target only
+
+Upstream-Status: Inappropriate [oe specific]
+
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ base/BUILD.gn               | 2 ++
+ build/config/linux/BUILD.gn | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/base/BUILD.gn b/base/BUILD.gn
+index 21e4ee1d3e..a8c1d8c4a7 100644
+--- a/base/BUILD.gn
++++ b/base/BUILD.gn
+@@ -1300,8 +1300,10 @@ component("base") {
+   # Needed for <atomic> if using newer C++ library than sysroot, except if
+   # building inside the cros_sdk environment - use host_toolchain as a
+   # more robust check for this.
++  # Only target requires <atomic>
+   if (!use_sysroot &&
+       (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
++      (current_toolchain != host_toolchain) &&
+       host_toolchain != "//build/toolchain/cros:host") {
+     libs += [ "atomic" ]
+   }
+diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
+index 64b6325387..ed65308856 100644
+--- a/build/config/linux/BUILD.gn
++++ b/build/config/linux/BUILD.gn
+@@ -30,8 +30,10 @@ config("runtime_library") {
+     defines = [ "OS_CHROMEOS" ]
+   }
+ 
++  # Only target requires <atomic>
+   if ((!(is_chromeos_ash || is_chromeos_lacros) ||
+        default_toolchain != "//build/toolchain/cros:target") &&
++      (current_toolchain != host_toolchain) &&
+       (!use_custom_libcxx || current_cpu == "mipsel")) {
+     libs = [ "atomic" ]
+   }

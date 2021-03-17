@@ -1,0 +1,27 @@
+From ddd9fbedde9172a0dc294b924211f608329908ec Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Tue, 18 Jun 2019 15:55:56 -0700
+Subject: [PATCH] Consider armv7ve define
+
+when using -march=armv7ve, clang emits internal architecture define to be
+__ARM_ARCH_7VE__ which we do not check to decide if its armv 7 or not, therefore
+add this to check as well.
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ .../tcmalloc/chromium/src/base/arm_instruction_set_select.h      | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h b/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
+index 6fde685272..70a5634b9e 100644
+--- a/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
++++ b/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
+@@ -42,6 +42,7 @@
+ #if defined(ARMV8) || \
+     defined(__ARM_ARCH_7__) || \
+     defined(__ARM_ARCH_7R__) || \
++    defined(__ARM_ARCH_7VE__) || \
+     defined(__ARM_ARCH_7A__)
+ # define ARMV7 1
+ #endif

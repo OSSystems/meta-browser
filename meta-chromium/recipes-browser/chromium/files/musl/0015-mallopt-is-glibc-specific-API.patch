@@ -1,0 +1,24 @@
+From 86330a420ce44c4492609c1eabe6eae36016a625 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 13 Feb 2019 09:51:14 -0800
+Subject: [PATCH] mallopt() is glibc specific API
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ base/allocator/allocator_check.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/base/allocator/allocator_check.cc b/base/allocator/allocator_check.cc
+index a5ca0b7191..7017d48b5a 100644
+--- a/base/allocator/allocator_check.cc
++++ b/base/allocator/allocator_check.cc
+@@ -27,7 +27,7 @@ bool IsAllocatorInitialized() {
+   // Set by allocator_shim_override_ucrt_symbols_win.h when the
+   // shimmed _set_new_mode() is called.
+   return g_is_win_shim_layer_initialized;
+-#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
++#elif (defined(__GLIBC__) || defined(OS_CHROMEOS)) && \
+     BUILDFLAG(USE_TCMALLOC) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+ // From third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h.
+ // TODO(primiano): replace with an include once base can depend on allocator.
