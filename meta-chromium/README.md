@@ -40,7 +40,6 @@ Maintainers
 * Khem Raj <raj.khem@gmail.com>
 * Otavio Salvador <otavio@ossystems.com.br>
 * Maksim Sisov <msisov@igalia.com>
-* Takuro Ashie <ashie@clear-code.com>
 
 When sending single patches, please use something like:
 ```
