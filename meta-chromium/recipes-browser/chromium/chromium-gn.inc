@@ -42,6 +42,9 @@ SRC_URI_append_libc-musl = "\
     file://musl/0015-mallopt-is-glibc-specific-API.patch \
     file://musl/0016-tcmalloc-undef-mmap64.patch \
     file://musl/0017-tcmalloc-no-__sbrk.patch \
+    file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
+    file://musl/0019-adjust-thread-stack-sizes.patch \
+    file://musl/0020-Fix-tab-crashes-on-musl.patch \
 "
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
