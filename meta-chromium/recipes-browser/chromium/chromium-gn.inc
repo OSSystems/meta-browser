@@ -477,3 +477,5 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 # There is no need to ship empty -dev packages.
 ALLOW_EMPTY_${PN}-dev = "0"
+
+RUNTIME = "llvm"
