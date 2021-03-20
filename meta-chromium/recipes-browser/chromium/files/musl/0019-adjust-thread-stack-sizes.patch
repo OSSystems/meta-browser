@@ -1,0 +1,56 @@
+From 0b2cb722d3d256e20d265ed5421e286e0589d182 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Fri, 19 Mar 2021 20:09:10 -0700
+Subject: [PATCH 2/3] adjust thread stack sizes
+
+musl default stack is 128K as compared to glibc's 8M
+adjust the expecations accordingly
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ base/threading/platform_thread_linux.cc      | 3 ++-
+ chrome/app/shutdown_signal_handlers_posix.cc | 8 ++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/base/threading/platform_thread_linux.cc b/base/threading/platform_thread_linux.cc
+index de2e0c169..53cb90def 100644
+--- a/base/threading/platform_thread_linux.cc
++++ b/base/threading/platform_thread_linux.cc
+@@ -437,7 +437,8 @@ void TerminateOnThread() {}
+ 
+ size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
+ #if !defined(THREAD_SANITIZER)
+-  return 0;
++  // use 8mb like glibc to avoid running out of space
++  return (1 << 23);
+ #else
+   // ThreadSanitizer bloats the stack heavily. Evidence has been that the
+   // default stack size isn't enough for some browser tests.
+diff --git a/chrome/app/shutdown_signal_handlers_posix.cc b/chrome/app/shutdown_signal_handlers_posix.cc
+index 621d441e8..472a3a878 100644
+--- a/chrome/app/shutdown_signal_handlers_posix.cc
++++ b/chrome/app/shutdown_signal_handlers_posix.cc
+@@ -187,11 +187,19 @@ void InstallShutdownSignalHandlers(
+   g_shutdown_pipe_read_fd = pipefd[0];
+   g_shutdown_pipe_write_fd = pipefd[1];
+ #if !defined(ADDRESS_SANITIZER)
++# if defined(__GLIBC__)
+   const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 2;
++# else
++  const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 2 * 8; // match up musls 2k PTHREAD_STACK_MIN with glibcs 16k
++# endif
+ #else
++# if defined(__GLIBC__)
+   // ASan instrumentation bloats the stack frames, so we need to increase the
+   // stack size to avoid hitting the guard page.
+   const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 4;
++# else
++  const size_t kShutdownDetectorThreadStackSize = PTHREAD_STACK_MIN * 4 * 8; // match up musls 2k PTHREAD_STACK_MIN with glibcs 16k
++# endif
+ #endif
+   ShutdownDetector* detector = new ShutdownDetector(
+       g_shutdown_pipe_read_fd, std::move(shutdown_callback), task_runner);
+-- 
+2.31.0
+
