@@ -15,13 +15,10 @@ SRC_URI += " \
     file://0004-BUILD-do-not-specify-march-on-arm.patch \
     file://0005-Consider-armv7ve-define.patch \
     file://0006-Delete-compiler-options-not-available-in-release-ver.patch \
-    file://0007-Move-CharAllocator-definition-to-a-header-file.patch \
     file://0008-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
     file://0009-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0011-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
-    file://0012-IWYU-add-ctime-for-std-time.patch \
-    file://0013-mojo-Include-string.h-for-strncpy-declaration.patch \
 "
 
 SRC_URI_append_libc-musl = "\

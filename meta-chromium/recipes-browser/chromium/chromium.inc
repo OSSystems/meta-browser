@@ -18,6 +18,12 @@ TOOLCHAIN = "clang"
 # to build the native recipes (e.g. GN) with clang too.
 TOOLCHAIN_class-native = "clang"
 
+# This makes the target build use libc++ and compiler_rt instead of the GNU
+# runtime, just like upstream does. The native binaries compiled and run as
+# part of the build still use libstdc++ and libgcc though (see
+# https://github.com/kraj/meta-clang/issues/449).
+RUNTIME = "llvm"
+
 inherit mime-xdg pythonnative
 DEPENDS += "python-setuptools-native"
 
