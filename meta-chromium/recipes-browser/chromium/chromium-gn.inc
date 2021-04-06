@@ -19,6 +19,7 @@ SRC_URI += " \
     file://0009-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0011-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
+    file://0012-Fix-font-rendering-with-glibc-2.33.patch \
 "
 
 SRC_URI_append_libc-musl = "\

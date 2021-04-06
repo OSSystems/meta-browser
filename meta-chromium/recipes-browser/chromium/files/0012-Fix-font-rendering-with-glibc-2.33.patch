@@ -1,0 +1,177 @@
+From 4efced4055a8836eba14199745ef2129717247b5 Mon Sep 17 00:00:00 2001
+From: Yi Fan Yu <yifan.yu@windriver.com>
+Date: Tue, 6 Apr 2021 15:30:58 -0400
+Subject: [PATCH] Fix font rendering with glibc-2.33
+
+A change in the fstat syscall in glibc-2.33
+causes font rendering issues when sandbox is enabled.
+
+This patch is used by both fedora33 and archlinux
+in their chromium builds.
+
+Directly taken from:
+https://src.fedoraproject.org/rpms/chromium/c/
+    82ff440ce80f6a03b150f768a2cba9469a8ec4f4?branch=rawhide
+
+Upstream-Status: Submitted [https://bugs.chromium.org/p/chromium/issues/detail?id=1164975]
+
+Original Author: Kevin Kofler <Kevin@tigcc.ticalc.org>
+
+This fix was pointed out by MarkusVolk in
+https://github.com/OSSystems/meta-browser/issues/473
+
+Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
+---
+ .../seccomp-bpf-helpers/baseline_policy.cc    | 12 +++++++
+ .../seccomp-bpf-helpers/sigsys_handlers.cc    | 35 +++++++++++++++++++
+ .../seccomp-bpf-helpers/sigsys_handlers.h     |  5 +++
+ sandbox/linux/services/syscall_wrappers.cc    |  9 +++++
+ sandbox/linux/services/syscall_wrappers.h     |  4 +++
+ 5 files changed, 65 insertions(+)
+
+diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
+index e00e3125993..722eb6796b7 100644
+--- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
++++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
+@@ -261,6 +261,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
+     return RestrictKillTarget(current_pid, sysno);
+   }
+ 
++#if defined(__NR_newfstatat)
++  if (sysno == __NR_newfstatat) {
++    return RewriteFstatatSIGSYS();
++  }
++#endif
++
++#if defined(__NR_fstatat64)
++  if (sysno == __NR_fstatat64) {
++    return RewriteFstatatSIGSYS();
++  }
++#endif
++
+   if (SyscallSets::IsFileSystem(sysno) ||
+       SyscallSets::IsCurrentDirectory(sysno)) {
+     return Error(fs_denied_errno);
+diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
+index 76eb32493f5..09aa3f0b11c 100644
+--- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
++++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
+@@ -6,6 +6,8 @@
+ 
+ #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
+ 
++#include <errno.h>
++#include <fcntl.h>
+ #include <stddef.h>
+ #include <stdint.h>
+ #include <string.h>
+@@ -355,6 +357,35 @@ intptr_t SIGSYSSchedHandler(const struct arch_seccomp_data& args,
+   return -ENOSYS;
+ }
+ 
++intptr_t SIGSYSFstatatHandler(const struct arch_seccomp_data& args,
++                              void* aux) {
++  switch (args.nr) {
++#if defined(__NR_newfstatat)
++    case __NR_newfstatat:
++#endif
++#if defined(__NR_fstatat64)
++    case __NR_fstatat64:
++#endif
++#if defined(__NR_newfstatat) || defined(__NR_fstatat64)
++      if (*reinterpret_cast<const char *>(args.args[1]) == '\0'
++          && args.args[3] == static_cast<uint64_t>(AT_EMPTY_PATH)) {
++        return sandbox::sys_fstat64(static_cast<int>(args.args[0]),
++                                    reinterpret_cast<struct stat64 *>(args.args[2]));
++      } else {
++        errno = EACCES;
++        return -1;
++      }
++      break;
++#endif
++  }
++
++  CrashSIGSYS_Handler(args, aux);
++
++  // Should never be reached.
++  RAW_CHECK(false);
++  return -ENOSYS;
++}
++
+ bpf_dsl::ResultExpr CrashSIGSYS() {
+   return bpf_dsl::Trap(CrashSIGSYS_Handler, NULL);
+ }
+@@ -387,6 +418,10 @@ bpf_dsl::ResultExpr RewriteSchedSIGSYS() {
+   return bpf_dsl::Trap(SIGSYSSchedHandler, NULL);
+ }
+ 
++bpf_dsl::ResultExpr RewriteFstatatSIGSYS() {
++  return bpf_dsl::Trap(SIGSYSFstatatHandler, NULL);
++}
++
+ void AllocateCrashKeys() {
+ #if !defined(OS_NACL_NONSFI)
+   if (seccomp_crash_key)
+diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
+index 7a958b93b27..d0bfab74bb9 100644
+--- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
++++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
+@@ -62,6 +62,10 @@ SANDBOX_EXPORT intptr_t SIGSYSPtraceFailure(const arch_seccomp_data& args,
+ // sched_setparam(), sched_setscheduler()
+ SANDBOX_EXPORT intptr_t SIGSYSSchedHandler(const arch_seccomp_data& args,
+                                            void* aux);
++// If the fstatat syscall is actually a disguised fstat, calls the regular fstat
++// syscall, otherwise, crashes in the same way as CrashSIGSYS_Handler.
++SANDBOX_EXPORT intptr_t SIGSYSFstatatHandler(const struct arch_seccomp_data& args, 
++                                             void* aux);
+ 
+ // Variants of the above functions for use with bpf_dsl.
+ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYS();
+@@ -72,6 +76,7 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSKill();
+ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSFutex();
+ SANDBOX_EXPORT bpf_dsl::ResultExpr CrashSIGSYSPtrace();
+ SANDBOX_EXPORT bpf_dsl::ResultExpr RewriteSchedSIGSYS();
++SANDBOX_EXPORT bpf_dsl::ResultExpr RewriteFstatatSIGSYS();
+ 
+ // Allocates a crash key so that Seccomp information can be recorded.
+ void AllocateCrashKeys();
+diff --git a/sandbox/linux/services/syscall_wrappers.cc b/sandbox/linux/services/syscall_wrappers.cc
+index fcfd2aa129d..5396b36da9f 100644
+--- a/sandbox/linux/services/syscall_wrappers.cc
++++ b/sandbox/linux/services/syscall_wrappers.cc
+@@ -261,4 +261,13 @@ int sys_sigaction(int signum,
+ 
+ #endif  // defined(MEMORY_SANITIZER)
+ 
++SANDBOX_EXPORT int sys_fstat64(int fd, struct stat64 *buf)
++{
++#if defined(__NR_fstat64)
++    return syscall(__NR_fstat64, fd, buf);
++#else
++    return syscall(__NR_fstat, fd, buf);
++#endif
++}
++
+ }  // namespace sandbox
+diff --git a/sandbox/linux/services/syscall_wrappers.h b/sandbox/linux/services/syscall_wrappers.h
+index 1975bfbd88a..ed7ee5a1c16 100644
+--- a/sandbox/linux/services/syscall_wrappers.h
++++ b/sandbox/linux/services/syscall_wrappers.h
+@@ -17,6 +17,7 @@ struct sock_fprog;
+ struct rlimit64;
+ struct cap_hdr;
+ struct cap_data;
++struct stat64;
+ 
+ namespace sandbox {
+ 
+@@ -84,6 +85,9 @@ SANDBOX_EXPORT int sys_sigaction(int signum,
+                                  const struct sigaction* act,
+                                  struct sigaction* oldact);
+ 
++// Recent glibc rewrites fstat to fstatat.
++SANDBOX_EXPORT int sys_fstat64(int fd, struct stat64 *buf);
++
+ }  // namespace sandbox
+ 
+ #endif  // SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_
