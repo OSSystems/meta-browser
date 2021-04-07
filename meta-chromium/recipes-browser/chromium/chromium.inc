@@ -39,8 +39,8 @@ LIBCPLUSPLUS = "-stdlib=libc++"
 # newer meta-clang in https://github.com/kraj/meta-clang/commit/cda2283e4cf3c90ea42b43dbc3a2268be6655670)
 DEPENDS += "libcxx"
 
-inherit mime-xdg pythonnative
-DEPENDS += "python-setuptools-native"
+inherit mime-xdg python3native
+DEPENDS += "python3-setuptools-native"
 
 # Chromium itself is licensed under the 3-clause BSD license. However, it
 # depends upon several other projects whose copyright files are listed in

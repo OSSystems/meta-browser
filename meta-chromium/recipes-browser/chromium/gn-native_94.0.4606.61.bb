@@ -37,7 +37,7 @@ LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -
 do_configure[noexec] = "1"
 
 do_compile() {
-	python ${S}/tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
+	python3 ${S}/tools/gn/bootstrap/bootstrap.py --skip-generate-buildfiles
 }
 
 do_install() {
