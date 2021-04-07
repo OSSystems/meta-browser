@@ -22,6 +22,7 @@ SRC_URI += " \
     file://0011-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
     file://0013-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0014-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
+    file://0015-build-use-python3.patch \
 "
 
 SRC_URI:append:libc-musl = "\
@@ -386,7 +387,7 @@ addtask add_nodejs_symlink after do_configure before do_compile
 
 do_configure() {
 	cd ${S}
-	./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
+	python3 ./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
 	gn gen --args='${GN_ARGS}' "${OUTPUT_DIR}"
 }
 

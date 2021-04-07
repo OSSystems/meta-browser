@@ -1,0 +1,51 @@
+From 5defc3d0745fd40635c730acb8e694c6402f0d2d Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Tue, 28 Sep 2021 16:26:45 +0200
+Subject: [PATCH] build: use python3
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ build/linux/unbundle/replace_gn_files.py | 2 +-
+ buildtools/linux64/clang-format          | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/build/linux/unbundle/replace_gn_files.py b/build/linux/unbundle/replace_gn_files.py
+index eba4bd1fb3..53cb4b0296 100755
+--- a/build/linux/unbundle/replace_gn_files.py
++++ b/build/linux/unbundle/replace_gn_files.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ # Copyright 2016 The Chromium Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+diff --git a/buildtools/linux64/clang-format b/buildtools/linux64/clang-format
+index 1a25a2b520..806b620bc4 100755
+--- a/buildtools/linux64/clang-format
++++ b/buildtools/linux64/clang-format
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python2
++#!/usr/bin/env python3
+ # Copyright 2020 The Chromium Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+@@ -12,7 +12,7 @@ inputfiles = [a for a in args if not a.startswith('-')]
+ 
+ contents = ''
+ if '-' in args or not inputfiles:
+-    contents = sys.stdin.read()
++    contents = sys.stdin.read().encode('utf-8')
+ 
+ # Tarball builds may or may not have depot_tools in $PATH. In the former case,
+ # running 'clang-format' will call back into this script infinitely. Strip off
+@@ -34,8 +34,8 @@ try:
+     stdout, stderr = proc.communicate(input=contents)
+     # Ignore if clang-format fails. Eg: it may be too old to support C++14.
+     if proc.returncode == 0:
+-        sys.stdout.write(stdout)
+-        sys.stderr.write(stderr)
++        sys.stdout.write(stdout.decode('utf-8'))
++        sys.stderr.write(stderr.decode('utf-8'))
+         sys.exit(0)
+ except OSError:
+     # Ignore if clang-format is not installed.
