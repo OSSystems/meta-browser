@@ -19,10 +19,6 @@ This layer depends on:
   - branch: master
   - revision: HEAD
 
-* URI: git://git.openembedded.org/meta-python2
-  - branch: master
-  - revision: HEAD
-
 * URI: git://github.com/meta-rust/meta-rust
   - branch: master
   - revision: HEAD

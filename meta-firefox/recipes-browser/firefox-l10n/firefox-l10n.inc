@@ -1,7 +1,7 @@
 # Copyright (C) 2009-2019, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
-DEPENDS = "mozilla-devscripts-native unzip-native zip-native"
+DEPENDS = "unzip-native"
 RDEPENDS_${PN} = "firefox"
 
 LICENSE = "MPLv2"
@@ -29,7 +29,7 @@ def get_language_name(package):
     return lang
 
 do_configure() {
-    xpi-unpack ${LANGUAGE}.xpi ${LANGUAGE}
+    unzip ${LANGUAGE}.xpi -d ${LANGUAGE}
 }
 
 python do_install() {
@@ -42,8 +42,7 @@ python do_install() {
 }
 
 do_install_xpi_pack() {
-    xpi-pack ${LANGUAGE} ${EXTENSION}.xpi
-    install -D -m 0644 ${EXTENSION}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
+    install -D -m 0644 ${LANGUAGE}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
 }
 
 FILES_${PN} += "${libdir}/firefox"
