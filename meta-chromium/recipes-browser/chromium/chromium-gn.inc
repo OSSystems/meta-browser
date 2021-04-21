@@ -106,7 +106,7 @@ BUILD_CC:toolchain-clang = "clang"
 BUILD_CXX:toolchain-clang = "clang++"
 BUILD_LD:toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "use-egl"
+PACKAGECONFIG ??= "upower use-egl"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -123,6 +123,9 @@ PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
         ffmpeg_branding="Chromium" proprietary_codecs=false \
 '
+# Enable UPower by default.
+# Chromium expects to be able to query battery status through D-Bus.
+PACKAGECONFIG[upower] = ",,,upower"
 
 # Disable VA-API by default. It is compile time enabled since M88, but it's not
 # desired to make all the users of the Chromium meta-browser recipe depend on
