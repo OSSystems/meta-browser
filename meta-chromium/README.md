@@ -117,6 +117,10 @@ PACKAGECONFIG knobs
   also be enabled. Please note that not all the possible hardware configs are
   tested and supported.
 
+* upower: (on by default)
+  Chromium expects the presence of `org.freedesktop.UPower` via D-Bus to
+  query battery status. If disabled, there will be warning messages seen on
+  stderr and Battery Status Web API will not work.
 
 Google API keys
 ---------------
