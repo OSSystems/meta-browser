@@ -20,6 +20,7 @@ SRC_URI += " \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0011-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
+    file://0013-dbus-Make-dbus-optional.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -55,7 +56,6 @@ DEPENDS += " \
     atk \
     bison-native \
     cairo \
-    dbus \
     expat \
     flac \
     freetype \
@@ -98,7 +98,7 @@ BUILD_CC_toolchain-clang = "clang"
 BUILD_CXX_toolchain-clang = "clang++"
 BUILD_LD_toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "use-egl"
+PACKAGECONFIG ??= "use-egl dbus"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -116,6 +116,8 @@ PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
         ffmpeg_branding="Chromium" proprietary_codecs=false \
 '
+# dbus used for power status, notification and bluetooth low energy(BLE)
+PACKAGECONFIG[dbus] = "use_dbus=true,use_dbus=false,dbus,upower"
 
 # Disable VA-API by default. It is compile time enabled since M88, but it's not
 # desired to make all the users of the Chromium meta-browser recipe depend on

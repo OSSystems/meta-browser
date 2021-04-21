@@ -1,0 +1,214 @@
+From 2487c3377cfb9b8e3b8b6c51768a31807ac9fdbe Mon Sep 17 00:00:00 2001
+From: Yi Fan Yu <yifan.yu@windriver.com>
+Date: Tue, 20 Apr 2021 14:55:08 -0400
+Subject: [PATCH] dbus: Make dbus optional
+
+Make dbus optional so it could be used in
+smaller embedded images where there is no dbus/upower.
+
+Fixes problems such as:
+
+Failed to connect to the bus: Could not parse server address:
+The name org.freedesktop.UPower was not provided by any .service files
+
+Taken from:
+https://github.com/smaeul/portage-overlay/blob/
+    master/www-client/chromium/files/chromium-85-optional-dbus.patch
+
+Upstream-Status: Inappropriate [OE specific]
+
+Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
+---
+ chrome/browser/chrome_browser_main_linux.cc            |  4 ++--
+ chrome/browser/metrics/bluetooth_available_utility.cc  |  4 ++--
+ chrome/browser/platform_util_linux.cc                  |  8 ++++++++
+ device/bluetooth/bluetooth_adapter_factory.cc          |  4 ++--
+ .../bluetooth_low_energy/bluetooth_low_energy_api.cc   | 10 +++++++++-
+ .../device/battery/battery_status_manager_default.cc   |  3 +--
+ 6 files changed, 24 insertions(+), 9 deletions(-)
+
+diff --git a/chrome/browser/chrome_browser_main_linux.cc b/chrome/browser/chrome_browser_main_linux.cc
+index 441a46a27..2593c2eda 100644
+--- a/chrome/browser/chrome_browser_main_linux.cc
++++ b/chrome/browser/chrome_browser_main_linux.cc
+@@ -102,7 +102,7 @@ void ChromeBrowserMainPartsLinux::PostProfileInit() {
+ }
+ 
+ void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {
+-#if !BUILDFLAG(IS_CHROMEOS_ASH)
++#if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_DBUS)
+   bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
+ #endif
+ 
+@@ -110,7 +110,7 @@ void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {
+ }
+ 
+ void ChromeBrowserMainPartsLinux::PostDestroyThreads() {
+-#if !BUILDFLAG(IS_CHROMEOS_ASH)
++#if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(USE_DBUS)
+   bluez::BluezDBusManager::Shutdown();
+   bluez::BluezDBusThreadManager::Shutdown();
+ #endif
+diff --git a/chrome/browser/metrics/bluetooth_available_utility.cc b/chrome/browser/metrics/bluetooth_available_utility.cc
+index a08be4cee..3bf79424a 100644
+--- a/chrome/browser/metrics/bluetooth_available_utility.cc
++++ b/chrome/browser/metrics/bluetooth_available_utility.cc
+@@ -13,7 +13,7 @@
+ #include "device/bluetooth/bluetooth_adapter.h"
+ #include "device/bluetooth/bluetooth_adapter_factory.h"
+ 
+-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
++#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_DBUS)
+ #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+ #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+ 
+@@ -55,7 +55,7 @@ void ReportBluetoothAvailability() {
+     return;
+   }
+ 
+-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
++#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_DBUS)
+   // This is for tests that have not initialized bluez or dbus thread manager.
+   // Outside of tests these are initialized earlier during browser startup.
+   if (!bluez::BluezDBusManager::IsInitialized())
+diff --git a/chrome/browser/platform_util_linux.cc b/chrome/browser/platform_util_linux.cc
+index cbe337214..cfbfbc2fe 100644
+--- a/chrome/browser/platform_util_linux.cc
++++ b/chrome/browser/platform_util_linux.cc
+@@ -13,14 +13,18 @@
+ #include "base/threading/scoped_blocking_call.h"
+ #include "chrome/browser/chrome_notification_types.h"
+ #include "chrome/browser/platform_util_internal.h"
++#if defined(USE_DBUS)
+ #include "components/dbus/thread_linux/dbus_thread_linux.h"
++#endif
+ #include "content/public/browser/browser_thread.h"
+ #include "content/public/browser/notification_observer.h"
+ #include "content/public/browser/notification_registrar.h"
+ #include "content/public/browser/notification_service.h"
++#if defined(USE_DBUS)
+ #include "dbus/bus.h"
+ #include "dbus/message.h"
+ #include "dbus/object_proxy.h"
++#endif
+ #include "url/gurl.h"
+ 
+ using content::BrowserThread;
+@@ -29,6 +33,7 @@ namespace platform_util {
+ 
+ namespace {
+ 
++#if defined(USE_DBUS)
+ const char kFreedesktopFileManagerName[] = "org.freedesktop.FileManager1";
+ const char kFreedesktopFileManagerPath[] = "/org/freedesktop/FileManager1";
+ 
+@@ -116,6 +121,7 @@ class ShowItemHelper : public content::NotificationObserver {
+ 
+   base::WeakPtrFactory<ShowItemHelper> weak_ptr_factory_{this};
+ };
++#endif
+ 
+ void RunCommand(const std::string& command,
+                 const base::FilePath& working_directory,
+@@ -182,8 +188,10 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+ }  // namespace internal
+ 
+ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
++#if defined(USE_DBUS)
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+   ShowItemHelper::GetInstance().ShowItemInFolder(profile, full_path);
++#endif
+ }
+ 
+ void OpenExternal(Profile* profile, const GURL& url) {
+diff --git a/device/bluetooth/bluetooth_adapter_factory.cc b/device/bluetooth/bluetooth_adapter_factory.cc
+index 2fa8e0638..e1367deb3 100644
+--- a/device/bluetooth/bluetooth_adapter_factory.cc
++++ b/device/bluetooth/bluetooth_adapter_factory.cc
+@@ -46,7 +46,7 @@ bool BluetoothAdapterFactory::IsBluetoothSupported() {
+   // instance even on platforms that would otherwise not support it.
+   if (Get()->adapter_)
+     return true;
+-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX) || \
++#if defined(OS_ANDROID) || defined(OS_WIN) || (defined(OS_LINUX)  && defined(USE_DBUS)) || \
+     defined(OS_CHROMEOS) || defined(OS_MAC)
+   return true;
+ #else
+@@ -69,7 +69,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
+   return base::win::GetVersion() >= base::win::Version::WIN10;
+ #elif defined(OS_MAC)
+   return true;
+-#elif (defined(OS_LINUX) || defined(OS_CHROMEOS))
++#elif ((defined(OS_LINUX) && defined(USE_DBUS)) || defined(OS_CHROMEOS))
+   return true;
+ #else
+   return false;
+diff --git a/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc b/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
+index 776abf065..4e156783c 100644
+--- a/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
++++ b/extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.cc
+@@ -1339,7 +1339,7 @@ void BluetoothLowEnergyCreateServiceFunction::DoWork() {
+ // TODO: Ideally this should be handled by our feature system, so that this
+ // code doesn't even compile on OSes it isn't being used on, but currently this
+ // is not possible.
+-#if !defined(OS_WIN)
++#if !defined(OS_WIN) && (!defined(OS_LINUX) || defined(USE_DBUS))
+   base::WeakPtr<device::BluetoothLocalGattService> service =
+       device::BluetoothLocalGattService::Create(
+           event_router_->adapter(),
+@@ -1368,6 +1368,7 @@ bool BluetoothLowEnergyCreateCharacteristicFunction::ParseParams() {
+ }
+ 
+ void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
++#if !defined(OS_LINUX) || defined(USE_DBUS)
+   device::BluetoothLocalGattService* service =
+       event_router_->adapter()->GetGattService(params_->service_id);
+   if (!service) {
+@@ -1388,6 +1389,9 @@ void BluetoothLowEnergyCreateCharacteristicFunction::DoWork() {
+ 
+   Respond(ArgumentList(apibtle::CreateCharacteristic::Results::Create(
+       characteristic->GetIdentifier())));
++#else
++  Respond(Error(kErrorPlatformNotSupported));
++#endif
+ }
+ 
+ // createDescriptor:
+@@ -1404,6 +1408,7 @@ bool BluetoothLowEnergyCreateDescriptorFunction::ParseParams() {
+ }
+ 
+ void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
++#if !defined(OS_LINUX) || defined(USE_DBUS)
+   device::BluetoothLocalGattCharacteristic* characteristic =
+       event_router_->GetLocalCharacteristic(params_->characteristic_id);
+   if (!characteristic) {
+@@ -1419,6 +1424,9 @@ void BluetoothLowEnergyCreateDescriptorFunction::DoWork() {
+ 
+   Respond(ArgumentList(
+       apibtle::CreateDescriptor::Results::Create(descriptor->GetIdentifier())));
++#else
++  Respond(Error(kErrorPlatformNotSupported));
++#endif
+ }
+ 
+ // registerService:
+diff --git a/services/device/battery/battery_status_manager_default.cc b/services/device/battery/battery_status_manager_default.cc
+index 35268761d..dbaa8722c 100644
+--- a/services/device/battery/battery_status_manager_default.cc
++++ b/services/device/battery/battery_status_manager_default.cc
+@@ -22,11 +22,10 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
+  private:
+   // BatteryStatusManager:
+   bool StartListeningBatteryChange() override {
+-    NOTIMPLEMENTED();
+     return false;
+   }
+ 
+-  void StopListeningBatteryChange() override { NOTIMPLEMENTED(); }
++  void StopListeningBatteryChange() override { }
+ 
+   DISALLOW_COPY_AND_ASSIGN(BatteryStatusManagerDefault);
+ };
+-- 
+2.29.2
+
