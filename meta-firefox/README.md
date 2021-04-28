@@ -41,7 +41,7 @@ $ git clone git://github.com/OSSystems/meta-browser.git
 $ source poky/oe-init-build-env
 $ bitbake-layers add-layer ../meta-openembedded/meta-oe ../meta-clang ../meta-rust ../meta-browser/meta-firefox
 
-And, append target as I in conf/local.conf.
+And, append target in conf/local.conf.
 
 ```sh
 IMAGE_INSTALL_append = " firefox "

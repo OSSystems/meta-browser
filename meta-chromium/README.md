@@ -37,7 +37,7 @@ $ git clone git://github.com/OSSystems/meta-browser.git
 $ source poky/oe-init-build-env
 $ bitbake-layers add-layer ../meta-openembedded/meta-oe ../meta-clang ../meta-python2 ../meta-browser/meta-chromium
 ```
-And, append target as I in conf/local.conf.
+And, append target in conf/local.conf.
 
 ```sh
 IMAGE_INSTALL_append = " chromium-ozone-wayland "
