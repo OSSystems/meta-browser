@@ -23,6 +23,28 @@ This layer depends on:
   - branch: master
   - revision: HEAD
 
+Usage
+-----
+
+The following steps are typical use case which builds chromium-ozone-wayland for example.
+
+```sh
+$ git clone git://git.yoctoproject.org/poky
+$ git clone git://git.openembedded.org/meta-openembedded
+$ git clone git://github.com/kraj/meta-clang
+$ git clone git://git.openembedded.org/meta-python2
+$ git clone git://github.com/OSSystems/meta-browser.git
+$ source poky/oe-init-build-env
+$ bitbake-layers add-layer ../meta-openembedded/meta-oe ../meta-clang ../meta-python2 ../meta-browser/meta-chromium
+```
+And, append target as I in conf/local.conf.
+
+```sh
+IMAGE_INSTALL_append = " chromium-ozone-wayland "
+```
+
+Then, execute bitbake command to build an image.
+
 Contributing
 ------------
 

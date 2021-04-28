@@ -27,6 +27,28 @@ This layer depends on:
   - e.g. on newer ubuntu which doesn't install python2 at all by default
     you need to install python-is-python2 (which will pull python2-minimal/python2.7-minimal)
 
+Usage
+-----
+
+The following steps are typical use case which builds firefox for example.
+
+```sh
+$ git clone git://git.yoctoproject.org/poky
+$ git clone git://git.openembedded.org/meta-openembedded
+$ git clone git://github.com/kraj/meta-clang
+$ git clone git://github.com/meta-rust/meta-rust
+$ git clone git://github.com/OSSystems/meta-browser.git
+$ source poky/oe-init-build-env
+$ bitbake-layers add-layer ../meta-openembedded/meta-oe ../meta-clang ../meta-rust ../meta-browser/meta-firefox
+
+And, append target as I in conf/local.conf.
+
+```sh
+IMAGE_INSTALL_append = " firefox "
+```
+
+Then, execute bitbake command to build an image.
+
 Contributing
 ------------
 
