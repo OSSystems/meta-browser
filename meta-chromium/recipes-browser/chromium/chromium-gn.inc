@@ -16,10 +16,9 @@ SRC_URI += " \
     file://0005-Consider-armv7ve-define.patch \
     file://0006-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
-    file://0009-RandBytes-Stop-including-sys-random.h-on-Linux.patch \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0011-Fix-use-of-DCHECK-with-std-unique_ptr.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
+    file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -122,7 +121,7 @@ PACKAGECONFIG[proprietary-codecs] = ' \
 # libva without a real need. Both X11 (non-Ozone) and Wayland (Ozone) can use it,
 # but remember to also use proprietary codecs so that H.264 is supported. Also note
 # that not all the hardware configs might be supported.
-PACKAGECONFIG[use-vaapi] = "use_vaapi=true,use_vaapi=false,libva"
+PACKAGECONFIG[use-vaapi] = "use_vaapi=true use_libgav1_parser=true,use_vaapi=false,libva"
 
 # Base GN arguments, mostly related to features we want to enable or disable.
 GN_ARGS = " \

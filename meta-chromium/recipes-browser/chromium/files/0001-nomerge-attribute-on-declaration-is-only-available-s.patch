@@ -1,0 +1,43 @@
+Upstream-status: Inapproriate
+
+Upstream suggests to use Chromium's hermetic clang
+instead.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From bde3186ccba169391fb428fcc296b2236ada0010 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Wed, 5 May 2021 15:20:43 +0300
+Subject: [PATCH] nomerge attribute on declaration is only available since
+ clang 12
+
+This change fixes builds with older clangs that do not allow
+nomerge attributes on declaration. Otherwise, the following error
+is produced -
+
+build error: 'nomerge' attribute cannot be applied to a declaration
+
+See https://reviews.llvm.org/D92800
+
+Change-Id: I32e1f7dc9049737d54d8a16de5308aa5aae1ced1
+---
+ base/compiler_specific.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/base/compiler_specific.h b/base/compiler_specific.h
+index 14a5d6870df4..684a6278c2e1 100644
+--- a/base/compiler_specific.h
++++ b/base/compiler_specific.h
+@@ -333,7 +333,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
+ #endif  // defined(__clang_analyzer__)
+ 
+ // Use nomerge attribute to disable optimization of merging multiple same calls.
+-#if defined(__clang__) && __has_attribute(nomerge) && !defined(OS_CHROMEOS)
++#if defined(__clang__) && (__clang_major__ >= 12) && \
++    __has_attribute(nomerge) && !defined(OS_CHROMEOS)
+ #define NOMERGE [[clang::nomerge]]
+ #else
+ #define NOMERGE
+-- 
+2.25.1
+

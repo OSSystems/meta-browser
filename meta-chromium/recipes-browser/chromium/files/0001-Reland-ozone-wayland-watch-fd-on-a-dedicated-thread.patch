@@ -1,0 +1,782 @@
+Upstream-status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From c9f90af692aa97a59a5a1c4e81425be0fad1541a Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Fri, 23 Apr 2021 05:18:27 +0000
+Subject: [PATCH] Reland "ozone/wayland: watch fd on a dedicated thread."
+
+This is a reland of 8e81fabe307827e222edc1f559922fdd6ba8b40b
+
+BrowserActionInteractiveTest.TestOpenPopup, which is part of
+interactive_ui_tests_wayland, is flaky. Flakiness occurs ones in
+~15-20 runs. With this change, the flakiness start happen every single
+build. Thus, I propose to disable this test now and fix it during
+our next iteration of test fixes.
+
+Original change's description:
+> ozone/wayland: watch fd on a dedicated thread.
+>
+> Whenever user closes a popup window (or any additional window),
+> the browser process can get stuck waiting for the gpu side to
+> close. But the gpu thread can also get stuck because of destroying
+> the wl_egl_surface. That is, internally, Wayland EGL implementation
+> (it's something driver vendors provide) can try to also read events
+> from the wl_display's fd and call wl_display_prepare_read, and
+> then try to read the events. But it won't be possible as
+> wl_display_read_events will block for them, because Ozone/Wayland
+> has already prepared to read, but it doesn't read, because
+> it waits for another thread to complete.
+>
+> Thus, the most correct approach is to use a dedicated non-blocking
+> thread that always watches the wayland fd and dispatches events
+> on an original thread. Also, use a non-default event queue to avoid
+> flushing events that may not belong to us (a toolkit or egl
+> implementation uses a default queue). See also
+> https://wayland.freedesktop.org/docs/html/apb.html#Client-classwl__display_1a40039c1169b153269a3dc0796a54ddb0
+> that explains this.
+>
+> Bug: 1117463
+> Change-Id: I33fa21f84bb26592e97327c3f0a9c926868ad214
+> Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2814598
+> Commit-Queue: Maksim Sisov <msisov@igalia.com>
+> Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+> Cr-Commit-Position: refs/heads/master@{#873303}
+
+Bug: 1117463
+Change-Id: Id90899f20506044c1a9b504909bb991e116e0a62
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/2844573
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Cr-Commit-Position: refs/heads/master@{#875528}
+---
+ .../platform/wayland/common/wayland_object.cc |   8 +
+ .../platform/wayland/common/wayland_object.h  |  16 ++
+ .../wayland/host/wayland_connection.cc        |  20 ++-
+ .../wayland/host/wayland_connection.h         |  17 ++
+ .../host/wayland_connection_unittest.cc       |   1 +
+ .../wayland/host/wayland_data_device_base.cc  |   3 +-
+ ui/ozone/platform/wayland/host/wayland_drm.cc |   4 +-
+ .../wayland/host/wayland_event_source.cc      |  16 +-
+ .../wayland/host/wayland_event_source.h       |  11 +-
+ .../wayland/host/wayland_event_watcher.cc     | 152 +++++++++++++++---
+ .../wayland/host/wayland_event_watcher.h      |  50 +++++-
+ .../platform/wayland/host/wayland_keyboard.cc |   2 +-
+ .../host/wayland_zaura_shell_unittest.cc      |   1 +
+ .../wayland/host/wayland_zwp_linux_dmabuf.cc  |   2 +-
+ .../platform/wayland/test/wayland_test.cc     |   4 +-
+ 15 files changed, 261 insertions(+), 46 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/common/wayland_object.cc b/ui/ozone/platform/wayland/common/wayland_object.cc
+index 8827a5e9f493..467e604678c6 100644
+--- a/ui/ozone/platform/wayland/common/wayland_object.cc
++++ b/ui/ozone/platform/wayland/common/wayland_object.cc
+@@ -15,6 +15,7 @@
+ #include <primary-selection-unstable-v1-client-protocol.h>
+ #include <text-input-unstable-v1-client-protocol.h>
+ #include <viewporter-client-protocol.h>
++#include <wayland-client-core.h>
+ #include <wayland-cursor.h>
+ #include <wayland-drm-client-protocol.h>
+ #include <xdg-decoration-unstable-v1-client-protocol.h>
+@@ -158,6 +159,10 @@ void (*ObjectTraits<wl_data_source>::deleter)(wl_data_source*) =
+ const wl_interface* ObjectTraits<wl_drm>::interface = &wl_drm_interface;
+ void (*ObjectTraits<wl_drm>::deleter)(wl_drm*) = &wl_drm_destroy;
+ 
++const wl_interface* ObjectTraits<wl_event_queue>::interface = nullptr;
++void (*ObjectTraits<wl_event_queue>::deleter)(wl_event_queue*) =
++    &wl_event_queue_destroy;
++
+ const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
+ void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
+ 
+@@ -214,6 +219,9 @@ const wl_interface* ObjectTraits<struct wp_presentation_feedback>::interface =
+ void (*ObjectTraits<struct wp_presentation_feedback>::deleter)(
+     struct wp_presentation_feedback*) = &wp_presentation_feedback_destroy;
+ 
++const wl_interface* ObjectTraits<struct wl_proxy>::interface = nullptr;
++void (*ObjectTraits<wl_proxy>::deleter)(void*) = &wl_proxy_wrapper_destroy;
++
+ const wl_interface* ObjectTraits<wp_viewport>::interface =
+     &wp_viewport_interface;
+ void (*ObjectTraits<wp_viewport>::deleter)(wp_viewport*) = &wp_viewport_destroy;
+diff --git a/ui/ozone/platform/wayland/common/wayland_object.h b/ui/ozone/platform/wayland/common/wayland_object.h
+index d609c6150fa2..170d80620948 100644
+--- a/ui/ozone/platform/wayland/common/wayland_object.h
++++ b/ui/ozone/platform/wayland/common/wayland_object.h
+@@ -26,6 +26,7 @@ struct wl_data_device;
+ struct wl_data_offer;
+ struct wl_data_source;
+ struct wl_drm;
++struct wl_event_queue;
+ struct wl_keyboard;
+ struct wl_output;
+ struct wl_pointer;
+@@ -40,6 +41,7 @@ struct wl_surface;
+ struct wl_touch;
+ struct wp_presentation;
+ struct wp_presentation_feedback;
++struct wl_proxy;
+ struct wp_viewport;
+ struct wp_viewporter;
+ struct xdg_wm_base;
+@@ -189,6 +191,12 @@ struct ObjectTraits<wl_drm> {
+   static void (*deleter)(wl_drm*);
+ };
+ 
++template <>
++struct ObjectTraits<wl_event_queue> {
++  static const wl_interface* interface;
++  static void (*deleter)(wl_event_queue*);
++};
++
+ template <>
+ struct ObjectTraits<wl_display> {
+   static const wl_interface* interface;
+@@ -279,6 +287,13 @@ struct ObjectTraits<wp_presentation_feedback> {
+   static void (*deleter)(wp_presentation_feedback*);
+ };
+ 
++template <>
++struct ObjectTraits<wl_proxy> {
++  // Interface is null for proxy.
++  static const wl_interface* interface;
++  static void (*deleter)(void*);
++};
++
+ template <>
+ struct ObjectTraits<wp_viewport> {
+   static const wl_interface* interface;
+@@ -468,6 +483,7 @@ class Object : public std::unique_ptr<T, Deleter> {
+ 
+ template <typename T>
+ wl::Object<T> Bind(wl_registry* registry, uint32_t name, uint32_t version) {
++  DCHECK(ObjectTraits<T>::interface);
+   return wl::Object<T>(wl::bind_registry<T>(
+       registry, name, ObjectTraits<T>::interface, version));
+ }
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index 702328d0e9f2..e97ff994a18e 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -124,7 +124,14 @@ bool WaylandConnection::Initialize() {
+     return false;
+   }
+ 
+-  registry_.reset(wl_display_get_registry(display_.get()));
++  wrapped_display_.reset(
++      reinterpret_cast<wl_proxy*>(wl_proxy_create_wrapper(display())));
++  // Create a non-default event queue so that we wouldn't flush messages for
++  // client applications.
++  event_queue_.reset(wl_display_create_queue(display()));
++  wl_proxy_set_queue(wrapped_display_.get(), event_queue_.get());
++
++  registry_.reset(wl_display_get_registry(display_wrapper()));
+   if (!registry_) {
+     LOG(ERROR) << "Failed to get Wayland registry";
+     return false;
+@@ -133,13 +140,13 @@ bool WaylandConnection::Initialize() {
+   // Now that the connection with the display server has been properly
+   // estabilished, initialize the event source and input objects.
+   DCHECK(!event_source_);
+-  event_source_ =
+-      std::make_unique<WaylandEventSource>(display(), wayland_window_manager());
++  event_source_ = std::make_unique<WaylandEventSource>(
++      display(), event_queue_.get(), wayland_window_manager());
+ 
+   wl_registry_add_listener(registry_.get(), &registry_listener, this);
+   while (!wayland_output_manager_ ||
+          !wayland_output_manager_->IsOutputReady()) {
+-    wl_display_roundtrip(display_.get());
++    RoundTripQueue();
+   }
+ 
+   buffer_manager_host_ = std::make_unique<WaylandBufferManagerHost>(this);
+@@ -179,6 +186,11 @@ void WaylandConnection::ScheduleFlush() {
+   }
+ }
+ 
++void WaylandConnection::RoundTripQueue() {
++  DCHECK(event_queue_.get());
++  wl_display_roundtrip_queue(display(), event_queue_.get());
++}
++
+ void WaylandConnection::SetShutdownCb(base::OnceCallback<void()> shutdown_cb) {
+   event_source()->SetShutdownCb(std::move(shutdown_cb));
+ }
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 7624abc23d63..29978e2982e4 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -17,6 +17,7 @@
+ #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
+ 
+ struct wl_cursor;
++struct wl_event_queue;
+ 
+ namespace gfx {
+ class Point;
+@@ -62,11 +63,25 @@ class WaylandConnection {
+   // Schedules a flush of the Wayland connection.
+   void ScheduleFlush();
+ 
++  // Calls wl_display_roundtrip_queue. Might be required during initialization
++  // of some objects that should block until they are initialized.
++  void RoundTripQueue();
++
+   // Sets a callback that that shutdowns the browser in case of unrecoverable
+   // error. Called by WaylandEventWatcher.
+   void SetShutdownCb(base::OnceCallback<void()> shutdown_cb);
+ 
++  // A correct display must be chosen when creating objects or calling
++  // roundrips.  That is, all the methods that deal with polling, pulling event
++  // queues, etc, must use original display. All the other methods that create
++  // various wayland objects must use |display_wrapper_| so that the new objects
++  // are associated with the correct event queue. Otherwise, they will use a
++  // default event queue, which we do not use. See the comment below about the
++  // |event_queue_|.
+   wl_display* display() const { return display_.get(); }
++  wl_display* display_wrapper() const {
++    return reinterpret_cast<wl_display*>(wrapped_display_.get());
++  }
+   wl_compositor* compositor() const { return compositor_.get(); }
+   // The server version of the compositor interface (might be higher than the
+   // version binded).
+@@ -210,6 +225,8 @@ class WaylandConnection {
+ 
+   uint32_t compositor_version_ = 0;
+   wl::Object<wl_display> display_;
++  wl::Object<wl_proxy> wrapped_display_;
++  wl::Object<wl_event_queue> event_queue_;
+   wl::Object<wl_registry> registry_;
+   wl::Object<wl_compositor> compositor_;
+   wl::Object<wl_subcompositor> subcompositor_;
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection_unittest.cc b/ui/ozone/platform/wayland/host/wayland_connection_unittest.cc
+index 4d6cabb6a2e3..d071f28cf720 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection_unittest.cc
+@@ -27,6 +27,7 @@ TEST(WaylandConnectionTest, Ping) {
+   ASSERT_TRUE(server.Start(kXdgVersionStable));
+   WaylandConnection connection;
+   ASSERT_TRUE(connection.Initialize());
++  connection.event_source()->UseSingleThreadedPollingForTesting();
+   connection.event_source()->StartProcessingEvents();
+ 
+   base::RunLoop().RunUntilIdle();
+diff --git a/ui/ozone/platform/wayland/host/wayland_data_device_base.cc b/ui/ozone/platform/wayland/host/wayland_data_device_base.cc
+index 50be3ad35bc5..d68ed87b40d4 100644
+--- a/ui/ozone/platform/wayland/host/wayland_data_device_base.cc
++++ b/ui/ozone/platform/wayland/host/wayland_data_device_base.cc
+@@ -65,7 +65,8 @@ void WaylandDataDeviceBase::ReadClipboardDataFromFD(
+ void WaylandDataDeviceBase::RegisterDeferredReadCallback() {
+   DCHECK(!deferred_read_callback_);
+ 
+-  deferred_read_callback_.reset(wl_display_sync(connection_->display()));
++  deferred_read_callback_.reset(
++      wl_display_sync(connection_->display_wrapper()));
+ 
+   static const wl_callback_listener kListener = {
+       WaylandDataDeviceBase::DeferredReadCallback};
+diff --git a/ui/ozone/platform/wayland/host/wayland_drm.cc b/ui/ozone/platform/wayland/host/wayland_drm.cc
+index e387e48c6862..df692b6734a2 100644
+--- a/ui/ozone/platform/wayland/host/wayland_drm.cc
++++ b/ui/ozone/platform/wayland/host/wayland_drm.cc
+@@ -29,7 +29,7 @@ WaylandDrm::WaylandDrm(wl_drm* drm, WaylandConnection* connection)
+ 
+   // A roundtrip after binding guarantees that the client has received all
+   // supported formats and capabilities of the device.
+-  wl_display_roundtrip(connection_->display());
++  connection_->RoundTripQueue();
+ }
+ 
+ WaylandDrm::~WaylandDrm() = default;
+@@ -106,7 +106,7 @@ void WaylandDrm::Authenticate(const char* drm_device_path) {
+ 
+   // Do the roundtrip to make sure the server processes this request and
+   // authenticates us.
+-  wl_display_roundtrip(connection_->display());
++  connection_->RoundTripQueue();
+ }
+ 
+ void WaylandDrm::DrmDeviceAuthenticated(struct wl_drm* wl_drm) {
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.cc b/ui/ozone/platform/wayland/host/wayland_event_source.cc
+index 28f5892a0e95..f40ec9dfe177 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_source.cc
++++ b/ui/ozone/platform/wayland/host/wayland_event_source.cc
+@@ -64,9 +64,11 @@ WaylandEventSource::TouchPoint::TouchPoint(gfx::PointF location,
+ // WaylandEventSource implementation
+ 
+ WaylandEventSource::WaylandEventSource(wl_display* display,
++                                       wl_event_queue* event_queue,
+                                        WaylandWindowManager* window_manager)
+     : window_manager_(window_manager),
+-      event_watcher_(std::make_unique<WaylandEventWatcher>(display)) {
++      event_watcher_(
++          std::make_unique<WaylandEventWatcher>(display, event_queue)) {
+   DCHECK(window_manager_);
+ 
+   // Observes remove changes to know when touch points can be removed.
+@@ -79,12 +81,12 @@ void WaylandEventSource::SetShutdownCb(base::OnceCallback<void()> shutdown_cb) {
+   event_watcher_->SetShutdownCb(std::move(shutdown_cb));
+ }
+ 
+-bool WaylandEventSource::StartProcessingEvents() {
+-  return event_watcher_->StartProcessingEvents();
++void WaylandEventSource::StartProcessingEvents() {
++  event_watcher_->StartProcessingEvents();
+ }
+ 
+-bool WaylandEventSource::StopProcessingEvents() {
+-  return event_watcher_->StopProcessingEvents();
++void WaylandEventSource::StopProcessingEvents() {
++  event_watcher_->StopProcessingEvents();
+ }
+ 
+ void WaylandEventSource::OnKeyboardFocusChanged(WaylandWindow* window,
+@@ -307,6 +309,10 @@ void WaylandEventSource::ResetPointerFlags() {
+   pointer_flags_ = 0;
+ }
+ 
++void WaylandEventSource::UseSingleThreadedPollingForTesting() {
++  event_watcher_->UseSingleThreadedPollingForTesting();
++}
++
+ void WaylandEventSource::OnDispatcherListChanged() {
+   StartProcessingEvents();
+ }
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.h b/ui/ozone/platform/wayland/host/wayland_event_source.h
+index ed0a6f85250a..10232d51e308 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_source.h
++++ b/ui/ozone/platform/wayland/host/wayland_event_source.h
+@@ -49,7 +49,9 @@ class WaylandEventSource : public PlatformEventSource,
+                            public WaylandPointer::Delegate,
+                            public WaylandTouch::Delegate {
+  public:
+-  WaylandEventSource(wl_display* display, WaylandWindowManager* window_manager);
++  WaylandEventSource(wl_display* display,
++                     wl_event_queue* event_queue,
++                     WaylandWindowManager* window_manager);
+   WaylandEventSource(const WaylandEventSource&) = delete;
+   WaylandEventSource& operator=(const WaylandEventSource&) = delete;
+   ~WaylandEventSource() override;
+@@ -67,9 +69,9 @@ class WaylandEventSource : public PlatformEventSource,
+   // Starts polling for events from the wayland connection file descriptor.
+   // This method assumes connection is already estabilished and input objects
+   // are already bound and properly initialized.
+-  bool StartProcessingEvents();
++  void StartProcessingEvents();
+   // Stops polling for events from input devices.
+-  bool StopProcessingEvents();
++  void StopProcessingEvents();
+ 
+   // Tells if pointer |button| is currently pressed.
+   bool IsPointerButtonPressed(EventFlags button) const;
+@@ -79,6 +81,9 @@ class WaylandEventSource : public PlatformEventSource,
+   // button released event is not delivered (e.g: window moving, drag and drop).
+   void ResetPointerFlags();
+ 
++  // See the comment near WaylandEventWatcher::use_dedicated_polling_thread_.
++  void UseSingleThreadedPollingForTesting();
++
+  protected:
+   // WaylandKeyboard::Delegate
+   void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) override;
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_watcher.cc b/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
+index c97a0e31bd30..9a0769d5dc0f 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
++++ b/ui/ozone/platform/wayland/host/wayland_event_watcher.cc
+@@ -5,54 +5,118 @@
+ #include "ui/ozone/platform/wayland/host/wayland_event_watcher.h"
+ 
+ #include <cstring>
++#include <memory>
+ 
+ #include "base/bind.h"
++#include "base/callback_forward.h"
+ #include "base/check.h"
+ #include "base/logging.h"
++#include "base/macros.h"
+ #include "base/task/current_thread.h"
++#include "base/threading/thread.h"
++#include "base/threading/thread_task_runner_handle.h"
+ #include "ui/events/event.h"
+ #include "ui/ozone/platform/wayland/common/wayland.h"
+ 
+ namespace ui {
+ 
+-WaylandEventWatcher::WaylandEventWatcher(wl_display* display)
+-    : controller_(FROM_HERE), display_(display) {
+-  DCHECK(display_);
++namespace {
++
++void DispatchPending(wl_display* display, wl_event_queue* event_queue) {
++  wl_display_dispatch_queue_pending(display, event_queue);
+ }
+ 
+-WaylandEventWatcher::~WaylandEventWatcher() {
+-  StopProcessingEvents();
++}  // namespace
++
++// A dedicated thread for watching wl_display's file descriptor. The reason why
++// watching happens on a separate thread is that the thread mustn't be blocked.
++// Otherwise, if Chromium is used with Wayland EGL, a deadlock may happen. The
++// deadlock happened when the thread that had been watching the file descriptor
++// (it used to be the browser's UI thread) called wl_display_prepare_read, and
++// then started to wait until the thread, which was used by the gpu service,
++// completed a buffer swap and shutdowned itself (for example, a menu window is
++// in the process of closing). However, that gpu thread hanged as it called
++// Wayland EGL that also called wl_display_prepare_read internally and started
++// to wait until the previous caller of the wl_display_prepare_read (that's by
++// the design of the wayland-client library). This situation causes a deadlock
++// as the first caller of the wl_display_prepare_read is unable to complete
++// reading as it waits for another thread to complete, and that another thread
++// is also unable to complete reading as it waits until the first caller reads
++// the display's file descriptor. For more details, see the implementation of
++// the wl_display_prepare_read in third_party/wayland/src/src/wayland-client.c.
++class WaylandEventWatcherThread : public base::Thread {
++ public:
++  explicit WaylandEventWatcherThread(
++      base::OnceClosure start_processing_events_cb)
++      : base::Thread("wayland-fd"),
++        start_processing_events_cb_(std::move(start_processing_events_cb)) {}
++  ~WaylandEventWatcherThread() override { Stop(); }
++
++  void Init() override {
++    DCHECK(!start_processing_events_cb_.is_null());
++    std::move(start_processing_events_cb_).Run();
++  }
++
++ private:
++  base::OnceClosure start_processing_events_cb_;
++};
++
++WaylandEventWatcher::WaylandEventWatcher(wl_display* display,
++                                         wl_event_queue* event_queue)
++    : controller_(FROM_HERE), display_(display), event_queue_(event_queue) {
++  DCHECK(display_);
+ }
+ 
++WaylandEventWatcher::~WaylandEventWatcher() = default;
++
+ void WaylandEventWatcher::SetShutdownCb(
+     base::OnceCallback<void()> shutdown_cb) {
+   DCHECK(shutdown_cb_.is_null());
+   shutdown_cb_ = std::move(shutdown_cb);
+ }
+ 
+-bool WaylandEventWatcher::StartProcessingEvents() {
+-  DCHECK(display_);
+-  if (watching_)
+-    return true;
++void WaylandEventWatcher::StartProcessingEvents() {
++  ui_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
++  if (use_dedicated_polling_thread_ && !thread_) {
++    // FD watching will happen on a different thread.
++    DETACH_FROM_THREAD(thread_checker_);
+ 
+-  DCHECK(display_);
+-  MaybePrepareReadQueue();
+-  wl_display_flush(display_);
+-  return StartWatchingFd(base::MessagePumpForUI::WATCH_READ);
++    thread_ = std::make_unique<WaylandEventWatcherThread>(
++        base::BindOnce(&WaylandEventWatcher::StartProcessingEventsInternal,
++                       weak_factory_.GetWeakPtr()));
++    base::Thread::Options thread_options;
++    thread_options.message_pump_type = base::MessagePumpType::UI;
++    thread_options.priority = base::ThreadPriority::DISPLAY;
++    if (!thread_->StartWithOptions(thread_options))
++      LOG(FATAL) << "Failed to create input thread";
++
++  } else if (!use_dedicated_polling_thread_) {
++    StartProcessingEventsInternal();
++  }
+ }
+ 
+-bool WaylandEventWatcher::StopProcessingEvents() {
++void WaylandEventWatcher::StopProcessingEvents() {
+   if (!watching_)
+-    return false;
++    return;
+ 
+-  DCHECK(base::CurrentUIThread::IsSet());
+-  watching_ = false;
+-  return controller_.StopWatchingFileDescriptor();
++  if (use_dedicated_polling_thread_) {
++    watching_thread_task_runner_->PostTask(
++        FROM_HERE,
++        base::BindOnce(&WaylandEventWatcher::StopProcessingEventsInternal,
++                       weak_factory_.GetWeakPtr()));
++  } else {
++    StopProcessingEventsInternal();
++  }
++}
++
++void WaylandEventWatcher::UseSingleThreadedPollingForTesting() {
++  use_dedicated_polling_thread_ = false;
+ }
+ 
+ void WaylandEventWatcher::OnFileCanReadWithoutBlocking(int fd) {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+   if (!CheckForErrors()) {
+-    StopProcessingEvents();
++    StopProcessingEventsInternal();
+     return;
+   }
+ 
+@@ -62,7 +126,7 @@ void WaylandEventWatcher::OnFileCanReadWithoutBlocking(int fd) {
+     // CheckForErrors.
+     if (wl_display_read_events(display_) == -1)
+       return;
+-    wl_display_dispatch_pending(display_);
++    DispatchPendingQueue();
+   }
+ 
+   MaybePrepareReadQueue();
+@@ -82,6 +146,7 @@ void WaylandEventWatcher::OnFileCanReadWithoutBlocking(int fd) {
+ }
+ 
+ void WaylandEventWatcher::OnFileCanWriteWithoutBlocking(int fd) {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+   int ret = wl_display_flush(display_);
+   if (ret != -1 || errno != EAGAIN)
+     StartWatchingFd(base::MessagePumpForUI::WATCH_READ);
+@@ -91,8 +156,33 @@ void WaylandEventWatcher::OnFileCanWriteWithoutBlocking(int fd) {
+   // Otherwise just continue watching in the same mode.
+ }
+ 
+-bool WaylandEventWatcher::StartWatchingFd(
++void WaylandEventWatcher::StartProcessingEventsInternal() {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
++  DCHECK(display_);
++  if (watching_)
++    return;
++
++  watching_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
++
++  DCHECK(display_);
++  MaybePrepareReadQueue();
++  wl_display_flush(display_);
++  StartWatchingFd(base::MessagePumpForUI::WATCH_READ);
++}
++
++void WaylandEventWatcher::StopProcessingEventsInternal() {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
++  if (!watching_)
++    return;
++
++  DCHECK(base::CurrentUIThread::IsSet());
++  watching_ = !controller_.StopWatchingFileDescriptor();
++  DCHECK(!watching_);
++}
++
++void WaylandEventWatcher::StartWatchingFd(
+     base::WatchableIOMessagePumpPosix::Mode mode) {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+   if (watching_) {
+     // Stop watching first.
+     watching_ = !controller_.StopWatchingFileDescriptor();
+@@ -103,22 +193,36 @@ bool WaylandEventWatcher::StartWatchingFd(
+   int display_fd = wl_display_get_fd(display_);
+   watching_ = base::CurrentUIThread::Get()->WatchFileDescriptor(
+       display_fd, true, mode, &controller_, this);
+-  return watching_;
++  CHECK(watching_) << "Unable to start watching the wl_display's file "
++                      "descriptor.";
+ }
+ 
+ void WaylandEventWatcher::MaybePrepareReadQueue() {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+   if (prepared_)
+     return;
+ 
+-  if (wl_display_prepare_read(display_) != -1) {
++  if (wl_display_prepare_read_queue(display_, event_queue_) != -1) {
+     prepared_ = true;
+     return;
+   }
+   // Nothing to read, send events to the queue.
+-  wl_display_dispatch_pending(display_);
++  DispatchPendingQueue();
++}
++
++void WaylandEventWatcher::DispatchPendingQueue() {
++  if (ui_thread_task_runner_->BelongsToCurrentThread()) {
++    DCHECK(!use_dedicated_polling_thread_);
++    DispatchPending(display_, event_queue_);
++  } else {
++    DCHECK(use_dedicated_polling_thread_);
++    auto cb = base::BindOnce(&DispatchPending, display_, event_queue_);
++    ui_thread_task_runner_->PostTask(FROM_HERE, std::move(cb));
++  }
+ }
+ 
+ bool WaylandEventWatcher::CheckForErrors() {
++  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+   // Errors are fatal. If this function returns non-zero the display can no
+   // longer be used.
+   int err = wl_display_get_error(display_);
+diff --git a/ui/ozone/platform/wayland/host/wayland_event_watcher.h b/ui/ozone/platform/wayland/host/wayland_event_watcher.h
+index 6a13ea92f4bc..ee4749e3a139 100644
+--- a/ui/ozone/platform/wayland/host/wayland_event_watcher.h
++++ b/ui/ozone/platform/wayland/host/wayland_event_watcher.h
+@@ -6,10 +6,18 @@
+ #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_EVENT_WATCHER_H_
+ 
+ #include "base/callback.h"
++#include "base/memory/weak_ptr.h"
+ #include "base/message_loop/message_pump_for_ui.h"
+ #include "base/message_loop/watchable_io_message_pump_posix.h"
++#include "base/threading/thread_checker.h"
+ 
+ struct wl_display;
++struct wl_event_queue;
++
++namespace base {
++class Thread;
++class SingleThreadTaskRunner;
++}  // namespace base
+ 
+ namespace ui {
+ 
+@@ -19,7 +27,7 @@ namespace ui {
+ // into WaylandEventSource, so feeding the platform events pipeline.
+ class WaylandEventWatcher : public base::MessagePumpForUI::FdWatcher {
+  public:
+-  explicit WaylandEventWatcher(wl_display* display);
++  WaylandEventWatcher(wl_display* display, wl_event_queue* event_queue);
+   WaylandEventWatcher(const WaylandEventWatcher&) = delete;
+   WaylandEventWatcher& operator=(const WaylandEventWatcher&) = delete;
+   ~WaylandEventWatcher() override;
+@@ -31,18 +39,24 @@ class WaylandEventWatcher : public base::MessagePumpForUI::FdWatcher {
+   // Starts polling for events from the wayland connection file descriptor.
+   // This method assumes connection is already estabilished and input objects
+   // are already bound and properly initialized.
+-  bool StartProcessingEvents();
++  void StartProcessingEvents();
+ 
+   // Stops polling for events from input devices.
+-  bool StopProcessingEvents();
++  void StopProcessingEvents();
++
++  // See the comment near WaylandEventWatcher::use_dedicated_polling_thread_.
++  void UseSingleThreadedPollingForTesting();
+ 
+  private:
+   // base::MessagePumpForUI::FdWatcher
+   void OnFileCanReadWithoutBlocking(int fd) override;
+   void OnFileCanWriteWithoutBlocking(int fd) override;
+ 
+-  bool StartWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
++  void StartProcessingEventsInternal();
++  void StopProcessingEventsInternal();
++  void StartWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
+   void MaybePrepareReadQueue();
++  void DispatchPendingQueue();
+ 
+   // Checks if |display_| has any error set. If so, |shutdown_cb_| is executed
+   // and false is returned.
+@@ -51,11 +65,39 @@ class WaylandEventWatcher : public base::MessagePumpForUI::FdWatcher {
+   base::MessagePumpForUI::FdWatchController controller_;
+ 
+   wl_display* const display_;  // Owned by WaylandConnection.
++  wl_event_queue* const event_queue_;  // Owned by WaylandConnection.
+ 
+   bool watching_ = false;
+   bool prepared_ = false;
+ 
++  // A separate thread is not used in some tests (ozone_unittests), as it
++  // requires additional synchronization from the WaylandTest side. Otherwise,
++  // some tests complete without waiting until events come. That is, the tests
++  // suppose that our calls/requests are completed after calling Sync(), which
++  // resumes our fake Wayland server and sends out events, but as long as there
++  // is one additional "polling" thread involved, some additional
++  // synchronization mechanisms are needed. At this point, it's easier to
++  // continue to watch the file descriptor on the same thread where the
++  // ozone_unittests run.
++  bool use_dedicated_polling_thread_ = true;
++
+   base::OnceCallback<void()> shutdown_cb_;
++
++  // Used to verify watching the fd happens on a valid thread.
++  THREAD_CHECKER(thread_checker_);
++
++  // See the |use_dedicated_polling_thread_| and also the comment in the source
++  // file for this header.
++  // TODO(crbug.com/1117463): consider polling on I/O instead.
++  std::unique_ptr<base::Thread> thread_;
++
++  // The original ui task runner where |this| has been created.
++  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
++
++  // The thread's task runner where the wl_display's fd is being watched.
++  scoped_refptr<base::SingleThreadTaskRunner> watching_thread_task_runner_;
++
++  base::WeakPtrFactory<WaylandEventWatcher> weak_factory_{this};
+ };
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/host/wayland_keyboard.cc b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
+index 812bdfcaf5a1..caa992477fef 100644
+--- a/ui/ozone/platform/wayland/host/wayland_keyboard.cc
++++ b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
+@@ -174,7 +174,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
+   // wl_display_sync gives a chance for any key "up" events to arrive.
+   // With a well behaved wayland compositor this should ensure we never
+   // get spurious repeats.
+-  sync_callback_.reset(wl_display_sync(connection_->display()));
++  sync_callback_.reset(wl_display_sync(connection_->display_wrapper()));
+   wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
+   connection_->ScheduleFlush();
+ }
+diff --git a/ui/ozone/platform/wayland/host/wayland_zaura_shell_unittest.cc b/ui/ozone/platform/wayland/host/wayland_zaura_shell_unittest.cc
+index a8bba1eb24dd..6c45841d01fe 100644
+--- a/ui/ozone/platform/wayland/host/wayland_zaura_shell_unittest.cc
++++ b/ui/ozone/platform/wayland/host/wayland_zaura_shell_unittest.cc
+@@ -33,6 +33,7 @@ TEST(WaylandZauraShellTest, Foo) {
+ 
+   WaylandConnection connection;
+   ASSERT_TRUE(connection.Initialize());
++  connection.event_source()->UseSingleThreadedPollingForTesting();
+   connection.event_source()->StartProcessingEvents();
+ 
+   base::RunLoop().RunUntilIdle();
+diff --git a/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc b/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
+index d82674b31371..812cc9f328a7 100644
+--- a/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
++++ b/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
+@@ -25,7 +25,7 @@ WaylandZwpLinuxDmabuf::WaylandZwpLinuxDmabuf(
+ 
+   // A roundtrip after binding guarantees that the client has received all
+   // supported formats.
+-  wl_display_roundtrip(connection_->display());
++  connection_->RoundTripQueue();
+ }
+ 
+ WaylandZwpLinuxDmabuf::~WaylandZwpLinuxDmabuf() = default;
+diff --git a/ui/ozone/platform/wayland/test/wayland_test.cc b/ui/ozone/platform/wayland/test/wayland_test.cc
+index b226e31dbc3d..934e13b1d65c 100644
+--- a/ui/ozone/platform/wayland/test/wayland_test.cc
++++ b/ui/ozone/platform/wayland/test/wayland_test.cc
+@@ -11,6 +11,7 @@
+ #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+ #include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"
+ #include "ui/ozone/common/features.h"
++#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
+ #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+ #include "ui/ozone/platform/wayland/host/wayland_screen.h"
+ #include "ui/ozone/platform/wayland/test/mock_surface.h"
+@@ -60,8 +61,9 @@ void WaylandTest::SetUp() {
+ 
+   ASSERT_TRUE(server_.Start(GetParam()));
+   ASSERT_TRUE(connection_->Initialize());
++  connection_->event_source()->UseSingleThreadedPollingForTesting();
+   screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
+-      connection_.get());
++      connection_.get()
+   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
+       .WillOnce(SaveArg<0>(&widget_));
+   PlatformWindowInitProperties properties;
+-- 
+2.25.1
+

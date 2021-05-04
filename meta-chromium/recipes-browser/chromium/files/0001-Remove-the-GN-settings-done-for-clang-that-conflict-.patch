@@ -19,10 +19,10 @@ Rebased-by: Maksim Sisov <msisov@igalia.com>
  1 file changed, 26 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 5928c561b5..aed313f59c 100644
+index 2166af00a6cc..b152980b3416 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -782,10 +782,6 @@ config("compiler_cpu_abi") {
+@@ -834,10 +834,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -33,7 +33,7 @@ index 5928c561b5..aed313f59c 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -795,11 +791,6 @@ config("compiler_cpu_abi") {
+@@ -847,11 +843,6 @@ config("compiler_cpu_abi") {
        if (arm_tune != "") {
          cflags += [ "-mtune=$arm_tune" ]
        }
@@ -45,7 +45,7 @@ index 5928c561b5..aed313f59c 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -807,9 +798,6 @@ config("compiler_cpu_abi") {
+@@ -859,9 +850,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -55,7 +55,7 @@ index 5928c561b5..aed313f59c 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -889,8 +877,6 @@ config("compiler_cpu_abi") {
+@@ -941,8 +929,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -64,7 +64,7 @@ index 5928c561b5..aed313f59c 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -938,9 +924,6 @@ config("compiler_cpu_abi") {
+@@ -990,9 +976,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -74,7 +74,7 @@ index 5928c561b5..aed313f59c 100644
            }
          } else {
            cflags += [
-@@ -998,8 +981,6 @@ config("compiler_cpu_abi") {
+@@ -1050,8 +1033,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -83,7 +83,7 @@ index 5928c561b5..aed313f59c 100644
          } else {
            cflags += [
              "-EB",
-@@ -1164,13 +1145,6 @@ config("compiler_deterministic") {
+@@ -1216,13 +1197,6 @@ config("compiler_deterministic") {
        }
      }
    }
