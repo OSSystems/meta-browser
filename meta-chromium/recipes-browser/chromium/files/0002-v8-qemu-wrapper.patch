@@ -16,7 +16,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 5 insertions(+)
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index 6e86a54355..eee89b3706 100644
+index 6e86a543558c..eee89b37064e 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -56,6 +56,7 @@ if (use_v8_context_snapshot) {
@@ -28,10 +28,10 @@ index 6e86a54355..eee89b3706 100644
                get_label_info(
                        ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index f39529a3a9..8bceaa498a 100644
+index a9ab6783fa6b..abe9804fe768 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -1434,6 +1434,7 @@ template("run_torque") {
+@@ -1516,6 +1516,7 @@ template("run_torque") {
      }
  
      args = [
@@ -39,7 +39,7 @@ index f39529a3a9..8bceaa498a 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -1550,6 +1551,7 @@ action("generate_bytecode_builtins_list") {
+@@ -1632,6 +1633,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -47,7 +47,7 @@ index f39529a3a9..8bceaa498a 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1595,6 +1597,7 @@ template("run_mksnapshot") {
+@@ -1677,6 +1679,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
@@ -55,7 +55,7 @@ index f39529a3a9..8bceaa498a 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -4809,6 +4812,7 @@ if (v8_enable_i18n_support) {
+@@ -5085,6 +5088,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
  
      args = [

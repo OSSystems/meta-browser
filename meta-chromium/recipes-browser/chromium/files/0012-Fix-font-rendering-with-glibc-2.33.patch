@@ -20,6 +20,12 @@ Original Author: Kevin Kofler <Kevin@tigcc.ticalc.org>
 This fix was pointed out by MarkusVolk in
 https://github.com/OSSystems/meta-browser/issues/473
 
+----
+The fix has landed in https://crrev.com/c/2801873
+But was reverted in https://crrev.com/c/2801873
+
+Once it lands, cherry-pick from the upstream.
+
 Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
 ---
  .../seccomp-bpf-helpers/baseline_policy.cc    | 12 +++++++
@@ -30,11 +36,11 @@ Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
  5 files changed, 65 insertions(+)
 
 diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-index e00e3125993..722eb6796b7 100644
+index bef4cf1d24e0..531334672b31 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-@@ -261,6 +261,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
-     return RestrictKillTarget(current_pid, sysno);
+@@ -276,6 +276,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
+     return Allow();
    }
  
 +#if defined(__NR_newfstatat)
@@ -53,7 +59,7 @@ index e00e3125993..722eb6796b7 100644
        SyscallSets::IsCurrentDirectory(sysno)) {
      return Error(fs_denied_errno);
 diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
-index 76eb32493f5..09aa3f0b11c 100644
+index 76eb32493f54..09aa3f0b11c7 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
 @@ -6,6 +6,8 @@
@@ -113,7 +119,7 @@ index 76eb32493f5..09aa3f0b11c 100644
  #if !defined(OS_NACL_NONSFI)
    if (seccomp_crash_key)
 diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
-index 7a958b93b27..d0bfab74bb9 100644
+index 7a958b93b27a..d0bfab74bb91 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
 +++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
 @@ -62,6 +62,10 @@ SANDBOX_EXPORT intptr_t SIGSYSPtraceFailure(const arch_seccomp_data& args,
@@ -136,7 +142,7 @@ index 7a958b93b27..d0bfab74bb9 100644
  // Allocates a crash key so that Seccomp information can be recorded.
  void AllocateCrashKeys();
 diff --git a/sandbox/linux/services/syscall_wrappers.cc b/sandbox/linux/services/syscall_wrappers.cc
-index fcfd2aa129d..5396b36da9f 100644
+index fcfd2aa129d4..5396b36da9f8 100644
 --- a/sandbox/linux/services/syscall_wrappers.cc
 +++ b/sandbox/linux/services/syscall_wrappers.cc
 @@ -261,4 +261,13 @@ int sys_sigaction(int signum,
@@ -154,7 +160,7 @@ index fcfd2aa129d..5396b36da9f 100644
 +
  }  // namespace sandbox
 diff --git a/sandbox/linux/services/syscall_wrappers.h b/sandbox/linux/services/syscall_wrappers.h
-index 1975bfbd88a..ed7ee5a1c16 100644
+index 1975bfbd88a6..ed7ee5a1c161 100644
 --- a/sandbox/linux/services/syscall_wrappers.h
 +++ b/sandbox/linux/services/syscall_wrappers.h
 @@ -17,6 +17,7 @@ struct sock_fprog;

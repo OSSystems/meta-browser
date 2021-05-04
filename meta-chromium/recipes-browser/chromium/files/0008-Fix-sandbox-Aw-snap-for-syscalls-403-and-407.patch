@@ -40,10 +40,10 @@ Signed-off-by: Andreas Müller <schnitzeltony@gmail.com>
  5 files changed, 36 insertions(+), 1 deletion(-)
 
 diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-index e00e312599..87d3ecfba9 100644
+index 5242bde81fbf..bef4cf1d24e0 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-@@ -157,7 +157,14 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
+@@ -159,7 +159,14 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
      return Allow();
  #endif
  
@@ -60,7 +60,7 @@ index e00e312599..87d3ecfba9 100644
    }
  
 diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
-index 4bbfc7e53b..540149b67d 100644
+index 4bbfc7e53b6f..540149b67d95 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions_unittests.cc
 @@ -61,6 +61,12 @@ class RestrictClockIdPolicy : public bpf_dsl::Policy {
@@ -77,7 +77,7 @@ index 4bbfc7e53b..540149b67d 100644
        default:
          return Allow();
 diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-index d9d18822f6..0db8745cb5 100644
+index f40d436edfbd..c712b00f6179 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 @@ -39,6 +39,12 @@ bool SyscallSets::IsAllowedGettime(int sysno) {
@@ -94,7 +94,7 @@ index d9d18822f6..0db8745cb5 100644
  #if defined(__i386__) || \
      (defined(ARCH_CPU_MIPS_FAMILY) && defined(ARCH_CPU_32_BITS))
 diff --git a/sandbox/linux/system_headers/arm_linux_syscalls.h b/sandbox/linux/system_headers/arm_linux_syscalls.h
-index 85e2110b4c..c39c22b511 100644
+index 85e2110b4c29..c39c22b5114d 100644
 --- a/sandbox/linux/system_headers/arm_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm_linux_syscalls.h
 @@ -1441,6 +1441,14 @@
@@ -113,7 +113,7 @@ index 85e2110b4c..c39c22b511 100644
  #if !defined(__ARM_NR_BASE)
  #define __ARM_NR_BASE (__NR_SYSCALL_BASE + 0xF0000)
 diff --git a/sandbox/linux/system_headers/mips_linux_syscalls.h b/sandbox/linux/system_headers/mips_linux_syscalls.h
-index ddbf97f3d8..fa01b3bbc6 100644
+index ddbf97f3d8b5..fa01b3bbc668 100644
 --- a/sandbox/linux/system_headers/mips_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips_linux_syscalls.h
 @@ -1433,4 +1433,12 @@

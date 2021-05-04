@@ -10,7 +10,11 @@ on Intel Gen8 and Gen9 with Gen8 having some minor bugs).
 It's known that a new VA-API is being developed atm and once it's ready,
 we will switch to a new path, which should be more stable.
 
-Upstream-Status: Pending
+Upstream-Status: Inappropriate
+
+The patch is based on the old va-api path. ChromeOS
+team is working on the new path, which will be also employed
+by Wayland later.
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
@@ -23,7 +27,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  6 files changed, 58 insertions(+), 33 deletions(-)
 
 diff --git a/media/gpu/vaapi/vaapi_picture_factory.cc b/media/gpu/vaapi/vaapi_picture_factory.cc
-index 50d5f245f8..093070deec 100644
+index 50d5f245f83c..093070deec83 100644
 --- a/media/gpu/vaapi/vaapi_picture_factory.cc
 +++ b/media/gpu/vaapi/vaapi_picture_factory.cc
 @@ -46,10 +46,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
@@ -55,7 +59,7 @@ index 50d5f245f8..093070deec 100644
    return gfx::BufferFormat::RGBX_8888;
  }
 diff --git a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
-index 941f24cc59..42975746b5 100644
+index 941f24cc5959..42975746b5fb 100644
 --- a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
 +++ b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
 @@ -12,6 +12,7 @@
@@ -90,7 +94,7 @@ index 941f24cc59..42975746b5 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 9d9cb7a171..212e236581 100644
+index 9d9cb7a1713c..212e236581b8 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 @@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
@@ -166,10 +170,10 @@ index 9d9cb7a171..212e236581 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 78133749fe..b967d69bc1 100644
+index 5cac28746eb1..561a03940db4 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -626,8 +626,8 @@ bool VADisplayState::InitializeOnce() {
+@@ -647,8 +647,8 @@ bool VADisplayState::InitializeOnce() {
  
  #if defined(USE_X11)
    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -180,7 +184,7 @@ index 78133749fe..b967d69bc1 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2632,8 +2632,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2724,8 +2724,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -191,7 +195,7 @@ index 78133749fe..b967d69bc1 100644
  #if BUILDFLAG(IS_CHROMEOS_ASH)
    paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index 0e419c88b0..334c515129 100644
+index 0e419c88b06d..334c51512933 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 @@ -16,6 +16,7 @@
@@ -228,7 +232,7 @@ index 0e419c88b0..334c515129 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index a9b3932b1a..9cdf4a990d 100644
+index a9b3932b1a80..9cdf4a990d75 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 @@ -71,6 +71,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
@@ -240,4 +244,3 @@ index a9b3932b1a..9cdf4a990d 100644
 +
    DISALLOW_COPY_AND_ASSIGN(GbmPixmapWayland);
  };
- 
