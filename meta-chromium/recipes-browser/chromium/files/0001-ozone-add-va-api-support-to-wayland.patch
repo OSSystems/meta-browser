@@ -170,10 +170,10 @@ index 9d9cb7a1713c..212e236581b8 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 5cac28746eb1..561a03940db4 100644
+index df500d8bdeba..029004256da7 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -647,8 +647,8 @@ bool VADisplayState::InitializeOnce() {
+@@ -648,8 +648,8 @@ bool VADisplayState::InitializeOnce() {
  
  #if defined(USE_X11)
    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -184,7 +184,7 @@ index 5cac28746eb1..561a03940db4 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2724,8 +2724,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2716,8 +2716,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)

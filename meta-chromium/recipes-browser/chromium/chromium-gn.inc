@@ -9,16 +9,17 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 SRC_URI += " \
+    file://limit-number-of-LTO-jobs.patch \
     file://0001-Remove-the-GN-settings-done-for-clang-that-conflict-.patch \
     file://0002-v8-qemu-wrapper.patch \
     file://0003-wrapper-extra-flags.patch \
     file://0004-BUILD-do-not-specify-march-on-arm.patch \
     file://0005-Consider-armv7ve-define.patch \
     file://0006-Delete-compiler-options-not-available-in-release-ver.patch \
-    file://0008-Fix-sandbox-Aw-snap-for-syscalls-403-and-407.patch \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
+    file://0001-Fixed-build-with-use_ozone-false.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -54,6 +55,7 @@ DEPENDS += " \
     atk \
     bison-native \
     cairo \
+    curl \
     dbus \
     expat \
     flac \

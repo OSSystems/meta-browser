@@ -4,8 +4,8 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "f1657427565893aa66e1032f62ab54d5"
-SRC_URI[sha256sum] = "532ec75f4e08384fe2fb17b69af9210103379ee212dbf0bf081bdc5d4eca357e"
+SRC_URI[md5sum] = "7c428b30015f1bdf529e192cdbac062f"
+SRC_URI[sha256sum] = "45d5a43ef798d20313c78fa8a075be0c22055e39c8481eb53eabda81df901b31"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -225,6 +225,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/gvr-android-keyboard/LICENSE;md5=67d07a07ec29a50a3ded12b2ba952257 \
     file://${S}/third_party/gvr-android-sdk/LICENSE;md5=50b9d1f02b2ee0d8a568ccf4d35216e2 \
     file://${S}/third_party/harfbuzz-ng/src/COPYING;md5=8f787620b7d3866d9552fd1924c07572 \
+    file://${S}/third_party/highway/LICENSE;md5=2b42edef8fa55315f34f2370b4715ca9 \
     file://${S}/third_party/hunspell/COPYING.MPL;md5=bfe1f75d606912a4111c90743d6c7325 \
     file://${S}/third_party/hyphenation-patterns/LICENSE;md5=53b217e6f2560833cbb279119065ae61 \
     file://${S}/third_party/iaccessible2/LICENSE;md5=43bbd0bfb581347ec10def720000a645 \
@@ -247,6 +248,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/libipp/LICENSE;md5=af9e58383a1b2b17c75c6c9ff561ca9d \
     file://${S}/third_party/libjingle_xmpp/LICENSE;md5=ad296492125bc71530d06234d9bfebe0 \
     file://${S}/third_party/libjpeg_turbo/LICENSE.md;md5=26d6491346496a57f75f00a78199122e \
+    file://${S}/third_party/libjxl/LICENSE;md5=b1e01b26bacfc2232046c90a330332b3 \
     file://${S}/third_party/liblouis/LICENSE;md5=8ab69863de0d3a0e00c4f97a4d78dd4a \
     file://${S}/third_party/libphonenumber/LICENSE;md5=e23fadd6ceef8c618fc1c65191d846fa \
     file://${S}/third_party/libpng/LICENSE;md5=b0085051bf265bac2bfc38bc89f50000 \
@@ -301,8 +303,8 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/re2/LICENSE;md5=3b5c31eb512bdf3cb11ffd5713963760 \
     file://${S}/third_party/rnnoise/COPYING;md5=1890bf89a18f8339491894a0b45428bf \
     file://${S}/third_party/ruy/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/third_party/schema_org/LICENSE;md5=13a870bd7f606a919042749a5f098ac2 \
     file://${S}/third_party/securemessage/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
+    file://${S}/third_party/setupdesign/LICENSE;md5=302a09339e8de37ba06c121279be1707 \
     file://${S}/third_party/shell-encryption/src/LICENSE;md5=c96a2157133614bf8a135bd27cd230d6 \
     file://${S}/third_party/simplejson/LICENSE.txt;md5=8a9f8dcfcd28c34daa443e5b1d29813b \
     file://${S}/third_party/skia/LICENSE;md5=822f02cc7736281816581cd064afbb1c \
