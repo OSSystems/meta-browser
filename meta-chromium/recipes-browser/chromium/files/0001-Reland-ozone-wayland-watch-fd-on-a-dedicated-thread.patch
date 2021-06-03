@@ -2,7 +2,7 @@ Upstream-status: Backport
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From c9f90af692aa97a59a5a1c4e81425be0fad1541a Mon Sep 17 00:00:00 2001
+From 46ebe31094683d99b12def5388189e9f57c2e9d7 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Fri, 23 Apr 2021 05:18:27 +0000
 Subject: [PATCH] Reland "ozone/wayland: watch fd on a dedicated thread."
@@ -53,7 +53,11 @@ Cr-Commit-Position: refs/heads/master@{#875528}
 ---
  .../platform/wayland/common/wayland_object.cc |   8 +
  .../platform/wayland/common/wayland_object.h  |  16 ++
- .../wayland/host/wayland_connection.cc        |  20 ++-
+ .../wayland/emulate/wayland_input_emulate.cc  |   4 +-
+ .../wayland/host/proxy/wayland_proxy.h        |   6 +-
+ .../wayland/host/proxy/wayland_proxy_impl.cc  |   8 +
+ .../wayland/host/proxy/wayland_proxy_impl.h   |   2 +
+ .../wayland/host/wayland_connection.cc        |  21 ++-
  .../wayland/host/wayland_connection.h         |  17 ++
  .../host/wayland_connection_unittest.cc       |   1 +
  .../wayland/host/wayland_data_device_base.cc  |   3 +-
@@ -65,8 +69,8 @@ Cr-Commit-Position: refs/heads/master@{#875528}
  .../platform/wayland/host/wayland_keyboard.cc |   2 +-
  .../host/wayland_zaura_shell_unittest.cc      |   1 +
  .../wayland/host/wayland_zwp_linux_dmabuf.cc  |   2 +-
- .../platform/wayland/test/wayland_test.cc     |   4 +-
- 15 files changed, 261 insertions(+), 46 deletions(-)
+ .../platform/wayland/test/wayland_test.cc     |   2 +
+ 19 files changed, 277 insertions(+), 49 deletions(-)
 
 diff --git a/ui/ozone/platform/wayland/common/wayland_object.cc b/ui/ozone/platform/wayland/common/wayland_object.cc
 index 8827a5e9f493..467e604678c6 100644
@@ -156,11 +160,83 @@ index d609c6150fa2..170d80620948 100644
    return wl::Object<T>(wl::bind_registry<T>(
        registry, name, ObjectTraits<T>::interface, version));
  }
+diff --git a/ui/ozone/platform/wayland/emulate/wayland_input_emulate.cc b/ui/ozone/platform/wayland/emulate/wayland_input_emulate.cc
+index bc939e793cae..6590bad4fa13 100644
+--- a/ui/ozone/platform/wayland/emulate/wayland_input_emulate.cc
++++ b/ui/ozone/platform/wayland/emulate/wayland_input_emulate.cc
+@@ -43,7 +43,7 @@ WaylandInputEmulate::WaylandInputEmulate() {
+ 
+   wayland_proxy->SetDelegate(this);
+ 
+-  registry_ = wl_display_get_registry(wayland_proxy->GetDisplay());
++  registry_ = wl_display_get_registry(wayland_proxy->GetDisplayWrapper());
+   if (!registry_)
+     LOG(FATAL) << "Failed to get Wayland registry";
+ 
+@@ -53,7 +53,7 @@ WaylandInputEmulate::WaylandInputEmulate() {
+   wl_registry_add_listener(registry_, &registry_listener, this);
+ 
+   // Roundtrip one time to get the weston-test global.
+-  wl_display_roundtrip(wayland_proxy->GetDisplay());
++  wayland_proxy->RoundTripQueue();
+   if (!weston_test_)
+     LOG(FATAL) << "weston-test is not available.";
+ 
+diff --git a/ui/ozone/platform/wayland/host/proxy/wayland_proxy.h b/ui/ozone/platform/wayland/host/proxy/wayland_proxy.h
+index fae920854321..ff70da46bc1c 100644
+--- a/ui/ozone/platform/wayland/host/proxy/wayland_proxy.h
++++ b/ui/ozone/platform/wayland/host/proxy/wayland_proxy.h
+@@ -52,8 +52,12 @@ class COMPONENT_EXPORT(WAYLAND_PROXY) WaylandProxy {
+   // for the Delegate class.
+   virtual void SetDelegate(Delegate* delegate) = 0;
+ 
+-  // Returns the wl_display the WaylandConnection has the connection with.
++  // Returns the wl_display the WaylandConnection has the connection with. See
++  // WaylandConnection::display() and WaylandConnection::display_wrapper() to
++  // know the difference between the GetDisplay() and GetDisplayWrapper().
+   virtual wl_display* GetDisplay() = 0;
++  virtual wl_display* GetDisplayWrapper() = 0;
++  virtual void RoundTripQueue() = 0;
+ 
+   // Returns wl_surface that backs the |widget|.
+   virtual wl_surface* GetWlSurfaceForAcceleratedWidget(
+diff --git a/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.cc b/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.cc
+index 93aedb6ef8ba..ae80285ea5ec 100644
+--- a/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.cc
++++ b/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.cc
+@@ -34,6 +34,14 @@ wl_display* WaylandProxyImpl::GetDisplay() {
+   return connection_->display();
+ }
+ 
++wl_display* WaylandProxyImpl::GetDisplayWrapper() {
++  return connection_->display_wrapper();
++}
++
++void WaylandProxyImpl::RoundTripQueue() {
++  connection_->RoundTripQueue();
++}
++
+ wl_surface* WaylandProxyImpl::GetWlSurfaceForAcceleratedWidget(
+     gfx::AcceleratedWidget widget) {
+   auto* window = connection_->wayland_window_manager()->GetWindow(widget);
+diff --git a/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.h b/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.h
+index 9805441d0b68..cf5ee8b568db 100644
+--- a/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.h
++++ b/ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.h
+@@ -25,6 +25,8 @@ class WaylandProxyImpl : public WaylandProxy, public ui::WaylandWindowObserver {
+   // WaylandProxy overrides:
+   void SetDelegate(WaylandProxy::Delegate* delegate) override;
+   wl_display* GetDisplay() override;
++  wl_display* GetDisplayWrapper() override;
++  void RoundTripQueue() override;
+   wl_surface* GetWlSurfaceForAcceleratedWidget(
+       gfx::AcceleratedWidget widget) override;
+   wl_buffer* CreateShmBasedWlBuffer(const gfx::Size& buffer_size) override;
 diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
-index 702328d0e9f2..e97ff994a18e 100644
+index 6c0501b0f95f..3badbd4fc2d8 100644
 --- a/ui/ozone/platform/wayland/host/wayland_connection.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
-@@ -124,7 +124,14 @@ bool WaylandConnection::Initialize() {
+@@ -128,7 +128,14 @@ bool WaylandConnection::Initialize() {
      return false;
    }
  
@@ -176,7 +252,7 @@ index 702328d0e9f2..e97ff994a18e 100644
    if (!registry_) {
      LOG(ERROR) << "Failed to get Wayland registry";
      return false;
-@@ -133,13 +140,13 @@ bool WaylandConnection::Initialize() {
+@@ -137,13 +144,13 @@ bool WaylandConnection::Initialize() {
    // Now that the connection with the display server has been properly
    // estabilished, initialize the event source and input objects.
    DCHECK(!event_source_);
@@ -193,7 +269,15 @@ index 702328d0e9f2..e97ff994a18e 100644
    }
  
    buffer_manager_host_ = std::make_unique<WaylandBufferManagerHost>(this);
-@@ -179,6 +186,11 @@ void WaylandConnection::ScheduleFlush() {
+@@ -168,7 +175,6 @@ bool WaylandConnection::Initialize() {
+ 
+   if (UseTestConfigForPlatformWindows())
+     wayland_proxy_ = std::make_unique<wl::WaylandProxyImpl>(this);
+-
+   return true;
+ }
+ 
+@@ -186,6 +192,11 @@ void WaylandConnection::ScheduleFlush() {
    }
  }
  
@@ -206,7 +290,7 @@ index 702328d0e9f2..e97ff994a18e 100644
    event_source()->SetShutdownCb(std::move(shutdown_cb));
  }
 diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
-index 7624abc23d63..29978e2982e4 100644
+index 104b33c37743..3a1f8022ff98 100644
 --- a/ui/ozone/platform/wayland/host/wayland_connection.h
 +++ b/ui/ozone/platform/wayland/host/wayland_connection.h
 @@ -17,6 +17,7 @@
@@ -217,7 +301,7 @@ index 7624abc23d63..29978e2982e4 100644
  
  namespace gfx {
  class Point;
-@@ -62,11 +63,25 @@ class WaylandConnection {
+@@ -67,11 +68,25 @@ class WaylandConnection {
    // Schedules a flush of the Wayland connection.
    void ScheduleFlush();
  
@@ -243,7 +327,7 @@ index 7624abc23d63..29978e2982e4 100644
    wl_compositor* compositor() const { return compositor_.get(); }
    // The server version of the compositor interface (might be higher than the
    // version binded).
-@@ -210,6 +225,8 @@ class WaylandConnection {
+@@ -218,6 +233,8 @@ class WaylandConnection {
  
    uint32_t compositor_version_ = 0;
    wl::Object<wl_display> display_;
@@ -301,10 +385,10 @@ index e387e48c6862..df692b6734a2 100644
  
  void WaylandDrm::DrmDeviceAuthenticated(struct wl_drm* wl_drm) {
 diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.cc b/ui/ozone/platform/wayland/host/wayland_event_source.cc
-index 28f5892a0e95..f40ec9dfe177 100644
+index 46327d9631e7..5d9a6580cac8 100644
 --- a/ui/ozone/platform/wayland/host/wayland_event_source.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_event_source.cc
-@@ -64,9 +64,11 @@ WaylandEventSource::TouchPoint::TouchPoint(gfx::PointF location,
+@@ -66,9 +66,11 @@ WaylandEventSource::TouchPoint::TouchPoint(gfx::PointF location,
  // WaylandEventSource implementation
  
  WaylandEventSource::WaylandEventSource(wl_display* display,
@@ -317,7 +401,7 @@ index 28f5892a0e95..f40ec9dfe177 100644
    DCHECK(window_manager_);
  
    // Observes remove changes to know when touch points can be removed.
-@@ -79,12 +81,12 @@ void WaylandEventSource::SetShutdownCb(base::OnceCallback<void()> shutdown_cb) {
+@@ -81,12 +83,12 @@ void WaylandEventSource::SetShutdownCb(base::OnceCallback<void()> shutdown_cb) {
    event_watcher_->SetShutdownCb(std::move(shutdown_cb));
  }
  
@@ -334,7 +418,7 @@ index 28f5892a0e95..f40ec9dfe177 100644
  }
  
  void WaylandEventSource::OnKeyboardFocusChanged(WaylandWindow* window,
-@@ -307,6 +309,10 @@ void WaylandEventSource::ResetPointerFlags() {
+@@ -318,6 +320,10 @@ void WaylandEventSource::ResetPointerFlags() {
    pointer_flags_ = 0;
  }
  
@@ -346,7 +430,7 @@ index 28f5892a0e95..f40ec9dfe177 100644
    StartProcessingEvents();
  }
 diff --git a/ui/ozone/platform/wayland/host/wayland_event_source.h b/ui/ozone/platform/wayland/host/wayland_event_source.h
-index ed0a6f85250a..10232d51e308 100644
+index 9617a85b41e9..3efb7e5f19f9 100644
 --- a/ui/ozone/platform/wayland/host/wayland_event_source.h
 +++ b/ui/ozone/platform/wayland/host/wayland_event_source.h
 @@ -49,7 +49,9 @@ class WaylandEventSource : public PlatformEventSource,
@@ -717,10 +801,10 @@ index 6a13ea92f4bc..ee4749e3a139 100644
  
  }  // namespace ui
 diff --git a/ui/ozone/platform/wayland/host/wayland_keyboard.cc b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
-index 812bdfcaf5a1..caa992477fef 100644
+index 85fcd6a423b5..94fdc79a25a3 100644
 --- a/ui/ozone/platform/wayland/host/wayland_keyboard.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_keyboard.cc
-@@ -174,7 +174,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
+@@ -207,7 +207,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
    // wl_display_sync gives a chance for any key "up" events to arrive.
    // With a well behaved wayland compositor this should ensure we never
    // get spurious repeats.
@@ -755,10 +839,10 @@ index d82674b31371..812cc9f328a7 100644
  
  WaylandZwpLinuxDmabuf::~WaylandZwpLinuxDmabuf() = default;
 diff --git a/ui/ozone/platform/wayland/test/wayland_test.cc b/ui/ozone/platform/wayland/test/wayland_test.cc
-index b226e31dbc3d..934e13b1d65c 100644
+index 5bc45ac1aeaa..bc378f0dc650 100644
 --- a/ui/ozone/platform/wayland/test/wayland_test.cc
 +++ b/ui/ozone/platform/wayland/test/wayland_test.cc
-@@ -11,6 +11,7 @@
+@@ -12,6 +12,7 @@
  #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
  #include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"
  #include "ui/ozone/common/features.h"
@@ -766,17 +850,14 @@ index b226e31dbc3d..934e13b1d65c 100644
  #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
  #include "ui/ozone/platform/wayland/host/wayland_screen.h"
  #include "ui/ozone/platform/wayland/test/mock_surface.h"
-@@ -60,8 +61,9 @@ void WaylandTest::SetUp() {
+@@ -68,6 +69,7 @@ void WaylandTest::SetUp() {
  
    ASSERT_TRUE(server_.Start(GetParam()));
    ASSERT_TRUE(connection_->Initialize());
 +  connection_->event_source()->UseSingleThreadedPollingForTesting();
-   screen_ = connection_->wayland_output_manager()->CreateWaylandScreen(
--      connection_.get());
-+      connection_.get()
+   screen_ = connection_->wayland_output_manager()->CreateWaylandScreen();
    EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_))
        .WillOnce(SaveArg<0>(&widget_));
-   PlatformWindowInitProperties properties;
 -- 
 2.25.1
 

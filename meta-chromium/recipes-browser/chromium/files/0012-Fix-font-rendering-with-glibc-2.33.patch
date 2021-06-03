@@ -36,10 +36,10 @@ Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
  5 files changed, 65 insertions(+)
 
 diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-index bef4cf1d24e0..531334672b31 100644
+index 05c39f0f564e..ce1a4e3762ee 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-@@ -276,6 +276,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
+@@ -286,6 +286,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
      return Allow();
    }
  
