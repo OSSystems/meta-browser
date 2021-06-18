@@ -94,12 +94,6 @@ PACKAGECONFIG knobs
 * cups: (off by default)
   Enables CUPS support in Chromium, and adds a dependency on the "cups" recipe.
 
-* impl-side-painting: (off by default)
-  This is a new painting mechanism. Still in development stages, it can improve
-  performance See
-  http://www.chromium.org/developers/design-documents/impl-side-painting for
-  more.
-
 * kiosk-mode: (off by default)
   Enable this option if you want your browser to start up full-screen, without
   any menu bars, without any clutter, and without any initial start-up

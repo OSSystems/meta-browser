@@ -111,7 +111,6 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
-PACKAGECONFIG[impl-side-painting] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
@@ -312,7 +311,6 @@ GN_ARGS_append_libc-musl = ' use_allocator_shim=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'impl-side-painting', '--enable-gpu-rasterization --enable-impl-side-painting', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
 "
 
