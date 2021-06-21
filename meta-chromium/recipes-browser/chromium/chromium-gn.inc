@@ -21,6 +21,9 @@ SRC_URI += " \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0001-DCScan-Fix-builds-with-system-sysroots.patch \
     file://0001-ARM64-VRegister-from_code-expected-to-be-constexpr.patch \
+    file://fix-harfbuzz-supp-size-error.patch \
+    file://fix-ruy-numeric-limits-error.patch \
+    file://fix-sql-virtualcursor-error.patch \
 "
 
 SRC_URI_append_libc-musl = "\
