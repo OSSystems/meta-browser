@@ -20,6 +20,9 @@ SRC_URI += " \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0001-Fixed-build-with-use_ozone-false.patch \
+    file://fix-harfbuzz-supp-size-error.patch \
+    file://fix-ruy-numeric-limits-error.patch \
+    file://fix-sql-virtualcursor-error.patch \
 "
 
 SRC_URI_append_libc-musl = "\
