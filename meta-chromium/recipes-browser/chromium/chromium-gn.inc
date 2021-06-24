@@ -2,7 +2,7 @@ require chromium.inc
 require chromium-unbundle.inc
 require gn-utils.inc
 
-inherit features_check gtk-icon-cache qemu
+inherit features_check gtk-icon-cache qemu chromium-extension-package
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
@@ -116,13 +116,15 @@ PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
         ffmpeg_branding="Chromium" proprietary_codecs=false \
 '
-
 # Disable VA-API by default. It is compile time enabled since M88, but it's not
 # desired to make all the users of the Chromium meta-browser recipe depend on
 # libva without a real need. Both X11 (non-Ozone) and Wayland (Ozone) can use it,
 # but remember to also use proprietary codecs so that H.264 is supported. Also note
 # that not all the hardware configs might be supported.
 PACKAGECONFIG[use-vaapi] = "use_vaapi=true use_libgav1_parser=true,use_vaapi=false,libva"
+
+# chrome/chromium extension for virtual keyboard
+PACKAGECONFIG[vkeyboard-extension]= ",,,chrome-virtual-keyboard"
 
 # Base GN arguments, mostly related to features we want to enable or disable.
 GN_ARGS = " \
@@ -309,9 +311,16 @@ GN_ARGS_append_armv6 += 'arm_use_neon=false'
 # https://github.com/gperftools/gperftools/issues/693
 GN_ARGS_append_libc-musl = ' use_allocator_shim=false'
 
+
+# Add chromium extensions here
+CHROMIUM_EXTENSIONS = " \
+        ${@bb.utils.contains('PACKAGECONFIG', 'vkeyboard-extension', '${VIRTUAL_KEYBOARD_DIR}', '', d)} \
+"
+
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
+        --load-extension=${@",".join(d.getVar('CHROMIUM_EXTENSIONS').split())} \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
@@ -428,7 +437,7 @@ do_install() {
 
 	# Add extra command line arguments to the chromium-wrapper script by
 	# modifying the dummy "CHROME_EXTRA_ARGS" line
-	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
+	sed -i "s#^CHROME_EXTRA_ARGS=\"\"#CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"#" ${D}${libdir}/chromium/chromium-wrapper
 
 	# This is ANGLE, not to be confused with the similarly named files under swiftshader/
 	if [ -e libEGL.so ]; then
