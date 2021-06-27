@@ -43,6 +43,7 @@ SRC_URI_append_libc-musl = "\
     file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
     file://musl/0019-adjust-thread-stack-sizes.patch \
     file://musl/0020-Fix-tab-crashes-on-musl.patch \
+    file://musl/0021-pthread_getname_np.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
