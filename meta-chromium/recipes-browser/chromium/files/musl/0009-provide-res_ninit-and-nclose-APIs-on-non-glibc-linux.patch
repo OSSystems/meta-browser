@@ -13,12 +13,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  net/dns/dns_reloader.cc             | 30 +++++++++++++++++++++++++++++
  2 files changed, 60 insertions(+)
 
-diff --git a/net/dns/dns_config_service_posix.cc b/net/dns/dns_config_service_posix.cc
-index b50f468c76..c6a6c31e36 100644
 --- a/net/dns/dns_config_service_posix.cc
 +++ b/net/dns/dns_config_service_posix.cc
-@@ -41,6 +41,36 @@
- #include "net/base/network_interfaces.h"
+@@ -32,6 +32,36 @@
+ #include "net/dns/dns_config_watcher_mac.h"
  #endif
  
 +#if !defined(__GLIBC__)
@@ -54,8 +52,6 @@ index b50f468c76..c6a6c31e36 100644
  namespace net {
  
  namespace internal {
-diff --git a/net/dns/dns_reloader.cc b/net/dns/dns_reloader.cc
-index 0672e711af..aae6f20289 100644
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
 @@ -17,6 +17,36 @@

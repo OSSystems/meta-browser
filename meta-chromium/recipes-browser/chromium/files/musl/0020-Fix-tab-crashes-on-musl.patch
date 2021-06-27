@@ -17,8 +17,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  .../policy/linux/bpf_renderer_policy_linux.cc |  4 ++--
  9 files changed, 32 insertions(+), 20 deletions(-)
 
-diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
-index 2a97d3916..0c86cc519 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
 @@ -130,21 +130,11 @@ namespace sandbox {
@@ -48,7 +46,7 @@ index 2a97d3916..0c86cc519 100644
  
    // The following two flags are the two important flags in any vfork-emulating
    // clone call. EPERM any clone call that contains both of them.
-@@ -154,7 +144,7 @@ ResultExpr RestrictCloneToThreadsAndEPERMFork() {
+@@ -154,7 +144,7 @@ ResultExpr RestrictCloneToThreadsAndEPER
        AnyOf((flags & (CLONE_VM | CLONE_THREAD)) == 0,
              (flags & kImportantCloneVforkFlags) == kImportantCloneVforkFlags);
  
@@ -57,11 +55,9 @@ index 2a97d3916..0c86cc519 100644
        .ElseIf(is_fork_or_clone_vfork, Error(EPERM))
        .Else(CrashSIGSYSClone());
  }
-diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-index 0db8745cb..8acf30c3e 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-@@ -398,6 +398,7 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
+@@ -417,6 +417,7 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__)
      case __NR_waitpid:
  #endif
@@ -69,7 +65,7 @@ index 0db8745cb..8acf30c3e 100644
        return true;
      case __NR_clone:  // Should be parameter-restricted.
      case __NR_setns:  // Privileged.
-@@ -410,7 +411,6 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
+@@ -429,7 +430,6 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
      case __NR_set_thread_area:
  #endif
@@ -77,7 +73,7 @@ index 0db8745cb..8acf30c3e 100644
      case __NR_unshare:
  #if !defined(__mips__) && !defined(__aarch64__)
      case __NR_vfork:
-@@ -520,6 +520,8 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
+@@ -543,6 +543,8 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_mlock:
      case __NR_munlock:
      case __NR_munmap:
@@ -86,7 +82,7 @@ index 0db8745cb..8acf30c3e 100644
        return true;
      case __NR_madvise:
      case __NR_mincore:
-@@ -537,7 +539,6 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
+@@ -560,7 +562,6 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_modify_ldt:
  #endif
      case __NR_mprotect:
@@ -94,8 +90,6 @@ index 0db8745cb..8acf30c3e 100644
      case __NR_msync:
      case __NR_munlockall:
      case __NR_readahead:
-diff --git a/sandbox/linux/system_headers/arm64_linux_syscalls.h b/sandbox/linux/system_headers/arm64_linux_syscalls.h
-index a242c18c8..30751fc4a 100644
 --- a/sandbox/linux/system_headers/arm64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm64_linux_syscalls.h
 @@ -1119,4 +1119,8 @@
@@ -107,12 +101,10 @@ index a242c18c8..30751fc4a 100644
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_
-diff --git a/sandbox/linux/system_headers/arm_linux_syscalls.h b/sandbox/linux/system_headers/arm_linux_syscalls.h
-index c39c22b51..32c00852a 100644
 --- a/sandbox/linux/system_headers/arm_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm_linux_syscalls.h
-@@ -1449,6 +1449,10 @@
- #define __NR_clock_nanosleep_time64 (__NR_SYSCALL_BASE+407)
+@@ -1605,6 +1605,10 @@
+ #define __NR_mount_setattr (__NR_SYSCALL_BASE + 442)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -122,8 +114,6 @@ index c39c22b51..32c00852a 100644
  // ARM private syscalls.
  #if !defined(__ARM_NR_BASE)
  #define __ARM_NR_BASE (__NR_SYSCALL_BASE + 0xF0000)
-diff --git a/sandbox/linux/system_headers/linux_syscalls.h b/sandbox/linux/system_headers/linux_syscalls.h
-index 2b78a0cc3..b6fedb5c2 100644
 --- a/sandbox/linux/system_headers/linux_syscalls.h
 +++ b/sandbox/linux/system_headers/linux_syscalls.h
 @@ -10,6 +10,7 @@
@@ -134,8 +124,6 @@ index 2b78a0cc3..b6fedb5c2 100644
  
  #if defined(__x86_64__)
  #include "sandbox/linux/system_headers/x86_64_linux_syscalls.h"
-diff --git a/sandbox/linux/system_headers/mips64_linux_syscalls.h b/sandbox/linux/system_headers/mips64_linux_syscalls.h
-index ec75815a8..551527083 100644
 --- a/sandbox/linux/system_headers/mips64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips64_linux_syscalls.h
 @@ -1271,4 +1271,8 @@
@@ -147,12 +135,10 @@ index ec75815a8..551527083 100644
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
-diff --git a/sandbox/linux/system_headers/mips_linux_syscalls.h b/sandbox/linux/system_headers/mips_linux_syscalls.h
-index fa01b3bbc..8695e2b31 100644
 --- a/sandbox/linux/system_headers/mips_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips_linux_syscalls.h
-@@ -1441,4 +1441,8 @@
- #define __NR_clock_nanosleep_time64 (__NR_Linux + 407)
+@@ -1685,4 +1685,8 @@
+ #define __NR_mount_setattr (__NR_Linux + 442)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -160,8 +146,6 @@ index fa01b3bbc..8695e2b31 100644
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_SYSCALLS_H_
-diff --git a/sandbox/linux/system_headers/x86_64_linux_syscalls.h b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
-index b0ae0a2ed..8b1202947 100644
 --- a/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 @@ -1350,5 +1350,9 @@
@@ -174,11 +158,9 @@ index b0ae0a2ed..8b1202947 100644
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_X86_64_LINUX_SYSCALLS_H_
  
-diff --git a/sandbox/policy/linux/bpf_renderer_policy_linux.cc b/sandbox/policy/linux/bpf_renderer_policy_linux.cc
-index 9fe9575eb..fa1a946f6 100644
 --- a/sandbox/policy/linux/bpf_renderer_policy_linux.cc
 +++ b/sandbox/policy/linux/bpf_renderer_policy_linux.cc
-@@ -93,11 +93,11 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
+@@ -97,11 +97,11 @@ ResultExpr RendererProcessPolicy::Evalua
      case __NR_sysinfo:
      case __NR_times:
      case __NR_uname:
@@ -192,6 +174,3 @@ index 9fe9575eb..fa1a946f6 100644
        return RestrictSchedTarget(GetPolicyPid(), sysno);
      case __NR_prlimit64:
        // See crbug.com/662450 and setrlimit comment above.
--- 
-2.31.0
-
