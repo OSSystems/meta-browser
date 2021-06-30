@@ -116,6 +116,7 @@ PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
         ffmpeg_branding="Chromium" proprietary_codecs=false \
 '
+PACKAGECONFIG[upower] = ",,,upower"
 
 # Disable VA-API by default. It is compile time enabled since M88, but it's not
 # desired to make all the users of the Chromium meta-browser recipe depend on
