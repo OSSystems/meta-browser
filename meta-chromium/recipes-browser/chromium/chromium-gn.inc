@@ -24,6 +24,7 @@ SRC_URI += " \
     file://fix-harfbuzz-supp-size-error.patch \
     file://fix-ruy-numeric-limits-error.patch \
     file://fix-sql-virtualcursor-error.patch \
+    file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
 "
 
 SRC_URI_append_libc-musl = "\
