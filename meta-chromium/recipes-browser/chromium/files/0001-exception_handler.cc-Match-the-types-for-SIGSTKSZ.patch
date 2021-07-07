@@ -1,0 +1,42 @@
+From 66a2b6e4ba8e2b49115043127ce4aa0fcd71ad1e Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Tue, 11 May 2021 11:12:35 -0700
+Subject: [PATCH] exception_handler.cc: Match the types for SIGSTKSZ
+
+In glibc 2.34, SIGSTKSZ is a syscall which returns a long int, therefore
+current check fails
+
+| ../git/src/client/linux/handler/exception_handler.cc:141:49: error: no matching function for call to 'max(int, long int)'
+|   141 |   static const unsigned kSigStackSize = std::max(16384, SIGSTKSZ);
+|       |                                         ~~~~~~~~^~~~~~~~~~~~~~~~~
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ src/client/linux/handler/exception_handler.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
++++ b/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
+@@ -138,7 +138,7 @@ void InstallAlternateStackLocked() {
+   // SIGSTKSZ may be too small to prevent the signal handlers from overrunning
+   // the alternative stack. Ensure that the size of the alternative stack is
+   // large enough.
+-  static const unsigned kSigStackSize = std::max(16384, SIGSTKSZ);
++  static const unsigned kSigStackSize = std::max(static_cast<long>(16384), SIGSTKSZ);
+ 
+   // Only set an alternative stack if there isn't already one, or if the current
+   // one is too small.
+--- a/sandbox/linux/services/credentials.cc
++++ b/sandbox/linux/services/credentials.cc
+@@ -98,7 +98,9 @@ bool ChrootToSafeEmptyDir() {
+   // attempt this optimization.
+   clone_flags |= CLONE_VM | CLONE_VFORK | CLONE_SETTLS;
+ 
+-  char tls_buf[PTHREAD_STACK_MIN] = {0};
++  const std::size_t pthread_stack_min = PTHREAD_STACK_MIN;
++  char tls_buf[pthread_stack_min];
++  memset(tls_buf, 0, pthread_stack_min);
+   tls = tls_buf;
+ #endif
+ 
