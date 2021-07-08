@@ -23,7 +23,6 @@ SRC_URI += " \
     file://0001-ARM64-VRegister-from_code-expected-to-be-constexpr.patch \
     file://fix-harfbuzz-supp-size-error.patch \
     file://fix-ruy-numeric-limits-error.patch \
-    file://fix-sql-virtualcursor-error.patch \
     file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
 "
 
