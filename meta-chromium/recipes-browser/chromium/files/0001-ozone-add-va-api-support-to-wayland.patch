@@ -27,10 +27,10 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  6 files changed, 58 insertions(+), 33 deletions(-)
 
 diff --git a/media/gpu/vaapi/vaapi_picture_factory.cc b/media/gpu/vaapi/vaapi_picture_factory.cc
-index 50d5f245f83c..093070deec83 100644
+index 719035b87c89..815f9b1b0a83 100644
 --- a/media/gpu/vaapi/vaapi_picture_factory.cc
 +++ b/media/gpu/vaapi/vaapi_picture_factory.cc
-@@ -46,10 +46,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
+@@ -47,10 +47,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
        std::make_pair(gl::kGLImplementationEGLGLES2,
                       VaapiPictureFactory::kVaapiImplementationDrm));
  #if defined(USE_X11)
@@ -44,7 +44,7 @@ index 50d5f245f83c..093070deec83 100644
      vaapi_impl_pairs_.insert(
          std::make_pair(gl::kGLImplementationDesktopGL,
                         VaapiPictureFactory::kVaapiImplementationX11));
-@@ -104,8 +104,12 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
+@@ -105,8 +105,12 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
  
  gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
  #if defined(USE_OZONE)
@@ -94,10 +94,10 @@ index 941f24cc5959..42975746b5fb 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 9d9cb7a1713c..212e236581b8 100644
+index 35c4b45ead45..45aaac7dd6e1 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-@@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
+@@ -185,12 +185,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                               Client* client) {
    DCHECK(task_runner_->BelongsToCurrentThread());
  
@@ -107,10 +107,10 @@ index 9d9cb7a1713c..212e236581b8 100644
 -    return false;
 -#endif
 -
+   vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
+
    if (config.is_encrypted()) {
-     NOTREACHED() << "Encrypted streams are not supported for this VDA";
-     return false;
-@@ -565,12 +559,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
+@@ -568,12 +562,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
    requested_visible_rect_ = visible_rect;
    if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
      // Add one to the reference frames for the one being currently egressed.
@@ -125,7 +125,7 @@ index 9d9cb7a1713c..212e236581b8 100644
      requested_num_pics_ = num_pics - num_reference_frames + 1;
    } else {
      requested_num_reference_frames_ = 0;
-@@ -1213,19 +1207,22 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles(
+@@ -1215,19 +1209,21 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
  VaapiVideoDecodeAccelerator::BufferAllocationMode
  VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
  #if defined(USE_X11)
@@ -143,15 +143,14 @@ index 9d9cb7a1713c..212e236581b8 100644
 -  return BufferAllocationMode::kSuperReduced;
 -#else
 +  if (!features::IsUsingOzonePlatform()) {
-+    // The IMPORT mode is used for Android on Chrome OS, so this doesn't
-+    // apply here.
++    // The IMPORT mode is used for Android on Chrome OS, so this doesn't apply
++    // here.
 +    DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
 +    // TODO(crbug/1116701): get video decode acceleration working with ozone.
 +    DCHECK(!features::IsUsingOzonePlatform());
 +    // For H.264 on older devices, another +1 is experimentally needed for
 +    // high-to-high resolution changes.
-+    // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295
-+    // and
++    // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
 +    // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
 +    if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
 +      return BufferAllocationMode::kReduced;
@@ -161,7 +160,7 @@ index 9d9cb7a1713c..212e236581b8 100644
    // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
    // |output_mode_| as well.
    if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
-@@ -1260,7 +1257,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+@@ -1262,7 +1258,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
    // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
    // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
    return BufferAllocationMode::kSuperReduced;
@@ -170,7 +169,7 @@ index 9d9cb7a1713c..212e236581b8 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index df500d8bdeba..029004256da7 100644
+index 4333c6adc0d9..0364b980586e 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
 @@ -648,8 +648,8 @@ bool VADisplayState::InitializeOnce() {
@@ -184,7 +183,7 @@ index df500d8bdeba..029004256da7 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2716,8 +2716,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2709,8 +2709,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -195,18 +194,18 @@ index df500d8bdeba..029004256da7 100644
  #if BUILDFLAG(IS_CHROMEOS_ASH)
    paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index 0e419c88b06d..334c51512933 100644
+index 1fa7600f120f..15131b4787e0 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-@@ -16,6 +16,7 @@
- #include "base/strings/stringprintf.h"
+@@ -15,6 +15,7 @@
+ #include "base/posix/eintr_wrapper.h"
  #include "base/trace_event/trace_event.h"
  #include "ui/gfx/buffer_format_util.h"
 +#include "ui/gfx/buffer_types.h"
  #include "ui/gfx/buffer_usage_util.h"
  #include "ui/gfx/geometry/size_conversions.h"
  #include "ui/gfx/linux/drm_util_linux.h"
-@@ -34,7 +35,9 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
+@@ -33,7 +34,9 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
        buffer_id_(buffer_manager->AllocateBufferID()) {}
  
  GbmPixmapWayland::~GbmPixmapWayland() {
@@ -217,10 +216,10 @@ index 0e419c88b06d..334c51512933 100644
      buffer_manager_->DestroyBuffer(widget_, buffer_id_);
  }
  
-@@ -61,7 +64,12 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
-     return false;
-   }
+@@ -73,7 +76,12 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
  
+   DVLOG(3) << "Created gbm bo. format= " << gfx::BufferFormatToString(format)
+            << " usage=" << gfx::BufferUsageToString(usage);
 -  CreateDmabufBasedBuffer();
 +  usage_ = usage;
 +  // Do not create wl_buffers for SCANOUT_VDA_WRITE usages. These buffers are
@@ -232,12 +231,12 @@ index 0e419c88b06d..334c51512933 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index a9b3932b1a80..9cdf4a990d75 100644
+index 9ee2aafe0d50..e7bc2515bad0 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -71,6 +71,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
-   // A unique ID to identify the buffer for this pixmap.
-   const uint32_t buffer_id_;
+@@ -76,6 +76,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+   int32_t z_order_ = 0;
+   bool z_order_set_ = false;
  
 +  // Tells the usage of this pixmap.
 +  gfx::BufferUsage usage_ = gfx::BufferUsage::SCANOUT;

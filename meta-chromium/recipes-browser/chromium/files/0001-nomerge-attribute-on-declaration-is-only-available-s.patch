@@ -25,7 +25,7 @@ Change-Id: I32e1f7dc9049737d54d8a16de5308aa5aae1ced1
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/base/compiler_specific.h b/base/compiler_specific.h
-index 6693e9ea33e9..d3b425abe9ca 100644
+index 457334d32e0f..040b6d74cd64 100644
 --- a/base/compiler_specific.h
 +++ b/base/compiler_specific.h
 @@ -340,7 +340,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
@@ -38,6 +38,3 @@ index 6693e9ea33e9..d3b425abe9ca 100644
  #define NOMERGE [[clang::nomerge]]
  #else
  #define NOMERGE
--- 
-2.25.1
-

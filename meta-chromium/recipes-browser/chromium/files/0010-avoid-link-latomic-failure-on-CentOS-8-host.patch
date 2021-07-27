@@ -16,10 +16,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 7d3506c3587c..22e50a64d4d1 100644
+index 6f993be10f69..149c9100c4b6 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1376,8 +1376,10 @@ component("base") {
+@@ -1393,8 +1393,10 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
