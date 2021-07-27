@@ -12,7 +12,6 @@ DEPENDS += "\
 
 SRC_URI += "\
         file://0001-ozone-add-va-api-support-to-wayland.patch \
-        file://0001-Reland-ozone-wayland-watch-fd-on-a-dedicated-thread.patch \
 "
 
 GN_ARGS += "\

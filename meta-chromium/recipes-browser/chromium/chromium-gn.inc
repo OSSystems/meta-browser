@@ -19,7 +19,8 @@ SRC_URI += " \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
-    file://0001-Fixed-build-with-use_ozone-false.patch \
+    file://0001-DCScan-Fix-builds-with-system-sysroots.patch \
+    file://0001-ARM64-VRegister-from_code-expected-to-be-constexpr.patch \
 "
 
 SRC_URI_append_libc-musl = "\
@@ -373,7 +374,7 @@ do_configure() {
 }
 
 do_compile() {
-	ninja -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver
+	ninja -v ${PARALLEL_MAKE} chrome chrome_sandbox chromedriver.unstripped
 }
 do_compile[progress] = "outof:^\[(\d+)/(\d+)\]\s+"
 
@@ -458,7 +459,7 @@ do_install() {
 	fi
 
 	# ChromeDriver.
-	install -m 0755 chromedriver ${D}${bindir}/chromedriver
+	install -m 0755 chromedriver.unstripped ${D}${bindir}/chromedriver
 }
 
 PACKAGES =+ "${PN}-chromedriver"
