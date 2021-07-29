@@ -26,7 +26,7 @@ SRC_URI += " \
     file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
 "
 
-SRC_URI_append_libc-musl = "\
+SRC_URI:append:libc-musl = "\
     file://musl/0001-mallinfo-implementation-is-glibc-specific.patch \
     file://musl/0002-execinfo-implementation-is-glibc-specific.patch \
     file://musl/0003-Define-TEMP_FAILURE_RETRY-and-__si_fields.patch \
@@ -87,21 +87,21 @@ DEPENDS += " \
 DEPEND_append_runtime-llvm = " compiler-rt-native libcxx-native"
 
 # The wrapper script we use from upstream requires bash.
-RDEPENDS_${PN} = "bash"
+RDEPENDS:${PN} = "bash"
 
 COMPATIBLE_MACHINE = "(-)"
-COMPATIBLE_MACHINE_aarch64 = "(.*)"
-COMPATIBLE_MACHINE_armv6 = "(.*)"
-COMPATIBLE_MACHINE_armv7a = "(.*)"
-COMPATIBLE_MACHINE_armv7ve = "(.*)"
-COMPATIBLE_MACHINE_x86 = "(.*)"
-COMPATIBLE_MACHINE_x86-64 = "(.*)"
+COMPATIBLE_MACHINE:aarch64 = "(.*)"
+COMPATIBLE_MACHINE:armv6 = "(.*)"
+COMPATIBLE_MACHINE:armv7a = "(.*)"
+COMPATIBLE_MACHINE:armv7ve = "(.*)"
+COMPATIBLE_MACHINE:x86 = "(.*)"
+COMPATIBLE_MACHINE:x86-64 = "(.*)"
 
 # Also build the parts that are run on the host with clang.
-BUILD_AR_toolchain-clang = "llvm-ar"
-BUILD_CC_toolchain-clang = "clang"
-BUILD_CXX_toolchain-clang = "clang++"
-BUILD_LD_toolchain-clang = "clang"
+BUILD_AR:toolchain-clang = "llvm-ar"
+BUILD_CC:toolchain-clang = "clang"
+BUILD_CXX:toolchain-clang = "clang++"
+BUILD_LD:toolchain-clang = "clang"
 
 PACKAGECONFIG ??= "use-egl"
 
@@ -180,25 +180,25 @@ GN_ARGS += "use_lld=true use_gold=false"
 #    instead, so that if DEBUG_BUILD is not set GN will not create a huge debug
 #    binary anyway. Since our compiler flags are passed after GN's, -g0 does
 #    not cause any issues if DEBUG_BUILD is set, as -g1 will be passed later.
-DEBUG_FLAGS_remove_arm = "-g"
-DEBUG_FLAGS_append_arm = "-g1"
-DEBUG_FLAGS_remove_x86 = "-g"
-DEBUG_FLAGS_append_x86 = "-g1"
+DEBUG_FLAGS:remove:arm = "-g"
+DEBUG_FLAGS:append:arm = "-g1"
+DEBUG_FLAGS:remove:x86 = "-g"
+DEBUG_FLAGS:append:x86 = "-g1"
 GN_ARGS += "symbol_level=0"
 
 # As of Chromium 62.0.3202.94 and Yocto Rocko (GCC 7, binutils 2.29), passing
 # -g to the compiler results in many linker errors on aarch64, such as:
 # obj/third_party/WebKit/Source/modules/payments/libpayments.a(PaymentEventDataConversion.o)(.debug_loc+0x4e25): error: relocation overflow in R_AARCH64_ABS32
-DEBUG_FLAGS_remove_aarch64 = "-g"
-DEBUG_FLAGS_append_aarch64 = "-g1"
+DEBUG_FLAGS:remove:aarch64 = "-g"
+DEBUG_FLAGS:append:aarch64 = "-g1"
 
 # As of Chromium 60.0.3112.101 and Yocto Pyro (GCC 6, binutils 2.28), passing
 # -g to the compiler results in many linker errors on x86_64, such as:
 # obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)(.debug_loc+0x1e9a5): error: relocation overflow: reference to local symbol 82 in obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)
 # obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)(.debug_loc+0x253c): error: relocation overflow: reference to local symbol 31 in obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)
 # so we have to use the same hack described above.
-DEBUG_FLAGS_remove_x86-64 = "-g"
-DEBUG_FLAGS_append_x86-64 = "-g1"
+DEBUG_FLAGS:remove:x86-64 = "-g"
+DEBUG_FLAGS:append:x86-64 = "-g1"
 
 # Disable Chrome Remote Desktop (aka Chromoting) support. Building host support
 # (so that the machine running this recipe can be controlled remotely from
@@ -277,7 +277,7 @@ GN_ARGS += ' \
 # If we do not pass |arm_arch| and friends to GN, it will deduce a value that
 # will then conflict with TUNE_CCARGS and CC.
 # Note that as of M61 in some corner cases parts of the build system disable
-# the "compiler_arm_fpu" GN config, whereas -mfpu is always passed via ${CC}.
+# the "compiler:arm_fpu" GN config, whereas -mfpu is always passed via ${CC}.
 # We might want to rework that if there are issues in the future.
 def get_compiler_flag(params, param_name, d):
     """Given a sequence of compiler arguments in |params|, returns the value of
@@ -290,17 +290,17 @@ def get_compiler_flag(params, param_name, d):
 ARM_FLOAT_ABI = "${@bb.utils.contains('TUNE_FEATURES', 'callconvention-hard', 'hard', 'softfp', d)}"
 ARM_FPU = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mfpu', d)}"
 ARM_TUNE = "${@get_compiler_flag(d.getVar('TUNE_CCARGS').split(), '-mcpu', d)}"
-ARM_VERSION_aarch64 = "8"
-ARM_VERSION_armv7a = "7"
-ARM_VERSION_armv7ve = "7"
-ARM_VERSION_armv6 = "6"
+ARM_VERSION:aarch64 = "8"
+ARM_VERSION:armv7a = "7"
+ARM_VERSION:armv7ve = "7"
+ARM_VERSION:armv6 = "6"
 
 # GN computes and defaults to it automatically where needed
 # forcing it from cmdline breaks build on places where it ends up
 # overriding what GN wants
-TUNE_CCARGS_remove = "-mthumb"
+TUNE_CCARGS:remove = "-mthumb"
 
-GN_ARGS_append_arm = ' \
+GN_ARGS:append:arm = ' \
         arm_float_abi="${ARM_FLOAT_ABI}" \
         arm_fpu="${ARM_FPU}" \
         arm_tune="${ARM_TUNE}" \
@@ -308,15 +308,15 @@ GN_ARGS_append_arm = ' \
 '
 # tcmalloc's atomicops-internals-arm-v6plus.h uses the "dmb" instruction that
 # is not available on (some?) ARMv6 models, which causes the build to fail.
-GN_ARGS_append_armv6 += 'use_allocator="none"'
+GN_ARGS:append:armv6 += 'use_allocator="none"'
 # The WebRTC code fails to build on ARMv6 when NEON is enabled.
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
-GN_ARGS_append_armv6 += 'arm_use_neon=false'
+GN_ARGS:append:armv6 += 'arm_use_neon=false'
 
 # Disable glibc shims on musl
 # tcmalloc does not play well with musl as of M62 (and possibly earlier).
 # https://github.com/gperftools/gperftools/issues/693
-GN_ARGS_append_libc-musl = ' use_allocator_shim=false'
+GN_ARGS:append:libc-musl = ' use_allocator_shim=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
@@ -471,9 +471,9 @@ do_install() {
 
 PACKAGES =+ "${PN}-chromedriver"
 
-FILES_${PN}-chromedriver = "${bindir}/chromedriver"
+FILES:${PN}-chromedriver = "${bindir}/chromedriver"
 
-FILES_${PN} = " \
+FILES:${PN} = " \
         ${bindir}/chromium \
         ${datadir}/applications/chromium.desktop \
         ${datadir}/icons/hicolor/*x*/apps/chromium.png \
@@ -483,4 +483,4 @@ FILES_${PN} = " \
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 # There is no need to ship empty -dev packages.
-ALLOW_EMPTY_${PN}-dev = "0"
+ALLOW_EMPTY:${PN}-dev = "0"

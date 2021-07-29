@@ -38,5 +38,5 @@ GN_ARGS += "\
 GN_ARGS += "use_x11=false"
 
 # The chromium binary must always be started with those arguments.
-CHROMIUM_EXTRA_ARGS_append = " --ozone-platform=wayland"
+CHROMIUM_EXTRA_ARGS:append = " --ozone-platform=wayland"
 

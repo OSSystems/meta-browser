@@ -8,7 +8,7 @@ DEPENDS += "curl startup-notification libevent cairo libnotify \
             yasm-native nasm-native unzip-native \
             virtual/${TARGET_PREFIX}rust cargo-native ${RUSTLIB_DEP} \
            "
-RDEPENDS_${PN}-dev = "dbus"
+RDEPENDS:${PN}-dev = "dbus"
 
 LICENSE = "MPLv2"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=33;md5=35d7fa1c4b86c115051c925fd624a5be"
@@ -60,12 +60,12 @@ MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 
 inherit mozilla rust-common
 
-TOOLCHAIN_pn-firefox = "clang"
+TOOLCHAIN:pn-firefox = "clang"
 AS = "${CC}"
 
 DISABLE_STATIC=""
 
-ARM_INSTRUCTION_SET_armv5 = "arm"
+ARM_INSTRUCTION_SET:armv5 = "arm"
 
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
@@ -97,7 +97,7 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbit-multiple-compositors',
             file://fixes/0001-Enable-to-suppress-multiple-compositors.patch \
 	   ', '', d)}"
 
-do_install_append() {
+do_install:append() {
     install -d ${D}${datadir}/applications
     install -d ${D}${datadir}/pixmaps
 
@@ -122,15 +122,15 @@ do_install_append() {
     chown root:root -R ${D}${libdir}
 }
 
-FILES_${PN} = "${bindir}/${PN} \
+FILES:${PN} = "${bindir}/${PN} \
                ${datadir}/applications/ \
                ${datadir}/pixmaps/ \
                ${libdir}/${PN}/* \
                ${libdir}/${PN}/.autoreg \
                ${bindir}/defaults"
-FILES_${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
-FILES_${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
-FILES_${PN}-dbg += "${libdir}/${PN}/.debug \
+FILES:${PN}-dev += "${datadir}/idl ${bindir}/${PN}-config ${libdir}/${PN}-devel-*"
+FILES:${PN}-staticdev += "${libdir}/${PN}-devel-*/sdk/lib/*.a"
+FILES:${PN}-dbg += "${libdir}/${PN}/.debug \
                     ${libdir}/${PN}/*/.debug \
                     ${libdir}/${PN}/*/*/.debug \
                     ${libdir}/${PN}/*/*/*/.debug \
