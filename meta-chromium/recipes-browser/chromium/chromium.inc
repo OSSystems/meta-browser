@@ -14,9 +14,9 @@ S = "${WORKDIR}/chromium-${PV}"
 # guarantee that the generated code will work as expected.
 TOOLCHAIN = "clang"
 
-# By default, clang.bbclass sets TOOLCHAIN_class-native to "gcc", but we want
+# By default, clang.bbclass sets TOOLCHAIN:class-native to "gcc", but we want
 # to build the native recipes (e.g. GN) with clang too.
-TOOLCHAIN_class-native = "clang"
+TOOLCHAIN:class-native = "clang"
 
 # This makes the target build use libc++ and compiler_rt instead of the GNU
 # runtime, just like upstream does. The native binaries compiled and run as
