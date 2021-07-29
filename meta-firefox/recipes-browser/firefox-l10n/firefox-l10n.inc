@@ -2,7 +2,7 @@
 # Released under the MIT license (see packages/COPYING)
 
 DEPENDS = "unzip-native"
-RDEPENDS_${PN} = "firefox"
+RDEPENDS:${PN} = "firefox"
 
 LICENSE = "MPLv2"
 
@@ -12,7 +12,7 @@ LANGUAGE = "${@get_language_name('${PN}')}"
 PR = "r3"
 
 # Mangle place where to store the file
-DL_DIR_append = "/${PN}-${PV}"
+DL_DIR:append = "/${PN}-${PV}"
 
 SRC_URI = "https://archive.mozilla.org/pub/firefox/releases/${PV}/linux-x86_64/xpi/${LANGUAGE}.xpi"
 S = "${WORKDIR}"
@@ -45,4 +45,4 @@ do_install_xpi_pack() {
     install -D -m 0644 ${LANGUAGE}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
 }
 
-FILES_${PN} += "${libdir}/firefox"
+FILES:${PN} += "${libdir}/firefox"
