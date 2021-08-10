@@ -17,11 +17,9 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  base/debug/stack_trace.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/base/debug/stack_trace.cc b/base/debug/stack_trace.cc
-index f5e2dbba14..6691e32d01 100644
 --- a/base/debug/stack_trace.cc
 +++ b/base/debug/stack_trace.cc
-@@ -225,14 +225,14 @@ std::string StackTrace::ToString() const {
+@@ -259,14 +259,14 @@ std::string StackTrace::ToString() const
  }
  std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
    std::stringstream stream;
@@ -33,7 +31,7 @@ index f5e2dbba14..6691e32d01 100644
  }
  
  std::ostream& operator<<(std::ostream& os, const StackTrace& s) {
--#if !defined(__UCLIBC__) & !defined(_AIX)
+-#if !defined(__UCLIBC__) && !defined(_AIX)
 +#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(_AIX)
    s.OutputToStream(&os);
  #else
