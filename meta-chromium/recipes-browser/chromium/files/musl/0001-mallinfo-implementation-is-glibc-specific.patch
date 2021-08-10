@@ -14,19 +14,19 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -119,7 +119,7 @@ size_t ProcessMetrics::GetMallocUsage()
-   malloc_statistics_t stats = {0};
-   malloc_zone_statistics(nullptr, &stats);
-   return stats.size_in_use;
--#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
-+#elif defined(__GLIBC__) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
-   struct mallinfo minfo = mallinfo();
- #if BUILDFLAG(USE_TCMALLOC)
-   return minfo.uordblks;
+@@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_
+ 
+ #endif  // !defined(OS_FUCHSIA)
+ 
+-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
++#if defined(__GLIBC__) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+ namespace {
+ 
+ size_t GetMallocUsageMallinfo() {
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -184,7 +184,7 @@ bool MallocDumpProvider::OnMemoryDump(co
-   }
+@@ -203,7 +203,7 @@ bool MallocDumpProvider::OnMemoryDump(co
+                      &allocated_objects_count);
  #elif defined(OS_FUCHSIA)
  // TODO(fuchsia): Port, see https://crbug.com/706592.
 -#else
