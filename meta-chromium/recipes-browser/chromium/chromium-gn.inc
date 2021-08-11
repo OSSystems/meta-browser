@@ -24,6 +24,7 @@ SRC_URI += " \
     file://fix-harfbuzz-supp-size-error.patch \
     file://fix-ruy-numeric-limits-error.patch \
     file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
+    file://chromium-freetype-2.11.patch \
 "
 
 SRC_URI:append:libc-musl = "\
