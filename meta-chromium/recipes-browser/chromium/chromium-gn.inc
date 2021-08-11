@@ -318,7 +318,7 @@ GN_ARGS:append:armv6 += 'arm_use_neon=false'
 # Disable glibc shims on musl
 # tcmalloc does not play well with musl as of M62 (and possibly earlier).
 # https://github.com/gperftools/gperftools/issues/693
-GN_ARGS:append:libc-musl = ' use_allocator_shim=false'
+GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_allocator="none"'
 
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
