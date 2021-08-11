@@ -61,6 +61,7 @@ DEPENDS += " \
     atk \
     bison-native \
     cairo \
+    curl \
     expat \
     flac \
     freetype \
