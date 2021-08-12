@@ -23,6 +23,15 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  namespace {
  
  size_t GetMallocUsageMallinfo() {
+@@ -134,7 +134,7 @@ size_t ProcessMetrics::GetMallocUsage()
+   malloc_statistics_t stats = {0};
+   malloc_zone_statistics(nullptr, &stats);
+   return stats.size_in_use;
+-#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
++#elif defined(__GLIBC__) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+   return GetMallocUsageMallinfo();
+ #elif defined(OS_FUCHSIA)
+   // TODO(fuchsia): Not currently exposed. https://crbug.com/735087.
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
 @@ -203,7 +203,7 @@ bool MallocDumpProvider::OnMemoryDump(co
@@ -67,3 +76,32 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
  /* Define to 1 if you have the <malloc/malloc.h> header file. */
  /* #undef HAVE_MALLOC_MALLOC_H */
+--- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
++++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
+@@ -14,7 +14,7 @@ limitations under the License.
+ ==============================================================================*/
+ #include "tensorflow/lite/profiling/memory_info.h"
+ 
+-#ifdef __linux__
++#ifdef __GLIBC__
+ #include <malloc.h>
+ #include <sys/resource.h>
+ #include <sys/time.h>
+@@ -27,7 +27,7 @@ namespace memory {
+ const int MemoryUsage::kValueNotSet = 0;
+ 
+ bool MemoryUsage::IsSupported() {
+-#ifdef __linux__
++#ifdef __GLIBC__
+   return true;
+ #endif
+   return false;
+@@ -35,7 +35,7 @@ bool MemoryUsage::IsSupported() {
+ 
+ MemoryUsage GetMemoryUsage() {
+   MemoryUsage result;
+-#ifdef __linux__
++#ifdef __GLIBC__
+   rusage res;
+   if (getrusage(RUSAGE_SELF, &res) == 0) {
+     result.max_rss_kb = res.ru_maxrss;
