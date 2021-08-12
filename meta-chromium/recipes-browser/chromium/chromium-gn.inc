@@ -49,6 +49,7 @@ SRC_URI:append:libc-musl = "\
     file://musl/0019-adjust-thread-stack-sizes.patch \
     file://musl/0020-Fix-tab-crashes-on-musl.patch \
     file://musl/0021-pthread_getname_np.patch \
+    file://musl/scoped-file.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
