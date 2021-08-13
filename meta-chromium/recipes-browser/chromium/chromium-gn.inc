@@ -87,7 +87,7 @@ DEPENDS += " \
     qemu-native \
     virtual/libgl \
 "
-DEPEND:append:runtime-llvm = " compiler-rt-native libcxx-native"
+DEPEND:append:runtime-llvm = "${@bb.utils.contains('TCLIBC', 'musl', ' compiler-rt-native libcxx-native', '' ,d)}"
 
 # The wrapper script we use from upstream requires bash.
 RDEPENDS:${PN} = "bash"
@@ -257,9 +257,9 @@ GN_ARGS += ' \
 '
 
 # Use libcxx headers for native parts
-BUILD_CPPFLAGS:append:rumtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
+BUILD_CPPFLAGS:append:rumtime-llvm = "${@bb.utils.contains('TCLIBC', 'musl', ' -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++', '' ,d)}"
 # Use libgcc for native parts
-BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:append:runtime-llvm = "${@bb.utils.contains('TCLIBC', 'musl', ' -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}', '' ,d)}"
 
 # Toolchains we will use for the build. We need to point to the toolchain file
 # we've created, set the right target architecture and make sure we are not
