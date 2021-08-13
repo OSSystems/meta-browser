@@ -271,7 +271,6 @@ GN_ARGS += ' \
         is_clang=true \
         clang_base_path="${@clang_install_path(d)}" \
         clang_use_chrome_plugins=false \
-        linux_use_bundled_binutils=false \
         target_cpu="${@gn_target_arch_name(d)}" \
         v8_snapshot_toolchain="//build/toolchain/yocto:yocto_target" \
 '
