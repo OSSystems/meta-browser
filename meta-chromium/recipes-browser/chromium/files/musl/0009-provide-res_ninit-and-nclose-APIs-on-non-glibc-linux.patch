@@ -9,124 +9,63 @@ These APIs are not implemented on musl
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- net/dns/dns_config_service_posix.cc | 30 +++++++++++++++++++++++++++++
- net/dns/dns_reloader.cc             | 30 +++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+)
-
---- a/net/dns/dns_config_service_posix.cc
-+++ b/net/dns/dns_config_service_posix.cc
-@@ -32,6 +32,36 @@
- #include "net/dns/dns_config_watcher_mac.h"
- #endif
- 
-+#if !defined(__GLIBC__)
-+/***************************************************************************
-+ * resolv_compat.h
-+ *
-+ * Mimick GLIBC's res_ninit() and res_nclose() for musl libc
-+ * Note: res_init() is actually deprecated according to
-+ * http://docs.oracle.com/cd/E36784_01/html/E36875/res-nclose-3resolv.html
-+ **************************************************************************/
-+#include <string.h>
-+
-+static inline int res_ninit(res_state statp)
-+{
-+	int rc = res_init();
-+	if (statp != &_res) {
-+		memcpy(statp, &_res, sizeof(*statp));
-+	}
-+	return rc;
-+}
-+
-+static inline int res_nclose(res_state statp)
-+{
-+	if (!statp)
-+		return -1;
-+	if (statp != &_res) {
-+		memset(statp, 0, sizeof(*statp));
-+	}
-+	return 0;
-+}
-+#endif
-+
- namespace net {
- 
- namespace internal {
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
-@@ -17,6 +17,36 @@
- #include "base/threading/thread_local.h"
- #include "net/base/network_change_notifier.h"
+@@ -4,8 +4,7 @@
  
-+#if !defined(__GLIBC__)
-+/***************************************************************************
-+ * resolv_compat.h
-+ *
-+ * Mimick GLIBC's res_ninit() and res_nclose() for musl libc
-+ * Note: res_init() is actually deprecated according to
-+ * http://docs.oracle.com/cd/E36784_01/html/E36875/res-nclose-3resolv.html
-+ **************************************************************************/
-+#include <string.h>
-+
-+static inline int res_ninit(res_state statp)
-+{
-+	int rc = res_init();
-+	if (statp != &_res) {
-+		memcpy(statp, &_res, sizeof(*statp));
-+	}
-+	return rc;
-+}
-+
-+static inline int res_nclose(res_state statp)
-+{
-+	if (!statp)
-+		return -1;
-+	if (statp != &_res) {
-+		memset(statp, 0, sizeof(*statp));
-+	}
-+	return 0;
-+}
-+#endif
-+
- namespace net {
+ #include "net/dns/dns_reloader.h"
  
- namespace {
+-#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
+-    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
++#if defined(__GLIBC__)
+ 
+ #include <resolv.h>
+ 
+--- a/net/dns/host_resolver_manager.cc
++++ b/net/dns/host_resolver_manager.cc
+@@ -2536,8 +2536,7 @@ HostResolverManager::HostResolverManager
+   NetworkChangeNotifier::AddConnectionTypeObserver(this);
+   if (system_dns_config_notifier_)
+     system_dns_config_notifier_->AddObserver(this);
+-#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
+-    !defined(OS_ANDROID)
++#if defined(__GLIBC__)
+   EnsureDnsReloaderInit();
+ #endif
+ 
+--- a/net/dns/host_resolver_proc.cc
++++ b/net/dns/host_resolver_proc.cc
+@@ -176,8 +176,7 @@ int SystemHostResolverCall(const std::st
+   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                 base::BlockingType::WILL_BLOCK);
+ 
+-#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
+-    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
++#if defined(__GLIBC__)
+   DnsReloaderMaybeReload();
+ #endif
+   absl::optional<AddressInfo> ai;
 --- a/net/dns/dns_config_service_linux.cc
 +++ b/net/dns/dns_config_service_linux.cc
-@@ -35,6 +35,36 @@
- #include "net/dns/serial_worker.h"
- #include "third_party/abseil-cpp/absl/types/optional.h"
+@@ -486,20 +486,11 @@ class DnsConfigServiceLinux::ConfigReade
  
-+#if !defined(__GLIBC__)
-+/***************************************************************************
-+ * resolv_compat.h
-+ *
-+ * Mimick GLIBC's res_ninit() and res_nclose() for musl libc
-+ * Note: res_init() is actually deprecated according to
-+ * http://docs.oracle.com/cd/E36784_01/html/E36875/res-nclose-3resolv.html
-+ **************************************************************************/
-+#include <string.h>
-+
-+static inline int res_ninit(res_state statp)
-+{
-+       int rc = res_init();
-+       if (statp != &_res) {
-+               memcpy(statp, &_res, sizeof(*statp));
-+       }
-+       return rc;
-+}
-+
-+static inline int res_nclose(res_state statp)
-+{
-+       if (!statp)
-+               return -1;
-+       if (statp != &_res) {
-+               memset(statp, 0, sizeof(*statp));
-+       }
-+       return 0;
-+}
-+#endif
-+
- namespace net {
+ std::unique_ptr<struct __res_state>
+ DnsConfigServiceLinux::ResolvReader::GetResState() {
+-  auto res = std::make_unique<struct __res_state>();
+-  memset(res.get(), 0, sizeof(struct __res_state));
+-
+-  if (res_ninit(res.get()) != 0) {
+-    CloseResState(res.get());
+-    return nullptr;
+-  }
+-
+-  return res;
++  return nullptr;
+ }
  
- namespace internal {
+ void DnsConfigServiceLinux::ResolvReader::CloseResState(
+     struct __res_state* res) {
+-  res_nclose(res);
+ }
+ 
+ DnsConfigServiceLinux::DnsConfigServiceLinux()
