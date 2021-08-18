@@ -257,7 +257,7 @@ GN_ARGS += ' \
 '
 
 # Use libcxx headers for native parts
-BUILD_CPPFLAGS:append:rumtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
+BUILD_CPPFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
 BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
 
