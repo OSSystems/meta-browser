@@ -18,6 +18,7 @@ SRC_URI += " \
     file://0006-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
+    file://0013-sql-make-VirtualCursor-standard-layout-type.patch \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0001-DCScan-Fix-builds-with-system-sysroots.patch \
     file://0001-ARM64-VRegister-from_code-expected-to-be-constexpr.patch \
