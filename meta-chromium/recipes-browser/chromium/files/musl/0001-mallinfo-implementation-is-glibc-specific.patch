@@ -9,7 +9,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 +++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 @@ -35,7 +35,7 @@ bool MemoryUsage::IsSupported() {
-
+ 
  MemoryUsage GetMemoryUsage() {
    MemoryUsage result;
 -#ifdef __linux__
@@ -20,21 +20,21 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
 @@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_
-
+ 
  #endif  // !defined(OS_FUCHSIA)
-
+ 
 -#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 +#if (defined(OS_LINUX) && defined(__GLIBC__)) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
  namespace {
-
+ 
  size_t GetMallocUsageMallinfo() {
 @@ -127,16 +127,16 @@ size_t GetMallocUsageMallinfo() {
  }
-
+ 
  }  // namespace
 -#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 +#endif  // (defined(OS_LINUX) && defined(__GLIBC__)) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
-
+ 
  size_t ProcessMetrics::GetMallocUsage() {
  #if defined(OS_APPLE)
    malloc_statistics_t stats = {0};
@@ -63,10 +63,21 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 @@ -130,7 +130,7 @@
  /* #undef HAVE_MALLCTL */
-
+ 
  /* Define to 1 if you have the `mallinfo' function. */
 -#define HAVE_MALLINFO 1
 +/* #undef HAVE_MALLINFO */
-
+ 
  /* Define to 1 if you have the <malloc.h> header file. */
  #define HAVE_MALLOC_H 1
+--- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
++++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
+@@ -125,7 +125,7 @@
+ /* #undef HAVE_MALLCTL */
+ 
+ /* Define to 1 if you have the `mallinfo' function. */
+-#define HAVE_MALLINFO 1
++/* #undef HAVE_MALLINFO */
+ 
+ /* Define to 1 if you have the <malloc/malloc.h> header file. */
+ /* #undef HAVE_MALLOC_MALLOC_H */
