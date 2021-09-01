@@ -469,6 +469,9 @@ do_install() {
 
 	# ChromeDriver.
 	install -m 0755 chromedriver.unstripped ${D}${bindir}/chromedriver
+
+	# Install crashpad_handler, it is renamed in newer versions so be aware when upgrading to M94+
+	install -m 0755 crashpad_handler ${D}${libdir}/chromium/
 }
 
 PACKAGES =+ "${PN}-chromedriver"
