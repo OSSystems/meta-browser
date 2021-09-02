@@ -7,6 +7,7 @@ DEPENDS += "curl startup-notification libevent cairo libnotify \
             nodejs-native cbindgen-native \
             yasm-native nasm-native unzip-native \
             virtual/${TARGET_PREFIX}rust cargo-native ${RUSTLIB_DEP} \
+            gtk+3 \
            "
 RDEPENDS:${PN}-dev = "dbus"
 
