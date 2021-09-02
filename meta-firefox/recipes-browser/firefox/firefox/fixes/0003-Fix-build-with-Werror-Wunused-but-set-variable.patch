@@ -1,0 +1,40 @@
+From 63a475504ebf915000634b7fee3f4ce7feefea07 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Thu, 2 Sep 2021 15:00:08 +0200
+Subject: [PATCH] Fix build with -Werror,-Wunused-but-set-variable
+
+Fixes:
+
+firefox/68.9.0esr-r0/firefox-68.9.0/gfx/harfbuzz/src/hb-subset-cff1.cc:467:33: error: variable 'supp_size' set but not used [-Werror,-Wunused-but-set-variable]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ gfx/harfbuzz/src/hb-subset-cff1.cc | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/gfx/harfbuzz/src/hb-subset-cff1.cc b/gfx/harfbuzz/src/hb-subset-cff1.cc
+index 49ac0bf429..d51842e297 100644
+--- a/gfx/harfbuzz/src/hb-subset-cff1.cc
++++ b/gfx/harfbuzz/src/hb-subset-cff1.cc
+@@ -464,12 +464,11 @@ struct cff_subset_plan {
+   unsigned int plan_subset_encoding (const OT::cff1::accelerator_subset_t &acc, hb_subset_plan_t *plan)
+   {
+     const Encoding *encoding = acc.encoding;
+-    unsigned int  size0, size1, supp_size;
++    unsigned int  size0, size1;
+     hb_codepoint_t  code, last_code = CFF_UNDEF_CODE;
+     hb_vector_t<hb_codepoint_t> supp_codes;
+ 
+     subset_enc_code_ranges.resize (0);
+-    supp_size = 0;
+     supp_codes.init ();
+ 
+     subset_enc_num_codes = plan->num_output_glyphs () - 1;
+@@ -505,7 +504,6 @@ struct cff_subset_plan {
+ 	  code_pair_t pair = { supp_codes[i], sid };
+ 	  subset_enc_supp_codes.push (pair);
+ 	}
+-	supp_size += SuppEncoding::static_size * supp_codes.length;
+       }
+     }
+     supp_codes.fini ();
