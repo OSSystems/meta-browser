@@ -31,6 +31,7 @@ SRC_URI = "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${P
            file://fixes/pre-generated-old-configure.patch \
            file://fixes/link-with-libpangoft.patch \
            file://fixes/0001-Bug-1721326-Fix-build-with-glibc-2.34.patch \
+           file://fixes/0002-security-Fix-build-with-glibc-2.34.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
            file://porting/NSS-Fix-FTBFS-on-Hurd-because-of-MAXPATHLEN.patch \
            file://porting/Work-around-Debian-bug-844357.patch \
