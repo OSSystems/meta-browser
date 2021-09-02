@@ -1,0 +1,43 @@
+From 336a80c4ccb43b7f175918744984be164e84008d Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Thu, 2 Sep 2021 15:00:39 +0200
+Subject: [PATCH] Fix build with gcc-11
+
+Fixes:
+
+ 0:26.15 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:120:41: error: no member named 'numeric_limits' in namespace 'std'
+ 0:26.15         rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.15                                    ~~~~~^
+ 0:26.15 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:120:56: error: unexpected type name 'uintptr_t': expected expression
+ 0:26.15         rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.15                                                        ^
+ 0:26.17 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:120:68: error: no member named 'max' in the global namespace
+ 0:26.17         rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.17                                                                  ~~^
+ 0:26.17 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:134:37: error: no member named 'numeric_limits' in namespace 'std'
+ 0:26.17     rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.17                                ~~~~~^
+ 0:26.17 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:134:52: error: unexpected type name 'uintptr_t': expected expression
+ 0:26.17     rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.17                                                    ^
+ 0:26.18 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/toolkit/components/telemetry/other/ProcessedStack.cpp:134:64: error: no member named 'max' in the global namespace
+ 0:26.18     rawStack[stackIndex].mPC = std::numeric_limits<uintptr_t>::max();
+ 0:26.18                                                              ~~^
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ toolkit/components/telemetry/other/ProcessedStack.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/toolkit/components/telemetry/other/ProcessedStack.cpp b/toolkit/components/telemetry/other/ProcessedStack.cpp
+index 148437b75a..fd53708c25 100644
+--- a/toolkit/components/telemetry/other/ProcessedStack.cpp
++++ b/toolkit/components/telemetry/other/ProcessedStack.cpp
+@@ -5,6 +5,7 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #include "ProcessedStack.h"
++#include <limits>
+ 
+ namespace {
+ 
