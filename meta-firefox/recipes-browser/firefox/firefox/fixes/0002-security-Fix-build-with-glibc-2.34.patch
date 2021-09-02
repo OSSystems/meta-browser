@@ -1,0 +1,53 @@
+From a8bbe99b671e5f751201e3eae8a114d87c2f08b2 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Thu, 2 Sep 2021 14:59:03 +0200
+Subject: [PATCH] security: Fix build with glibc-2.34
+
+From https://bugzilla.redhat.com/attachment.cgi?id=1803524&action=diff
+
+Fixes:
+0:03.15 In file included from /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/firefox-build-dir/security/sandbox/linux/launch/Unified_cpp_linux_launch0.cpp:11:
+ 0:03.15 /OE/build/test-oe-build-time/poky/build/tmp/work/core2-64-poky-linux/firefox/68.9.0esr-r0/firefox-68.9.0/security/sandbox/linux/launch/SandboxLaunch.cpp:415:20: error: no matching function for call to 'ArrayEnd'
+ 0:03.15   void* stackPtr = ArrayEnd(miniStack);
+ 0:03.15                    ^~~~~~~~
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ security/sandbox/linux/launch/SandboxLaunch.cpp | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/security/sandbox/linux/launch/SandboxLaunch.cpp b/security/sandbox/linux/launch/SandboxLaunch.cpp
+index 2c179c0659..ee3bbad747 100644
+--- a/security/sandbox/linux/launch/SandboxLaunch.cpp
++++ b/security/sandbox/linux/launch/SandboxLaunch.cpp
+@@ -408,7 +408,7 @@ static int CloneCallee(void* aPtr) {
+ // we don't currently support sandboxing under valgrind.
+ MOZ_NEVER_INLINE MOZ_ASAN_BLACKLIST static pid_t DoClone(int aFlags,
+                                                          jmp_buf* aCtx) {
+-  uint8_t miniStack[PTHREAD_STACK_MIN];
++  uint8_t miniStack[4096];
+ #ifdef __hppa__
+   void* stackPtr = miniStack;
+ #else
+@@ -429,13 +429,19 @@ static pid_t ForkWithFlags(int aFlags) {
+                                CLONE_CHILD_CLEARTID;
+   MOZ_RELEASE_ASSERT((aFlags & kBadFlags) == 0);
+ 
++  // Block signals due to small stack in DoClone.
++  sigset_t oldSigs;
++  BlockAllSignals(&oldSigs);
++
++  int ret = 0;
+   jmp_buf ctx;
+   if (setjmp(ctx) == 0) {
+     // In the parent and just called setjmp:
+-    return DoClone(aFlags | SIGCHLD, &ctx);
++    ret = DoClone(aFlags | SIGCHLD, &ctx);
+   }
++  RestoreSignals(&oldSigs);
+   // In the child and have longjmp'ed:
+-  return 0;
++  return ret;
+ }
+ 
+ static bool WriteStringToFile(const char* aPath, const char* aStr,
