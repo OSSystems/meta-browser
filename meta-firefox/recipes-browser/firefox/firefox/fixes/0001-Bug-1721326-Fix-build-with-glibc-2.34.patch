@@ -1,0 +1,51 @@
+From 2a8989439cf4e0fa51e03ec217236f6845b54a93 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Thu, 2 Sep 2021 14:58:18 +0200
+Subject: [PATCH] Bug-1721326: Fix build with glibc-2.34
+
+Upstream-Status: Backport [https://hg.mozilla.org/mozilla-central/rev/2ec5d7b0bc885bc0c686f7a7a5bd9d1c4bc4df9b]
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ js/xpconnect/src/XPCJSContext.cpp | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/js/xpconnect/src/XPCJSContext.cpp b/js/xpconnect/src/XPCJSContext.cpp
+index b84ed7001e..783b891457 100644
+--- a/js/xpconnect/src/XPCJSContext.cpp
++++ b/js/xpconnect/src/XPCJSContext.cpp
+@@ -84,13 +84,10 @@ using namespace xpc;
+ using namespace JS;
+ using mozilla::dom::AutoEntryScript;
+ 
+-// The watchdog thread loop is pretty trivial, and should not require much stack
+-// space to do its job. So only give it 32KiB or the platform minimum.
++// We will clamp to reasonable values if this isn't set.
+ #if !defined(PTHREAD_STACK_MIN)
+ #  define PTHREAD_STACK_MIN 0
+ #endif
+-static constexpr size_t kWatchdogStackSize =
+-    PTHREAD_STACK_MIN < 32 * 1024 ? 32 * 1024 : PTHREAD_STACK_MIN;
+ 
+ static void WatchdogMain(void* arg);
+ class Watchdog;
+@@ -159,12 +156,19 @@ class Watchdog {
+     {
+       AutoLockWatchdog lock(this);
+ 
++      // The watchdog thread loop is pretty trivial, and should not
++      // require much stack space to do its job. So only give it 32KiB
++      // or the platform minimum. On modern Linux libc this might resolve to
++      // a runtime call.
++      size_t watchdogStackSize = PTHREAD_STACK_MIN;
++      watchdogStackSize = std::max<size_t>(32 * 1024, watchdogStackSize);
++
+       // Gecko uses thread private for accounting and has to clean up at thread
+       // exit. Therefore, even though we don't have a return value from the
+       // watchdog, we need to join it on shutdown.
+       mThread = PR_CreateThread(PR_USER_THREAD, WatchdogMain, this,
+                                 PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD,
+-                                PR_JOINABLE_THREAD, kWatchdogStackSize);
++                                PR_JOINABLE_THREAD, watchdogStackSize);
+       if (!mThread) {
+         MOZ_CRASH("PR_CreateThread failed!");
+       }
