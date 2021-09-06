@@ -93,11 +93,11 @@ def write_toolchain_file(d, file_path):
         'cxx': d.expand('${CXX}'),
         'ar': d.expand('${AR}'),
         'nm': d.expand('${NM}'),
-        'readelf': d.expand('${TARGET_PREFIX}readelf'),
-        'extra_cflags': d.expand('${TARGET_CFLAGS}'),
-        'extra_cppflags': d.expand('${TARGET_CPPFLAGS}'),
-        'extra_cxxflags': d.expand('${TARGET_CXXFLAGS}'),
-        'extra_ldflags': d.expand('${TARGET_LDFLAGS}'),
+        'readelf': d.expand('${READELF}'),
+        'extra_cflags': d.expand('${CFLAGS}'),
+        'extra_cppflags': d.expand('${CPPFLAGS}'),
+        'extra_cxxflags': d.expand('${CXXFLAGS}'),
+        'extra_ldflags': d.expand('${LDFLAGS}'),
     }
 
     with open(file_path, 'w') as toolchain_file:
