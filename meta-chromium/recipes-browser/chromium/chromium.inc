@@ -34,10 +34,6 @@ RUNTIME = "llvm"
 # This also ensures that it does not rely too much on meta-clang's defaults.
 LIBCPLUSPLUS = "-stdlib=libc++"
 
-# LIBCPLUSPLUS is included in CXXFLAGS and LDFLAGS, but chromium doesn't respect it
-# add it to TUNE_CCARGS as well to include it in CC/CXX variables which are respected.
-TUNE_CCARGS += "${LIBCPLUSPLUS}"
-
 inherit mime-xdg pythonnative
 DEPENDS += "python-setuptools-native"
 
