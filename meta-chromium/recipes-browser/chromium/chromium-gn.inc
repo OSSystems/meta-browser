@@ -2,7 +2,7 @@ require chromium.inc
 require chromium-unbundle.inc
 require gn-utils.inc
 
-inherit features_check gtk-icon-cache qemu
+inherit features_check gtk-icon-cache qemu chromium-extension-package
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
@@ -327,6 +327,8 @@ GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_allocator="none"'
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
+        --load-extension=\$(find ${CHROMIUM_EXTENSION_DIR} \
+	                    -type d -maxdepth 1 2>/dev/null | sed 1d | tr '\\\\n' , ) \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
@@ -443,7 +445,7 @@ do_install() {
 
 	# Add extra command line arguments to the chromium-wrapper script by
 	# modifying the dummy "CHROME_EXTRA_ARGS" line
-	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
+	sed -i "s#^CHROME_EXTRA_ARGS=\"\"#CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"#" ${D}${libdir}/chromium/chromium-wrapper
 
 	# This is ANGLE, not to be confused with the similarly named files under swiftshader/
 	if [ -e libEGL.so ]; then
