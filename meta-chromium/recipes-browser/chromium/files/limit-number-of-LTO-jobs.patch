@@ -2,9 +2,9 @@ Upstream-Status: Inappropriate
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
-From d18ab715039ca499a545b3603cebd26d65a3f8ad Mon Sep 17 00:00:00 2001
+From ab74e60870e8f515c5b94f90d9b0741492950de6 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
-Date: Fri, 4 Jun 2021 14:26:57 +0300
+Date: Wed, 15 Sep 2021 14:29:03 +0300
 Subject: [PATCH] limit number of LTO jobs.
 
 --thinlto-jobs accepts "all" only since llvm 13. Dunfell
@@ -16,10 +16,10 @@ Thus, use the previously used number of threads.
  2 files changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 96545ed8a9e5..94aebcfe9142 100644
+index 13ed917c81281..c93f1a8b4a14d 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -658,7 +658,7 @@ config("compiler") {
+@@ -656,7 +656,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +28,7 @@ index 96545ed8a9e5..94aebcfe9142 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -671,11 +671,10 @@ config("compiler") {
+@@ -669,11 +669,10 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -45,7 +45,7 @@ index 96545ed8a9e5..94aebcfe9142 100644
        ldflags += [
          "-Wl,--thinlto-cache-dir=" +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 572d7a8a45dc..01bd4942fc08 100644
+index d9997333db2d6..18df66d9f71b3 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
 @@ -76,6 +76,11 @@ declare_args() {
