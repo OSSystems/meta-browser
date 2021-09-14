@@ -20,14 +20,14 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
  media/gpu/vaapi/vaapi_picture_factory.cc      | 12 ++++--
  .../gpu/vaapi/vaapi_picture_native_pixmap.cc  | 17 +++++++-
- .../vaapi/vaapi_video_decode_accelerator.cc   | 40 +++++++++----------
+ .../vaapi/vaapi_video_decode_accelerator.cc   | 39 ++++++++-----------
  media/gpu/vaapi/vaapi_wrapper.cc              |  7 ++--
- .../wayland/gpu/gbm_pixmap_wayland.cc         | 12 +++++-
+ .../wayland/gpu/gbm_pixmap_wayland.cc         | 15 ++++++-
  .../platform/wayland/gpu/gbm_pixmap_wayland.h |  3 ++
- 6 files changed, 58 insertions(+), 33 deletions(-)
+ 6 files changed, 60 insertions(+), 33 deletions(-)
 
 diff --git a/media/gpu/vaapi/vaapi_picture_factory.cc b/media/gpu/vaapi/vaapi_picture_factory.cc
-index 719035b87c89..815f9b1b0a83 100644
+index 719035b87c893..815f9b1b0a83e 100644
 --- a/media/gpu/vaapi/vaapi_picture_factory.cc
 +++ b/media/gpu/vaapi/vaapi_picture_factory.cc
 @@ -47,10 +47,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
@@ -59,7 +59,7 @@ index 719035b87c89..815f9b1b0a83 100644
    return gfx::BufferFormat::RGBX_8888;
  }
 diff --git a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
-index 941f24cc5959..42975746b5fb 100644
+index 941f24cc59590..42975746b5fb8 100644
 --- a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
 +++ b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
 @@ -12,6 +12,7 @@
@@ -94,7 +94,7 @@ index 941f24cc5959..42975746b5fb 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 35c4b45ead45..45aaac7dd6e1 100644
+index 98fbb54c7ec9d..dc04ef09435c6 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 @@ -185,12 +185,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
@@ -169,10 +169,10 @@ index 35c4b45ead45..45aaac7dd6e1 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 4333c6adc0d9..0364b980586e 100644
+index 1d910d62a66a4..149343ad2ec69 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -648,8 +648,8 @@ bool VADisplayState::InitializeOnce() {
+@@ -649,8 +649,8 @@ bool VADisplayState::InitializeOnce() {
  
  #if defined(USE_X11)
    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -183,7 +183,7 @@ index 4333c6adc0d9..0364b980586e 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2709,8 +2709,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2720,8 +2720,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -194,7 +194,7 @@ index 4333c6adc0d9..0364b980586e 100644
  #if BUILDFLAG(IS_CHROMEOS_ASH)
    paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index 1fa7600f120f..15131b4787e0 100644
+index 3ef3459196bf7..b6d162f437382 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 @@ -15,6 +15,7 @@
@@ -205,38 +205,43 @@ index 1fa7600f120f..15131b4787e0 100644
  #include "ui/gfx/buffer_usage_util.h"
  #include "ui/gfx/geometry/size_conversions.h"
  #include "ui/gfx/linux/drm_util_linux.h"
-@@ -33,7 +34,9 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
+@@ -33,8 +34,12 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
        buffer_id_(buffer_manager->AllocateBufferID()) {}
  
  GbmPixmapWayland::~GbmPixmapWayland() {
--  if (gbm_bo_)
+-  if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
 +  // gfx::BufferUsage::SCANOUT_VDA_WRITE doesn't result in creation of
 +  // wl_buffers.
-+  if (gbm_bo_ && usage_ != gfx::BufferUsage::SCANOUT_VDA_WRITE)
++  if (gbm_bo_ && usage_ != gfx::BufferUsage::SCANOUT_VDA_WRITE &&
++      widget_ != gfx::kNullAcceleratedWidget) {
      buffer_manager_->DestroyBuffer(widget_, buffer_id_);
++  }
  }
  
-@@ -73,7 +76,12 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
- 
-   DVLOG(3) << "Created gbm bo. format= " << gfx::BufferFormatToString(format)
+ bool GbmPixmapWayland::InitializeBuffer(
+@@ -83,8 +88,14 @@ bool GbmPixmapWayland::InitializeBuffer(
             << " usage=" << gfx::BufferUsageToString(usage);
--  CreateDmabufBasedBuffer();
+
+   visible_area_size_ = visible_area_size ? visible_area_size.value() : size;
+-  if (widget_ != gfx::kNullAcceleratedWidget)
 +  usage_ = usage;
 +  // Do not create wl_buffers for SCANOUT_VDA_WRITE usages. These buffers are
 +  // only used by video decoders and are not going to be requested to be
 +  // attached to Wayland surfaces.
-+  if (usage_ != gfx::BufferUsage::SCANOUT_VDA_WRITE)
-+    CreateDmabufBasedBuffer();
++  if (usage_ != gfx::BufferUsage::SCANOUT_VDA_WRITE &&
++      widget_ != gfx::kNullAcceleratedWidget) {
+     CreateDmabufBasedBuffer();
++  }
    return true;
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index 9ee2aafe0d50..e7bc2515bad0 100644
+index af9d927b34171..645f7aa821705 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -76,6 +76,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
-   int32_t z_order_ = 0;
-   bool z_order_set_ = false;
+@@ -85,6 +85,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+   // Size of the visible area of the buffer.
+   gfx::Size visible_area_size_;
  
 +  // Tells the usage of this pixmap.
 +  gfx::BufferUsage usage_ = gfx::BufferUsage::SCANOUT;

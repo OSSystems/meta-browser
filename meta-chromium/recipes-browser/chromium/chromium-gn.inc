@@ -19,12 +19,10 @@ SRC_URI += " \
     file://0010-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0012-Fix-font-rendering-with-glibc-2.33.patch \
     file://0001-nomerge-attribute-on-declaration-is-only-available-s.patch \
-    file://0001-DCScan-Fix-builds-with-system-sysroots.patch \
-    file://0001-ARM64-VRegister-from_code-expected-to-be-constexpr.patch \
-    file://fix-harfbuzz-supp-size-error.patch \
     file://fix-ruy-numeric-limits-error.patch \
     file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
     file://chromium-freetype-2.11.patch \
+    file://0001-Make-Display-and-X11-available-in-the-same-build.patch \
 "
 
 SRC_URI:append:libc-musl = "\

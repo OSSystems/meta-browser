@@ -16,10 +16,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 6f993be10f69..149c9100c4b6 100644
+index 1c989c7e92216..b4b5690508b5c 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1393,8 +1393,10 @@ component("base") {
+@@ -1355,8 +1355,10 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -31,7 +31,7 @@ index 6f993be10f69..149c9100c4b6 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index 47704248bfae..1e9b79b5cfe2 100644
+index 47704248bfae1..1e9b79b5cfe2b 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -28,8 +28,10 @@ config("runtime_library") {

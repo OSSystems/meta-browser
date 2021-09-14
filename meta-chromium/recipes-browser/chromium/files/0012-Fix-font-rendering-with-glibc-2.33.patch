@@ -36,10 +36,10 @@ Signed-off-by: Yi Fan Yu <yifan.yu@windriver.com>
  5 files changed, 65 insertions(+)
 
 diff --git a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-index 05c39f0f564e..ce1a4e3762ee 100644
+index f2a60bb4d738d..7ef44e802a58b 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/baseline_policy.cc
-@@ -286,6 +286,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
+@@ -304,6 +304,18 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
      return Allow();
    }
  
@@ -59,7 +59,7 @@ index 05c39f0f564e..ce1a4e3762ee 100644
        SyscallSets::IsCurrentDirectory(sysno)) {
      return Error(fs_denied_errno);
 diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
-index 76eb32493f54..09aa3f0b11c7 100644
+index 64edbd68bde6b..3ba287633f0c3 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.cc
 @@ -6,6 +6,8 @@
@@ -119,7 +119,7 @@ index 76eb32493f54..09aa3f0b11c7 100644
  #if !defined(OS_NACL_NONSFI)
    if (seccomp_crash_key)
 diff --git a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
-index 7a958b93b27a..d0bfab74bb91 100644
+index 7a958b93b27a7..d0bfab74bb913 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
 +++ b/sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h
 @@ -62,6 +62,10 @@ SANDBOX_EXPORT intptr_t SIGSYSPtraceFailure(const arch_seccomp_data& args,
@@ -142,7 +142,7 @@ index 7a958b93b27a..d0bfab74bb91 100644
  // Allocates a crash key so that Seccomp information can be recorded.
  void AllocateCrashKeys();
 diff --git a/sandbox/linux/services/syscall_wrappers.cc b/sandbox/linux/services/syscall_wrappers.cc
-index fcfd2aa129d4..5396b36da9f8 100644
+index fcfd2aa129d4b..5396b36da9f87 100644
 --- a/sandbox/linux/services/syscall_wrappers.cc
 +++ b/sandbox/linux/services/syscall_wrappers.cc
 @@ -261,4 +261,13 @@ int sys_sigaction(int signum,
@@ -160,7 +160,7 @@ index fcfd2aa129d4..5396b36da9f8 100644
 +
  }  // namespace sandbox
 diff --git a/sandbox/linux/services/syscall_wrappers.h b/sandbox/linux/services/syscall_wrappers.h
-index 1975bfbd88a6..ed7ee5a1c161 100644
+index 1975bfbd88a6d..ed7ee5a1c161d 100644
 --- a/sandbox/linux/services/syscall_wrappers.h
 +++ b/sandbox/linux/services/syscall_wrappers.h
 @@ -17,6 +17,7 @@ struct sock_fprog;
