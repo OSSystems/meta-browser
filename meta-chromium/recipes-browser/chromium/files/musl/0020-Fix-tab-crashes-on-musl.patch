@@ -19,7 +19,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
-@@ -130,21 +130,11 @@ namespace sandbox {
+@@ -138,21 +138,11 @@ namespace sandbox {
  // present (as in newer versions of posix_spawn).
  ResultExpr RestrictCloneToThreadsAndEPERMFork() {
    const Arg<unsigned long> flags(0);
@@ -46,7 +46,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
    // The following two flags are the two important flags in any vfork-emulating
    // clone call. EPERM any clone call that contains both of them.
-@@ -154,7 +144,7 @@ ResultExpr RestrictCloneToThreadsAndEPER
+@@ -162,7 +152,7 @@ ResultExpr RestrictCloneToThreadsAndEPER
        AnyOf((flags & (CLONE_VM | CLONE_THREAD)) == 0,
              (flags & kImportantCloneVforkFlags) == kImportantCloneVforkFlags);
  
@@ -92,8 +92,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
      case __NR_readahead:
 --- a/sandbox/linux/system_headers/arm64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm64_linux_syscalls.h
-@@ -1119,4 +1119,8 @@
- #define __NR_rseq 293
+@@ -1215,4 +1215,8 @@
+ #define __NR_landlock_restrict_self 446
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -103,8 +103,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_
 --- a/sandbox/linux/system_headers/arm_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm_linux_syscalls.h
-@@ -1605,6 +1605,10 @@
- #define __NR_mount_setattr (__NR_SYSCALL_BASE + 442)
+@@ -1617,6 +1617,10 @@
+ #define __NR_landlock_restrict_self (__NR_SYSCALL_BASE + 446)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -126,8 +126,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include "sandbox/linux/system_headers/x86_64_linux_syscalls.h"
 --- a/sandbox/linux/system_headers/mips64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips64_linux_syscalls.h
-@@ -1271,4 +1271,8 @@
- #define __NR_memfd_create (__NR_Linux + 314)
+@@ -1415,4 +1415,8 @@
+ #define __NR_landlock_restrict_self (__NR_Linux + 446)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -137,8 +137,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
 --- a/sandbox/linux/system_headers/mips_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips_linux_syscalls.h
-@@ -1685,4 +1685,8 @@
- #define __NR_mount_setattr (__NR_Linux + 442)
+@@ -1697,4 +1697,8 @@
+ #define __NR_landlock_restrict_self (__NR_Linux + 446)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -148,8 +148,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_SYSCALLS_H_
 --- a/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
-@@ -1350,5 +1350,9 @@
- #define __NR_rseq 334
+@@ -1438,5 +1438,9 @@
+ #define __NR_landlock_restrict_self 446
  #endif
  
 +#if !defined(__NR_membarrier)

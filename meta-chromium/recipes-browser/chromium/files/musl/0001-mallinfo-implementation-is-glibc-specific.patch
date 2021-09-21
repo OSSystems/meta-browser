@@ -50,15 +50,22 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #endif
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -203,7 +203,7 @@ bool MallocDumpProvider::OnMemoryDump(co
-                      &allocated_objects_count);
- #elif defined(OS_FUCHSIA)
- // TODO(fuchsia): Port, see https://crbug.com/706592.
--#else
-+#elif defined(__GLIBC__)
+@@ -218,7 +218,6 @@ bool MallocDumpProvider::OnMemoryDump(co
+ #define MALLINFO2_FOUND_IN_LIBC
+   struct mallinfo2 info = mallinfo2();
+ #endif
+-#endif  // defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+ #if !defined(MALLINFO2_FOUND_IN_LIBC)
    struct mallinfo info = mallinfo();
-   // In case of Android's jemalloc |arena| is 0 and the outer pages size is
-   // reported by |hblkhd|. In case of dlmalloc the total is given by
+ #endif
+@@ -231,6 +230,7 @@ bool MallocDumpProvider::OnMemoryDump(co
+ 
+   // Total allocated space is given by |uordblks|.
+   allocated_objects_size = info.uordblks;
++#endif  // defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+ #endif
+ 
+   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 @@ -130,7 +130,7 @@
