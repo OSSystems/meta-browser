@@ -23,6 +23,7 @@ SRC_URI += " \
     file://0001-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
     file://chromium-freetype-2.11.patch \
     file://0001-Make-Display-and-X11-available-in-the-same-build.patch \
+    file://0001-include-utility.h.patch \
 "
 
 SRC_URI:append:libc-musl = "\
