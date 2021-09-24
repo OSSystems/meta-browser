@@ -4,8 +4,8 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "5d59c8619445f74d6c9b9650f16f8430"
-SRC_URI[sha256sum] = "5d66214858fcba11a8f733d7a6fab61ed10e13e7df4ed37e63b66a0370fb2853"
+SRC_URI[md5sum] = "6f2f67339ecb64c94b3f42f41938862f"
+SRC_URI[sha256sum] = "6446db535c02c461c7e5c8d294a0300db03abba791f97f0c70bc52255aedb9bf"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -272,7 +272,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/libipp/LICENSE;md5=af9e58383a1b2b17c75c6c9ff561ca9d \
     file://${S}/third_party/libjingle_xmpp/LICENSE;md5=ad296492125bc71530d06234d9bfebe0 \
     file://${S}/third_party/libjpeg_turbo/LICENSE.md;md5=970f17d51650fe54e4f839c6e6121f79 \
-    file://${S}/third_party/libjxl/LICENSE;md5=b1e01b26bacfc2232046c90a330332b3 \
+    file://${S}/third_party/libjxl/LICENSE;md5=6a905a337cc228a1f68f0b5416f52a7f \
     file://${S}/third_party/liblouis/LICENSE;md5=8ab69863de0d3a0e00c4f97a4d78dd4a \
     file://${S}/third_party/libphonenumber/LICENSE;md5=e23fadd6ceef8c618fc1c65191d846fa \
     file://${S}/third_party/libpng/LICENSE;md5=b0085051bf265bac2bfc38bc89f50000 \
@@ -295,6 +295,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/logilab/logilab/common/LICENSE.txt;md5=751419260aa954499f7abaabaa882bbe \
     file://${S}/third_party/lottie/LICENSE;md5=827837648055a0bfb7782b91ab42eed1 \
     file://${S}/third_party/lzma_sdk/LICENSE;md5=a8d1f5a28cfd35e6dfea09b82672fae7 \
+    file://${S}/third_party/maldoca/src/LICENSE;md5=86d3f3a95c324c9479bd8986968f4327 \
     file://${S}/third_party/material_design_icons/LICENSE;md5=175792518e4ac015ab6696d16c4f607e \
     file://${S}/third_party/material_web_components/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/mesa_headers/LICENSE;md5=072744090020e72ad7387e201873fe43 \

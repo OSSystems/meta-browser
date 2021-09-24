@@ -94,13 +94,13 @@ index 941f24cc59590..42975746b5fb8 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 98fbb54c7ec9d..dc04ef09435c6 100644
+index 0dc47d880168e..9843bc884a833 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-@@ -185,12 +185,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
+@@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                               Client* client) {
    DCHECK(task_runner_->BelongsToCurrentThread());
- 
+
 -#if defined(USE_X11)
 -  // TODO(crbug/1116701): implement decode acceleration when running with Ozone.
 -  if (features::IsUsingOzonePlatform())
@@ -110,7 +110,7 @@ index 98fbb54c7ec9d..dc04ef09435c6 100644
    vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
 
    if (config.is_encrypted()) {
-@@ -568,12 +562,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
+@@ -567,12 +561,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
    requested_visible_rect_ = visible_rect;
    if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
      // Add one to the reference frames for the one being currently egressed.
@@ -125,7 +125,7 @@ index 98fbb54c7ec9d..dc04ef09435c6 100644
      requested_num_pics_ = num_pics - num_reference_frames + 1;
    } else {
      requested_num_reference_frames_ = 0;
-@@ -1215,19 +1209,21 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
+@@ -1214,19 +1208,21 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
  VaapiVideoDecodeAccelerator::BufferAllocationMode
  VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
  #if defined(USE_X11)
@@ -160,7 +160,7 @@ index 98fbb54c7ec9d..dc04ef09435c6 100644
    // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
    // |output_mode_| as well.
    if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
-@@ -1262,7 +1258,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
+@@ -1261,7 +1257,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
    // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
    // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
    return BufferAllocationMode::kSuperReduced;
@@ -169,10 +169,10 @@ index 98fbb54c7ec9d..dc04ef09435c6 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 1d910d62a66a4..149343ad2ec69 100644
+index 4f2aade2348a7..e9b3d2d4225a8 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -649,8 +649,8 @@ bool VADisplayState::InitializeOnce() {
+@@ -680,8 +680,8 @@ bool VADisplayState::InitializeOnce() {
  
  #if defined(USE_X11)
    if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -183,7 +183,7 @@ index 1d910d62a66a4..149343ad2ec69 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2720,8 +2720,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2757,8 +2757,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -194,7 +194,7 @@ index 1d910d62a66a4..149343ad2ec69 100644
  #if BUILDFLAG(IS_CHROMEOS_ASH)
    paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index 3ef3459196bf7..b6d162f437382 100644
+index ac0717e6d114c..fd530b8a920cb 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 @@ -15,6 +15,7 @@
@@ -236,10 +236,10 @@ index 3ef3459196bf7..b6d162f437382 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index af9d927b34171..645f7aa821705 100644
+index 772070168a2da..7183f3f10c0dd 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -85,6 +85,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+@@ -86,6 +86,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
    // Size of the visible area of the buffer.
    gfx::Size visible_area_size_;
  

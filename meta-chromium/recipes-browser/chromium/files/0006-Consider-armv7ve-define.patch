@@ -14,7 +14,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h b/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
-index 6fde685272cf..70a5634b9ef7 100644
+index 6fde685272cf5..70a5634b9ef71 100644
 --- a/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
 +++ b/third_party/tcmalloc/chromium/src/base/arm_instruction_set_select.h
 @@ -42,6 +42,7 @@

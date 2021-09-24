@@ -11,7 +11,7 @@ DEPENDS += "\
 "
 
 SRC_URI += "\
-        file://0001-ozone-add-va-api-support-to-wayland.patch \
+        file://chromium-ozone-wayland/0001-ozone-add-va-api-support-to-wayland.patch \
 "
 
 GN_ARGS += "\
@@ -30,11 +30,12 @@ GN_ARGS += "\
         use_gtk=false \
 "
 
-# Since M87, Chromium builds Ozone by default, but continues to use X11.
-# However, the goal of two recipes - Ozone/Wayland and non-Ozone/X11 is
-# to provide either Wayland or X11 and avoid pulling dependencies of each
-# on environments where Wayland or X11 is not actually required.
-# See https://crrev.com/c/2382834
+# Ozone is default via finch since M94 and default via compile time
+# changes since M95. However, use_x11 still must be disable to provide
+# a pure Wayland build. Since M95, use_x11 is controlled via
+# ozone_platform_x11 and won't be needed to be altered here, but rather
+# through the mentioned ozone_platform_x11 arg.
+# TODO(msisov): remove this once recipe is updated to M95.
 GN_ARGS += "use_x11=false"
 
 # The chromium binary must always be started with those arguments.
