@@ -1,0 +1,73 @@
+Upstream-Status: Inappropriate
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 558714658c5a988ae0e5e638ed54b71f0220d076 Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Mon, 27 Sep 2021 09:52:26 +0300
+Subject: [PATCH] Revert "Use -ffile-compilation-dir= instead of
+ -fdebug-compilation-dir="
+
+ffile-compilation-dir is supported since clang 13, while
+meta-clang dunfel and hardknott are based on clang versions
+11 and 12 respectively. Thus, revert the change and use
+fdebug-compilation-dir, which is supported by both
+versions.
+
+This reverts commit 34a955823630096f5b01c2b01d51c1ea59d22763.
+---
+ build/config/compiler/BUILD.gn     | 19 ++++++-------------
+ build/config/compiler/compiler.gni |  7 +++++--
+ 2 files changed, 11 insertions(+), 15 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index c3e99a6545ffa..b0042bd38f80c 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -1194,19 +1194,12 @@ config("compiler_deterministic") {
+     # different build directory like "out/feature_a" and "out/feature_b" if
+     # we build same files with same compile flag.
+     # Other paths are already given in relative, no need to normalize them.
+-    if (is_nacl) {
+-      # TODO(https://crbug.com/1231236): Use -ffile-compilation-dir= here.
+-      cflags += [
+-        "-Xclang",
+-        "-fdebug-compilation-dir",
+-        "-Xclang",
+-        ".",
+-      ]
+-    } else {
+-      # -ffile-compilation-dir is an alias for both -fdebug-compilation-dir=
+-      # and -fcoverage-compilation-dir=.
+-      cflags += [ "-ffile-compilation-dir=." ]
+-    }
++    cflags += [
++      "-Xclang",
++      "-fdebug-compilation-dir",
++      "-Xclang",
++      ".",
++    ]
+     if (!is_win) {
+       # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
+       asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
+diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
+index 822bfca12efd7..9c88b951bc651 100644
+--- a/build/config/compiler/compiler.gni
++++ b/build/config/compiler/compiler.gni
+@@ -230,8 +230,11 @@ declare_args() {
+ # deterministic builds to reduce compile times, so this is less relevant for
+ # official builders.
+ strip_absolute_paths_from_debug_symbols_default =
+-    is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
+-    is_chromeos || (is_apple && !enable_dsyms)
++    # TODO(crbug.com/1010267): remove '!use_clang_coverage', coverage build has
++    # dependency to absolute path of source files.
++    !use_clang_coverage &&
++    (is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
++     is_chromeos || (is_apple && !enable_dsyms))
+ 
+ # If the platform uses stripped absolute paths by default, then we don't expose
+ # it as a configuration option. If this is causing problems, please file a bug.
+-- 
+2.25.1
+

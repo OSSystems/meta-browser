@@ -11,15 +11,15 @@ Subject: [PATCH] limit number of LTO jobs.
 branch uses quite old llvm that doesn't support this keyword.
 Thus, use the previously used number of threads.
 ---
- build/config/compiler/BUILD.gn     | 11 +++++------
+ build/config/compiler/BUILD.gn     | 12 ++++++------
  build/config/compiler/compiler.gni |  5 +++++
- 2 files changed, 10 insertions(+), 6 deletions(-)
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 13ed917c81281..c93f1a8b4a14d 100644
+index d7073ad38f0bf..326786bce9b09 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -656,7 +656,7 @@ config("compiler") {
+@@ -663,7 +663,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +28,7 @@ index 13ed917c81281..c93f1a8b4a14d 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -669,11 +669,10 @@ config("compiler") {
+@@ -676,11 +676,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -41,11 +41,12 @@ index 13ed917c81281..c93f1a8b4a14d 100644
 +      # linker jobs. This is still suboptimal to a potential dynamic
 +      # resource allocation scheme, but should be good enough.
 +      ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
- 
-       ldflags += [
-         "-Wl,--thinlto-cache-dir=" +
++
+       if (is_mac) {
+         ldflags +=
+             [ "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index d9997333db2d6..18df66d9f71b3 100644
+index 6f1faaf10fa67..822bfca12efd7 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
 @@ -76,6 +76,11 @@ declare_args() {
@@ -60,6 +61,6 @@ index d9997333db2d6..18df66d9f71b3 100644
    # Whether we're using a sample profile collected on an architecture different
    # than the one we're compiling for.
    #
--- 
+--
 2.25.1
 
