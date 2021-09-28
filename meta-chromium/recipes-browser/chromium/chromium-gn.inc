@@ -235,7 +235,7 @@ GN_ARGS += "is_cfi=false"
 # Disable activation of field trial tests that can cause problems in
 # production.
 # See https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/ECWC57W7E0k/9Kc5UAmyDAAJ
-GN_ARGS += "fieldtrial_testing_like_official_build=true"
+GN_ARGS += "disable_fieldtrial_testing_config=true"
 
 # Disable PGO optimization as generated profdata requires the same version of
 # clang that upstream uses. Otherwise, clang-llvm produces the following error:
