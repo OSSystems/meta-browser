@@ -20,7 +20,6 @@ SRC_URI += " \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0010-fix-ruy-numeric-limits-error.patch \
     file://0011-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
-    file://0012-chromium-freetype-2.11.patch \
     file://0013-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0014-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
 "
@@ -64,7 +63,6 @@ DEPENDS += " \
     curl \
     expat \
     flac \
-    freetype \
     glib-2.0 \
     gn-native \
     gperf-native \
@@ -140,9 +138,12 @@ GN_ARGS = " \
         use_gnome_keyring=false \
         use_kerberos=false \
         use_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'true', 'false', d)} \
-        use_system_freetype=true \
         use_system_libjpeg=true \
 "
+# Not enabled by default, because the freetype version from oe-core
+# often isn't compatible, e.g. freetype-2.11 isn't compatible with
+# chromium-94
+GN_ARGS += "use_system_freetype=false"
 
 # Closure_compile needs to be disabled to avoid pulling in java dependencies,
 # which are typicaly not wanted. It started to happen after https://crrev.com/c/1278470
