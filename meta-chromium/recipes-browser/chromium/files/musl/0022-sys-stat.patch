@@ -1,0 +1,27 @@
+Include sys/stat.h for stat64 definition
+
+fixes
+In file included from ../../base/files/file_enumerator.cc:5:
+../../base/files/file_enumerator.h:78:20: error: field has incomplete type 'base::stat_wrapper_t' (aka 'stat64')
+    stat_wrapper_t stat_;
+                   ^
+../../base/files/file.h:28:8: note: forward declaration of 'stat64'
+struct stat64;
+       ^
+1 error generated.
+
+
+Upstream-Status: Pending
+
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/base/files/file.h
++++ b/base/files/file.h
+@@ -8,6 +8,7 @@
+ #include <stdint.h>
+ 
+ #include <string>
++#include <sys/stat.h>
+ 
+ #include "base/base_export.h"
+ #include "base/containers/span.h"
