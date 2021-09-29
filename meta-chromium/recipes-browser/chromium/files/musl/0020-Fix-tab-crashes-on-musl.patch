@@ -57,7 +57,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  }
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-@@ -417,6 +417,7 @@ bool SyscallSets::IsAllowedProcessStartO
+@@ -418,6 +418,7 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__)
      case __NR_waitpid:
  #endif
@@ -65,7 +65,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
        return true;
      case __NR_clone:  // Should be parameter-restricted.
      case __NR_setns:  // Privileged.
-@@ -429,7 +430,6 @@ bool SyscallSets::IsAllowedProcessStartO
+@@ -430,7 +431,6 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
      case __NR_set_thread_area:
  #endif
@@ -73,7 +73,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
      case __NR_unshare:
  #if !defined(__mips__) && !defined(__aarch64__)
      case __NR_vfork:
-@@ -543,6 +543,8 @@ bool SyscallSets::IsAllowedAddressSpaceA
+@@ -544,6 +544,8 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_mlock:
      case __NR_munlock:
      case __NR_munmap:
@@ -82,7 +82,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
        return true;
      case __NR_madvise:
      case __NR_mincore:
-@@ -560,7 +562,6 @@ bool SyscallSets::IsAllowedAddressSpaceA
+@@ -561,7 +563,6 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_modify_ldt:
  #endif
      case __NR_mprotect:

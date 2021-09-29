@@ -23,7 +23,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
 --- a/net/dns/host_resolver_manager.cc
 +++ b/net/dns/host_resolver_manager.cc
-@@ -2536,8 +2536,7 @@ HostResolverManager::HostResolverManager
+@@ -2720,8 +2720,7 @@ HostResolverManager::HostResolverManager
    NetworkChangeNotifier::AddConnectionTypeObserver(this);
    if (system_dns_config_notifier_)
      system_dns_config_notifier_->AddObserver(this);
