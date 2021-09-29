@@ -50,7 +50,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #endif
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -218,7 +218,6 @@ bool MallocDumpProvider::OnMemoryDump(co
+@@ -219,7 +219,6 @@ bool MallocDumpProvider::OnMemoryDump(co
  #define MALLINFO2_FOUND_IN_LIBC
    struct mallinfo2 info = mallinfo2();
  #endif
@@ -58,7 +58,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #if !defined(MALLINFO2_FOUND_IN_LIBC)
    struct mallinfo info = mallinfo();
  #endif
-@@ -231,6 +230,7 @@ bool MallocDumpProvider::OnMemoryDump(co
+@@ -232,6 +231,7 @@ bool MallocDumpProvider::OnMemoryDump(co
  
    // Total allocated space is given by |uordblks|.
    allocated_objects_size = info.uordblks;
@@ -68,23 +68,23 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
-@@ -130,7 +130,7 @@
+@@ -133,7 +133,7 @@
  /* #undef HAVE_MALLCTL */
  
  /* Define to 1 if you have the `mallinfo' function. */
 -#define HAVE_MALLINFO 1
 +/* #undef HAVE_MALLINFO */
  
- /* Define to 1 if you have the <malloc.h> header file. */
- #define HAVE_MALLOC_H 1
+ /* Some projects using SwiftShader bypass cmake (eg Chromium via gn) */
+ /* so we need to check glibc version for the new API to be safe */
 --- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
-@@ -125,7 +125,7 @@
+@@ -128,7 +128,7 @@
  /* #undef HAVE_MALLCTL */
  
  /* Define to 1 if you have the `mallinfo' function. */
 -#define HAVE_MALLINFO 1
 +/* #undef HAVE_MALLINFO */
  
- /* Define to 1 if you have the <malloc/malloc.h> header file. */
- /* #undef HAVE_MALLOC_MALLOC_H */
+ /* Some projects using SwiftShader bypass cmake (eg Chromium via gn) */
+ /* so we need to check glibc version for the new API to be safe */

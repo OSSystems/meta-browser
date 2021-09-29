@@ -11,11 +11,9 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  .../metrics/chrome_browser_main_extra_parts_metrics.cc | 10 ++++++----
  1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-index 78e4af0790..0b17551d10 100644
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-@@ -55,8 +55,9 @@
+@@ -61,8 +61,9 @@
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
  #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -26,7 +24,7 @@ index 78e4af0790..0b17551d10 100644
  #include "base/linux_util.h"
  #include "base/strings/string_split.h"
  #include "base/strings/string_util.h"
-@@ -235,7 +236,7 @@ void RecordStartupMetrics() {
+@@ -246,7 +247,7 @@ void RecordStartupMetrics() {
  
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -35,7 +33,7 @@ index 78e4af0790..0b17551d10 100644
  void RecordLinuxDistroSpecific(const std::string& version_string,
                                 size_t parts,
                                 const char* histogram_name) {
-@@ -316,7 +317,8 @@ void RecordLinuxDistro() {
+@@ -329,7 +330,8 @@ void RecordLinuxDistro() {
  void RecordLinuxGlibcVersion() {
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -45,7 +43,7 @@ index 78e4af0790..0b17551d10 100644
    base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-@@ -629,7 +631,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
+@@ -722,7 +724,7 @@ void ChromeBrowserMainExtraPartsMetrics:
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.

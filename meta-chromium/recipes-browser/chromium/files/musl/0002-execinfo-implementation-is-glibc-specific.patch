@@ -66,7 +66,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    StreamBacktraceOutputHandler handler(os);
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
-@@ -55,7 +55,7 @@
+@@ -58,7 +58,7 @@
  #define HAVE_ERRNO_H 1
  
  /* Define to 1 if you have the <execinfo.h> header file. */

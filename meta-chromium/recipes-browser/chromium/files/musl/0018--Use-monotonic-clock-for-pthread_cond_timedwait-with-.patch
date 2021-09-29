@@ -12,11 +12,9 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  v8/src/base/platform/condition-variable.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/v8/src/base/platform/condition-variable.cc b/v8/src/base/platform/condition-variable.cc
-index 04ea29181..d121acdc5 100644
 --- a/v8/src/base/platform/condition-variable.cc
 +++ b/v8/src/base/platform/condition-variable.cc
-@@ -16,7 +16,7 @@ namespace base {
+@@ -20,7 +20,7 @@ namespace base {
  
  ConditionVariable::ConditionVariable() {
  #if (V8_OS_FREEBSD || V8_OS_NETBSD || V8_OS_OPENBSD || \
@@ -25,7 +23,7 @@ index 04ea29181..d121acdc5 100644
    // On Free/Net/OpenBSD and Linux with glibc we can change the time
    // source for pthread_cond_timedwait() to use the monotonic clock.
    pthread_condattr_t attr;
-@@ -92,7 +92,7 @@ bool ConditionVariable::WaitFor(Mutex* mutex, const TimeDelta& rel_time) {
+@@ -96,7 +96,7 @@ bool ConditionVariable::WaitFor(Mutex* m
        &native_handle_, &mutex->native_handle(), &ts);
  #else
  #if (V8_OS_FREEBSD || V8_OS_NETBSD || V8_OS_OPENBSD || \
@@ -34,6 +32,3 @@ index 04ea29181..d121acdc5 100644
    // On Free/Net/OpenBSD and Linux with glibc we can change the time
    // source for pthread_cond_timedwait() to use the monotonic clock.
    result = clock_gettime(CLOCK_MONOTONIC, &ts);
--- 
-2.31.0
-
