@@ -27,7 +27,6 @@ GN_ARGS += "\
         use_system_libwayland=true \
         use_system_minigbm=true \
         use_system_libdrm=true \
-        use_gtk=false \
 "
 
 # Ozone is default via finch since M94 and default via compile time
@@ -41,3 +40,4 @@ GN_ARGS += "use_x11=false"
 # The chromium binary must always be started with those arguments.
 CHROMIUM_EXTRA_ARGS:append = " --ozone-platform=wayland"
 
+PACKAGECONFIG ??= "upower use-egl"

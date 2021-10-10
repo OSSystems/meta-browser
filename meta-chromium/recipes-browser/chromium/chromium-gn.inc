@@ -68,7 +68,6 @@ DEPENDS += " \
     glib-2.0 \
     gn-native \
     gperf-native \
-    gtk+3 \
     jpeg \
     libdrm \
     libwebp \
@@ -105,8 +104,6 @@ BUILD_CC:toolchain-clang = "clang"
 BUILD_CXX:toolchain-clang = "clang++"
 BUILD_LD:toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "upower use-egl"
-
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
 PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
@@ -117,6 +114,7 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
+PACKAGECONFIG[gtk] = "use_gtk=true,use_gtk=false,gtk+3"
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \

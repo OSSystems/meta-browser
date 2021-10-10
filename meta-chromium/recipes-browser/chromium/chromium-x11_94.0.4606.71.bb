@@ -33,3 +33,5 @@ GN_ARGS += "\
 # chromium-ozone-wayland recipes, and the former used to be called just
 # "chromium".
 PROVIDES = "chromium"
+
+PACKAGECONFIG ??= "gtk upower use-egl"
