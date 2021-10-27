@@ -23,6 +23,7 @@ SRC_URI += " \
     file://0013-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0014-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
     file://0015-build-use-python3.patch \
+    file://jinja-python-3.10.patch \
 "
 
 SRC_URI:append:libc-musl = "\
