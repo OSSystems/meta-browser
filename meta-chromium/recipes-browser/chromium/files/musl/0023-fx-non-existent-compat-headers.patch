@@ -1,0 +1,75 @@
+From 70a8d057c6318ab73cd031d874661c533d7e3b2e Mon Sep 17 00:00:00 2001
+From: "Issam E. Maghni" <issam.e.maghni@mailbox.org>
+Date: Sat, 30 Oct 2021 19:14:07 -0400
+Subject: [PATCH] Fix non-existent compat. headers
+
+musl has neither `sys/cdefs.h` nor `sys/queue.h` [1].
+
+[1] https://wiki.musl-libc.org/faq.html
+
+Signed-off-by: Issam E. Maghni <issam.e.maghni@mailbox.org>
+---
+ base/third_party/libevent/BUILD.gn                      | 2 +-
+ third_party/crashpad/crashpad/compat/linux/sys/ptrace.h | 2 --
+ third_party/libsync/src/include/sync/sync.h             | 9 ++++++---
+ 3 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/base/third_party/libevent/BUILD.gn b/base/third_party/libevent/BUILD.gn
+index abd3901d..ae2f020f 100644
+--- a/base/third_party/libevent/BUILD.gn
++++ b/base/third_party/libevent/BUILD.gn
+@@ -49,7 +49,7 @@ static_library("libevent") {
+       "linux/config.h",
+       "linux/event-config.h",
+     ]
+-    include_dirs = [ "linux" ]
++    include_dirs = [ "linux", "compat" ]
+   } else if (is_android) {
+     sources += [
+       "android/config.h",
+diff --git a/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h b/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
+index f8be372c..c07e4c88 100644
+--- a/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
++++ b/third_party/crashpad/crashpad/compat/linux/sys/ptrace.h
+@@ -17,8 +17,6 @@
+ 
+ #include_next <sys/ptrace.h>
+ 
+-#include <sys/cdefs.h>
+-
+ // https://sourceware.org/bugzilla/show_bug.cgi?id=22433
+ #if !defined(PTRACE_GET_THREAD_AREA) && !defined(PT_GET_THREAD_AREA) && \
+     defined(__GLIBC__)
+diff --git a/third_party/libsync/src/include/sync/sync.h b/third_party/libsync/src/include/sync/sync.h
+index 50ed0ac5..014ea72d 100644
+--- a/third_party/libsync/src/include/sync/sync.h
++++ b/third_party/libsync/src/include/sync/sync.h
+@@ -19,12 +19,13 @@
+ #ifndef __SYS_CORE_SYNC_H
+ #define __SYS_CORE_SYNC_H
+ 
+-#include <sys/cdefs.h>
+ #include <stdint.h>
+ 
+ #include <linux/types.h>
+ 
+-__BEGIN_DECLS
++#ifdef __cplusplus
++extern "C" {
++#endif
+ 
+ struct sync_legacy_merge_data {
+  int32_t fd2;
+@@ -158,6 +159,8 @@ struct sync_pt_info *sync_pt_info(struct sync_fence_info_data *info,
+                                   struct sync_pt_info *itr);
+ void sync_fence_info_free(struct sync_fence_info_data *info);
+ 
+-__END_DECLS
++#ifdef __cplusplus
++}
++#endif
+ 
+ #endif /* __SYS_CORE_SYNC_H */
+-- 
+2.31.1
+
