@@ -319,10 +319,10 @@ GN_ARGS:append:arm = ' \
 '
 # tcmalloc's atomicops-internals-arm-v6plus.h uses the "dmb" instruction that
 # is not available on (some?) ARMv6 models, which causes the build to fail.
-GN_ARGS:append:armv6 += 'use_allocator="none"'
+GN_ARGS:append:armv6 = ' use_allocator="none"'
 # The WebRTC code fails to build on ARMv6 when NEON is enabled.
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
-GN_ARGS:append:armv6 += 'arm_use_neon=false'
+GN_ARGS:append:armv6 = ' arm_use_neon=false'
 
 # Disable glibc shims on musl
 # tcmalloc does not play well with musl as of M62 (and possibly earlier).
