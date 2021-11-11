@@ -94,7 +94,7 @@ index 941f24cc59590..42975746b5fb8 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 0dc47d880168e..9843bc884a833 100644
+index 7514fe4fdd339..1039d558ff317 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 @@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
@@ -169,7 +169,7 @@ index 0dc47d880168e..9843bc884a833 100644
  
  bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
 diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index 4f2aade2348a7..e9b3d2d4225a8 100644
+index de801ef84ed40..69a6db41b5f16 100644
 --- a/media/gpu/vaapi/vaapi_wrapper.cc
 +++ b/media/gpu/vaapi/vaapi_wrapper.cc
 @@ -680,8 +680,8 @@ bool VADisplayState::InitializeOnce() {
@@ -183,7 +183,7 @@ index 4f2aade2348a7..e9b3d2d4225a8 100644
      constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
      // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
      // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2757,8 +2757,7 @@ void VaapiWrapper::PreSandboxInitialization() {
+@@ -2811,8 +2811,7 @@ void VaapiWrapper::PreSandboxInitialization() {
    paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
    paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
  #if defined(USE_X11)
@@ -194,7 +194,7 @@ index 4f2aade2348a7..e9b3d2d4225a8 100644
  #if BUILDFLAG(IS_CHROMEOS_ASH)
    paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index ac0717e6d114c..fd530b8a920cb 100644
+index 784238d74ac79..82255c87c8b01 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 @@ -15,6 +15,7 @@
@@ -236,10 +236,10 @@ index ac0717e6d114c..fd530b8a920cb 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index 772070168a2da..7183f3f10c0dd 100644
+index b37de8d37e599..c098203c8dbe7 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -86,6 +86,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+@@ -97,6 +97,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
    // Size of the visible area of the buffer.
    gfx::Size visible_area_size_;
  

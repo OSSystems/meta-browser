@@ -15,14 +15,14 @@ Upstream-Status: Inappropriate [OE-Specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Rebased-by: Maksim Sisov <msisov@igalia.com>
 ---
- build/config/compiler/BUILD.gn | 26 --------------------------
- 1 file changed, 26 deletions(-)
+ build/config/compiler/BUILD.gn | 36 ----------------------------------
+ 1 file changed, 36 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 326786bce9b09..dc78a44626729 100644
+index ae42271d99e49..eb397d8722994 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -865,10 +865,6 @@ config("compiler_cpu_abi") {
+@@ -895,10 +895,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -33,7 +33,7 @@ index 326786bce9b09..dc78a44626729 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -878,11 +874,6 @@ config("compiler_cpu_abi") {
+@@ -908,11 +904,6 @@ config("compiler_cpu_abi") {
        if (arm_tune != "") {
          cflags += [ "-mtune=$arm_tune" ]
        }
@@ -45,7 +45,7 @@ index 326786bce9b09..dc78a44626729 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -890,9 +881,6 @@ config("compiler_cpu_abi") {
+@@ -920,9 +911,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -55,7 +55,7 @@ index 326786bce9b09..dc78a44626729 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -972,8 +960,6 @@ config("compiler_cpu_abi") {
+@@ -1002,8 +990,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -64,7 +64,7 @@ index 326786bce9b09..dc78a44626729 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1021,9 +1007,6 @@ config("compiler_cpu_abi") {
+@@ -1051,9 +1037,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -74,7 +74,7 @@ index 326786bce9b09..dc78a44626729 100644
            }
          } else {
            cflags += [
-@@ -1081,8 +1064,6 @@ config("compiler_cpu_abi") {
+@@ -1111,8 +1094,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -83,7 +83,7 @@ index 326786bce9b09..dc78a44626729 100644
          } else {
            cflags += [
              "-EB",
-@@ -1254,13 +1235,6 @@ config("compiler_deterministic") {
+@@ -1284,23 +1265,6 @@ config("compiler_deterministic") {
        }
      }
    }
@@ -93,6 +93,16 @@ index 326786bce9b09..dc78a44626729 100644
 -  # really need it and it can mess up the goma cache entries.
 -  if (is_clang && !is_nacl) {
 -    cflags += [ "-no-canonical-prefixes" ]
+-
+-    # Same for links: Let the compiler driver invoke the linker
+-    # with a relative path and pass relative paths to built-in
+-    # libraries. Not needed on Windows because we call the linker
+-    # directly there, not through the compiler driver.
+-    # We don't link on goma, so this change is just for cleaner
+-    # internal linker invocations, for people who work on the build.
+-    if (!is_win) {
+-      ldflags += [ "-no-canonical-prefixes" ]
+-    }
 -  }
  }
  

@@ -4,8 +4,8 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[md5sum] = "4b329a88fb91ed032972ad5ddd734200"
-SRC_URI[sha256sum] = "cabbba2e608c5ec110850b14ee5fead2608c44447a52edb80e2ba8261be3dc5b"
+SRC_URI[md5sum] = "db4d461655a9b9d6b01809531f04cb91"
+SRC_URI[sha256sum] = "38a37d737c6c9a7198402ca614746b2dbb7abbb793bb2cb02dc796b62a22efe7"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -90,6 +90,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/ios/third_party/motion_transitioning_objc/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/native_client/LICENSE;md5=cbbd27594afd089daa160d3a16dd515a \
     file://${S}/native_client_sdk/src/libraries/third_party/newlib-extras/README;md5=e944d73ca3817b7ca8656eafb9497fed \
+    file://${S}/net/third_party/mozilla_win/LICENSE;md5=9b13a17f35cae227ee726ee0108d72a2 \
     file://${S}/net/third_party/nss/LICENSE;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
     file://${S}/net/third_party/quiche/src/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
     file://${S}/net/third_party/uri_template/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
@@ -241,7 +242,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/gemmlowp/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/gif_player/LICENSE;md5=86d3f3a95c324c9479bd8986968f4327 \
     file://${S}/third_party/google-closure-library/LICENSE;md5=e23fadd6ceef8c618fc1c65191d846fa \
-    file://${S}/third_party/google_android_play_core/LICENSE;md5=7f7d74108ee1b7a743cca7d9a86784d6 \
     file://${S}/third_party/google_input_tools/LICENSE;md5=ff0b0f0202337c9d4ae2d869797049d3 \
     file://${S}/third_party/google_toolbox_for_mac/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/google_trust_services/src/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
