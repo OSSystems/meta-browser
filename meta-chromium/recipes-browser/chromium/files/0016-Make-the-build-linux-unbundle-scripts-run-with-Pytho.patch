@@ -1,0 +1,64 @@
+Upstream-Status: Backport
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 9896c9df3b45ee520281a0fef4246b030b8e41c0 Mon Sep 17 00:00:00 2001
+From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Date: Wed, 29 Sep 2021 17:30:03 +0000
+Subject: [PATCH] Make the build/linux/unbundle scripts run with Python 3.
+
+The code seems to run fine with Python 3 (verified locally), so adjust
+the shebang line and remove the print_function import used by Python 2.
+
+Change-Id: I3cc68df92f1bd7f638eddce037184e8b3c1048de
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3194073
+Auto-Submit: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Commit-Queue: Thomas Anderson <thomasanderson@chromium.org>
+Reviewed-by: Thomas Anderson <thomasanderson@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#926345}
+---
+ build/linux/unbundle/remove_bundled_libraries.py | 4 +---
+ build/linux/unbundle/replace_gn_files.py         | 4 +---
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/build/linux/unbundle/remove_bundled_libraries.py b/build/linux/unbundle/remove_bundled_libraries.py
+index 899877a1654e5..91fa62ef412c7 100755
+--- a/build/linux/unbundle/remove_bundled_libraries.py
++++ b/build/linux/unbundle/remove_bundled_libraries.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ # Copyright 2013 The Chromium Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+@@ -9,8 +9,6 @@ Removes bundled libraries to make sure they are not used.
+ See README for more details.
+ """
+ 
+-from __future__ import print_function
+-
+ import optparse
+ import os.path
+ import sys
+diff --git a/build/linux/unbundle/replace_gn_files.py b/build/linux/unbundle/replace_gn_files.py
+index eba4bd1fb3c83..3a65f8395b583 100755
+--- a/build/linux/unbundle/replace_gn_files.py
++++ b/build/linux/unbundle/replace_gn_files.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ # Copyright 2016 The Chromium Authors. All rights reserved.
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+@@ -8,8 +8,6 @@ Replaces GN files in tree with files from here that
+ make the build use system libraries.
+ """
+ 
+-from __future__ import print_function
+-
+ import argparse
+ import os
+ import shutil
+-- 
+2.25.1
+

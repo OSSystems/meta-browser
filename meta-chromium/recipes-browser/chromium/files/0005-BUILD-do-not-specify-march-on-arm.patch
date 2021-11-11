@@ -18,10 +18,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 10 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index dc78a44626729..55b742b15f0cc 100644
+index eb397d8722994..e1f4b3cef6be3 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -864,16 +864,6 @@ config("compiler_cpu_abi") {
+@@ -894,16 +894,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }

@@ -21,10 +21,10 @@ This reverts commit 34a955823630096f5b01c2b01d51c1ea59d22763.
  2 files changed, 11 insertions(+), 15 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index c3e99a6545ffa..b0042bd38f80c 100644
+index 794bad82720c0..ec292171c091b 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1194,19 +1194,12 @@ config("compiler_deterministic") {
+@@ -1224,19 +1224,12 @@ config("compiler_deterministic") {
      # different build directory like "out/feature_a" and "out/feature_b" if
      # we build same files with same compile flag.
      # Other paths are already given in relative, no need to normalize them.
@@ -51,10 +51,10 @@ index c3e99a6545ffa..b0042bd38f80c 100644
        # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
        asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 822bfca12efd7..9c88b951bc651 100644
+index 20d8773d27525..0c1b08403654a 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
-@@ -230,8 +230,11 @@ declare_args() {
+@@ -243,8 +243,11 @@ declare_args() {
  # deterministic builds to reduce compile times, so this is less relevant for
  # official builders.
  strip_absolute_paths_from_debug_symbols_default =
