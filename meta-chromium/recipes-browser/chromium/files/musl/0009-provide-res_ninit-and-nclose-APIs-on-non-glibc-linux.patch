@@ -8,22 +8,38 @@ These APIs are not implemented on musl
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
----
+--- a/net/dns/dns_config_service_linux.cc
++++ b/net/dns/dns_config_service_linux.cc
+@@ -414,12 +414,6 @@ class DnsConfigServiceLinux::ConfigReade
+     base::ScopedBlockingCall scoped_blocking_call(
+         FROM_HERE, base::BlockingType::MAY_BLOCK);
+ 
+-    std::unique_ptr<struct __res_state> res = resolv_reader_->GetResState();
+-    if (res) {
+-      dns_config_ = ConvertResStateToDnsConfig(*res.get());
+-      resolv_reader_->CloseResState(res.get());
+-    }
+-
+     UMA_HISTOGRAM_BOOLEAN("Net.DNS.DnsConfig.Resolv.Read",
+                           dns_config_.has_value());
+     if (!dns_config_.has_value())
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
-@@ -4,8 +4,7 @@
+@@ -4,9 +4,8 @@
  
  #include "net/dns/dns_reloader.h"
  
 -#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
 -    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+-
 +#if defined(__GLIBC__)
- 
++
  #include <resolv.h>
  
+ #include "base/lazy_instance.h"
 --- a/net/dns/host_resolver_manager.cc
 +++ b/net/dns/host_resolver_manager.cc
-@@ -2720,8 +2720,7 @@ HostResolverManager::HostResolverManager
+@@ -2902,8 +2902,7 @@ HostResolverManager::HostResolverManager
    NetworkChangeNotifier::AddConnectionTypeObserver(this);
    if (system_dns_config_notifier_)
      system_dns_config_notifier_->AddObserver(this);
@@ -45,12 +61,12 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    DnsReloaderMaybeReload();
  #endif
    absl::optional<AddressInfo> ai;
---- a/net/dns/dns_config_service_linux.cc
-+++ b/net/dns/dns_config_service_linux.cc
-@@ -486,20 +486,11 @@ class DnsConfigServiceLinux::ConfigReade
+--- a/net/dns/public/resolv_reader.cc
++++ b/net/dns/public/resolv_reader.cc
+@@ -20,19 +20,10 @@
+ namespace net {
  
- std::unique_ptr<struct __res_state>
- DnsConfigServiceLinux::ResolvReader::GetResState() {
+ std::unique_ptr<struct __res_state> ResolvReader::GetResState() {
 -  auto res = std::make_unique<struct __res_state>();
 -  memset(res.get(), 0, sizeof(struct __res_state));
 -
@@ -63,9 +79,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +  return nullptr;
  }
  
- void DnsConfigServiceLinux::ResolvReader::CloseResState(
-     struct __res_state* res) {
+ void ResolvReader::CloseResState(struct __res_state* res) {
 -  res_nclose(res);
  }
  
- DnsConfigServiceLinux::DnsConfigServiceLinux()
+ absl::optional<std::vector<IPEndPoint>> GetNameservers(
