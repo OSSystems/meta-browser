@@ -50,6 +50,8 @@ SRC_URI:append:libc-musl = "\
     file://musl/0022-sys-stat.patch \
     file://musl/scoped-file.patch \
     file://musl/fix-narrowing-cast.patch \
+    file://musl/chromium-95-quiche-include.patch \
+    file://musl/fix-bits-stdint-intn-include.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
