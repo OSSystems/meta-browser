@@ -12,7 +12,6 @@ DEPENDS += "\
 
 SRC_URI += "\
         file://chromium-wayland/0001-ozone-add-va-api-support-to-wayland.patch \
-        file://chromium-wayland/0001-ozone-wayland-do-not-create-surface-sync-if-buffers-.patch \
 "
 
 GN_ARGS += "\

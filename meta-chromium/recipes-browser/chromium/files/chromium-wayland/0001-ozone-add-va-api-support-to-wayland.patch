@@ -18,58 +18,38 @@ by Wayland later.
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
- media/gpu/vaapi/vaapi_picture_factory.cc      | 12 ++++--
- .../gpu/vaapi/vaapi_picture_native_pixmap.cc  | 17 +++++++-
- .../vaapi/vaapi_video_decode_accelerator.cc   | 39 ++++++++-----------
- media/gpu/vaapi/vaapi_wrapper.cc              |  7 ++--
- .../wayland/gpu/gbm_pixmap_wayland.cc         | 15 ++++++-
- .../platform/wayland/gpu/gbm_pixmap_wayland.h |  3 ++
- 6 files changed, 60 insertions(+), 33 deletions(-)
+ media/gpu/vaapi/vaapi_picture_factory.cc        |  2 +-
+ media/gpu/vaapi/vaapi_picture_native_pixmap.cc  | 17 ++++++++++++++++-
+ .../gpu/vaapi/vaapi_video_decode_accelerator.cc |  4 ++--
+ .../platform/wayland/gpu/gbm_pixmap_wayland.cc  | 14 ++++++++++++--
+ .../platform/wayland/gpu/gbm_pixmap_wayland.h   |  3 +++
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
 diff --git a/media/gpu/vaapi/vaapi_picture_factory.cc b/media/gpu/vaapi/vaapi_picture_factory.cc
-index 719035b87c893..815f9b1b0a83e 100644
+index 9c7d7387d24b2..400ea292e9d6e 100644
 --- a/media/gpu/vaapi/vaapi_picture_factory.cc
 +++ b/media/gpu/vaapi/vaapi_picture_factory.cc
-@@ -47,10 +47,10 @@ VaapiPictureFactory::VaapiPictureFactory() {
-       std::make_pair(gl::kGLImplementationEGLGLES2,
-                      VaapiPictureFactory::kVaapiImplementationDrm));
- #if defined(USE_X11)
--  vaapi_impl_pairs_.insert(
--      std::make_pair(gl::kGLImplementationEGLANGLE,
--                     VaapiPictureFactory::kVaapiImplementationAngle));
-   if (!features::IsUsingOzonePlatform()) {
-+    vaapi_impl_pairs_.insert(
-+        std::make_pair(gl::kGLImplementationEGLANGLE,
-+                       VaapiPictureFactory::kVaapiImplementationAngle));
-     vaapi_impl_pairs_.insert(
-         std::make_pair(gl::kGLImplementationDesktopGL,
-                        VaapiPictureFactory::kVaapiImplementationX11));
-@@ -105,8 +105,12 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
- 
- gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
- #if defined(USE_OZONE)
-+#if defined(OS_LINUX)
-   if (features::IsUsingOzonePlatform())
--    return gfx::BufferFormat::YUV_420_BIPLANAR;
-+    return gfx::BufferFormat::RGBX_8888;
-+#else
-+  return gfx::BufferFormat::YUV_420_BIPLANAR;
-+#endif
- #endif
-   return gfx::BufferFormat::RGBX_8888;
+@@ -102,7 +102,7 @@ uint32_t VaapiPictureFactory::GetGLTextureTarget() {
  }
+
+ gfx::BufferFormat VaapiPictureFactory::GetBufferFormat() {
+-#if BUILDFLAG(USE_VAAPI_X11)
++#if defined(OS_LINUX)
+   return gfx::BufferFormat::RGBX_8888;
+ #else
+   return gfx::BufferFormat::YUV_420_BIPLANAR;
 diff --git a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
-index 941f24cc59590..42975746b5fb8 100644
+index 941f24cc59590..a9c80356e7109 100644
 --- a/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
 +++ b/media/gpu/vaapi/vaapi_picture_native_pixmap.cc
-@@ -12,6 +12,7 @@
- #include "ui/gfx/native_pixmap.h"
- #include "ui/gl/gl_bindings.h"
- #include "ui/gl/gl_image_native_pixmap.h"
+@@ -4,6 +4,7 @@
+
+ #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
+
 +#include "media/gpu/macros.h"
- 
- namespace media {
- 
+ #include "media/gpu/vaapi/va_surface.h"
+ #include "media/gpu/vaapi/vaapi_wrapper.h"
+ #include "ui/gfx/buffer_format_util.h"
 @@ -40,7 +41,21 @@ VaapiPictureNativePixmap::~VaapiPictureNativePixmap() = default;
  bool VaapiPictureNativePixmap::DownloadFromSurface(
      scoped_refptr<VASurface> va_surface) {
@@ -94,23 +74,10 @@ index 941f24cc59590..42975746b5fb8 100644
  
  bool VaapiPictureNativePixmap::AllowOverlay() const {
 diff --git a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-index 7514fe4fdd339..1039d558ff317 100644
+index 26696da127121..017fd33f0e24a 100644
 --- a/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
 +++ b/media/gpu/vaapi/vaapi_video_decode_accelerator.cc
-@@ -184,12 +184,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
-                                              Client* client) {
-   DCHECK(task_runner_->BelongsToCurrentThread());
-
--#if defined(USE_X11)
--  // TODO(crbug/1116701): implement decode acceleration when running with Ozone.
--  if (features::IsUsingOzonePlatform())
--    return false;
--#endif
--
-   vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
-
-   if (config.is_encrypted()) {
-@@ -567,12 +561,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
+@@ -563,12 +563,12 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
    requested_visible_rect_ = visible_rect;
    if (buffer_allocation_mode_ == BufferAllocationMode::kSuperReduced) {
      // Add one to the reference frames for the one being currently egressed.
@@ -125,87 +92,11 @@ index 7514fe4fdd339..1039d558ff317 100644
      requested_num_pics_ = num_pics - num_reference_frames + 1;
    } else {
      requested_num_reference_frames_ = 0;
-@@ -1214,19 +1208,21 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
- VaapiVideoDecodeAccelerator::BufferAllocationMode
- VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
- #if defined(USE_X11)
--  // The IMPORT mode is used for Android on Chrome OS, so this doesn't apply
--  // here.
--  DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
--  // TODO(crbug/1116701): get video decode acceleration working with ozone.
--  DCHECK(!features::IsUsingOzonePlatform());
--  // For H.264 on older devices, another +1 is experimentally needed for
--  // high-to-high resolution changes.
--  // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
--  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
--  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
--    return BufferAllocationMode::kReduced;
--  return BufferAllocationMode::kSuperReduced;
--#else
-+  if (!features::IsUsingOzonePlatform()) {
-+    // The IMPORT mode is used for Android on Chrome OS, so this doesn't apply
-+    // here.
-+    DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
-+    // TODO(crbug/1116701): get video decode acceleration working with ozone.
-+    DCHECK(!features::IsUsingOzonePlatform());
-+    // For H.264 on older devices, another +1 is experimentally needed for
-+    // high-to-high resolution changes.
-+    // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
-+    // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
-+    if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
-+      return BufferAllocationMode::kReduced;
-+    return BufferAllocationMode::kSuperReduced;
-+  }
-+#endif
-   // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
-   // |output_mode_| as well.
-   if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
-@@ -1261,7 +1257,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
-   // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
-   // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
-   return BufferAllocationMode::kSuperReduced;
--#endif
- }
- 
- bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()
-diff --git a/media/gpu/vaapi/vaapi_wrapper.cc b/media/gpu/vaapi/vaapi_wrapper.cc
-index de801ef84ed40..69a6db41b5f16 100644
---- a/media/gpu/vaapi/vaapi_wrapper.cc
-+++ b/media/gpu/vaapi/vaapi_wrapper.cc
-@@ -680,8 +680,8 @@ bool VADisplayState::InitializeOnce() {
- 
- #if defined(USE_X11)
-   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
--      implementation_type_ == VAImplementation::kIntelIHD) {
--    DCHECK(!features::IsUsingOzonePlatform());
-+      implementation_type_ == VAImplementation::kIntelIHD &&
-+      !features::IsUsingOzonePlatform()) {
-     constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
-     // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
-     // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
-@@ -2811,8 +2811,7 @@ void VaapiWrapper::PreSandboxInitialization() {
-   paths[kModuleVa].push_back(std::string("libva.so.") + va_suffix);
-   paths[kModuleVa_drm].push_back(std::string("libva-drm.so.") + va_suffix);
- #if defined(USE_X11)
--  if (!features::IsUsingOzonePlatform())
--    paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
-+  paths[kModuleVa_x11].push_back(std::string("libva-x11.so.") + va_suffix);
- #endif
- #if BUILDFLAG(IS_CHROMEOS_ASH)
-   paths[kModuleVa_prot].push_back(std::string("libva.so.") + va_suffix);
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-index 784238d74ac79..82255c87c8b01 100644
+index 52ce88f40ab5f..1994d78a0a1cc 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.cc
-@@ -15,6 +15,7 @@
- #include "base/posix/eintr_wrapper.h"
- #include "base/trace_event/trace_event.h"
- #include "ui/gfx/buffer_format_util.h"
-+#include "ui/gfx/buffer_types.h"
- #include "ui/gfx/buffer_usage_util.h"
- #include "ui/gfx/geometry/size_conversions.h"
- #include "ui/gfx/linux/drm_util_linux.h"
-@@ -33,8 +34,12 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
+@@ -33,8 +33,12 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager)
        buffer_id_(buffer_manager->AllocateBufferID()) {}
  
  GbmPixmapWayland::~GbmPixmapWayland() {
@@ -219,9 +110,9 @@ index 784238d74ac79..82255c87c8b01 100644
  }
  
  bool GbmPixmapWayland::InitializeBuffer(
-@@ -83,8 +88,14 @@ bool GbmPixmapWayland::InitializeBuffer(
+@@ -83,8 +87,14 @@ bool GbmPixmapWayland::InitializeBuffer(
             << " usage=" << gfx::BufferUsageToString(usage);
-
+ 
    visible_area_size_ = visible_area_size ? visible_area_size.value() : size;
 -  if (widget_ != gfx::kNullAcceleratedWidget)
 +  usage_ = usage;
@@ -236,15 +127,16 @@ index 784238d74ac79..82255c87c8b01 100644
  }
  
 diff --git a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-index b37de8d37e599..c098203c8dbe7 100644
+index e2af8c3d3233c..5a54fd7f96aec 100644
 --- a/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
 +++ b/ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h
-@@ -97,6 +97,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+@@ -88,6 +88,9 @@ class GbmPixmapWayland : public gfx::NativePixmap {
+ 
    // Size of the visible area of the buffer.
    gfx::Size visible_area_size_;
- 
++
 +  // Tells the usage of this pixmap.
 +  gfx::BufferUsage usage_ = gfx::BufferUsage::SCANOUT;
-+
-   DISALLOW_COPY_AND_ASSIGN(GbmPixmapWayland);
  };
+ 
+ }  // namespace ui
