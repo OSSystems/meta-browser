@@ -22,6 +22,7 @@ DEPENDS += "\
 GN_ARGS += "\
         ozone_auto_platforms=false \
         ozone_platform_x11=true \
+        ozone_platform_headless=true \
 "
 
 # Compatibility glue while we have both chromium-x11 and
