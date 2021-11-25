@@ -12,6 +12,7 @@ DEPENDS += "\
 
 SRC_URI += "\
         file://chromium-wayland/0001-ozone-add-va-api-support-to-wayland.patch \
+        file://chromium-wayland/0001-ozone-wayland-fix-re-initialization-of-WBMG.patch \
 "
 
 GN_ARGS += "\

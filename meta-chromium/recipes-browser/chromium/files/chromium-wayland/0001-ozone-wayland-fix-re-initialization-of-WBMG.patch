@@ -1,0 +1,617 @@
+Upstream-Status: Backport
+
+Fixes "[607:644:0101/010302.096274:ERROR:
+wayland_buffer_manager_gpu.cc(103)] WaylandBufferManagerGpu
+is not initialized. Can't register a surface." error.
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+---
+From 1d31c37064682e00c334ca824f8940085815c2ce Mon Sep 17 00:00:00 2001
+From: Maksim Sisov <msisov@igalia.com>
+Date: Thu, 18 Nov 2021 07:55:37 +0000
+Subject: [PATCH] ozone/wayland: fix re-initialization of WBMG
+
+This is a partial reland of https://crrev.com/c/3220635 as
+the approach is different now. It was supposed that only
+WaylandSurfaceCanvas lives on a viz thread while all the other
+users of the WBMG live on the same thread where WBMG is created.
+
+However, it turned out that --enable-native-gpu-memory-buffers flag
+results in creation of anonymous GbmPixmapWayland on an io child thread,
+which also required jumping from one thread to another.
+
+Thus, the previous approach resulted in crashes when the flag was used.
+
+Given clients of the WBMG still live on different threads, it was
+decided to leave the core design of the WBMG as it was (with
+tasks posted on a correct sequence).
+
+Instead, a different path was taken - the original problem was that
+during the gpu restart, WBMG::RegisterSurface might have been called
+earlier than the remote host is bound and the task runner is set.
+However, when the code is used outside tests, the WBMG is able to get
+the very same task runner during construction and it doesn't need to
+wait until WBMG::Initialize is called as it also happens on the same
+thread. However, in tests, the WBMG might be created before the task
+runner handle is set. Thus, the task runner has to be stored later
+during WBMG::Initialize call instead of being stored during the
+construction time. Given unit tests run in a single process and initial
+initialization is single-threaded, it's fine to take the task runner
+later as none of the methods of the WBMG are called until initialization
+is done.
+
+Thus, should_get_task_runner_on_init_ was added, which is always true
+when the browser runs normally, and false when unit tests run the code.
+
+Also, TestGpuServiceHolder stores and binds Ozone interfaces so that
+the WBMG is able to get connected with the WBMH without emitting
+confusing messages that the host is not bound.
+
+Cq-Include-Trybots: luci.chromium.try:gpu-fyi-try-lacros-intel-rel,gpu-fyi-try-lacros-amd-rel
+Bug: 1253917
+Change-Id: I13ab07d3042f2b1d4f6f0fb6de1d0f4491d049d1
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3275454
+Commit-Queue: Maksim Sisov <msisov@igalia.com>
+Reviewed-by: Robert Kroeger <rjkroege@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#942991}
+---
+ .../viz/test/test_gpu_service_holder.cc       |  51 ++++++
+ components/viz/test/test_gpu_service_holder.h |  19 +++
+ .../gpu_process_expectations.txt              |   1 -
+ .../wayland/gpu/wayland_buffer_manager_gpu.cc | 148 ++++++++++--------
+ .../wayland/gpu/wayland_buffer_manager_gpu.h  |  23 ++-
+ .../wayland/ozone_platform_wayland.cc         |  15 +-
+ 6 files changed, 185 insertions(+), 72 deletions(-)
+
+diff --git a/components/viz/test/test_gpu_service_holder.cc b/components/viz/test/test_gpu_service_holder.cc
+index 87c910f1e714f..8d1db594d3932 100644
+--- a/components/viz/test/test_gpu_service_holder.cc
++++ b/components/viz/test/test_gpu_service_holder.cc
+@@ -33,6 +33,7 @@
+ #endif
+ 
+ #if defined(USE_OZONE)
++#include "ui/ozone/public/gpu_platform_support_host.h"
+ #include "ui/ozone/public/ozone_platform.h"
+ #endif
+ 
+@@ -40,6 +41,12 @@ namespace viz {
+ 
+ namespace {
+ 
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++namespace {
++constexpr int kGpuProcessHostId = 1;
++}  // namespace
++#endif
++
+ base::Lock& GetLock() {
+   static base::NoDestructor<base::Lock> lock;
+   return *lock;
+@@ -160,9 +167,26 @@ TestGpuServiceHolder::TestGpuServiceHolder(
+       base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
+                      base::Unretained(this), gpu_preferences, &completion));
+   completion.Wait();
++
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++  if (auto* gpu_platform_support_host =
++          ui::OzonePlatform::GetInstance()->GetGpuPlatformSupportHost()) {
++    auto interface_binder = base::BindRepeating(
++        &TestGpuServiceHolder::BindInterface, base::Unretained(this));
++    gpu_platform_support_host->OnGpuServiceLaunched(
++        kGpuProcessHostId, interface_binder, base::DoNothing());
++  }
++#endif
+ }
+ 
+ TestGpuServiceHolder::~TestGpuServiceHolder() {
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++  if (auto* gpu_platform_support_host =
++          ui::OzonePlatform::GetInstance()->GetGpuPlatformSupportHost()) {
++    gpu_platform_support_host->OnChannelDestroyed(kGpuProcessHostId);
++  }
++#endif
++
+   // Ensure members created on GPU thread are destroyed there too.
+   gpu_thread_.task_runner()->PostTask(
+       FROM_HERE, base::BindOnce(&TestGpuServiceHolder::DeleteOnGpuThread,
+@@ -190,6 +214,10 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
+     base::WaitableEvent* completion) {
+   DCHECK(gpu_thread_.task_runner()->BelongsToCurrentThread());
+ 
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++  ui::OzonePlatform::GetInstance()->AddInterfaces(&binders_);
++#endif
++
+   if (gpu_preferences.use_vulkan != gpu::VulkanImplementationName::kNone) {
+ #if BUILDFLAG(ENABLE_VULKAN)
+     bool use_swiftshader = gpu_preferences.use_vulkan ==
+@@ -270,4 +298,27 @@ void TestGpuServiceHolder::DeleteOnGpuThread() {
+   gpu_service_.reset();
+ }
+ 
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++void TestGpuServiceHolder::BindInterface(
++    const std::string& interface_name,
++    mojo::ScopedMessagePipeHandle interface_pipe) {
++  // The interfaces must be bound on the gpu to ensure the mojo calls happen
++  // on the correct sequence (same happens when the browser runs with a real
++  // gpu service).
++  gpu_thread_.task_runner()->PostTask(
++      FROM_HERE, base::BindOnce(&TestGpuServiceHolder::BindInterfaceOnGpuThread,
++                                base::Unretained(this), interface_name,
++                                std::move(interface_pipe)));
++}
++
++void TestGpuServiceHolder::BindInterfaceOnGpuThread(
++    const std::string& interface_name,
++    mojo::ScopedMessagePipeHandle interface_pipe) {
++  mojo::GenericPendingReceiver receiver =
++      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe));
++  CHECK(binders_.TryBind(&receiver))
++      << "Unable to find mojo interface " << interface_name;
++}
++#endif  // defined(USE_OZONE) && !defined(OS_FUCHSIA)
++
+ }  // namespace viz
+diff --git a/components/viz/test/test_gpu_service_holder.h b/components/viz/test/test_gpu_service_holder.h
+index 29046ef044d0b..6b18cd82115e4 100644
+--- a/components/viz/test/test_gpu_service_holder.h
++++ b/components/viz/test/test_gpu_service_holder.h
+@@ -6,14 +6,20 @@
+ #define COMPONENTS_VIZ_TEST_TEST_GPU_SERVICE_HOLDER_H_
+ 
+ #include <memory>
++#include <string>
+ 
+ #include "base/feature_list.h"
+ #include "base/macros.h"
+ #include "base/memory/scoped_refptr.h"
+ #include "base/threading/thread.h"
++#include "build/build_config.h"
+ #include "gpu/ipc/gpu_in_process_thread_service.h"
+ #include "gpu/vulkan/buildflags.h"
+ 
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++#include "mojo/public/cpp/bindings/binder_map.h"
++#endif
++
+ namespace gpu {
+ class CommandBufferTaskExecutor;
+ class SingleTaskSequence;
+@@ -96,6 +102,14 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
+                              base::WaitableEvent* completion);
+   void DeleteOnGpuThread();
+ 
++// TODO(crbug.com/1267788): Fuchsia crashes. See details in the crbug.
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++  void BindInterface(const std::string& interface_name,
++                     mojo::ScopedMessagePipeHandle interface_pipe);
++  void BindInterfaceOnGpuThread(const std::string& interface_name,
++                                mojo::ScopedMessagePipeHandle interface_pipe);
++#endif
++
+ #if !defined(OS_CHROMEOS)
+   // TODO(crbug.com/1241161): This is equally applicable to Chrome OS there are
+   // just a number of tests that already override the feature list after it's no
+@@ -116,6 +130,11 @@ class TestGpuServiceHolder : public gpu::GpuInProcessThreadServiceDelegate {
+ #if BUILDFLAG(ENABLE_VULKAN)
+   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
+ #endif
++
++#if defined(USE_OZONE) && !defined(OS_FUCHSIA)
++  // Bound interfaces.
++  mojo::BinderMap binders_;
++#endif
+ };
+ 
+ }  // namespace viz
+diff --git a/content/test/gpu/gpu_tests/test_expectations/gpu_process_expectations.txt b/content/test/gpu/gpu_tests/test_expectations/gpu_process_expectations.txt
+index b5fb9789ffed2..a91bcdbab4a5b 100644
+--- a/content/test/gpu/gpu_tests/test_expectations/gpu_process_expectations.txt
++++ b/content/test/gpu/gpu_tests/test_expectations/gpu_process_expectations.txt
+@@ -92,7 +92,6 @@ crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performan
+ 
+ # Flakily hits a DCHECK during shared image creation.
+ crbug.com/1188437 [ linux intel display-server-wayland ] GpuProcess_webgl [ RetryOnFailure ]
+-crbug.com/1253917 [ linux intel display-server-wayland ] GpuProcess_disable_gpu [ RetryOnFailure ]
+ 
+ #######################################################################
+ # Automated Entries After This Point - Do Not Manually Add Below Here #
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.cc b/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.cc
+index 9782cee08106d..e5da7ebe1f07e 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.cc
++++ b/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.cc
+@@ -9,6 +9,7 @@
+ #include "base/bind.h"
+ #include "base/process/process.h"
+ #include "base/task/current_thread.h"
++#include "base/threading/thread_task_runner_handle.h"
+ #include "ui/gfx/linux/drm_util_linux.h"
+ #include "ui/gfx/overlay_priority_hint.h"
+ #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
+@@ -42,7 +43,32 @@ TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
+ 
+ namespace ui {
+ 
+-WaylandBufferManagerGpu::WaylandBufferManagerGpu() = default;
++WaylandBufferManagerGpu::WaylandBufferManagerGpu() {
++  // The WaylandBufferManagerGpu takes the task runner where it was created.
++  // However, it might be null in tests and be available later after
++  // initialization is done. Though, when this code runs outside tests, a race
++  // between setting a task runner via ::Initialize and ::RegisterSurface may
++  // happen, and a surface will never be registered. Thus, the following two
++  // cases are possible:
++  // 1) The WaylandBufferManagerGpu runs normally outside tests.
++  // ThreadTaskRunnerHandle is set and it is passed during construction and
++  // never changes.
++  // 2) The WaylandBufferManagerGpu runs in unit tests and when it's created,
++  // the task runner is not available and must be set later when ::Initialize is
++  // called. In this case, there is no race between ::Initialize and
++  // ::RegisterSurface and it's fine to defer setting the task runner.
++  //
++  // TODO(msisov): think about making unit tests initialize Ozone after task
++  // runner is set that would allow to always set the task runner.
++  if (base::ThreadTaskRunnerHandle::IsSet()) {
++    gpu_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
++  } else {
++    // In tests, the further calls might happen on a different sequence.
++    // Otherwise, ThreadTaskRunnerHandle should have already been set.
++    DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
++  }
++}
++
+ WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
+ 
+ void WaylandBufferManagerGpu::Initialize(
+@@ -52,6 +78,12 @@ void WaylandBufferManagerGpu::Initialize(
+     bool supports_dma_buf,
+     bool supports_viewporter,
+     bool supports_acquire_fence) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  // See the comment in the constructor.
++  if (!gpu_thread_runner_)
++    gpu_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
++
+   supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
+ 
+ #if defined(WAYLAND_GBM)
+@@ -62,16 +94,15 @@ void WaylandBufferManagerGpu::Initialize(
+   supports_acquire_fence_ = supports_acquire_fence;
+ 
+   BindHostInterface(std::move(remote_host));
+-
+-  io_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
+ }
+ 
+ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
+                                            uint32_t buffer_id,
+                                            gfx::SwapResult swap_result,
+                                            gfx::GpuFenceHandle release_fence) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
+   base::AutoLock scoped_lock(lock_);
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+   DCHECK_LE(commit_thread_runners_.count(widget), 1u);
+   // Return back to the same thread where the commit request came from.
+   auto it = commit_thread_runners_.find(widget);
+@@ -88,8 +119,9 @@ void WaylandBufferManagerGpu::OnPresentation(
+     gfx::AcceleratedWidget widget,
+     uint32_t buffer_id,
+     const gfx::PresentationFeedback& feedback) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
+   base::AutoLock scoped_lock(lock_);
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+   DCHECK_LE(commit_thread_runners_.count(widget), 1u);
+   // Return back to the same thread where the commit request came from.
+   auto it = commit_thread_runners_.find(widget);
+@@ -103,13 +135,8 @@ void WaylandBufferManagerGpu::OnPresentation(
+ 
+ void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
+                                               WaylandSurfaceGpu* surface) {
+-  if (!io_thread_runner_) {
+-    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
+-                  "a surface.";
+-    return;
+-  }
+-
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(
+           &WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread,
+@@ -120,13 +147,8 @@ void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
+ }
+ 
+ void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {
+-  if (!io_thread_runner_) {
+-    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
+-                  "a surface.";
+-    return;
+-  }
+-
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(
+           &WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread,
+@@ -155,14 +177,9 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBuffer(
+     uint32_t current_format,
+     uint32_t planes_count,
+     uint32_t buffer_id) {
+-  if (!remote_host_) {
+-    LOG(ERROR) << "Interface is not bound. Can't request "
+-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
+-    return;
+-  }
+-
+-  // Do the mojo call on the IO child thread.
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  // Do the mojo call on the GpuMainThread.
++  gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(&WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal,
+                      base::Unretained(this), std::move(dmabuf_fd),
+@@ -175,14 +192,9 @@ void WaylandBufferManagerGpu::CreateShmBasedBuffer(base::ScopedFD shm_fd,
+                                                    size_t length,
+                                                    gfx::Size size,
+                                                    uint32_t buffer_id) {
+-  if (!remote_host_) {
+-    LOG(ERROR) << "Interface is not bound. Can't request "
+-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
+-    return;
+-  }
+-
+-  // Do the mojo call on the IO child thread.
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  // Do the mojo call on the GpuMainThread.
++  gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(&WaylandBufferManagerGpu::CreateShmBasedBufferInternal,
+                      base::Unretained(this), std::move(shm_fd), length,
+@@ -209,14 +221,9 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
+ void WaylandBufferManagerGpu::CommitOverlays(
+     gfx::AcceleratedWidget widget,
+     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
+-  if (!remote_host_) {
+-    LOG(ERROR) << "Interface is not bound. Can't request "
+-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
+-    return;
+-  }
+-
+-  // Do the mojo call on the IO child thread.
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  // Do the mojo call on the GpuMainThread.
++  gpu_thread_runner_->PostTask(
+       FROM_HERE,
+       base::BindOnce(&WaylandBufferManagerGpu::CommitOverlaysInternal,
+                      base::Unretained(this), widget, std::move(overlays)));
+@@ -224,14 +231,9 @@ void WaylandBufferManagerGpu::CommitOverlays(
+ 
+ void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
+                                             uint32_t buffer_id) {
+-  if (!remote_host_) {
+-    LOG(ERROR) << "Interface is not bound. Can't request "
+-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
+-    return;
+-  }
+-
+-  // Do the mojo call on the IO child thread.
+-  io_thread_runner_->PostTask(
++  DCHECK(gpu_thread_runner_);
++  // Do the mojo call on the GpuMainThread.
++  gpu_thread_runner_->PostTask(
+       FROM_HERE, base::BindOnce(&WaylandBufferManagerGpu::DestroyBufferInternal,
+                                 base::Unretained(this), widget, buffer_id));
+ }
+@@ -265,7 +267,9 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
+     uint32_t current_format,
+     uint32_t planes_count,
+     uint32_t buffer_id) {
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  DCHECK(remote_host_);
+   remote_host_->CreateDmabufBasedBuffer(
+       mojo::PlatformHandle(std::move(dmabuf_fd)), size, strides, offsets,
+       modifiers, current_format, planes_count, buffer_id);
+@@ -276,7 +280,9 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
+     size_t length,
+     gfx::Size size,
+     uint32_t buffer_id) {
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  DCHECK(remote_host_);
+   remote_host_->CreateShmBasedBuffer(mojo::PlatformHandle(std::move(shm_fd)),
+                                      length, size, buffer_id);
+ }
+@@ -284,26 +290,31 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
+ void WaylandBufferManagerGpu::CommitOverlaysInternal(
+     gfx::AcceleratedWidget widget,
+     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  DCHECK(remote_host_);
+   remote_host_->CommitOverlays(widget, std::move(overlays));
+ }
+ 
+ void WaylandBufferManagerGpu::DestroyBufferInternal(
+     gfx::AcceleratedWidget widget,
+     uint32_t buffer_id) {
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  DCHECK(remote_host_);
+   remote_host_->DestroyBuffer(widget, buffer_id);
+ }
+ 
+ void WaylandBufferManagerGpu::BindHostInterface(
+     mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  DCHECK(!remote_host_.is_bound() && !associated_receiver_.is_bound());
++  remote_host_.Bind(std::move(remote_host));
+   // WaylandBufferManagerHost may bind host again after an error. See
+   // WaylandBufferManagerHost::BindInterface for more details.
+-  if (remote_host_.is_bound()) {
+-    remote_host_.reset();
+-    associated_receiver_.reset();
+-  }
+-  remote_host_.Bind(std::move(remote_host));
++  remote_host_.set_disconnect_handler(base::BindOnce(
++      &WaylandBufferManagerGpu::OnHostDisconnected, base::Unretained(this)));
+ 
+   // Setup associated interface.
+   mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
+@@ -316,15 +327,17 @@ void WaylandBufferManagerGpu::BindHostInterface(
+ void WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread(
+     gfx::AcceleratedWidget widget,
+     scoped_refptr<base::SingleThreadTaskRunner> origin_runner) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
+   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+   commit_thread_runners_.emplace(widget, origin_runner);
+ }
+ 
+ void WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread(
+     gfx::AcceleratedWidget widget) {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
+   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
+-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+   commit_thread_runners_.erase(widget);
+ }
+ 
+@@ -352,4 +365,15 @@ void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
+     surface->OnPresentation(buffer_id, feedback);
+ }
+ 
++void WaylandBufferManagerGpu::OnHostDisconnected() {
++  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
++
++  // WaylandBufferManagerHost may bind host again after an error. See
++  // WaylandBufferManagerHost::BindInterface for more details.
++  remote_host_.reset();
++  // When the remote host is disconnected, it also disconnects the associated
++  // receiver. Thus, reset that as well.
++  associated_receiver_.reset();
++}
++
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h b/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h
+index 268ec1d5bfcf8..7290df8e5998b 100644
+--- a/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h
++++ b/ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h
+@@ -43,12 +43,15 @@ struct OverlayPlane;
+ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
+  public:
+   WaylandBufferManagerGpu();
+-
+   WaylandBufferManagerGpu(const WaylandBufferManagerGpu&) = delete;
+   WaylandBufferManagerGpu& operator=(const WaylandBufferManagerGpu&) = delete;
+ 
+   ~WaylandBufferManagerGpu() override;
+ 
++  scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner() const {
++    return gpu_thread_runner_;
++  }
++
+   // WaylandBufferManagerGpu overrides:
+   void Initialize(
+       mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host,
+@@ -185,6 +188,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
+       uint32_t buffer_id,
+       const gfx::PresentationFeedback& feedback);
+ 
++  void OnHostDisconnected();
++
+ #if defined(WAYLAND_GBM)
+   // A DRM render node based gbm device.
+   std::unique_ptr<GbmDevice> gbm_device_;
+@@ -216,26 +221,30 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
+ 
+   // These task runners can be used to pass messages back to the same thread,
+   // where the commit buffer request came from. For example, swap requests can
+-  // come from the GpuMainThread, but are rerouted to the IOChildThread and then
++  // come from the Viz thread, but are rerouted to the GpuMainThread and then
+   // mojo calls happen. However, when the manager receives mojo calls, it has to
+   // reroute calls back to the same thread where the calls came from to ensure
+-  // correct sequence. Note that not all calls come from the GpuMainThread, e.g.
+-  // WaylandCanvasSurface calls from the VizCompositorThread.
+-  // This map must only be accessed from the IO thread.
++  // correct sequence. Note that not all calls come from the Viz thread, e.g.
++  // GbmPixmapWayland may call from either the GpuMainThread or IOChildThread.
++  // This map must only be accessed from the GpuMainThread.
+   base::small_map<std::map<gfx::AcceleratedWidget,
+                            scoped_refptr<base::SingleThreadTaskRunner>>>
+       commit_thread_runners_;
+ 
+   // A task runner, which is initialized in a multi-process mode. It is used to
+-  // ensure all the methods of this class are run on IOChildThread. This is
++  // ensure all the methods of this class are run on GpuMainThread. This is
+   // needed to ensure mojo calls happen on a right sequence.
+-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
++  scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_runner_;
+ 
+   // Protects access to |widget_to_surface_map_| and |commit_thread_runners_|.
+   base::Lock lock_;
+ 
+   // Keeps track of the next unique buffer ID.
+   uint32_t next_buffer_id_ = 0;
++
++  // All calls must happen on the correct sequence. See comments in the
++  // constructor for more details.
++  SEQUENCE_CHECKER(gpu_sequence_checker_);
+ };
+ 
+ }  // namespace ui
+diff --git a/ui/ozone/platform/wayland/ozone_platform_wayland.cc b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+index 04f1a1c00a880..7334bf8225e48 100644
+--- a/ui/ozone/platform/wayland/ozone_platform_wayland.cc
++++ b/ui/ozone/platform/wayland/ozone_platform_wayland.cc
+@@ -14,7 +14,7 @@
+ #include "base/memory/ptr_util.h"
+ #include "base/message_loop/message_pump_type.h"
+ #include "base/no_destructor.h"
+-#include "base/threading/sequenced_task_runner_handle.h"
++#include "base/threading/thread_task_runner_handle.h"
+ #include "ui/base/buildflags.h"
+ #include "ui/base/cursor/cursor_factory.h"
+ #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
+@@ -341,11 +341,22 @@ class OzonePlatformWayland : public OzonePlatform,
+   }
+ 
+   void AddInterfaces(mojo::BinderMap* binders) override {
++    // It's preferred to reuse the same task runner where the
++    // WaylandBufferManagerGpu has been created. However, when tests are
++    // executed, the task runner might not have been set at that time. Thus, use
++    // the current one. See the comment in WaylandBufferManagerGpu why it takes
++    // a task runner.
++    //
++    // Please note this call happens on the gpu.
++    auto gpu_task_runner = buffer_manager_->gpu_thread_runner();
++    if (!gpu_task_runner)
++      gpu_task_runner = base::ThreadTaskRunnerHandle::Get();
++
+     binders->Add<ozone::mojom::WaylandBufferManagerGpu>(
+         base::BindRepeating(
+             &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
+             base::Unretained(this)),
+-        base::SequencedTaskRunnerHandle::Get());
++        gpu_task_runner);
+   }
+ 
+   void CreateWaylandBufferManagerGpuBinding(
+-- 
+2.25.1
+
