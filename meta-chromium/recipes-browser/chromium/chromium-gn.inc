@@ -72,6 +72,7 @@ DEPENDS += " \
     jpeg \
     libdrm \
     libwebp \
+    libxkbcommon \
     libxslt \
     ninja-native \
     nodejs-native \
