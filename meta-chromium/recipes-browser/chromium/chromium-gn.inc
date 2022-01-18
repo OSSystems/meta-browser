@@ -18,10 +18,9 @@ SRC_URI += " \
     file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
-    file://0011-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
-    file://0013-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
-    file://0014-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
-    file://0015-IWYU-add-memory-for-std-unique_ptr-in-base-CommandLi.patch \
+    file://0010-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
+    file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
+    file://0012-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
 "
 
 SRC_URI:append:libc-musl = "\
@@ -362,6 +361,26 @@ python do_create_v8_qemu_wrapper () {
 }
 do_create_v8_qemu_wrapper[dirs] = "${B}"
 addtask create_v8_qemu_wrapper after do_patch before do_configure
+
+# Check the LLVMVERSION defined in the meta-clang layer. Given Chromium is
+# developed using new C++ features, the LLVMVERSION has to be >= 12. Otherwise,
+# it is not guaranteed that Chromium will compile.
+python do_check_llvm_version () {
+  from distutils.version import LooseVersion
+
+  min_llvm_version = "12.0.0"
+  llvm_version = d.getVar('LLVMVERSION', False)
+  if not llvm_version:
+    bb.warn("Unable to determine LLVM version. Chromium may not be compiled "
+            "successfully if the LLVM version is below %s." % min_llvm_version)
+    return
+
+  if LooseVersion(llvm_version) < LooseVersion(min_llvm_version):
+    bb.fatal("Your LLVMVERSION (%s) is lower than the minimum required "
+             "LLVMVERSION (%s). If you are using dunfell, make sure you "
+             "use clang12 branch." % (llvm_version, min_llvm_version))
+}
+addtask check_llvm_version before do_configure
 
 python do_write_toolchain_file () {
     """Writes a BUILD.gn file for Yocto detailing its toolchains."""

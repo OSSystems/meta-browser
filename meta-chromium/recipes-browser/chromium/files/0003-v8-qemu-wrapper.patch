@@ -16,24 +16,23 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 5 insertions(+)
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index 6e86a543558c9..eee89b37064e2 100644
+index d868696dbf28b..3bf1fe3f1558e 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
-@@ -56,6 +56,7 @@ if (use_v8_context_snapshot) {
-     output_path = rebase_path(output_file, root_build_dir)
+@@ -72,6 +72,7 @@ if (use_v8_context_snapshot) {
+       output_path = rebase_path(output_file, root_build_dir)
  
-     args = [
-+      "./v8-qemu-wrapper.sh",
-       "./" + rebase_path(
-               get_label_info(
-                       ":v8_context_snapshot_generator($v8_snapshot_toolchain)",
+       args = [
++        "./v8-qemu-wrapper.sh",
+         "./" + rebase_path(get_label_info(":v8_context_snapshot_generator",
+                                           "root_out_dir") +
+                                "/v8_context_snapshot_generator",
 
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 5c7d931b27..aad8800dce 100644
+index bca5b5356b..85fcb7fdc4 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-@@ -1721,6 +1721,7 @@ template("run_torque") {
+@@ -1878,6 +1878,7 @@ template("run_torque") {
      }
  
      args = [
@@ -41,7 +40,7 @@ diff --git a/v8/BUILD.gn b/v8/BUILD.gn
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -1853,6 +1854,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2010,6 +2011,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -49,7 +48,7 @@ diff --git a/v8/BUILD.gn b/v8/BUILD.gn
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -1898,6 +1900,7 @@ template("run_mksnapshot") {
+@@ -2055,6 +2057,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
@@ -57,7 +56,7 @@ diff --git a/v8/BUILD.gn b/v8/BUILD.gn
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -5611,6 +5614,7 @@ if (v8_enable_i18n_support) {
+@@ -5802,6 +5805,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
  
      args = [
