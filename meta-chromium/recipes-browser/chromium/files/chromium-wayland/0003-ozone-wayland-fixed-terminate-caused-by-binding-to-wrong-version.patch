@@ -28,11 +28,29 @@ Reviewed-by: Maksim Sisov <msisov@igalia.com>
 Commit-Queue: Alexander Dunaev <adunaev@igalia.com>
 Cr-Commit-Position: refs/heads/main@{#951428}
 
+ .../platform/wayland/common/wayland_object.cc | 21 +++++++++++++++++++
+ .../platform/wayland/common/wayland_object.h  | 11 ++++++++++
+ .../gtk_primary_selection_device_manager.cc   | 11 +++++-----
+ ui/ozone/platform/wayland/host/gtk_shell1.cc  | 12 ++++++-----
+ .../host/wayland_data_device_manager.cc       |  9 +++++---
+ ui/ozone/platform/wayland/host/wayland_drm.cc |  6 ++++--
+ .../platform/wayland/host/wayland_output.cc   | 10 ++++-----
+ ui/ozone/platform/wayland/host/wayland_shm.cc |  9 ++++----
+ .../wayland/host/wayland_zaura_shell.cc       |  9 +++++---
+ .../wayland/host/wayland_zcr_cursor_shapes.cc | 10 +++++----
+ .../wayland/host/wayland_zwp_linux_dmabuf.cc  |  9 +++++---
+ .../host/wayland_zwp_pointer_constraints.cc   |  6 +++---
+ .../host/wayland_zwp_pointer_gestures.cc      |  7 ++++---
+ .../wayland_zwp_relative_pointer_manager.cc   |  8 ++++---
+ .../wayland/host/xdg_foreign_wrapper.cc       | 14 ++++++++-----
+ .../wayland/host/zwp_idle_inhibit_manager.cc  | 10 +++++----
+ .../zwp_primary_selection_device_manager.cc   |  9 ++++----
+ 17 files changed, 114 insertions(+), 57 deletions(-)
+
 diff --git a/ui/ozone/platform/wayland/common/wayland_object.cc b/ui/ozone/platform/wayland/common/wayland_object.cc
-index e2b62ca..9a7c613 100644
+index 0374cb9d874ba..8faa648120de3 100644
 --- a/ui/ozone/platform/wayland/common/wayland_object.cc
 +++ b/ui/ozone/platform/wayland/common/wayland_object.cc
-
 @@ -35,6 +35,8 @@
  #include <xdg-shell-client-protocol.h>
  #include <xdg-shell-unstable-v6-client-protocol.h>
@@ -42,7 +60,7 @@ index e2b62ca..9a7c613 100644
  namespace wl {
  namespace {
  
-@@ -77,6 +79,25 @@
+@@ -77,6 +79,25 @@ void delete_touch(wl_touch* touch) {
  
  }  // namespace
  
@@ -68,13 +86,11 @@ index e2b62ca..9a7c613 100644
  void (*ObjectTraits<wl_cursor_theme>::deleter)(wl_cursor_theme*) =
      &wl_cursor_theme_destroy;
  
-
 diff --git a/ui/ozone/platform/wayland/common/wayland_object.h b/ui/ozone/platform/wayland/common/wayland_object.h
-index 2ebfa51d..da91ffb 100644
+index 3a8bb9e494d5e..ce787bf8805ef 100644
 --- a/ui/ozone/platform/wayland/common/wayland_object.h
 +++ b/ui/ozone/platform/wayland/common/wayland_object.h
-
-@@ -79,6 +79,17 @@
+@@ -79,6 +79,17 @@ struct ObjectTraits<wl_proxy> {
    static void (*deleter)(void*);
  };
  
@@ -92,12 +108,10 @@ index 2ebfa51d..da91ffb 100644
  }  // namespace wl
  
  // Puts the forward declaration for struct TYPE and declares the template
-
 diff --git a/ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.cc b/ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.cc
-index af3087d..2991233 100644
+index af3087d1891ff..2991233fe6ec4 100644
 --- a/ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.cc
 +++ b/ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.cc
-
 @@ -16,7 +16,7 @@
  namespace ui {
  
@@ -107,7 +121,7 @@ index af3087d..2991233 100644
  }
  
  // static
-@@ -31,12 +31,13 @@
+@@ -31,12 +31,13 @@ void GtkPrimarySelectionDeviceManager::Instantiate(
      uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -125,13 +139,11 @@ index af3087d..2991233 100644
    if (!manager) {
      LOG(ERROR) << "Failed to bind gtk_primary_selection_device_manager";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/gtk_shell1.cc b/ui/ozone/platform/wayland/host/gtk_shell1.cc
-index cb3b0c8..26dfd7fb 100644
+index cb3b0c8fa024e..26dfd7fbf3f40 100644
 --- a/ui/ozone/platform/wayland/host/gtk_shell1.cc
 +++ b/ui/ozone/platform/wayland/host/gtk_shell1.cc
-
-@@ -17,8 +17,8 @@
+@@ -17,8 +17,8 @@ namespace {
  // gtk_shell1 exposes request_focus() since version 3.  Below that, it is not
  // interesting for us, although it provides some shell integration that might be
  // useful.
@@ -142,7 +154,7 @@ index cb3b0c8..26dfd7fb 100644
  }  // namespace
  
  // static
-@@ -32,11 +32,13 @@
+@@ -32,11 +32,13 @@ void GtkShell1::Instantiate(WaylandConnection* connection,
                              uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -159,12 +171,10 @@ index cb3b0c8..26dfd7fb 100644
    if (!gtk_shell1) {
      LOG(ERROR) << "Failed to bind gtk_shell1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_data_device_manager.cc b/ui/ozone/platform/wayland/host/wayland_data_device_manager.cc
-index 408cb1c7..0f03942 100644
+index 408cb1c72f474..0f03942e6991a 100644
 --- a/ui/ozone/platform/wayland/host/wayland_data_device_manager.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_data_device_manager.cc
-
 @@ -14,7 +14,8 @@
  namespace ui {
  
@@ -175,7 +185,7 @@ index 408cb1c7..0f03942 100644
  }
  
  // static
-@@ -28,11 +29,13 @@
+@@ -28,11 +29,13 @@ void WaylandDataDeviceManager::Instantiate(WaylandConnection* connection,
                                             uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -191,12 +201,10 @@ index 408cb1c7..0f03942 100644
    if (!data_device_manager) {
      LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_drm.cc b/ui/ozone/platform/wayland/host/wayland_drm.cc
-index d806e8e..a7ed2e2 100644
+index d806e8e9f5de0..a7ed2e20ffe0a 100644
 --- a/ui/ozone/platform/wayland/host/wayland_drm.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_drm.cc
-
 @@ -17,7 +17,7 @@
  namespace ui {
  
@@ -206,7 +214,7 @@ index d806e8e..a7ed2e2 100644
  }
  
  // static
-@@ -31,8 +31,10 @@
+@@ -31,8 +31,10 @@ void WaylandDrm::Instantiate(WaylandConnection* connection,
                               uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -218,12 +226,10 @@ index d806e8e..a7ed2e2 100644
  
    auto wl_drm = wl::Bind<struct wl_drm>(registry, name, version);
    if (!wl_drm) {
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_output.cc b/ui/ozone/platform/wayland/host/wayland_output.cc
-index 585568f..2186d6a 100644
+index 585568f2e729d..2186d6a823cee 100644
 --- a/ui/ozone/platform/wayland/host/wayland_output.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_output.cc
-
 @@ -16,7 +16,8 @@
  namespace ui {
  
@@ -234,7 +240,7 @@ index 585568f..2186d6a 100644
  }
  
  // static
-@@ -30,14 +31,11 @@
+@@ -30,14 +31,11 @@ void WaylandOutput::Instantiate(WaylandConnection* connection,
                                  uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -251,12 +257,10 @@ index 585568f..2186d6a 100644
    if (!output) {
      LOG(ERROR) << "Failed to bind to wl_output global";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_shm.cc b/ui/ozone/platform/wayland/host/wayland_shm.cc
-index 7c6cd40..de97ad1 100644
+index 7c6cd40569d74..de97ad1c2b22a 100644
 --- a/ui/ozone/platform/wayland/host/wayland_shm.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_shm.cc
-
 @@ -10,7 +10,7 @@
  namespace ui {
  
@@ -266,7 +270,7 @@ index 7c6cd40..de97ad1 100644
  constexpr uint32_t kShmFormat = WL_SHM_FORMAT_ARGB8888;
  }  // namespace
  
-@@ -25,11 +25,12 @@
+@@ -25,11 +25,12 @@ void WaylandShm::Instantiate(WaylandConnection* connection,
                               uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -282,23 +286,21 @@ index 7c6cd40..de97ad1 100644
    if (!shm) {
      LOG(ERROR) << "Failed to bind to wl_shm global";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zaura_shell.cc b/ui/ozone/platform/wayland/host/wayland_zaura_shell.cc
-index b1ae436d..1b5585f 100644
+index b1ae436db08c2..1b5585f7c18de 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zaura_shell.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zaura_shell.cc
-
-@@ -18,7 +18,8 @@
+@@ -19,7 +19,8 @@
  namespace ui {
  
  namespace {
--constexpr uint32_t kMaxAuraShellVersion = 24;
+-constexpr uint32_t kMaxAuraShellVersion = 28;
 +constexpr uint32_t kMinVersion = 1;
-+constexpr uint32_t kMaxVersion = 24;
++constexpr uint32_t kMaxVersion = 28;
  }
  
  // static
-@@ -33,11 +34,13 @@
+@@ -33,11 +34,13 @@ void WaylandZAuraShell::Instantiate(WaylandConnection* connection,
                                      uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -314,12 +316,10 @@ index b1ae436d..1b5585f 100644
    if (!zaura_shell) {
      LOG(ERROR) << "Failed to bind zaura_shell";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.cc b/ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.cc
-index 094a2f9..84d847e 100644
+index 094a2f98686c6..84d847eea16ae 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.cc
-
 @@ -16,7 +16,7 @@
  namespace ui {
  
@@ -329,7 +329,7 @@ index 094a2f9..84d847e 100644
  }
  
  using mojom::CursorType;
-@@ -32,11 +32,13 @@
+@@ -32,11 +32,13 @@ void WaylandZcrCursorShapes::Instantiate(WaylandConnection* connection,
                                           uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -346,12 +346,10 @@ index 094a2f9..84d847e 100644
    if (!zcr_cursor_shapes) {
      LOG(ERROR) << "Failed to bind zcr_cursor_shapes_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc b/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
-index 45177f2..6b4ec38 100644
+index 7035dc4ed26ff..cee793b9ae808 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.cc
-
 @@ -14,7 +14,8 @@
  namespace ui {
  
@@ -362,7 +360,7 @@ index 45177f2..6b4ec38 100644
  }
  
  // static
-@@ -28,11 +29,13 @@
+@@ -28,11 +29,13 @@ void WaylandZwpLinuxDmabuf::Instantiate(WaylandConnection* connection,
                                          uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -378,12 +376,10 @@ index 45177f2..6b4ec38 100644
    if (!zwp_linux_dmabuf) {
      LOG(ERROR) << "Failed to bind zwp_linux_dmabuf_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.cc b/ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.cc
-index 24e4dac..c1aca77 100644
+index 24e4dacc7eeb6..c1aca770ff5be 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zwp_pointer_constraints.cc
-
 @@ -15,7 +15,7 @@
  namespace ui {
  
@@ -393,7 +389,7 @@ index 24e4dac..c1aca77 100644
  }
  
  // static
-@@ -30,12 +30,12 @@
+@@ -30,12 +30,12 @@ void WaylandZwpPointerConstraints::Instantiate(WaylandConnection* connection,
    DCHECK_EQ(interface, kInterfaceName);
  
    if (connection->wayland_zwp_pointer_constraints_ ||
@@ -408,12 +404,10 @@ index 24e4dac..c1aca77 100644
    if (!zwp_pointer_constraints_v1) {
      LOG(ERROR) << "Failed to bind wp_pointer_constraints_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.cc b/ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.cc
-index 5d96c89..31bffb7 100644
+index 5d96c8923fda1..31bffb726c6ea 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zwp_pointer_gestures.cc
-
 @@ -19,7 +19,7 @@
  namespace ui {
  
@@ -423,7 +417,7 @@ index 5d96c89..31bffb7 100644
  }
  
  // static
-@@ -34,11 +34,12 @@
+@@ -34,11 +34,12 @@ void WaylandZwpPointerGestures::Instantiate(WaylandConnection* connection,
    DCHECK_EQ(interface, kInterfaceName);
  
    if (connection->wayland_zwp_pointer_gestures_ ||
@@ -438,12 +432,10 @@ index 5d96c89..31bffb7 100644
    if (!zwp_pointer_gestures_v1) {
      LOG(ERROR) << "Failed to bind wp_pointer_gestures_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.cc b/ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.cc
-index 3a8ef4c..c84a891 100644
+index 3a8ef4c7f9612..c84a891dfe733 100644
 --- a/ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_zwp_relative_pointer_manager.cc
-
 @@ -14,7 +14,7 @@
  namespace ui {
  
@@ -453,7 +445,7 @@ index 3a8ef4c..c84a891 100644
  }
  
  // static
-@@ -30,11 +30,13 @@
+@@ -30,11 +30,13 @@ void WaylandZwpRelativePointerManager::Instantiate(
    DCHECK_EQ(interface, kInterfaceName);
  
    if (connection->wayland_zwp_relative_pointer_manager_ ||
@@ -469,13 +461,11 @@ index 3a8ef4c..c84a891 100644
    if (!zwp_relative_pointer_manager_v1) {
      LOG(ERROR) << "Failed to bind zwp_relative_pointer_manager_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/xdg_foreign_wrapper.cc b/ui/ozone/platform/wayland/host/xdg_foreign_wrapper.cc
-index a34b684..2586adf 100644
+index a34b684d12883..2586adf9b857c 100644
 --- a/ui/ozone/platform/wayland/host/xdg_foreign_wrapper.cc
 +++ b/ui/ozone/platform/wayland/host/xdg_foreign_wrapper.cc
-
-@@ -19,6 +19,8 @@
+@@ -19,6 +19,8 @@ constexpr char XdgForeignWrapper::kInterfaceNameV1[];
  // static
  constexpr char XdgForeignWrapper::kInterfaceNameV2[];
  
@@ -484,7 +474,7 @@ index a34b684..2586adf 100644
  using OnHandleExported = XdgForeignWrapper::OnHandleExported;
  
  namespace {
-@@ -185,15 +187,17 @@
+@@ -185,15 +187,17 @@ void XdgForeignWrapper::Instantiate(WaylandConnection* connection,
                                      uint32_t name,
                                      const std::string& interface,
                                      uint32_t version) {
@@ -507,12 +497,10 @@ index a34b684..2586adf 100644
    } else {
      NOTREACHED() << " unexpected interface name: " << interface;
    }
-
 diff --git a/ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.cc b/ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.cc
-index 4712129..fc05de6 100644
+index 47121293acb7a..fc05de68778b9 100644
 --- a/ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.cc
 +++ b/ui/ozone/platform/wayland/host/zwp_idle_inhibit_manager.cc
-
 @@ -12,7 +12,7 @@
  namespace ui {
  
@@ -522,7 +510,7 @@ index 4712129..fc05de6 100644
  }
  
  // static
-@@ -26,11 +26,13 @@
+@@ -26,11 +26,13 @@ void ZwpIdleInhibitManager::Instantiate(WaylandConnection* connection,
                                          uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -539,12 +527,10 @@ index 4712129..fc05de6 100644
    if (!manager) {
      LOG(ERROR) << "Failed to bind zwp_idle_inhibit_manager_v1";
      return;
-
 diff --git a/ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.cc b/ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.cc
-index f6f9fd2..795a09c 100644
+index f6f9fd23c35df..795a09c056576 100644
 --- a/ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.cc
 +++ b/ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.cc
-
 @@ -16,7 +16,7 @@
  namespace ui {
  
@@ -554,7 +540,7 @@ index f6f9fd2..795a09c 100644
  }  // namespace
  
  // static
-@@ -31,12 +31,13 @@
+@@ -31,12 +31,13 @@ void ZwpPrimarySelectionDeviceManager::Instantiate(
      uint32_t version) {
    DCHECK_EQ(interface, kInterfaceName);
  
@@ -571,4 +557,3 @@ index f6f9fd2..795a09c 100644
    if (!manager) {
      LOG(ERROR) << "Failed to bind zwp_primary_selection_device_manager_v1";
      return;
-

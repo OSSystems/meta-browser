@@ -18,10 +18,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 10 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index eb397d8722994..e1f4b3cef6be3 100644
+index 0a4606bc2caac..9c62f481f1db2 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -894,16 +894,6 @@ config("compiler_cpu_abi") {
+@@ -895,16 +895,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }
@@ -35,6 +35,6 @@ index eb397d8722994..e1f4b3cef6be3 100644
 -      if (arm_tune != "") {
 -        cflags += [ "-mtune=$arm_tune" ]
 -      }
-     } else if (current_cpu == "mipsel" && !is_nacl) {
-       ldflags += [ "-Wl,--hash-style=sysv" ]
-       if (custom_toolchain == "") {
+     } else if (current_cpu == "arm64") {
+       if (is_android) {
+         # Outline atomics crash on Exynos 9810. http://crbug.com/1272795

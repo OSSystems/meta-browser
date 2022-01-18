@@ -11,10 +11,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index e1f4b3cef6be3..794bad82720c0 100644
+index 9c62f481f1db2..2ecb077962518 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1609,6 +1609,11 @@ config("default_warnings") {
+@@ -1479,6 +1479,11 @@ config("default_warnings") {
          cflags += [
            "-Wenum-compare-conditional",
 
