@@ -90,6 +90,10 @@ PACKAGECONFIG knobs
 * cups: (off by default)
   Enables CUPS support in Chromium, and adds a dependency on the "cups" recipe.
 
+* gtk4: (off by default)
+  Enables GTK4 runtime support in Chromium by adding --gtk-version=4
+  to the command line. Chromium is still built against GTK3.
+
 * kiosk-mode: (off by default)
   Enable this option if you want your browser to start up full-screen, without
   any menu bars, without any clutter, and without any initial start-up
