@@ -2,6 +2,8 @@ require chromium.inc
 require chromium-unbundle.inc
 require gn-utils.inc
 
+GTKIC_VERSION = "${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '4', '3',d)}"
+
 inherit features_check gtk-icon-cache qemu
 
 # The actual directory name in out/ is irrelevant for GN.
@@ -117,6 +119,7 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
+PACKAGECONFIG[gtk4] = ""
 PACKAGECONFIG[kiosk-mode] = ""
 PACKAGECONFIG[proprietary-codecs] = ' \
         ffmpeg_branding="Chrome" proprietary_codecs=true, \
@@ -332,6 +335,7 @@ GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_allocator="none"'
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
