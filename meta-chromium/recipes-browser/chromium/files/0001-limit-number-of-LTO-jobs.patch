@@ -16,10 +16,10 @@ Thus, use the previously used number of threads.
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index bd1fefeff6f60..93e947ad300ab 100644
+index 8048ec5e84c96..b22891956d22f 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -665,7 +665,7 @@ config("compiler") {
+@@ -672,7 +672,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +28,7 @@ index bd1fefeff6f60..93e947ad300ab 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -678,11 +678,11 @@ config("compiler") {
+@@ -685,11 +685,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -46,7 +46,7 @@ index bd1fefeff6f60..93e947ad300ab 100644
          ldflags +=
              [ "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 62133447a298a..99b395e106f02 100644
+index a41df193c6a2c..92d28fa3a4d6d 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
 @@ -80,6 +80,11 @@ declare_args() {

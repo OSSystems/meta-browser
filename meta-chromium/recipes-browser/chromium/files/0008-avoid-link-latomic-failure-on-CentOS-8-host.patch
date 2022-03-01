@@ -16,10 +16,10 @@ Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 7c1c51e1a468e..5dee66436501b 100644
+index b534e4f3c02e9..a4c73ae241c36 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1390,8 +1390,10 @@ component("base") {
+@@ -1415,8 +1415,10 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -31,10 +31,10 @@ index 7c1c51e1a468e..5dee66436501b 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index 8e42cf9f2f992..0bf9164d51a48 100644
+index 2137ed81db7c7..7145c2421da11 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
-@@ -37,8 +37,10 @@ config("runtime_library") {
+@@ -40,8 +40,10 @@ config("runtime_library") {
      defines = [ "OS_CHROMEOS" ]
    }
  
