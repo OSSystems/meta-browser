@@ -15,7 +15,7 @@ after Ozone became default on Linux.
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/swiftshader/src/Vulkan/BUILD.gn b/third_party/swiftshader/src/Vulkan/BUILD.gn
-index f8db101e0..cf6ddddca 100644
+index 58bc87ccb..e5cf10390 100644
 --- a/third_party/swiftshader/src/Vulkan/BUILD.gn
 +++ b/third_party/swiftshader/src/Vulkan/BUILD.gn
 @@ -13,12 +13,13 @@
@@ -34,7 +34,7 @@ index f8db101e0..cf6ddddca 100644
        "VK_USE_PLATFORM_XLIB_KHR",
        "VK_USE_PLATFORM_XCB_KHR",
 diff --git a/third_party/swiftshader/src/WSI/BUILD.gn b/third_party/swiftshader/src/WSI/BUILD.gn
-index 248ba315b..995d52479 100644
+index 22af89f83..d5fdb77d2 100644
 --- a/third_party/swiftshader/src/WSI/BUILD.gn
 +++ b/third_party/swiftshader/src/WSI/BUILD.gn
 @@ -12,6 +12,7 @@
@@ -56,4 +56,3 @@ index 248ba315b..995d52479 100644
        "XcbSurfaceKHR.hpp",
 -- 
 2.25.1
-
