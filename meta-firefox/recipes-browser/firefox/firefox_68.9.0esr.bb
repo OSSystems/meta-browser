@@ -11,7 +11,7 @@ DEPENDS += "curl startup-notification libevent cairo libnotify \
            "
 RDEPENDS:${PN}-dev = "dbus"
 
-LICENSE = "MPLv2"
+LICENSE = "MPL-2.0"
 LIC_FILES_CHKSUM = "file://toolkit/content/license.html;endline=33;md5=35d7fa1c4b86c115051c925fd624a5be"
 
 CVE_PRODUCT = "mozilla:firefox"
