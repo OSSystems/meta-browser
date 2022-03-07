@@ -13,7 +13,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-@@ -61,8 +61,9 @@
+@@ -62,8 +62,9 @@
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
  #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -24,7 +24,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include "base/linux_util.h"
  #include "base/strings/string_split.h"
  #include "base/strings/string_util.h"
-@@ -246,7 +247,7 @@ void RecordStartupMetrics() {
+@@ -248,7 +249,7 @@ void RecordStartupMetrics() {
  
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -33,7 +33,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  void RecordLinuxDistroSpecific(const std::string& version_string,
                                 size_t parts,
                                 const char* histogram_name) {
-@@ -329,7 +330,8 @@ void RecordLinuxDistro() {
+@@ -331,7 +332,8 @@ void RecordLinuxDistro() {
  void RecordLinuxGlibcVersion() {
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -43,7 +43,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-@@ -722,7 +724,7 @@ void ChromeBrowserMainExtraPartsMetrics:
+@@ -832,7 +834,7 @@ void ChromeBrowserMainExtraPartsMetrics:
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.

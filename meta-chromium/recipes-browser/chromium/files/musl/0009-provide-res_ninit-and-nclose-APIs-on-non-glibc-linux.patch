@@ -37,7 +37,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
 --- a/net/dns/host_resolver_manager.cc
 +++ b/net/dns/host_resolver_manager.cc
-@@ -2906,8 +2906,7 @@ HostResolverManager::HostResolverManager
+@@ -2932,8 +2932,7 @@ HostResolverManager::HostResolverManager
    NetworkChangeNotifier::AddConnectionTypeObserver(this);
    if (system_dns_config_notifier_)
      system_dns_config_notifier_->AddObserver(this);
@@ -53,8 +53,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                  base::BlockingType::WILL_BLOCK);
  
--#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
--    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+-#if defined(OS_POSIX) && \
+-    !(defined(OS_APPLE) || defined(OS_OPENBSD) || defined(OS_ANDROID))
 +#if defined(__GLIBC__)
    DnsReloaderMaybeReload();
  #endif
