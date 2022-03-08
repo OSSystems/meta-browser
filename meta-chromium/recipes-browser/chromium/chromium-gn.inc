@@ -16,13 +16,14 @@ SRC_URI += " \
     file://0003-v8-qemu-wrapper.patch \
     file://0004-wrapper-extra-flags.patch \
     file://0005-BUILD-do-not-specify-march-on-arm.patch \
-    file://0006-Consider-armv7ve-define.patch \
     file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
-    file://0010-exception_handler.cc-Match-the-types-for-SIGSTKSZ.patch \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0012-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
+    file://0013-GCC-explicitely-move-return-value-of-SCTHashdanceMet.patch \
+    file://0014-Fix-no-member-named-tie-in-namespace-std.patch \
+    file://0015-Fix-xkb_keysym-reverse-look-up-for-Lacros.patch \
 "
 
 SRC_URI:append:libc-musl = "\
