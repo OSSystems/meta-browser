@@ -53,7 +53,7 @@ DEPENDS += "python3-setuptools-native"
 # LICENSE does not cover all the licenses in LIC_FILES_CHKSUM; instead, it
 # currently contains Chromium's license (BSD-3-Clause) as well as Blink's
 # (LGPL2.0, LGPL2.1 and BSD-2-Clause).
-LICENSE = "BSD-3-Clause & LGPL-2.0-only & LGPL-2.1-only"
+LICENSE = "BSD-3-Clause & LGPL-2.0-or-later & LGPL-2.1-or-later"
 LIC_FILES_CHKSUM = "\
     file://${S}/LICENSE;md5=0fca02217a5d49a14dfe2d11837bb34d \
     file://${S}/LICENSE.chromium_os;md5=87dd8458232da630f5617873d42d8350 \
