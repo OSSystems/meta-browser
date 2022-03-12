@@ -1,0 +1,27 @@
+From 1e1233344a23135c51acf1250c5bd6a408b6d131 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Sat, 12 Mar 2022 11:50:53 +0100
+Subject: [PATCH] Bug 1745560 - Add missing stub for wl_proxy_marshal_flags
+
+Upstream-Status: Backport [Bug 1745560 - Add missing stub for wl_proxy_marshal_flags]
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+ widget/gtk/mozwayland/mozwayland.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/widget/gtk/mozwayland/mozwayland.c b/widget/gtk/mozwayland/mozwayland.c
+index 73a9a76..2de3bc2 100644
+--- a/widget/gtk/mozwayland/mozwayland.c
++++ b/widget/gtk/mozwayland/mozwayland.c
+@@ -184,3 +184,10 @@ MOZ_EXPORT void wl_egl_window_destroy(struct wl_egl_window* egl_window) {}
+ 
+ MOZ_EXPORT void wl_egl_window_resize(struct wl_egl_window* egl_window,
+                                      int width, int height, int dx, int dy) {}
++
++MOZ_EXPORT struct wl_proxy* wl_proxy_marshal_flags(
++    struct wl_proxy* proxy, uint32_t opcode,
++    const struct wl_interface* interface, uint32_t version, uint32_t flags,
++    ...) {
++  return NULL;
++}
