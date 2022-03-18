@@ -521,3 +521,7 @@ PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
 
 # There is no need to ship empty -dev packages.
 ALLOW_EMPTY:${PN}-dev = "0"
+
+# ERROR: QA Issue: lib32-chromium-ozone-wayland: ELF binary /usr/bin/chromium has relocations in .text [textrel]
+INSANE_SKIP:${PN}:append:x86 = "textrel"
+
