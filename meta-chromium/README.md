@@ -90,6 +90,12 @@ PACKAGECONFIG knobs
 * cups: (off by default)
   Enables CUPS support in Chromium, and adds a dependency on the "cups" recipe.
 
+* custom-libcxx (off by default)
+  Enable vendored version of C++ runtime ( libc++ ) instead of using this from
+  meta-clang provided libc++, this could be useful in some cases, where the
+  binary is to be run on foreign systems which are not built using OE/Yocto
+  base
+
 * gtk4: (off by default)
   Enables GTK4 runtime support in Chromium by adding --gtk-version=4
   to the command line. Chromium is still built against GTK3.

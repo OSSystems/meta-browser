@@ -118,6 +118,12 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # and command-line switches (extra dependencies should not
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
+
+# Starting with M61, Chromium defaults to building with its own copy of libc++
+# instead of the system's libstdc++. Add a knob to control this behavior
+# https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/8aYO3me2SCE/SZ8pJXhZAwAJ
+PACKAGECONFIG[custom-libcxx] = "use_custom_libcxx=true,use_custom_libcxx=false,,"
+
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
 PACKAGECONFIG[gtk4] = ""
 PACKAGECONFIG[kiosk-mode] = ""
@@ -168,11 +174,6 @@ GN_ARGS += 'host_pkg_config="pkg-config-native"'
 # separate flags.
 # See also: https://groups.google.com/a/chromium.org/d/msg/chromium-dev/hkcb6AOX5gE/PPT1ukWoBwAJ
 GN_ARGS += "is_debug=false is_official_build=true"
-
-# Starting with M61, Chromium defaults to building with its own copy of libc++
-# instead of the system's libstdc++. Explicitly disable this behavior.
-# https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/8aYO3me2SCE/SZ8pJXhZAwAJ
-GN_ARGS += "use_custom_libcxx=false"
 
 # Use lld linker its quicker see https://lld.llvm.org/#performance
 GN_ARGS += "use_lld=true use_gold=false"
