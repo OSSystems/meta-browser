@@ -9,36 +9,32 @@ adjust the expecations accordingly
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- base/threading/platform_thread_linux.cc      | 3 ++-
- chrome/app/shutdown_signal_handlers_posix.cc | 8 ++++++++
- 2 files changed, 10 insertions(+), 1 deletion(-)
-
---- a/base/threading/platform_thread_linux.cc
-+++ b/base/threading/platform_thread_linux.cc
-@@ -439,7 +439,8 @@ void TerminateOnThread() {}
+--- ./base/threading/platform_thread_linux.cc
++++ ./base/threading/platform_thread_linux.cc
+@@ -186,7 +186,8 @@
  
  size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
  #if !defined(THREAD_SANITIZER)
 -  return 0;
-+  // use 8mb like glibc to avoid running out of space
-+  return (1 << 23);
++  // use 2mb to avoid running out of space. This is what android uses
++  return 2 * (1 << 20);
  #else
    // ThreadSanitizer bloats the stack heavily. Evidence has been that the
    // default stack size isn't enough for some browser tests.
---- a/base/threading/platform_thread_unittest.cc
-+++ b/base/threading/platform_thread_unittest.cc
-@@ -408,7 +408,7 @@ TEST(PlatformThreadTest, GetDefaultThrea
-     ((defined(OS_LINUX) || defined(OS_CHROMEOS)) &&              \
-      !defined(THREAD_SANITIZER)) ||                              \
-     (defined(OS_ANDROID) && !defined(ADDRESS_SANITIZER))
+--- ./base/threading/platform_thread_unittest.cc.orig
++++ ./base/threading/platform_thread_unittest.cc
+@@ -420,7 +420,7 @@
+     ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&                \
+      !defined(THREAD_SANITIZER)) ||                                    \
+     (BUILDFLAG(IS_ANDROID) && !defined(ADDRESS_SANITIZER))
 -  EXPECT_EQ(0u, stack_size);
-+  EXPECT_EQ(1u << 23, stack_size);
++  EXPECT_EQ(2u << 20, stack_size);
  #else
    EXPECT_GT(stack_size, 0u);
    EXPECT_LT(stack_size, 20u * (1 << 20));
---- a/chrome/browser/shutdown_signal_handlers_posix.cc
-+++ b/chrome/browser/shutdown_signal_handlers_posix.cc
-@@ -187,11 +187,19 @@ void InstallShutdownSignalHandlers(
+--- ./chrome/browser/shutdown_signal_handlers_posix.cc
++++ ./chrome/browser/shutdown_signal_handlers_posix.cc
+@@ -187,11 +187,19 @@
    g_shutdown_pipe_read_fd = pipefd[0];
    g_shutdown_pipe_write_fd = pipefd[1];
  #if !defined(ADDRESS_SANITIZER)

@@ -36,14 +36,10 @@ SRC_URI:append:libc-musl = "\
     file://musl/0007-__libc_malloc-is-internal-to-glibc.patch \
     file://musl/0008-gnu_libc_version-API-is-glibc-specific.patch \
     file://musl/0009-provide-res_ninit-and-nclose-APIs-on-non-glibc-linux.patch \
-    file://musl/0010-__off64_t-is-internal-private-define-from-glibc.patch \
     file://musl/0011-crashpad-Fix-build-with-musl.patch \
     file://musl/0012-debug-Fix-build-with-musl.patch \
     file://musl/0013-socket-initialize-msghdr-in-a-compatible-manner.patch \
-    file://musl/0014-no-__environ-in-musl.patch \
     file://musl/0015-mallopt-is-glibc-specific-API.patch \
-    file://musl/0016-tcmalloc-undef-mmap64.patch \
-    file://musl/0017-tcmalloc-no-__sbrk.patch \
     file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
     file://musl/0019-adjust-thread-stack-sizes.patch \
     file://musl/0020-Fix-tab-crashes-on-musl.patch \
@@ -51,6 +47,7 @@ SRC_URI:append:libc-musl = "\
     file://musl/0022-sys-stat.patch \
     file://musl/scoped-file.patch \
     file://musl/fix-narrowing-cast.patch \
+    file://musl/credentials-header.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"

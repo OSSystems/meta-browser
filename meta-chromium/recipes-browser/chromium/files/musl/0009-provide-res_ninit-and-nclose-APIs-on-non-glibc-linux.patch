@@ -8,77 +8,69 @@ These APIs are not implemented on musl
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
---- a/net/dns/dns_config_service_linux.cc
-+++ b/net/dns/dns_config_service_linux.cc
-@@ -443,12 +443,6 @@ class DnsConfigServiceLinux::ConfigReade
-       base::ScopedBlockingCall scoped_blocking_call(
-           FROM_HERE, base::BlockingType::MAY_BLOCK);
+--- a/net/dns/public/scoped_res_state.cc
++++ b/net/dns/public/scoped_res_state.cc
+@@ -13,7 +13,7 @@
+ namespace net {
  
--      std::unique_ptr<struct __res_state> res = resolv_reader_->GetResState();
--      if (res) {
--        dns_config_ = ConvertResStateToDnsConfig(*res.get());
--        resolv_reader_->CloseResState(res.get());
--      }
+ ScopedResState::ScopedResState() {
+-#if BUILDFLAG(IS_OPENBSD) || BUILDFLAG(IS_FUCHSIA)
++#if BUILDFLAG(IS_OPENBSD) || BUILDFLAG(IS_FUCHSIA) || defined(_GNU_SOURCE)
+   // Note: res_ninit in glibc always returns 0 and sets RES_INIT.
+   // res_init behaves the same way.
+   memset(&_res, 0, sizeof(_res));
+@@ -25,16 +25,8 @@ ScopedResState::ScopedResState() {
+ }
+ 
+ ScopedResState::~ScopedResState() {
+-#if !BUILDFLAG(IS_OPENBSD) && !BUILDFLAG(IS_FUCHSIA)
 -
-       UMA_HISTOGRAM_BOOLEAN("Net.DNS.DnsConfig.Resolv.Read",
-                             dns_config_.has_value());
-       if (!dns_config_.has_value())
---- a/net/dns/dns_reloader.cc
-+++ b/net/dns/dns_reloader.cc
-@@ -4,8 +4,7 @@
+-  // Prefer res_ndestroy where available.
+-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FREEBSD)
+-  res_ndestroy(&res_);
+-#else
+-  res_nclose(&res_);
+-#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FREEBSD)
+-
+-#endif  // !BUILDFLAG(IS_OPENBSD) && !BUILDFLAG(IS_FUCHSIA)
++  // musl res_init() doesn't actually do anything
++  // no destruction is necessary as no memory has been allocated
+ }
  
- #include "net/dns/dns_reloader.h"
- 
--#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
--    !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-+#if defined(__GLIBC__)
- 
- #include <resolv.h>
- 
+ bool ScopedResState::IsValid() const {
 --- a/net/dns/host_resolver_manager.cc
 +++ b/net/dns/host_resolver_manager.cc
-@@ -2932,8 +2932,7 @@ HostResolverManager::HostResolverManager
+@@ -2979,8 +2979,7 @@ HostResolverManager::HostResolverManager
    NetworkChangeNotifier::AddConnectionTypeObserver(this);
    if (system_dns_config_notifier_)
      system_dns_config_notifier_->AddObserver(this);
--#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_OPENBSD) && \
--    !defined(OS_ANDROID)
+-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
+-    !BUILDFLAG(IS_ANDROID)
 +#if defined(__GLIBC__)
    EnsureDnsReloaderInit();
  #endif
  
+--- a/net/dns/dns_reloader.cc
++++ b/net/dns/dns_reloader.cc
+@@ -6,8 +6,7 @@
+ 
+ #include "build/build_config.h"
+ 
+-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
+-    !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
++#if defined(__GLIBC__)
+ 
+ #include <resolv.h>
+ 
 --- a/net/dns/host_resolver_proc.cc
 +++ b/net/dns/host_resolver_proc.cc
-@@ -176,8 +176,7 @@ int SystemHostResolverCall(const std::st
+@@ -191,8 +191,7 @@ int SystemHostResolverCall(const std::st
    base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                  base::BlockingType::WILL_BLOCK);
  
--#if defined(OS_POSIX) && \
--    !(defined(OS_APPLE) || defined(OS_OPENBSD) || defined(OS_ANDROID))
+-#if BUILDFLAG(IS_POSIX) && \
+-    !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OPENBSD) || BUILDFLAG(IS_ANDROID))
 +#if defined(__GLIBC__)
    DnsReloaderMaybeReload();
  #endif
-   absl::optional<AddressInfo> ai;
---- a/net/dns/public/resolv_reader.cc
-+++ b/net/dns/public/resolv_reader.cc
-@@ -20,19 +20,10 @@
- namespace net {
- 
- std::unique_ptr<struct __res_state> ResolvReader::GetResState() {
--  auto res = std::make_unique<struct __res_state>();
--  memset(res.get(), 0, sizeof(struct __res_state));
--
--  if (res_ninit(res.get()) != 0) {
--    CloseResState(res.get());
--    return nullptr;
--  }
--
--  return res;
-+  return nullptr;
- }
- 
- void ResolvReader::CloseResState(struct __res_state* res) {
--  res_nclose(res);
- }
- 
- absl::optional<std::vector<IPEndPoint>> GetNameservers(
+   auto [ai, err, os_error] = AddressInfo::Get(host, hints, nullptr, network);
