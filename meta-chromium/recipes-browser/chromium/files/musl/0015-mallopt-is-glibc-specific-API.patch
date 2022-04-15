@@ -9,16 +9,14 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  base/allocator/allocator_check.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/base/allocator/allocator_check.cc b/base/allocator/allocator_check.cc
-index a5ca0b7191..7017d48b5a 100644
 --- a/base/allocator/allocator_check.cc
 +++ b/base/allocator/allocator_check.cc
-@@ -27,7 +27,7 @@ bool IsAllocatorInitialized() {
-   // Set by allocator_shim_override_ucrt_symbols_win.h when the
-   // shimmed _set_new_mode() is called.
-   return g_is_win_shim_layer_initialized;
--#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
-+#elif (defined(__GLIBC__) || defined(OS_CHROMEOS)) && \
-     BUILDFLAG(USE_TCMALLOC) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
- // From third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h.
- // TODO(primiano): replace with an include once base can depend on allocator.
+@@ -11,7 +11,7 @@
+ #include "base/allocator/winheap_stubs_win.h"
+ #endif
+ 
+-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
++#if defined(__GLIBC__) || BUILDFLAG(IS_CHROMEOS)
+ #include <malloc.h>
+ #endif
+ 
