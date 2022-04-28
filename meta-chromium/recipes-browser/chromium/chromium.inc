@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "4710e3453c972c91e68a21f6b0b76ba73d4d617f299a5208615ed6e41b1af84d"
+SRC_URI[sha256sum] = "099863882e88b9a035fcb6b63dd5288554f6b27558e0ebce93e0d804465efa37"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -74,7 +74,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/chrome/installer/mac/third_party/bsdiff/LICENSE;md5=0dbe7a50f028269750631fcbded3846a \
     file://${S}/chrome/installer/mac/third_party/xz/LICENSE;md5=8bbde65ae0523dc878ed1ac1252d2d14 \
     file://${S}/chrome/third_party/mozilla_security_manager/LICENSE;md5=0c259b853bbf067b361100ce560adce7 \
-    file://${S}/chromeos/third_party/android_bionic_libc/NOTICE;md5=323acddf0a0970d8ad7a7af3ba745f67 \
     file://${S}/courgette/third_party/bsdiff/LICENCE;md5=7c2ad392281bc3d9b04a31102ee7abdd \
     file://${S}/courgette/third_party/divsufsort/LICENSE;md5=e261f081e52882dad3ff0225497ce451 \
     file://${S}/ios/third_party/blink/LICENSE;md5=9fdb47308c4e0a2b6d07c5af39e5da1a \
@@ -285,7 +284,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/libgifcodec/LICENSE.md;md5=1018a09551825ebc78d78f84855e07fa \
     file://${S}/third_party/libipp/LICENSE;md5=af9e58383a1b2b17c75c6c9ff561ca9d \
     file://${S}/third_party/libjingle_xmpp/LICENSE;md5=ad296492125bc71530d06234d9bfebe0 \
-    file://${S}/third_party/libjpeg_turbo/LICENSE.md;md5=970f17d51650fe54e4f839c6e6121f79 \
+    file://${S}/third_party/libjpeg_turbo/LICENSE.md;md5=a75feaa2de6d8942f50d412241fca1f1 \
     file://${S}/third_party/libjxl/LICENSE;md5=6a905a337cc228a1f68f0b5416f52a7f \
     file://${S}/third_party/liblouis/LICENSE;md5=8ab69863de0d3a0e00c4f97a4d78dd4a \
     file://${S}/third_party/libphonenumber/LICENSE;md5=e23fadd6ceef8c618fc1c65191d846fa \
