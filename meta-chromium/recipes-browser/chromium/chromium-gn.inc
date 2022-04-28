@@ -21,9 +21,7 @@ SRC_URI += " \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0012-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
-    file://0013-GCC-explicitely-move-return-value-of-SCTHashdanceMet.patch \
     file://0014-Fix-no-member-named-tie-in-namespace-std.patch \
-    file://0015-Fix-xkb_keysym-reverse-look-up-for-Lacros.patch \
 "
 
 SRC_URI:append:libc-musl = "\

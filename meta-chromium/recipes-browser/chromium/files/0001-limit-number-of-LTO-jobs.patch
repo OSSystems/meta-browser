@@ -16,7 +16,7 @@ Thus, use the previously used number of threads.
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 7b9ce0172eedf..cbf1d8aef8680 100644
+index 60165f14531c4..5fc19591e9e20 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
 @@ -674,7 +674,7 @@ config("compiler") {

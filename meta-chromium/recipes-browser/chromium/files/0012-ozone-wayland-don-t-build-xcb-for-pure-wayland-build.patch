@@ -15,7 +15,7 @@ after Ozone became default on Linux.
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/swiftshader/src/Vulkan/BUILD.gn b/third_party/swiftshader/src/Vulkan/BUILD.gn
-index 13b19cafc..bdf257d8c 100644
+index 960d0a9c9..18ef10418 100644
 --- a/third_party/swiftshader/src/Vulkan/BUILD.gn
 +++ b/third_party/swiftshader/src/Vulkan/BUILD.gn
 @@ -13,12 +13,13 @@

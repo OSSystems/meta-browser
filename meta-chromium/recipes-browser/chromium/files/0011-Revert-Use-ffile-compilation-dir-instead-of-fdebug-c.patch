@@ -21,10 +21,10 @@ This reverts commit 34a955823630096f5b01c2b01d51c1ea59d22763.
  2 files changed, 11 insertions(+), 15 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index edf3e1a921cd7..0e5685159b83c 100644
+index 1124f68b655ea..8a009137f6b7b 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1215,19 +1215,12 @@ config("compiler_deterministic") {
+@@ -1224,19 +1224,12 @@ config("compiler_deterministic") {
      # different build directory like "out/feature_a" and "out/feature_b" if
      # we build same files with same compile flag.
      # Other paths are already given in relative, no need to normalize them.
@@ -70,4 +70,3 @@ index a4ecd9563a5af..0298745cb87af 100644
  # it as a configuration option. If this is causing problems, please file a bug.
 --
 2.25.1
-
