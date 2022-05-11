@@ -46,6 +46,7 @@ SRC_URI:append:libc-musl = "\
     file://musl/scoped-file.patch \
     file://musl/fix-narrowing-cast.patch \
     file://musl/credentials-header.patch \
+    file://musl/fstatat64.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"

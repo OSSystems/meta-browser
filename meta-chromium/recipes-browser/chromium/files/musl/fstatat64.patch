@@ -1,0 +1,46 @@
+Undefine fstatat64 on musl before calling fstatat64 syscall
+
+Fixes
+
+In file included from ../../base/rand_util_posix.cc:21:
+../../third_party/lss/linux_syscall_support.h:4547:16: error: use of undeclared identifier '__NR_fstatat'; did you mean 'sys_fstatat'? 
+    LSS_INLINE _syscall4(int,   fstatat64,        int,   d,
+               ^
+../../third_party/lss/linux_syscall_support.h:2671:9: note: expanded from macro '_syscall4'
+        LSS_BODY(type, name, "r"(__r0), "r"(__r1), "r"(__r2), "r"(__r3));     \
+        ^
+../../third_party/lss/linux_syscall_support.h:2640:39: note: expanded from macro 'LSS_BODY'
+                                : "i"(__NR_##name) , ## args                  \
+                                      ^
+<scratch space>:222:1: note: expanded from here
+__NR_fstatat
+^
+../../third_party/lss/linux_syscall_support.h:4547:16: note: 'sys_fstatat' declared here
+../../third_party/lss/linux_syscall_support.h:2668:12: note: expanded from macro '_syscall4'
+      type LSS_NAME(name)(type1 arg1, type2 arg2, type3 arg3, type4 arg4) {   \
+           ^                                                                                                                                                                                ../../third_party/lss/linux_syscall_support.h:1901:28: note: expanded from macro 'LSS_NAME'
+    #define LSS_NAME(name) sys_##name
+                           ^
+<scratch space>:213:1: note: expanded from here
+sys_fstatat
+^
+
+Upstream-Status: Inappropriate [musl specific]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+--- a/third_party/lss/linux_syscall_support.h
++++ b/third_party/lss/linux_syscall_support.h
+@@ -4544,9 +4544,13 @@ struct kernel_statfs {
+     }
+   #endif
+   #if defined(__NR_fstatat64)
++    // musl does #define fstatat64 fstatat
++    #undef fstatat64
+     LSS_INLINE _syscall4(int,   fstatat64,        int,   d,
+                          const char *,      p,
+                          struct kernel_stat64 *,   b,    int,   f)
++    // set it back like it was
++    #define fstatat64 fstatat
+   #endif
+   #if defined(__NR_waitpid)
+     // waitpid is polyfilled below when not available.
