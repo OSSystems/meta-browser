@@ -7,7 +7,7 @@ inherit cargo
 
 # how to get cbindgen could be as easy as but default to a git checkout:
 # SRC_URI += "crate://crates.io/cbindgen/0.8.7"
-SRC_URI += "git://github.com/eqrion/cbindgen.git;protocol=https"
+SRC_URI += "git://github.com/eqrion/cbindgen.git;protocol=https;branch=master"
 SRCREV = "7b9ea991bdabb442093014d21fde6a192f574f21"
 S = "${WORKDIR}/git"
 CARGO_SRC_DIR=""
