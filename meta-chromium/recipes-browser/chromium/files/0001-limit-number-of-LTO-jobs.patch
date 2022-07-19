@@ -42,7 +42,7 @@ index 60165f14531c4..5fc19591e9e20 100644
 +      # resource allocation scheme, but should be good enough.
 +      ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
 +
-       if (is_mac) {
+       if (is_apple) {
          ldflags +=
              [ "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni

@@ -4,22 +4,35 @@ Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] mallinfo implementation is glibc specific
 
 Upstream-Status: Pending
+Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
+diff --git a/base/trace_event/malloc_dump_provider.cc b/base/trace_event/malloc_dump_provider.cc
+index 69251d6de19fa..27492c3f2d476 100644
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -220,7 +220,7 @@ bool MallocDumpProvider::OnMemoryDump(co
-                      &allocated_objects_count);
+@@ -176,6 +176,7 @@ void ReportAppleAllocStats(size_t* total_virtual_size,
+ 
+ #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
+     (!BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
++    defined(__GLIBC__) && \
+      !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_FUCHSIA))
+ void ReportMallinfoStats(ProcessMemoryDump* pmd,
+                          size_t* total_virtual_size,
+@@ -342,8 +343,10 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
  #elif BUILDFLAG(IS_FUCHSIA)
  // TODO(fuchsia): Port, see https://crbug.com/706592.
--#else
-+#elif defined(__GLIBC__)
- #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
- #if __GLIBC_PREREQ(2, 33)
- #define MALLINFO2_FOUND_IN_LIBC
+ #else
++#ifdef __GLIBC__
+   ReportMallinfoStats(/*pmd=*/nullptr, &total_virtual_size, &resident_size,
+                       &allocated_objects_size, &allocated_objects_count);
++#endif
+ #endif
+ 
+   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_
+@@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
  
  #endif  // !BUILDFLAG(IS_FUCHSIA)
  
@@ -37,7 +50,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
          // BUILDFLAG(IS_ANDROID)
  
  size_t ProcessMetrics::GetMallocUsage() {
-@@ -131,9 +131,9 @@ size_t ProcessMetrics::GetMallocUsage()
+@@ -131,9 +131,9 @@ size_t ProcessMetrics::GetMallocUsage() {
    malloc_statistics_t stats = {0};
    malloc_zone_statistics(nullptr, &stats);
    return stats.size_in_use;
@@ -78,13 +91,13 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    return mi.uordblks;
 --- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
-@@ -128,7 +128,9 @@
+@@ -125,7 +125,9 @@
  /* #undef HAVE_MALLCTL */
- 
+
  /* Define to 1 if you have the `mallinfo' function. */
 +#if defined(__GLIBC__)
  #define HAVE_MALLINFO 1
 +#endif
  
- /* Some projects using SwiftShader bypass cmake (eg Chromium via gn) */
- /* so we need to check glibc version for the new API to be safe */
+ /* Define to 1 if you have the <malloc/malloc.h> header file. */
+ /* #undef HAVE_MALLOC_MALLOC_H */

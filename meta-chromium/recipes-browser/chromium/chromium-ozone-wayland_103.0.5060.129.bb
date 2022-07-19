@@ -9,10 +9,6 @@ DEPENDS += "\
         wayland-native \
 "
 
-SRC_URI += "\
-        file://chromium-wayland/0001-ozone-add-va-api-support-to-wayland.patch \
-"
-
 GN_ARGS += "\
         ${PACKAGECONFIG_CONFARGS} \
         use_ozone=true \
