@@ -1,4 +1,4 @@
-From f53ae8826da936199d7ce91f527c57dae1882806 Mon Sep 17 00:00:00 2001
+From 877f759e78f88906742a9c6009ca7b83a8618368 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] __libc_malloc is internal to glibc
@@ -8,12 +8,14 @@ its better to use generic API so it remains portable
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- base/process/memory_linux.cc | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ base/process/memory_linux.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/base/process/memory_linux.cc b/base/process/memory_linux.cc
+index ed3930579f..4f8c096f6f 100644
 --- a/base/process/memory_linux.cc
 +++ b/base/process/memory_linux.cc
-@@ -111,7 +111,7 @@ bool UncheckedMalloc(size_t size, void**
+@@ -111,7 +111,7 @@ bool UncheckedMalloc(size_t size, void** result) {
  #elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || !defined(LIBC_GLIBC)
    *result = malloc(size);
  #elif defined(LIBC_GLIBC)

@@ -3,7 +3,7 @@ Undefine fstatat64 on musl before calling fstatat64 syscall
 Fixes
 
 In file included from ../../base/rand_util_posix.cc:21:
-../../third_party/lss/linux_syscall_support.h:4547:16: error: use of undeclared identifier '__NR_fstatat'; did you mean 'sys_fstatat'? 
+../../third_party/lss/linux_syscall_support.h:4547:16: error: use of undeclared identifier '__NR_fstatat'; did you mean 'sys_fstatat'?
     LSS_INLINE _syscall4(int,   fstatat64,        int,   d,
                ^
 ../../third_party/lss/linux_syscall_support.h:2671:9: note: expanded from macro '_syscall4'
@@ -28,9 +28,15 @@ sys_fstatat
 Upstream-Status: Inappropriate [musl specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
+---
+ third_party/lss/linux_syscall_support.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/third_party/lss/linux_syscall_support.h b/third_party/lss/linux_syscall_support.h
+index a48e6fedc2..df69354252 100644
 --- a/third_party/lss/linux_syscall_support.h
 +++ b/third_party/lss/linux_syscall_support.h
-@@ -4544,9 +4544,13 @@ struct kernel_statfs {
+@@ -4663,9 +4663,13 @@ struct kernel_statfs {
      }
    #endif
    #if defined(__NR_fstatat64)

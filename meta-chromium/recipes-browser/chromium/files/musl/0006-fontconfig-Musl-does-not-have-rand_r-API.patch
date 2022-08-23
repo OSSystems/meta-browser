@@ -1,4 +1,4 @@
-From da6183c75d9b4f0f77ea0bee460315697302f23c Mon Sep 17 00:00:00 2001
+From 13ab115c734877120f417c33f1c7d3f344ea3480 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] fontconfig: Musl does not have random_r() API
@@ -8,17 +8,19 @@ Mark it to be glibc specific
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- third_party/fontconfig/include/config.h | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ third_party/fontconfig/include/config.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/third_party/fontconfig/include/config.h b/third_party/fontconfig/include/config.h
+index 9087ca0c15..3e4c56a519 100644
 --- a/third_party/fontconfig/include/config.h
 +++ b/third_party/fontconfig/include/config.h
 @@ -157,7 +157,7 @@
  #define HAVE_RANDOM 1
-
+ 
  /* Define to 1 if you have the `random_r' function. */
 -#define HAVE_RANDOM_R 1
 +/* #undef HAVE_RANDOM_R */
-
+ 
  /* Define to 1 if you have the `rand_r' function. */
  #define HAVE_RAND_R 1

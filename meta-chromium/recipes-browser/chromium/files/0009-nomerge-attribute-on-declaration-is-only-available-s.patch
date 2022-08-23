@@ -25,10 +25,10 @@ Change-Id: I32e1f7dc9049737d54d8a16de5308aa5aae1ced1
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/base/compiler_specific.h b/base/compiler_specific.h
-index 1ee80743e2f48..d240a3e631075 100644
+index bb43ab39c7..a3afaa9be6 100644
 --- a/base/compiler_specific.h
 +++ b/base/compiler_specific.h
-@@ -328,7 +328,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
+@@ -329,7 +329,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
  #endif  // defined(__clang_analyzer__)
  
  // Use nomerge attribute to disable optimization of merging multiple same calls.

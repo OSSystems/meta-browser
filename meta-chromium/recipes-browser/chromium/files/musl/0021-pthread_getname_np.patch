@@ -1,11 +1,20 @@
-Musl does not provide pthread_getname_np
+From 928cc268cdb80a56c8b0163a304cd1314fa10dde Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Sun, 27 Jun 2021 13:19:47 -0700
+Subject: [PATCH] Musl does not provide pthread_getname_np
 
 Upstream-Status: Inappropriate
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
+---
+ third_party/perfetto/include/perfetto/ext/base/thread_utils.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/perfetto/include/perfetto/ext/base/thread_utils.h b/third_party/perfetto/include/perfetto/ext/base/thread_utils.h
+index 4a1f0b665e..b0fb6a4c49 100644
 --- a/third_party/perfetto/include/perfetto/ext/base/thread_utils.h
 +++ b/third_party/perfetto/include/perfetto/ext/base/thread_utils.h
-@@ -61,9 +61,11 @@ inline bool GetThreadName(std::string& o
+@@ -61,9 +61,11 @@ inline bool GetThreadName(std::string& out_result) {
  #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
    if (prctl(PR_GET_NAME, buf) != 0)
      return false;

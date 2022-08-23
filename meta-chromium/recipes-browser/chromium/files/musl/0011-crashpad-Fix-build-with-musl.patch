@@ -1,4 +1,4 @@
-From b018abd0d0bb0cca792b029105e42588cb825433 Mon Sep 17 00:00:00 2001
+From 90f37ac3a60b143b716acc4d990479803d36832c Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] crashpad: Fix build with musl
@@ -12,10 +12,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/third_party/crashpad/crashpad/util/linux/thread_info.h b/third_party/crashpad/crashpad/util/linux/thread_info.h
-index 5b55c24a76..fb1690a63c 100644
+index d3f3b2c695..c7c961260e 100644
 --- a/third_party/crashpad/crashpad/util/linux/thread_info.h
 +++ b/third_party/crashpad/crashpad/util/linux/thread_info.h
-@@ -273,7 +273,7 @@ union FloatContext {
+@@ -274,7 +274,7 @@ union FloatContext {
                  "Size mismatch");
  #elif defined(ARCH_CPU_ARMEL)
    static_assert(sizeof(f32_t::fpregs) == sizeof(user_fpregs), "Size mismatch");

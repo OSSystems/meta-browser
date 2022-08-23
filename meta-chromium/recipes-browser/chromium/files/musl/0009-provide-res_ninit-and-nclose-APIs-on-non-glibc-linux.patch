@@ -1,4 +1,4 @@
-From 5d5e89261bb49a5c882891a53fe4b735ef452e94 Mon Sep 17 00:00:00 2001
+From e1fcc73722f6f5e3b869d077473d6ac7f5493a99 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] provide res_ninit and nclose APIs on non-glibc linux
@@ -8,6 +8,58 @@ These APIs are not implemented on musl
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+---
+ net/dns/dns_reloader.cc            |  3 +--
+ net/dns/host_resolver_manager.cc   |  3 +--
+ net/dns/host_resolver_proc.cc      |  3 +--
+ net/dns/public/scoped_res_state.cc | 14 +++-----------
+ 4 files changed, 6 insertions(+), 17 deletions(-)
+
+diff --git a/net/dns/dns_reloader.cc b/net/dns/dns_reloader.cc
+index 43cc164e20..6f2226c01e 100644
+--- a/net/dns/dns_reloader.cc
++++ b/net/dns/dns_reloader.cc
+@@ -6,8 +6,7 @@
+ 
+ #include "build/build_config.h"
+ 
+-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
+-    !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
++#if defined(__GLIBC__)
+ 
+ #include <resolv.h>
+ 
+diff --git a/net/dns/host_resolver_manager.cc b/net/dns/host_resolver_manager.cc
+index 713f7e6cad..cb8b9ffc88 100644
+--- a/net/dns/host_resolver_manager.cc
++++ b/net/dns/host_resolver_manager.cc
+@@ -3145,8 +3145,7 @@ HostResolverManager::HostResolverManager(
+   }
+   if (system_dns_config_notifier_)
+     system_dns_config_notifier_->AddObserver(this);
+-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
+-    !BUILDFLAG(IS_ANDROID)
++#if defined(__GLIBC__)
+   EnsureDnsReloaderInit();
+ #endif
+ 
+diff --git a/net/dns/host_resolver_proc.cc b/net/dns/host_resolver_proc.cc
+index d43d82ef4e..55e0e48c65 100644
+--- a/net/dns/host_resolver_proc.cc
++++ b/net/dns/host_resolver_proc.cc
+@@ -191,8 +191,7 @@ int SystemHostResolverCall(const std::string& host,
+   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                 base::BlockingType::WILL_BLOCK);
+ 
+-#if BUILDFLAG(IS_POSIX) && \
+-    !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OPENBSD) || BUILDFLAG(IS_ANDROID))
++#if defined(__GLIBC__)
+   DnsReloaderMaybeReload();
+ #endif
+   auto [ai, err, os_error] = AddressInfo::Get(host, hints, nullptr, network);
+diff --git a/net/dns/public/scoped_res_state.cc b/net/dns/public/scoped_res_state.cc
+index 9706d18b0f..3ec7392860 100644
 --- a/net/dns/public/scoped_res_state.cc
 +++ b/net/dns/public/scoped_res_state.cc
 @@ -13,7 +13,7 @@
@@ -38,39 +90,3 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  }
  
  bool ScopedResState::IsValid() const {
---- a/net/dns/host_resolver_manager.cc
-+++ b/net/dns/host_resolver_manager.cc
-@@ -3156,8 +3156,7 @@ HostResolverManager::HostResolverManager
-   }
-   if (system_dns_config_notifier_)
-     system_dns_config_notifier_->AddObserver(this);
--#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
--    !BUILDFLAG(IS_ANDROID)
-+#if defined(__GLIBC__)
-   EnsureDnsReloaderInit();
- #endif
- 
---- a/net/dns/dns_reloader.cc
-+++ b/net/dns/dns_reloader.cc
-@@ -6,8 +6,7 @@
- 
- #include "build/build_config.h"
- 
--#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
--    !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
-+#if defined(__GLIBC__)
- 
- #include <resolv.h>
- 
---- a/net/dns/host_resolver_proc.cc
-+++ b/net/dns/host_resolver_proc.cc
-@@ -191,8 +191,7 @@ int SystemHostResolverCall(const std::st
-   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                 base::BlockingType::WILL_BLOCK);
- 
--#if BUILDFLAG(IS_POSIX) && \
--    !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OPENBSD) || BUILDFLAG(IS_ANDROID))
-+#if defined(__GLIBC__)
-   DnsReloaderMaybeReload();
- #endif
-   auto [ai, err, os_error] = AddressInfo::Get(host, hints, nullptr, network);

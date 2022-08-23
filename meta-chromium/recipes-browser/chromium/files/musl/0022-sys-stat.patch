@@ -10,11 +10,16 @@ struct stat64;
        ^
 1 error generated.
 
-
 Upstream-Status: Pending
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
+---
+ base/files/file.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/base/files/file.h b/base/files/file.h
+index 6272fccca2..ea8e1e4371 100644
 --- a/base/files/file.h
 +++ b/base/files/file.h
 @@ -8,6 +8,7 @@

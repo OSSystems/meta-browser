@@ -18,14 +18,11 @@ Rebased-by: Maksim Sisov <msisov@igalia.com>
  build/config/compiler/BUILD.gn | 35 ----------------------------------
  1 file changed, 35 deletions(-)
 
- build/config/compiler/BUILD.gn | 35 ----------------------------------
- 1 file changed, 35 deletions(-)
-
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 5fc19591e9e20..d22994d343857 100644
+index 155f49f146..04fa2f13ae 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -917,10 +917,6 @@ config("compiler_cpu_abi") {
+@@ -909,10 +909,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -36,7 +33,7 @@ index 5fc19591e9e20..d22994d343857 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -931,10 +927,6 @@ config("compiler_cpu_abi") {
+@@ -923,10 +919,6 @@ config("compiler_cpu_abi") {
          cflags += [ "-mtune=$arm_tune" ]
        }
      } else if (current_cpu == "arm64") {
@@ -47,7 +44,7 @@ index 5fc19591e9e20..d22994d343857 100644
        if (is_android) {
          # Outline atomics crash on Exynos 9810. http://crbug.com/1272795
          cflags += [ "-mno-outline-atomics" ]
-@@ -946,9 +938,6 @@ config("compiler_cpu_abi") {
+@@ -938,9 +930,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -57,7 +54,7 @@ index 5fc19591e9e20..d22994d343857 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1028,8 +1017,6 @@ config("compiler_cpu_abi") {
+@@ -1020,8 +1009,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -66,7 +63,7 @@ index 5fc19591e9e20..d22994d343857 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1077,9 +1064,6 @@ config("compiler_cpu_abi") {
+@@ -1069,9 +1056,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -76,7 +73,7 @@ index 5fc19591e9e20..d22994d343857 100644
            }
          } else {
            cflags += [
-@@ -1137,8 +1121,6 @@ config("compiler_cpu_abi") {
+@@ -1129,8 +1113,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -85,7 +82,7 @@ index 5fc19591e9e20..d22994d343857 100644
          } else {
            cflags += [
              "-EB",
-@@ -1283,23 +1265,6 @@ config("compiler_deterministic") {
+@@ -1275,23 +1257,6 @@ config("compiler_deterministic") {
        }
      }
    }
@@ -109,5 +106,3 @@ index 5fc19591e9e20..d22994d343857 100644
  }
  
  config("clang_revision") {
---
-2.25.1

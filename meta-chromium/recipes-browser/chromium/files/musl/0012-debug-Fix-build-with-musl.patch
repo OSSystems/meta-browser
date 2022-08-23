@@ -1,4 +1,4 @@
-From 15ad0a146688bc62f91d44a776e5d9f1081361d3 Mon Sep 17 00:00:00 2001
+From 63f4679e2dec58d2e806dc10e38dcce50c80074d Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] debug: Fix build with musl
@@ -17,9 +17,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  base/debug/stack_trace.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/base/debug/stack_trace.cc b/base/debug/stack_trace.cc
+index 730fadafdf..ec7dec4cc0 100644
 --- a/base/debug/stack_trace.cc
 +++ b/base/debug/stack_trace.cc
-@@ -260,14 +260,14 @@ std::string StackTrace::ToString() const
+@@ -281,14 +281,14 @@ std::string StackTrace::ToString() const {
  }
  std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
    std::stringstream stream;

@@ -24,13 +24,13 @@ diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index 676efeddd22bd..6c9b73d6d1c2b 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1489,15 +1487,6 @@
+@@ -1493,15 +1493,6 @@
          cflags += [ "-Wno-unqualified-std-cast-call" ]
        }
  
 -      if (!is_nacl && !(is_chromeos ||
 -                        default_toolchain == "//build/toolchain/cros:target")) {
--        # TODO(https://crbug.com/1316298): Re-enable once test failure is figured out
+-        # TODO(https://crbug.com/1322823): Remove flags once potential miscompile is investigated.
 -        cflags += [
 -          "-Xclang",
 -          "-no-opaque-pointers",

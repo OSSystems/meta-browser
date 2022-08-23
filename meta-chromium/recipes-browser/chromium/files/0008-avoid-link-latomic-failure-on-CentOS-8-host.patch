@@ -1,4 +1,4 @@
-From 5be6349f8a8b29258094daf5535f6dc7dd188cae Mon Sep 17 00:00:00 2001
+From 8cd645b4bc06b14d9296df1177e417e725e4036e Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 22 Jan 2021 00:02:25 +0800
 Subject: [PATCH] avoid link latomic failure on CentOS 8 host
@@ -17,22 +17,21 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 7eddfb10ad319..eab29ede9496c 100644
+index 2b1a93670d..e69fa2f3e9 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1495,8 +1495,10 @@ mixed_component("base") {
+@@ -1496,7 +1496,9 @@ mixed_component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
 +  # Only target requires <atomic>
-   if (!use_sysroot &&
-       (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
+   if (!use_sysroot && (is_android || is_chromeos || (is_linux && !is_castos)) &&
 +      (current_toolchain != host_toolchain) &&
        host_toolchain != "//build/toolchain/cros:host") {
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index d304d081009f9..10232ba4181f3 100644
+index d304d08100..10232ba418 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -40,7 +40,9 @@ config("runtime_library") {

@@ -1,4 +1,4 @@
-From 05d3254fd3ed24a85d79b6749fcfc45e6327bc23 Mon Sep 17 00:00:00 2001
+From a159b86422be076d0558bded2bed783670fe24cb Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 4 Dec 2019 19:06:54 -0800
 Subject: [PATCH] Delete compiler options not available in release versions of
@@ -11,13 +11,13 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 6eac8ceba1a73..1124f68b655ea 100644
+index 76cbbb777c..308c09d525 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1487,6 +1487,11 @@ config("default_warnings") {
+@@ -1480,6 +1480,11 @@ config("default_warnings") {
        cflags += [
          "-Wenum-compare-conditional",
-
+ 
 +        # Disable unknown warnings, since system clang may not have
 +        # backported newer warning yet unlike internal clang that
 +        # chromium uses.

@@ -1,7 +1,7 @@
-From b11616073264bba0d45f6a61eac17886f6aa0583 Mon Sep 17 00:00:00 2001
+From be33177c1ef0a856453065e300ecef067cadc576 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 19 Mar 2021 20:16:00 -0700
-Subject: [PATCH 3/3] Fix tab crashes on musl
+Subject: [PATCH] Fix tab crashes on musl
 
 Upstream-Status: Inappropriate [musl-specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
@@ -17,9 +17,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  .../policy/linux/bpf_renderer_policy_linux.cc |  4 ++--
  9 files changed, 32 insertions(+), 20 deletions(-)
 
+diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
+index 7feff3f493..db2b5e90d4 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
-@@ -138,21 +138,11 @@ namespace sandbox {
+@@ -133,21 +133,11 @@ namespace sandbox {
  // present (as in newer versions of posix_spawn).
  ResultExpr RestrictCloneToThreadsAndEPERMFork() {
    const Arg<unsigned long> flags(0);
@@ -46,7 +48,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
    // The following two flags are the two important flags in any vfork-emulating
    // clone call. EPERM any clone call that contains both of them.
-@@ -162,7 +152,7 @@ ResultExpr RestrictCloneToThreadsAndEPER
+@@ -157,7 +147,7 @@ ResultExpr RestrictCloneToThreadsAndEPERMFork() {
        AnyOf((flags & (CLONE_VM | CLONE_THREAD)) == 0,
              (flags & kImportantCloneVforkFlags) == kImportantCloneVforkFlags);
  
@@ -55,9 +57,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
        .ElseIf(is_fork_or_clone_vfork, Error(EPERM))
        .Else(CrashSIGSYSClone());
  }
+diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
+index b3cf6fc7e8..87ecedc9a4 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-@@ -418,6 +418,7 @@ bool SyscallSets::IsAllowedProcessStartO
+@@ -423,6 +423,7 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
  #if defined(__i386__)
      case __NR_waitpid:
  #endif
@@ -65,7 +69,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
        return true;
      case __NR_clone:  // Should be parameter-restricted.
      case __NR_setns:  // Privileged.
-@@ -430,7 +431,6 @@ bool SyscallSets::IsAllowedProcessStartO
+@@ -435,7 +436,6 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
  #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
      case __NR_set_thread_area:
  #endif
@@ -73,7 +77,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
      case __NR_unshare:
  #if !defined(__mips__) && !defined(__aarch64__)
      case __NR_vfork:
-@@ -544,6 +544,8 @@ bool SyscallSets::IsAllowedAddressSpaceA
+@@ -549,6 +549,8 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
      case __NR_mlock:
      case __NR_munlock:
      case __NR_munmap:
@@ -82,7 +86,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
        return true;
      case __NR_madvise:
      case __NR_mincore:
-@@ -561,7 +563,6 @@ bool SyscallSets::IsAllowedAddressSpaceA
+@@ -566,7 +568,6 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
      case __NR_modify_ldt:
  #endif
      case __NR_mprotect:
@@ -90,6 +94,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
      case __NR_msync:
      case __NR_munlockall:
      case __NR_readahead:
+diff --git a/sandbox/linux/system_headers/arm64_linux_syscalls.h b/sandbox/linux/system_headers/arm64_linux_syscalls.h
+index ab86b36353..60d87434f1 100644
 --- a/sandbox/linux/system_headers/arm64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm64_linux_syscalls.h
 @@ -1215,4 +1215,8 @@
@@ -101,6 +107,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_ARM64_LINUX_SYSCALLS_H_
+diff --git a/sandbox/linux/system_headers/arm_linux_syscalls.h b/sandbox/linux/system_headers/arm_linux_syscalls.h
+index 9c44368a8e..40c61863e7 100644
 --- a/sandbox/linux/system_headers/arm_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm_linux_syscalls.h
 @@ -1617,6 +1617,10 @@
@@ -114,6 +122,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  // ARM private syscalls.
  #if !defined(__ARM_NR_BASE)
  #define __ARM_NR_BASE (__NR_SYSCALL_BASE + 0xF0000)
+diff --git a/sandbox/linux/system_headers/linux_syscalls.h b/sandbox/linux/system_headers/linux_syscalls.h
+index 2b78a0cc3b..b6fedb5c20 100644
 --- a/sandbox/linux/system_headers/linux_syscalls.h
 +++ b/sandbox/linux/system_headers/linux_syscalls.h
 @@ -10,6 +10,7 @@
@@ -124,6 +134,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
  #if defined(__x86_64__)
  #include "sandbox/linux/system_headers/x86_64_linux_syscalls.h"
+diff --git a/sandbox/linux/system_headers/mips64_linux_syscalls.h b/sandbox/linux/system_headers/mips64_linux_syscalls.h
+index ae7cb48f57..4ce8142a67 100644
 --- a/sandbox/linux/system_headers/mips64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips64_linux_syscalls.h
 @@ -1415,4 +1415,8 @@
@@ -135,6 +147,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS64_LINUX_SYSCALLS_H_
+diff --git a/sandbox/linux/system_headers/mips_linux_syscalls.h b/sandbox/linux/system_headers/mips_linux_syscalls.h
+index 093778288b..f5c014e3fd 100644
 --- a/sandbox/linux/system_headers/mips_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips_linux_syscalls.h
 @@ -1697,4 +1697,8 @@
@@ -146,6 +160,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +#endif
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_MIPS_LINUX_SYSCALLS_H_
+diff --git a/sandbox/linux/system_headers/x86_64_linux_syscalls.h b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
+index e618c6237b..dc6fa8d3c7 100644
 --- a/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 @@ -1438,5 +1438,9 @@
@@ -158,9 +174,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 +
  #endif  // SANDBOX_LINUX_SYSTEM_HEADERS_X86_64_LINUX_SYSCALLS_H_
  
+diff --git a/sandbox/policy/linux/bpf_renderer_policy_linux.cc b/sandbox/policy/linux/bpf_renderer_policy_linux.cc
+index f789e92c37..1a84c2c980 100644
 --- a/sandbox/policy/linux/bpf_renderer_policy_linux.cc
 +++ b/sandbox/policy/linux/bpf_renderer_policy_linux.cc
-@@ -97,11 +97,11 @@ ResultExpr RendererProcessPolicy::Evalua
+@@ -97,11 +97,11 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
      case __NR_sysinfo:
      case __NR_times:
      case __NR_uname:

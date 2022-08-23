@@ -1,4 +1,4 @@
-From 4da5c3a0127fe0415346cc2deb1ee4a3b6c507db Mon Sep 17 00:00:00 2001
+From d460077bd03d21d0249ca92e90f6e4ca2dffad41 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] execinfo implementation is glibc specific
@@ -10,9 +10,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  .../build/Linux/include/llvm/Config/config.h         |  2 +-
  2 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/base/debug/stack_trace_posix.cc b/base/debug/stack_trace_posix.cc
+index 31b8a4ca61..5648c88e79 100644
 --- a/base/debug/stack_trace_posix.cc
 +++ b/base/debug/stack_trace_posix.cc
-@@ -27,7 +27,7 @@
+@@ -30,7 +30,7 @@
  #if !defined(USE_SYMBOLIZE)
  #include <cxxabi.h>
  #endif
@@ -21,7 +23,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include <execinfo.h>
  #endif
  
-@@ -89,7 +89,7 @@ void DemangleSymbols(std::string* text)
+@@ -97,7 +97,7 @@ void DemangleSymbols(std::string* text) {
    // Note: code in this function is NOT async-signal safe (std::string uses
    // malloc internally).
  
@@ -30,7 +32,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    std::string::size_type search_from = 0;
    while (search_from < text->size()) {
      // Look for the start of a mangled symbol, from search_from.
-@@ -136,7 +136,7 @@ class BacktraceOutputHandler {
+@@ -144,7 +144,7 @@ class BacktraceOutputHandler {
    virtual ~BacktraceOutputHandler() = default;
  };
  
@@ -39,7 +41,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
    // This should be more than enough to store a 64-bit number in hex:
    // 16 hex digits + 1 for null-terminator.
-@@ -839,7 +839,7 @@ size_t CollectStackTrace(void** trace, s
+@@ -868,7 +868,7 @@ size_t CollectStackTrace(void** trace, size_t count) {
    // If we do not have unwind tables, then try tracing using frame pointers.
    return base::debug::TraceStackFramePointers(const_cast<const void**>(trace),
                                                count, 0);
@@ -48,7 +50,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    // Though the backtrace API man page does not list any possible negative
    // return values, we take no chance.
    return base::saturated_cast<size_t>(backtrace(trace, count));
-@@ -852,13 +852,13 @@ void StackTrace::PrintWithPrefix(const c
+@@ -881,13 +881,13 @@ void StackTrace::PrintWithPrefix(const char* prefix_string) const {
  // NOTE: This code MUST be async-signal safe (it's used by in-process
  // stack dumping signal handler). NO malloc or stdio is allowed here.
  
@@ -64,6 +66,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  void StackTrace::OutputToStreamWithPrefix(std::ostream* os,
                                            const char* prefix_string) const {
    StreamBacktraceOutputHandler handler(os);
+diff --git a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
+index 0ffd1bf775..0e413c69a5 100644
 --- a/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-subzero/build/Linux/include/llvm/Config/config.h
 @@ -58,7 +58,7 @@
