@@ -1,4 +1,4 @@
-From 249fd84f0624f1b1ad6ccc6c28e22951b80f1e2d Mon Sep 17 00:00:00 2001
+From 3a9af2d8e1ed2ffb7bba91bd218cc9b7932ecb3b Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] breakpad: Fix build with musl
@@ -15,7 +15,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  2 files changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc b/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
-index ca353c4099..cfe5bdd7e7 100644
+index 499be0a986..d0b1ca51b8 100644
 --- a/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
 +++ b/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
 @@ -489,8 +489,10 @@ bool ExceptionHandler::SimulateSignalDelivery(int sig) {
@@ -43,7 +43,7 @@ index ca353c4099..cfe5bdd7e7 100644
  #if defined(__i386__)
    // In CPUFillFromUContext in minidumpwriter.cc the stack pointer is retrieved
 diff --git a/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h b/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
-index 6e153745db..5e05823283 100644
+index c8117a0e26..a2e74883bf 100644
 --- a/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
 +++ b/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
 @@ -37,6 +37,7 @@

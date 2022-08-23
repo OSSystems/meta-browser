@@ -1,4 +1,4 @@
-From a043f8e14d9e5f80124e34f6fde322760ff2cb71 Mon Sep 17 00:00:00 2001
+From 9380867d3c99a5d8f15b2ca7552253c1e36077af Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] Define TEMP_FAILURE_RETRY and __si_fields
@@ -14,10 +14,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  2 files changed, 14 insertions(+)
 
 diff --git a/sandbox/linux/seccomp-bpf/trap.cc b/sandbox/linux/seccomp-bpf/trap.cc
-index f5b86a73ac..6a08b6d08d 100644
+index cb71a9bb2a..c647ab98e4 100644
 --- a/sandbox/linux/seccomp-bpf/trap.cc
 +++ b/sandbox/linux/seccomp-bpf/trap.cc
-@@ -25,6 +25,11 @@
+@@ -26,6 +26,11 @@
  #include "sandbox/linux/system_headers/linux_seccomp.h"
  #include "sandbox/linux/system_headers/linux_signal.h"
  
@@ -30,7 +30,7 @@ index f5b86a73ac..6a08b6d08d 100644
  
  struct arch_sigsys {
 diff --git a/sandbox/linux/suid/sandbox.c b/sandbox/linux/suid/sandbox.c
-index 5fdb4817af..09b81ef7e4 100644
+index 2bedcb34f2..b8f1977be2 100644
 --- a/sandbox/linux/suid/sandbox.c
 +++ b/sandbox/linux/suid/sandbox.c
 @@ -44,6 +44,15 @@

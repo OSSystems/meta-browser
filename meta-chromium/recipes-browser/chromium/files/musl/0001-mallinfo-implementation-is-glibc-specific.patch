@@ -1,4 +1,4 @@
-From d40a4786e9eab2bcab140506f84ecf11dd4646ae Mon Sep 17 00:00:00 2001
+From bec6f5416a5a0202ffc1b6c10b313a69f0e0de52 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] mallinfo implementation is glibc specific
@@ -8,7 +8,7 @@ Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
 diff --git a/base/trace_event/malloc_dump_provider.cc b/base/trace_event/malloc_dump_provider.cc
-index 69251d6de19fa..27492c3f2d476 100644
+index fe40c571d6..57498d296f 100644
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
 @@ -176,6 +176,7 @@ void ReportAppleAllocStats(size_t* total_virtual_size,
@@ -30,6 +30,8 @@ index 69251d6de19fa..27492c3f2d476 100644
  #endif
  
    MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
+diff --git a/base/process/process_metrics_posix.cc b/base/process/process_metrics_posix.cc
+index ae6d3a698c..10426b6926 100644
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
 @@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
@@ -62,6 +64,8 @@ index 69251d6de19fa..27492c3f2d476 100644
    // TODO(fuchsia): Not currently exposed. https://crbug.com/735087.
    return 0;
  #endif
+diff --git a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
+index efd957ae35..e54876b3bc 100644
 --- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 +++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 @@ -35,7 +35,7 @@ bool MemoryUsage::IsSupported() {
@@ -73,6 +77,22 @@ index 69251d6de19fa..27492c3f2d476 100644
    rusage res;
    if (getrusage(RUSAGE_SELF, &res) == 0) {
      result.max_rss_kb = res.ru_maxrss;
+diff --git a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
+index 7392898797..0bf7c4ad99 100644
+--- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
++++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
+@@ -125,7 +125,9 @@
+ /* #undef HAVE_MALLCTL */
+ 
+ /* Define to 1 if you have the `mallinfo' function. */
++#if defined(__GLIBC__)
+ #define HAVE_MALLINFO 1
++#endif
+ 
+ /* Define to 1 if you have the <malloc/malloc.h> header file. */
+ /* #undef HAVE_MALLOC_MALLOC_H */
+diff --git a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
+index 1a767bcbd5..1ba48de49b 100644
 --- a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 +++ b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 @@ -86,11 +86,11 @@ unsigned Process::getPageSize() {
@@ -89,15 +109,3 @@ index 69251d6de19fa..27492c3f2d476 100644
    struct mallinfo mi;
    mi = ::mallinfo();
    return mi.uordblks;
---- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
-+++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
-@@ -125,7 +125,9 @@
- /* #undef HAVE_MALLCTL */
-
- /* Define to 1 if you have the `mallinfo' function. */
-+#if defined(__GLIBC__)
- #define HAVE_MALLINFO 1
-+#endif
- 
- /* Define to 1 if you have the <malloc/malloc.h> header file. */
- /* #undef HAVE_MALLOC_MALLOC_H */

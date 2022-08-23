@@ -3,6 +3,12 @@ provide __close on musl
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
+---
+ base/files/scoped_file_linux.cc | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/base/files/scoped_file_linux.cc b/base/files/scoped_file_linux.cc
+index 26bc18e62a..70977a7cd1 100644
 --- a/base/files/scoped_file_linux.cc
 +++ b/base/files/scoped_file_linux.cc
 @@ -7,6 +7,7 @@
@@ -10,13 +16,13 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #include <array>
  #include <atomic>
 +#include <dlfcn.h>
-
+ 
  #include "base/compiler_specific.h"
  #include "base/debug/stack_trace.h"
 @@ -80,9 +81,18 @@ bool IsFDOwned(int fd) {
-
+ 
  extern "C" {
-
+ 
 -int __close(int);
 -
  __attribute__((visibility("default"), noinline)) int close(int fd) {

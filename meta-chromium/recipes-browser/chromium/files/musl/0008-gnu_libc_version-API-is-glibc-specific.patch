@@ -1,4 +1,4 @@
-From 5d35c60d768ee8c9f45ea15aabf97ae9cf7187b1 Mon Sep 17 00:00:00 2001
+From 2194bcc7c0a2ede285d7fde98d6fee2d31819bac Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] gnu_libc_version API is glibc specific
@@ -8,12 +8,14 @@ Do not assume it to be linux wide
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
- .../metrics/chrome_browser_main_extra_parts_metrics.cc | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ .../chrome_browser_main_extra_parts_metrics.cc       | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
+index 9dc2cae18b..0505dec952 100644
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-@@ -57,14 +57,14 @@
+@@ -58,14 +58,14 @@
  
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -54,7 +56,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-@@ -610,7 +610,7 @@ void ChromeBrowserMainExtraPartsMetrics:
+@@ -582,7 +582,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.

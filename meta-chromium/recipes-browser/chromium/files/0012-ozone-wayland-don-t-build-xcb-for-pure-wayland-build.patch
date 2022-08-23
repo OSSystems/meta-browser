@@ -15,7 +15,7 @@ after Ozone became default on Linux.
  2 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/swiftshader/src/Vulkan/BUILD.gn b/third_party/swiftshader/src/Vulkan/BUILD.gn
-index 960d0a9c9..18ef10418 100644
+index 959aa45f12..08b8ad3a5d 100644
 --- a/third_party/swiftshader/src/Vulkan/BUILD.gn
 +++ b/third_party/swiftshader/src/Vulkan/BUILD.gn
 @@ -13,12 +13,13 @@
@@ -32,10 +32,9 @@ index 960d0a9c9..18ef10418 100644
 +  if (is_linux && ozone_platform_x11) {
      defines = [
        "VK_USE_PLATFORM_XCB_KHR",
-       "VK_EXPORT=__attribute__((visibility(\"default\")))",
-
+       "VK_USE_PLATFORM_WAYLAND_KHR",
 diff --git a/third_party/swiftshader/src/WSI/BUILD.gn b/third_party/swiftshader/src/WSI/BUILD.gn
-index 42239fbb0..bd8be832f 100644
+index 243729bc02..1142af8661 100644
 --- a/third_party/swiftshader/src/WSI/BUILD.gn
 +++ b/third_party/swiftshader/src/WSI/BUILD.gn
 @@ -12,6 +12,7 @@
@@ -45,15 +44,13 @@ index 42239fbb0..bd8be832f 100644
 +import("//build/config/ozone.gni")
  import("../swiftshader.gni")
  
- config("WSI_metal_weak_framework") {
-@@ -33,7 +34,7 @@ swiftshader_source_set("WSI") {
+ if (is_linux) {
+@@ -40,7 +41,7 @@ swiftshader_source_set("WSI") {
      "VkSwapchainKHR.hpp",
    ]
  
 -  if (is_linux) {
 +  if (is_linux && ozone_platform_x11) {
      sources += [
-       "XcbSurfaceKHR.cpp",
-       "XcbSurfaceKHR.hpp",
--- 
-2.25.1
+       "WaylandSurfaceKHR.cpp",
+       "WaylandSurfaceKHR.hpp",

@@ -1,4 +1,4 @@
-From 6510aaf312a9ab8c14a11a3a47b411e79d62acbf Mon Sep 17 00:00:00 2001
+From 23f7c3001ee12b75f08119f638eb90c257308eaf Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Tue, 22 Jan 2019 00:17:41 -0800
 Subject: [PATCH] BUILD: do not specify march on arm
@@ -18,10 +18,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 10 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index d22994d343857..6eac8ceba1a73 100644
+index 04fa2f13ae..76cbbb777c 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -916,16 +916,6 @@ config("compiler_cpu_abi") {
+@@ -908,16 +908,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }

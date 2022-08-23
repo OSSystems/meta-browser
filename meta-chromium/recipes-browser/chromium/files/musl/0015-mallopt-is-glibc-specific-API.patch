@@ -1,4 +1,4 @@
-From 86330a420ce44c4492609c1eabe6eae36016a625 Mon Sep 17 00:00:00 2001
+From d2fe80ae3ede68a947c2988d2c6c53f4346207d4 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] mallopt() is glibc specific API
@@ -9,6 +9,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  base/allocator/allocator_check.cc | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/base/allocator/allocator_check.cc b/base/allocator/allocator_check.cc
+index 446d01ad4f..392d77e3cc 100644
 --- a/base/allocator/allocator_check.cc
 +++ b/base/allocator/allocator_check.cc
 @@ -11,7 +11,7 @@

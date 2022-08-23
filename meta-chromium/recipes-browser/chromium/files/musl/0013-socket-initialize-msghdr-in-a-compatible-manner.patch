@@ -1,4 +1,4 @@
-From a56ce9e2646bb148ec6c32eaf53109cf1cbf2d74 Mon Sep 17 00:00:00 2001
+From f016fa8436040c3ea674e6a81311b9aaea2c0267 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] socket: initialize msghdr in a compatible manner
@@ -22,9 +22,11 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  net/socket/udp_socket_posix.cc | 8 ++++++--
  1 file changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/net/socket/udp_socket_posix.cc b/net/socket/udp_socket_posix.cc
+index 01fe429d8b..50e43f77f9 100644
 --- a/net/socket/udp_socket_posix.cc
 +++ b/net/socket/udp_socket_posix.cc
-@@ -1161,8 +1161,12 @@ SendResult UDPSocketPosixSender::Interna
+@@ -1098,8 +1098,12 @@ SendResult UDPSocketPosixSender::InternalSendmmsgBuffers(
    for (auto& buffer : buffers)
      msg_iov->push_back({const_cast<char*>(buffer->data()), buffer->length()});
    msgvec->reserve(buffers.size());
