@@ -15,36 +15,38 @@ Upstream-Status: Inappropriate [OE-Specific]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Rebased-by: Maksim Sisov <msisov@igalia.com>
 ---
- build/config/compiler/BUILD.gn | 35 ----------------------------------
- 1 file changed, 35 deletions(-)
+ build/config/compiler/BUILD.gn | 37 ----------------------------------
+ 1 file changed, 37 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 155f49f146..04fa2f13ae 100644
+index 6526a9c19623d..7bd1917dc4a99 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -909,10 +909,6 @@ config("compiler_cpu_abi") {
+@@ -900,11 +900,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
--      if (is_clang && !is_android && !is_nacl) {
+-      if (is_clang && !is_android && !is_nacl &&
+-          !(is_chromeos_lacros && is_chromeos_device)) {
 -        cflags += [ "--target=arm-linux-gnueabihf" ]
 -        ldflags += [ "--target=arm-linux-gnueabihf" ]
 -      }
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -923,10 +919,6 @@ config("compiler_cpu_abi") {
+@@ -915,11 +910,6 @@ config("compiler_cpu_abi") {
          cflags += [ "-mtune=$arm_tune" ]
        }
      } else if (current_cpu == "arm64") {
--      if (is_clang && !is_android && !is_nacl && !is_fuchsia) {
+-      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
+-          !(is_chromeos_lacros && is_chromeos_device)) {
 -        cflags += [ "--target=aarch64-linux-gnu" ]
 -        ldflags += [ "--target=aarch64-linux-gnu" ]
 -      }
        if (is_android) {
          # Outline atomics crash on Exynos 9810. http://crbug.com/1272795
          cflags += [ "-mno-outline-atomics" ]
-@@ -938,9 +930,6 @@ config("compiler_cpu_abi") {
+@@ -931,9 +921,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -54,7 +56,7 @@ index 155f49f146..04fa2f13ae 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1020,8 +1009,6 @@ config("compiler_cpu_abi") {
+@@ -1013,8 +1000,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -63,7 +65,7 @@ index 155f49f146..04fa2f13ae 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1069,9 +1056,6 @@ config("compiler_cpu_abi") {
+@@ -1062,9 +1047,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -73,7 +75,7 @@ index 155f49f146..04fa2f13ae 100644
            }
          } else {
            cflags += [
-@@ -1129,8 +1113,6 @@ config("compiler_cpu_abi") {
+@@ -1122,8 +1104,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -82,7 +84,7 @@ index 155f49f146..04fa2f13ae 100644
          } else {
            cflags += [
              "-EB",
-@@ -1275,23 +1257,6 @@ config("compiler_deterministic") {
+@@ -1274,23 +1254,6 @@ config("compiler_deterministic") {
        }
      }
    }

@@ -17,10 +17,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 2b1a93670d..e69fa2f3e9 100644
+index 9fc667eaa2bcf..017b6cd9a888e 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1496,7 +1496,9 @@ mixed_component("base") {
+@@ -1507,7 +1507,9 @@ mixed_component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -31,7 +31,7 @@ index 2b1a93670d..e69fa2f3e9 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index d304d08100..10232ba418 100644
+index d304d081009f9..10232ba4181f3 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -40,7 +40,9 @@ config("runtime_library") {
@@ -44,6 +44,3 @@ index d304d08100..10232ba418 100644
        (!use_custom_libcxx || current_cpu == "mipsel")) {
      libs = [ "atomic" ]
    }
--- 
-2.32.0
-
