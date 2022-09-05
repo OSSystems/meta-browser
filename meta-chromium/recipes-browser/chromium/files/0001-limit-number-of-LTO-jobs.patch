@@ -16,10 +16,10 @@ Thus, use the previously used number of threads.
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index df8610696c..155f49f146 100644
+index b6aaae9b69576..6526a9c19623d 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -663,7 +663,7 @@ config("compiler") {
+@@ -651,7 +651,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +28,7 @@ index df8610696c..155f49f146 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -676,11 +676,11 @@ config("compiler") {
+@@ -664,11 +664,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -46,10 +46,10 @@ index df8610696c..155f49f146 100644
          ldflags += [
            "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 36108aaf7a..b6299ca54f 100644
+index 5550eecf14873..c84b69fc72233 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
-@@ -94,6 +94,11 @@ declare_args() {
+@@ -97,6 +97,11 @@ declare_args() {
    # If true, use Goma for ThinLTO code generation where applicable.
    use_goma_thin_lto = false
  
