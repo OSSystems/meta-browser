@@ -1,0 +1,42 @@
+From e2012f1d51a2aad0e2c4132367dea5031beba94c Mon Sep 17 00:00:00 2001
+From: Alan Zhao <ayzhao@google.com>
+Date: Mon, 27 Jun 2022 13:51:35 -0400
+Subject: [PATCH] Remove usage of std::binary_function
+
+std::binary_function is removed in C++17 and the latest version of
+libc++, and its presence is preventing Chrome from updating libc++.
+---
+Upstream-Status: Backport [https://github.com/google/libaddressinput/pull/227]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
+ cpp/src/preload_supplier.cc | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/third_party/libaddressinput/src/cpp/src/preload_supplier.cc b/third_party/libaddressinput/src/cpp/src/preload_supplier.cc
+index 86faa52..a00e70f 100644
+--- a/third_party/libaddressinput/src/cpp/src/preload_supplier.cc
++++ b/third_party/libaddressinput/src/cpp/src/preload_supplier.cc
+@@ -22,7 +22,6 @@
+ #include <algorithm>
+ #include <cassert>
+ #include <cstddef>
+-#include <functional>
+ #include <map>
+ #include <memory>
+ #include <set>
+@@ -47,10 +46,9 @@ namespace {
+ // reader would consider to be "the same". The default implementation just does
+ // case insensitive string comparison, but StringCompare can be overridden with
+ // more sophisticated implementations.
+-class IndexLess : public std::binary_function<std::string, std::string, bool> {
++class IndexLess {
+  public:
+-  result_type operator()(const first_argument_type& a,
+-                         const second_argument_type& b) const {
++  bool operator()(const std::string& a, const std::string& b) const {
+     static const StringCompare kStringCompare;
+     return kStringCompare.NaturalLess(a, b);
+   }
+-- 
+2.37.3
+
