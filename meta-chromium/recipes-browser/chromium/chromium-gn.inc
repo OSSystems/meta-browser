@@ -22,6 +22,7 @@ SRC_URI += " \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0012-ozone-wayland-don-t-build-xcb-for-pure-wayland-build.patch \
     file://0013-clang-Re-enable-opaque-pointers.patch \
+    file://0014-Remove-usage-of-std-binary_function.patch \
 "
 
 SRC_URI:append:libc-musl = "\
