@@ -1,8 +1,7 @@
 Upstream-Status: Backport
 
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
----
-From fc11a69bf72d0b8dbf209f5f36b5a37b7383213f Mon Sep 17 00:00:00 2001
+From 24006e1307d7641d684c570f2f026455be9821a9 Mon Sep 17 00:00:00 2001
 From: Yaroslav Isakov <yaroslav.isakov@gmail.com>
 Date: Wed, 20 Jul 2022 19:41:18 +0200
 Subject: [PATCH] Build X11 parts only for ozone_platform_x11
@@ -20,8 +19,8 @@ Reviewed-by: Nicolas Capens <nicolascapens@google.com>
 Commit-Queue: Yaroslav Isakov <yaroslav.isakov@gmail.com>
 Tested-by: Nicolas Capens <nicolascapens@google.com>
 ---
- src/Vulkan/BUILD.gn |  5 ++++-
- src/WSI/BUILD.gn    | 15 +++++++++------
+ third_party/swiftshader/src/Vulkan/BUILD.gn |  5 ++++-
+ third_party/swiftshader/src/WSI/BUILD.gn    | 15 +++++++++------
  2 files changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/third_party/swiftshader/src/Vulkan/BUILD.gn b/third_party/swiftshader/src/Vulkan/BUILD.gn

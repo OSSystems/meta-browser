@@ -16,10 +16,10 @@ Thus, use the previously used number of threads.
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index b6aaae9b69576..6526a9c19623d 100644
+index 0272bf80f31fe..f4a3ec22c9b45 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -651,7 +651,7 @@ config("compiler") {
+@@ -642,7 +642,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +28,7 @@ index b6aaae9b69576..6526a9c19623d 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -664,11 +664,11 @@ config("compiler") {
+@@ -655,11 +655,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
