@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "1cba0527c951e3c506ade96cf6ec2507ee9d43661764731ed896348182369262"
+SRC_URI[sha256sum] = "0f091b4950e120d5c3e23ab391bacfdb6ce8eb8d0acab55e9dae1a8c247dd192"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -207,6 +207,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/arcore-android-sdk/LICENSE;md5=c1bc4f7fbdd7a5a3f2c0dfefd457665e \
     file://${S}/third_party/ashmem/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/axe-core/LICENSE;md5=f27a50d2e878867827842f2c60e30bfc \
+    file://${S}/third_party/bidimapper/LICENSE;md5=2b42edef8fa55315f34f2370b4715ca9 \
     file://${S}/third_party/blink/LICENSE_FOR_ABOUT_CREDITS;md5=11e90d553b211de885f245900c4ccf89 \
     file://${S}/third_party/boringssl/src/LICENSE;md5=9b082148f9953258347788edb83e401b \
     file://${S}/third_party/boringssl/src/third_party/fiat/LICENSE;md5=8eb8c1cdeb53faab99e4673182bed9f7 \
