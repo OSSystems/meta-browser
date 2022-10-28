@@ -16,8 +16,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  net/dns/public/scoped_res_state.cc | 14 +++-----------
  4 files changed, 6 insertions(+), 17 deletions(-)
 
-diff --git a/net/dns/dns_reloader.cc b/net/dns/dns_reloader.cc
-index 43cc164e20..6f2226c01e 100644
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
 @@ -6,8 +6,7 @@
@@ -30,11 +28,9 @@ index 43cc164e20..6f2226c01e 100644
  
  #include <resolv.h>
  
-diff --git a/net/dns/host_resolver_manager.cc b/net/dns/host_resolver_manager.cc
-index 713f7e6cad..cb8b9ffc88 100644
 --- a/net/dns/host_resolver_manager.cc
 +++ b/net/dns/host_resolver_manager.cc
-@@ -3145,8 +3145,7 @@ HostResolverManager::HostResolverManager(
+@@ -3126,8 +3126,7 @@ HostResolverManager::HostResolverManager
    }
    if (system_dns_config_notifier_)
      system_dns_config_notifier_->AddObserver(this);
@@ -44,11 +40,9 @@ index 713f7e6cad..cb8b9ffc88 100644
    EnsureDnsReloaderInit();
  #endif
  
-diff --git a/net/dns/host_resolver_proc.cc b/net/dns/host_resolver_proc.cc
-index d43d82ef4e..55e0e48c65 100644
 --- a/net/dns/host_resolver_proc.cc
 +++ b/net/dns/host_resolver_proc.cc
-@@ -191,8 +191,7 @@ int SystemHostResolverCall(const std::string& host,
+@@ -192,8 +192,7 @@ int SystemHostResolverCall(const std::st
    base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                  base::BlockingType::WILL_BLOCK);
  
@@ -58,8 +52,6 @@ index d43d82ef4e..55e0e48c65 100644
    DnsReloaderMaybeReload();
  #endif
    auto [ai, err, os_error] = AddressInfo::Get(host, hints, nullptr, network);
-diff --git a/net/dns/public/scoped_res_state.cc b/net/dns/public/scoped_res_state.cc
-index 9706d18b0f..3ec7392860 100644
 --- a/net/dns/public/scoped_res_state.cc
 +++ b/net/dns/public/scoped_res_state.cc
 @@ -13,7 +13,7 @@

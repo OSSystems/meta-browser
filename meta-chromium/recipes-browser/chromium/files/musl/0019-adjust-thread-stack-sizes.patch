@@ -14,11 +14,9 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  chrome/browser/shutdown_signal_handlers_posix.cc | 8 ++++++++
  3 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/base/threading/platform_thread_linux.cc b/base/threading/platform_thread_linux.cc
-index 31a212c275..231cc755f6 100644
 --- a/base/threading/platform_thread_linux.cc
 +++ b/base/threading/platform_thread_linux.cc
-@@ -436,7 +436,8 @@ void TerminateOnThread() {}
+@@ -469,7 +469,8 @@ void TerminateOnThread() {}
  
  size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
  #if !defined(THREAD_SANITIZER)
@@ -28,11 +26,9 @@ index 31a212c275..231cc755f6 100644
  #else
    // ThreadSanitizer bloats the stack heavily. Evidence has been that the
    // default stack size isn't enough for some browser tests.
-diff --git a/base/threading/platform_thread_unittest.cc b/base/threading/platform_thread_unittest.cc
-index 33082ac4f4..a613d0929e 100644
 --- a/base/threading/platform_thread_unittest.cc
 +++ b/base/threading/platform_thread_unittest.cc
-@@ -420,7 +420,7 @@ TEST(PlatformThreadTest, GetDefaultThreadStackSize) {
+@@ -526,7 +526,7 @@ TEST(PlatformThreadTest, GetDefaultThrea
      ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&                \
       !defined(THREAD_SANITIZER)) ||                                    \
      (BUILDFLAG(IS_ANDROID) && !defined(ADDRESS_SANITIZER))
@@ -41,8 +37,6 @@ index 33082ac4f4..a613d0929e 100644
  #else
    EXPECT_GT(stack_size, 0u);
    EXPECT_LT(stack_size, 20u * (1 << 20));
-diff --git a/chrome/browser/shutdown_signal_handlers_posix.cc b/chrome/browser/shutdown_signal_handlers_posix.cc
-index e13bbd4a7d..52682c3eb6 100644
 --- a/chrome/browser/shutdown_signal_handlers_posix.cc
 +++ b/chrome/browser/shutdown_signal_handlers_posix.cc
 @@ -188,11 +188,19 @@ void InstallShutdownSignalHandlers(

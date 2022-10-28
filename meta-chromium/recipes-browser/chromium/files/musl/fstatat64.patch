@@ -32,12 +32,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  third_party/lss/linux_syscall_support.h | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/third_party/lss/linux_syscall_support.h b/third_party/lss/linux_syscall_support.h
-index a48e6fedc2..df69354252 100644
 --- a/third_party/lss/linux_syscall_support.h
 +++ b/third_party/lss/linux_syscall_support.h
-@@ -4663,9 +4663,13 @@ struct kernel_statfs {
-     }
+@@ -4947,9 +4947,13 @@ struct kernel_statx {
+   # endif
    #endif
    #if defined(__NR_fstatat64)
 +    // musl does #define fstatat64 fstatat
