@@ -11,8 +11,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  .../chrome_browser_main_extra_parts_metrics.cc       | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
-index 9dc2cae18b..0505dec952 100644
 --- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 +++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
 @@ -58,14 +58,14 @@
@@ -32,7 +30,7 @@ index 9dc2cae18b..0505dec952 100644
  
  #if defined(USE_OZONE)
  #include "ui/events/devices/device_data_manager.h"
-@@ -237,7 +237,7 @@ void RecordStartupMetrics() {
+@@ -191,7 +191,7 @@ void RecordMicroArchitectureStats() {
  
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.
@@ -41,7 +39,7 @@ index 9dc2cae18b..0505dec952 100644
  void RecordLinuxDistroSpecific(const std::string& version_string,
                                 size_t parts,
                                 const char* histogram_name) {
-@@ -315,12 +315,12 @@ void RecordLinuxDistro() {
+@@ -269,12 +269,12 @@ void RecordLinuxDistro() {
  
    base::UmaHistogramSparse("Linux.Distro2", distro_result);
  }
@@ -56,7 +54,7 @@ index 9dc2cae18b..0505dec952 100644
    base::Version version(gnu_get_libc_version());
  
    UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
-@@ -582,7 +582,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
+@@ -611,7 +611,7 @@ void ChromeBrowserMainExtraPartsMetrics:
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
  // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
  // of lacros-chrome is complete.

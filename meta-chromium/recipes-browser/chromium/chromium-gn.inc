@@ -36,7 +36,6 @@ SRC_URI:append:libc-musl = "\
     file://musl/0009-provide-res_ninit-and-nclose-APIs-on-non-glibc-linux.patch \
     file://musl/0011-crashpad-Fix-build-with-musl.patch \
     file://musl/0012-debug-Fix-build-with-musl.patch \
-    file://musl/0013-socket-initialize-msghdr-in-a-compatible-manner.patch \
     file://musl/0015-mallopt-is-glibc-specific-API.patch \
     file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
     file://musl/0019-adjust-thread-stack-sizes.patch \

@@ -7,34 +7,31 @@ Upstream-Status: Pending
 Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 ---
-diff --git a/base/trace_event/malloc_dump_provider.cc b/base/trace_event/malloc_dump_provider.cc
-index fe40c571d6..57498d296f 100644
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -176,6 +176,7 @@ void ReportAppleAllocStats(size_t* total_virtual_size,
+@@ -185,6 +185,7 @@ void ReportAppleAllocStats(size_t* total
  
  #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
      (!BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
-+    defined(__GLIBC__) && \
-      !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_FUCHSIA))
++     defined(__GLIBC__) && \
+      !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_FUCHSIA))
  void ReportMallinfoStats(ProcessMemoryDump* pmd,
                           size_t* total_virtual_size,
-@@ -342,8 +343,10 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+@@ -357,9 +358,11 @@ bool MallocDumpProvider::OnMemoryDump(co
  #elif BUILDFLAG(IS_FUCHSIA)
  // TODO(fuchsia): Port, see https://crbug.com/706592.
  #else
 +#ifdef __GLIBC__
    ReportMallinfoStats(/*pmd=*/nullptr, &total_virtual_size, &resident_size,
                        &allocated_objects_size, &allocated_objects_count);
-+#endif
  #endif
++#endif
  
    MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
-diff --git a/base/process/process_metrics_posix.cc b/base/process/process_metrics_posix.cc
-index ae6d3a698c..10426b6926 100644
+   outer_dump->AddScalar("virtual_size", MemoryAllocatorDump::kUnitsBytes,
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -105,7 +105,7 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
+@@ -107,7 +107,7 @@ void IncreaseFdLimitTo(unsigned int max_
  
  #endif  // !BUILDFLAG(IS_FUCHSIA)
  
@@ -43,7 +40,7 @@ index ae6d3a698c..10426b6926 100644
  namespace {
  
  size_t GetMallocUsageMallinfo() {
-@@ -123,7 +123,7 @@ size_t GetMallocUsageMallinfo() {
+@@ -125,7 +125,7 @@ size_t GetMallocUsageMallinfo() {
  }
  
  }  // namespace
@@ -52,7 +49,7 @@ index ae6d3a698c..10426b6926 100644
          // BUILDFLAG(IS_ANDROID)
  
  size_t ProcessMetrics::GetMallocUsage() {
-@@ -131,9 +131,9 @@ size_t ProcessMetrics::GetMallocUsage() {
+@@ -133,9 +133,9 @@ size_t ProcessMetrics::GetMallocUsage()
    malloc_statistics_t stats = {0};
    malloc_zone_statistics(nullptr, &stats);
    return stats.size_in_use;
@@ -64,8 +61,6 @@ index ae6d3a698c..10426b6926 100644
    // TODO(fuchsia): Not currently exposed. https://crbug.com/735087.
    return 0;
  #endif
-diff --git a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
-index efd957ae35..e54876b3bc 100644
 --- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 +++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 @@ -35,7 +35,7 @@ bool MemoryUsage::IsSupported() {
@@ -77,8 +72,6 @@ index efd957ae35..e54876b3bc 100644
    rusage res;
    if (getrusage(RUSAGE_SELF, &res) == 0) {
      result.max_rss_kb = res.ru_maxrss;
-diff --git a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
-index 7392898797..0bf7c4ad99 100644
 --- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 @@ -125,7 +125,9 @@
@@ -91,8 +84,6 @@ index 7392898797..0bf7c4ad99 100644
  
  /* Define to 1 if you have the <malloc/malloc.h> header file. */
  /* #undef HAVE_MALLOC_MALLOC_H */
-diff --git a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
-index 1a767bcbd5..1ba48de49b 100644
 --- a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 +++ b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 @@ -86,11 +86,11 @@ unsigned Process::getPageSize() {

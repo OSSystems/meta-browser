@@ -13,11 +13,9 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  sandbox/linux/suid/sandbox.c      | 9 +++++++++
  2 files changed, 14 insertions(+)
 
-diff --git a/sandbox/linux/seccomp-bpf/trap.cc b/sandbox/linux/seccomp-bpf/trap.cc
-index cb71a9bb2a..c647ab98e4 100644
 --- a/sandbox/linux/seccomp-bpf/trap.cc
 +++ b/sandbox/linux/seccomp-bpf/trap.cc
-@@ -26,6 +26,11 @@
+@@ -27,6 +27,11 @@
  #include "sandbox/linux/system_headers/linux_seccomp.h"
  #include "sandbox/linux/system_headers/linux_signal.h"
  
@@ -29,8 +27,6 @@ index cb71a9bb2a..c647ab98e4 100644
  namespace {
  
  struct arch_sigsys {
-diff --git a/sandbox/linux/suid/sandbox.c b/sandbox/linux/suid/sandbox.c
-index 2bedcb34f2..b8f1977be2 100644
 --- a/sandbox/linux/suid/sandbox.c
 +++ b/sandbox/linux/suid/sandbox.c
 @@ -44,6 +44,15 @@
