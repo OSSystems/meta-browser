@@ -1,0 +1,45 @@
+Fix build in Python 3.11 (invalid mode: 'rU')
+
+In Python 3.11, 'U' ("universal newline") is no longer accepted in
+the file mode, having been deprecated in Python 3.3. The "universal
+newline" is used by default when a file is open in text mode.
+
+This commit removes the 'U' from the two (non-third-party) places
+it is used.
+
+Bug: 1357549
+Change-Id: I3305707858d8ba7a9f518656a9b97dc1702bbe94
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/3859535
+Reviewed-by: Mike Pinkerton <pinkerton@chromium.org>
+Commit-Queue: Joanmarie Diggs <jdiggs@igalia.com>
+Reviewed-by: Nico Weber <thakis@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1040794}
+
+Patch-Status: Backport [https://chromium-review.googlesource.com/c/chromium/src/+/3859535]
+
+diff --git a/PRESUBMIT_test_mocks.py b/PRESUBMIT_test_mocks.py
+index bc35bbf..0ceb050 100644
+--- a/PRESUBMIT_test_mocks.py
++++ b/PRESUBMIT_test_mocks.py
+@@ -129,7 +129,7 @@
+   def PresubmitLocalPath(self):
+     return self.presubmit_local_path
+ 
+-  def ReadFile(self, filename, mode='rU'):
++  def ReadFile(self, filename, mode='r'):
+     if hasattr(filename, 'AbsoluteLocalPath'):
+        filename = filename.AbsoluteLocalPath()
+     for file_ in self.files:
+diff --git a/tools/grit/grit/util.py b/tools/grit/grit/util.py
+index 98433d1..98e770b8 100644
+--- a/tools/grit/grit/util.py
++++ b/tools/grit/grit/util.py
+@@ -209,7 +209,7 @@
+     mode = 'rb'
+     encoding = None
+   else:
+-    mode = 'rU'
++    mode = 'r'
+ 
+   with io.open(filename, mode, encoding=encoding) as f:
+     return f.read()
