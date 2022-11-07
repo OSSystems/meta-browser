@@ -1,4 +1,4 @@
-From 90f37ac3a60b143b716acc4d990479803d36832c Mon Sep 17 00:00:00 2001
+From ffa6e26c7b5bdc532995d19adbab85d32ae87f42 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] crashpad: Fix build with musl
@@ -7,12 +7,13 @@ musl is left out if we check just for glibc here, actual check could be to check
 
 Upsteam-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  third_party/crashpad/crashpad/util/linux/thread_info.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/third_party/crashpad/crashpad/util/linux/thread_info.h b/third_party/crashpad/crashpad/util/linux/thread_info.h
-index d3f3b2c695..c7c961260e 100644
+index 8b94effefb..6d0654b3a6 100644
 --- a/third_party/crashpad/crashpad/util/linux/thread_info.h
 +++ b/third_party/crashpad/crashpad/util/linux/thread_info.h
 @@ -274,7 +274,7 @@ union FloatContext {

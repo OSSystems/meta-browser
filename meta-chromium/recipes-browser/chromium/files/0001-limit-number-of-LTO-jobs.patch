@@ -1,8 +1,4 @@
-Upstream-Status: Inappropriate
-
-Signed-off-by: Maksim Sisov <msisov@igalia.com>
----
-From ab74e60870e8f515c5b94f90d9b0741492950de6 Mon Sep 17 00:00:00 2001
+From b8384ef181084c630d0073dcb81dfd338da40c42 Mon Sep 17 00:00:00 2001
 From: Maksim Sisov <msisov@igalia.com>
 Date: Wed, 15 Sep 2021 14:29:03 +0300
 Subject: [PATCH] limit number of LTO jobs.
@@ -10,16 +6,21 @@ Subject: [PATCH] limit number of LTO jobs.
 --thinlto-jobs accepts "all" only since llvm 13. Dunfell
 branch uses quite old llvm that doesn't support this keyword.
 Thus, use the previously used number of threads.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Maksim Sisov <msisov@igalia.com>
+
 ---
  build/config/compiler/BUILD.gn     | 12 ++++++------
  build/config/compiler/compiler.gni |  5 +++++
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 0272bf80f31fe..f4a3ec22c9b45 100644
+index d72f810e7e..a8acdbf354 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -642,7 +642,7 @@ config("compiler") {
+@@ -670,7 +670,7 @@ config("compiler") {
  
      if (is_win) {
        ldflags += [
@@ -28,7 +29,7 @@ index 0272bf80f31fe..f4a3ec22c9b45 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -655,11 +655,11 @@ config("compiler") {
+@@ -683,11 +683,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
  
@@ -43,10 +44,10 @@ index 0272bf80f31fe..f4a3ec22c9b45 100644
 +      ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
 +
        if (is_apple) {
-         ldflags += [
-           "-Wl,-cache_path_lto," +
+         _object_path_suffix = ""
+         if (is_ios) {
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 5550eecf14873..c84b69fc72233 100644
+index 17c7d03a83..6cffb95808 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
 @@ -97,6 +97,11 @@ declare_args() {

@@ -1,4 +1,4 @@
-From 63f4679e2dec58d2e806dc10e38dcce50c80074d Mon Sep 17 00:00:00 2001
+From 3e660564c5318079f085596344972f57d680f72a Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] debug: Fix build with musl
@@ -13,12 +13,13 @@ clang-8: error: linker command failed with exit code 1 (use -v to see invocation
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  base/debug/stack_trace.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/base/debug/stack_trace.cc b/base/debug/stack_trace.cc
-index 730fadafdf..ec7dec4cc0 100644
+index 3debc8bd07..0cc88aa79f 100644
 --- a/base/debug/stack_trace.cc
 +++ b/base/debug/stack_trace.cc
 @@ -281,14 +281,14 @@ std::string StackTrace::ToString() const {

@@ -1,0 +1,35 @@
+From 414d4ae81a4504255143416f4cf5a40427ae8d03 Mon Sep 17 00:00:00 2001
+From: Randy MacLeod <Randy.MacLeod@windriver.com>
+Date: Tue, 17 Jan 2023 14:25:00 -0500
+Subject: [PATCH] cast to bool to avoid constexpr error
+
+Upstream-Status: Inappropriate clang-12 only
+Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
+
+---
+ .../blink/renderer/platform/media/web_media_player_impl.cc  | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/blink/renderer/platform/media/web_media_player_impl.cc b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
+index 7bdd703834..4296716fde 100644
+--- a/third_party/blink/renderer/platform/media/web_media_player_impl.cc
++++ b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
+@@ -3881,15 +3881,15 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
+     const T&... values) {
+   std::string strkey = std::string(key);
+ 
+-  if constexpr (Flags & kEncrypted) {
++  if constexpr (bool(Flags & kEncrypted)) {
+     if (is_encrypted_)
+       UmaFunction(strkey + ".EME", values...);
+   }
+ 
+-  if constexpr (Flags & kTotal)
++  if constexpr (bool(Flags & kTotal))
+     UmaFunction(strkey + ".All", values...);
+ 
+-  if constexpr (Flags & kPlaybackType) {
++  if constexpr (bool(Flags & kPlaybackType)) {
+     auto demuxer_type = GetDemuxerType();
+     if (!demuxer_type.has_value())
+       return;

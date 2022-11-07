@@ -1,4 +1,7 @@
-provide __close on musl
+From 1b90c61f1fd4d83054a60ed5d21c6f76f1d23925 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 11 Aug 2021 20:08:33 -0700
+Subject: [PATCH] provide __close on musl
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
@@ -7,6 +10,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  base/files/scoped_file_linux.cc | 14 ++++++++++++--
  1 file changed, 12 insertions(+), 2 deletions(-)
 
+diff --git a/base/files/scoped_file_linux.cc b/base/files/scoped_file_linux.cc
+index e72b5b7248..958f7c2823 100644
 --- a/base/files/scoped_file_linux.cc
 +++ b/base/files/scoped_file_linux.cc
 @@ -7,6 +7,7 @@

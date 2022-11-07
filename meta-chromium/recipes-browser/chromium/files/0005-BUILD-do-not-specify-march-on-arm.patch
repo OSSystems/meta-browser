@@ -1,4 +1,4 @@
-From 23f7c3001ee12b75f08119f638eb90c257308eaf Mon Sep 17 00:00:00 2001
+From 033b928bd5983555f108d948862e4ea7f0c94be6 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Tue, 22 Jan 2019 00:17:41 -0800
 Subject: [PATCH] BUILD: do not specify march on arm
@@ -13,15 +13,16 @@ before overriding these
 Upstream-Status: Inappropriate [OE-Specific]
 
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  build/config/compiler/BUILD.gn | 10 ----------
  1 file changed, 10 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 8c728ce917d39..a9b6aa79472ac 100644
+index 22f47ace0d..ae5bf78cd4 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -890,16 +890,6 @@ config("compiler_cpu_abi") {
+@@ -957,16 +957,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }
@@ -35,6 +36,6 @@ index 8c728ce917d39..a9b6aa79472ac 100644
 -      if (arm_tune != "") {
 -        cflags += [ "-mtune=$arm_tune" ]
 -      }
-     } else if (current_cpu == "arm64") {
-       if (is_android) {
-         # Outline atomics crash on Exynos 9810. http://crbug.com/1272795
+     } else if (current_cpu == "mipsel" && !is_nacl) {
+       ldflags += [ "-Wl,--hash-style=sysv" ]
+       if (custom_toolchain == "") {

@@ -19,11 +19,12 @@ SRC_URI += " \
     file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
+    file://0010-Revert-ios-Fix-breakpoint-in-Swift-files.patch \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
-    file://0012-Build-X11-parts-only-for-ozone_platform_x11.patch \
     file://0013-Fix-html_minifier-script-for-node-v12.patch \
-    file://0014-grit-util-py-remove-deprecated-mode-for-open.patch \
-    file://0015-Avoid-inadvertently-adding-a-wayland-dependency.patch \
+    file://0014-blink-Fix-includes-for-metronome_source.patch \
+    file://0015-drop-gsimple-template-names.patch \
+    file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
 "
 
 SRC_URI:append:libc-musl = "\
@@ -40,7 +41,6 @@ SRC_URI:append:libc-musl = "\
     file://musl/0012-debug-Fix-build-with-musl.patch \
     file://musl/0015-mallopt-is-glibc-specific-API.patch \
     file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
-    file://musl/0019-adjust-thread-stack-sizes.patch \
     file://musl/0020-Fix-tab-crashes-on-musl.patch \
     file://musl/0021-pthread_getname_np.patch \
     file://musl/0022-sys-stat.patch \
@@ -152,6 +152,10 @@ GN_ARGS = " \
 # often isn't compatible, e.g. freetype-2.11 isn't compatible with
 # chromium-94
 GN_ARGS += "use_system_freetype=false"
+
+# Qt support appears to be underdevelopment in Nov 2022 so disable now
+# but a PACKAGECONFIG option should be added when the feature is ready.
+GN_ARGS += "use_qt=false"
 
 # Closure_compile needs to be disabled to avoid pulling in java dependencies,
 # which are typicaly not wanted. It started to happen after https://crrev.com/c/1278470
@@ -320,7 +324,7 @@ GN_ARGS:append:arm = ' \
 '
 # tcmalloc's atomicops-internals-arm-v6plus.h uses the "dmb" instruction that
 # is not available on (some?) ARMv6 models, which causes the build to fail.
-GN_ARGS:append:armv6 = ' use_allocator="none"'
+GN_ARGS:append:armv6 = ' use_partition_alloc_as_malloc=false enable_backup_ref_ptr_support=false'
 # The WebRTC code fails to build on ARMv6 when NEON is enabled.
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
 GN_ARGS:append:armv6 = ' arm_use_neon=false'
@@ -328,7 +332,7 @@ GN_ARGS:append:armv6 = ' arm_use_neon=false'
 # Disable glibc shims on musl
 # tcmalloc does not play well with musl as of M62 (and possibly earlier).
 # https://github.com/gperftools/gperftools/issues/693
-GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_allocator="none"'
+GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_partition_alloc_as_malloc=false enable_backup_ref_ptr_support=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \

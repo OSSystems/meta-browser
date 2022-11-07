@@ -1,4 +1,4 @@
-From 666437740c4f3d6c587688d82251f4ba94aaadbc Mon Sep 17 00:00:00 2001
+From 733559e6f2c26ccbce97354a2341b14c63563dab Mon Sep 17 00:00:00 2001
 From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Date: Tue, 7 Nov 2017 15:24:32 +0100
 Subject: [PATCH] v8: qemu wrapper
@@ -10,13 +10,14 @@ Upstream-Status: Inappropriate [embedder specific]
 
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
+
 ---
  tools/v8_context_snapshot/BUILD.gn | 1 +
  v8/BUILD.gn                        | 4 ++++
  2 files changed, 5 insertions(+)
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index a06eae4ab3217..ba13c92a74bfc 100644
+index 33a147bd79..df178f5b74 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -66,6 +66,7 @@ if (use_v8_context_snapshot) {
@@ -27,12 +28,11 @@ index a06eae4ab3217..ba13c92a74bfc 100644
          "./" + rebase_path(get_label_info(":v8_context_snapshot_generator",
                                            "root_out_dir") +
                                 "/v8_context_snapshot_generator",
-
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 83082271b8..ffc01f3418 100644
+index 78fd8cd2d3..5aca594c1b 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -2029,6 +2029,7 @@ template("run_torque") {
+@@ -1954,6 +1954,7 @@ template("run_torque") {
      }
  
      args = [
@@ -40,7 +40,7 @@ index 83082271b8..ffc01f3418 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -2161,6 +2162,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2086,6 +2087,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -48,7 +48,7 @@ index 83082271b8..ffc01f3418 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -2206,6 +2208,7 @@ template("run_mksnapshot") {
+@@ -2131,6 +2133,7 @@ template("run_mksnapshot") {
      data = []
  
      args = [
@@ -56,7 +56,7 @@ index 83082271b8..ffc01f3418 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -6313,6 +6316,7 @@ if (v8_enable_i18n_support) {
+@@ -6241,6 +6244,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
  
      args = [

@@ -20,7 +20,7 @@ version of nodejs than other branches.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/polymer/html_minifier.js b/tools/polymer/html_minifier.js
-index d61340a8d99c8..77b0c409b3d2f 100644
+index e86ef11a66..d2f9b1352d 100644
 --- a/tools/polymer/html_minifier.js
 +++ b/tools/polymer/html_minifier.js
 @@ -14,7 +14,7 @@ const minify =

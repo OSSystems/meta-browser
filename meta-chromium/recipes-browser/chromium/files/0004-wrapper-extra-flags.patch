@@ -1,4 +1,4 @@
-From f15ffdca46111ce5b5d33f1e7cc2eb71ba30d605 Mon Sep 17 00:00:00 2001
+From 1d75677445177bc9c16bb7d0fae607d0c5e82c0a Mon Sep 17 00:00:00 2001
 From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 Date: Wed, 8 Nov 2017 16:43:47 +0100
 Subject: [PATCH] wrapper: extra flags
@@ -9,12 +9,13 @@ extra flags to it by default.
 Upstream-Status: Inappropriate [embedder specific]
 
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+
 ---
  chrome/installer/linux/common/wrapper | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/installer/linux/common/wrapper b/chrome/installer/linux/common/wrapper
-index 63699e047f3ac..0295e9879de78 100755
+index 20c6e8fe29..d92a60b5f3 100755
 --- a/chrome/installer/linux/common/wrapper
 +++ b/chrome/installer/linux/common/wrapper
 @@ -45,5 +45,7 @@ exec < /dev/null

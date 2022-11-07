@@ -1,4 +1,4 @@
-From e1fcc73722f6f5e3b869d077473d6ac7f5493a99 Mon Sep 17 00:00:00 2001
+From 38aef4b65a03ea13c2a9bdf02ce7987da83cfbe3 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] provide res_ninit and nclose APIs on non-glibc linux
@@ -10,12 +10,13 @@ Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 ---
- net/dns/dns_reloader.cc            |  3 +--
- net/dns/host_resolver_manager.cc   |  3 +--
- net/dns/host_resolver_proc.cc      |  3 +--
- net/dns/public/scoped_res_state.cc | 14 +++-----------
- 4 files changed, 6 insertions(+), 17 deletions(-)
+ net/dns/dns_reloader.cc              |  3 +--
+ net/dns/host_resolver_system_task.cc |  6 ++----
+ net/dns/public/scoped_res_state.cc   | 14 +++-----------
+ 3 files changed, 6 insertions(+), 17 deletions(-)
 
+diff --git a/net/dns/dns_reloader.cc b/net/dns/dns_reloader.cc
+index bfd2de11f9..fef7569c13 100644
 --- a/net/dns/dns_reloader.cc
 +++ b/net/dns/dns_reloader.cc
 @@ -6,8 +6,7 @@
@@ -28,21 +29,21 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
  #include <resolv.h>
  
---- a/net/dns/host_resolver_manager.cc
-+++ b/net/dns/host_resolver_manager.cc
-@@ -3126,8 +3126,7 @@ HostResolverManager::HostResolverManager
-   }
-   if (system_dns_config_notifier_)
-     system_dns_config_notifier_->AddObserver(this);
+diff --git a/net/dns/host_resolver_system_task.cc b/net/dns/host_resolver_system_task.cc
+index c067da3e85..010719971c 100644
+--- a/net/dns/host_resolver_system_task.cc
++++ b/net/dns/host_resolver_system_task.cc
+@@ -351,8 +351,7 @@ void HostResolverSystemTask::OnLookupComplete(const uint32_t attempt_number,
+ }
+ 
+ void EnsureSystemHostResolverCallReady() {
 -#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_OPENBSD) && \
 -    !BUILDFLAG(IS_ANDROID)
 +#if defined(__GLIBC__)
    EnsureDnsReloaderInit();
- #endif
- 
---- a/net/dns/host_resolver_proc.cc
-+++ b/net/dns/host_resolver_proc.cc
-@@ -192,8 +192,7 @@ int SystemHostResolverCall(const std::st
+ #elif BUILDFLAG(IS_WIN)
+   EnsureWinsockInit();
+@@ -437,8 +436,7 @@ int SystemHostResolverCall(const std::string& host,
    base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                  base::BlockingType::WILL_BLOCK);
  
@@ -52,6 +53,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    DnsReloaderMaybeReload();
  #endif
    auto [ai, err, os_error] = AddressInfo::Get(host, hints, nullptr, network);
+diff --git a/net/dns/public/scoped_res_state.cc b/net/dns/public/scoped_res_state.cc
+index 2743697bf6..36dc8adbf5 100644
 --- a/net/dns/public/scoped_res_state.cc
 +++ b/net/dns/public/scoped_res_state.cc
 @@ -13,7 +13,7 @@

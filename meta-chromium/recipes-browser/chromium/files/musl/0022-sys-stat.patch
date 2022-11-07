@@ -1,4 +1,7 @@
-Include sys/stat.h for stat64 definition
+From d8b3fa55902f2c6fa60103b9b89c991036105496 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 29 Sep 2021 12:51:17 -0700
+Subject: [PATCH] Include sys/stat.h for stat64 definition
 
 fixes
 In file included from ../../base/files/file_enumerator.cc:5:
@@ -19,7 +22,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/base/files/file.h b/base/files/file.h
-index 6272fccca2..ea8e1e4371 100644
+index c252375ecd..625c137d2d 100644
 --- a/base/files/file.h
 +++ b/base/files/file.h
 @@ -8,6 +8,7 @@

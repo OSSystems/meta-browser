@@ -1,4 +1,4 @@
-From 3a9af2d8e1ed2ffb7bba91bd218cc9b7932ecb3b Mon Sep 17 00:00:00 2001
+From 5465f3e79f961abcf911586ddd3a41c13e1906cb Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] breakpad: Fix build with musl
@@ -9,16 +9,17 @@ Subject: [PATCH] breakpad: Fix build with musl
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  .../breakpad/src/client/linux/handler/exception_handler.cc  | 6 +++++-
  .../breakpad/breakpad/src/common/linux/elf_core_dump.h      | 1 +
  2 files changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc b/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
-index 499be0a986..d0b1ca51b8 100644
+index 36de9be320..bdd31b5172 100644
 --- a/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
 +++ b/third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.cc
-@@ -489,8 +489,10 @@ bool ExceptionHandler::SimulateSignalDelivery(int sig) {
+@@ -488,8 +488,10 @@ bool ExceptionHandler::SimulateSignalDelivery(int sig) {
    // ExceptionHandler::HandleSignal().
    siginfo.si_code = SI_USER;
    siginfo.si_pid = getpid();
@@ -30,7 +31,7 @@ index 499be0a986..d0b1ca51b8 100644
    return HandleSignal(sig, &siginfo, &context);
  }
  
-@@ -675,9 +677,11 @@ bool ExceptionHandler::WriteMinidump() {
+@@ -674,9 +676,11 @@ bool ExceptionHandler::WriteMinidump() {
    sys_prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
  
    CrashContext context;
@@ -43,10 +44,10 @@ index 499be0a986..d0b1ca51b8 100644
  #if defined(__i386__)
    // In CPUFillFromUContext in minidumpwriter.cc the stack pointer is retrieved
 diff --git a/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h b/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
-index c8117a0e26..a2e74883bf 100644
+index 4f27179f47..343e950530 100644
 --- a/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
 +++ b/third_party/breakpad/breakpad/src/common/linux/elf_core_dump.h
-@@ -37,6 +37,7 @@
+@@ -36,6 +36,7 @@
  #include <limits.h>
  #include <link.h>
  #include <stddef.h>

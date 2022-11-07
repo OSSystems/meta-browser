@@ -1,4 +1,4 @@
-From bec6f5416a5a0202ffc1b6c10b313a69f0e0de52 Mon Sep 17 00:00:00 2001
+From 880ad50536799f214c98d040fbc74cf707b991a9 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] mallinfo implementation is glibc specific
@@ -6,32 +6,20 @@ Subject: [PATCH] mallinfo implementation is glibc specific
 Upstream-Status: Pending
 Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
---- a/base/trace_event/malloc_dump_provider.cc
-+++ b/base/trace_event/malloc_dump_provider.cc
-@@ -185,6 +185,7 @@ void ReportAppleAllocStats(size_t* total
- 
- #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
-     (!BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
-+     defined(__GLIBC__) && \
-      !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_FUCHSIA))
- void ReportMallinfoStats(ProcessMemoryDump* pmd,
-                          size_t* total_virtual_size,
-@@ -357,9 +358,11 @@ bool MallocDumpProvider::OnMemoryDump(co
- #elif BUILDFLAG(IS_FUCHSIA)
- // TODO(fuchsia): Port, see https://crbug.com/706592.
- #else
-+#ifdef __GLIBC__
-   ReportMallinfoStats(/*pmd=*/nullptr, &total_virtual_size, &resident_size,
-                       &allocated_objects_size, &allocated_objects_count);
- #endif
-+#endif
- 
-   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
-   outer_dump->AddScalar("virtual_size", MemoryAllocatorDump::kUnitsBytes,
+ base/process/process_metrics_posix.cc                     | 8 ++++----
+ base/trace_event/malloc_dump_provider.cc                  | 3 +++
+ .../llvm-10.0/configs/linux/include/llvm/Config/config.h  | 2 ++
+ .../third_party/llvm-subzero/lib/Support/Unix/Process.inc | 4 ++--
+ .../tflite/src/tensorflow/lite/profiling/memory_info.cc   | 2 +-
+ 5 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/base/process/process_metrics_posix.cc b/base/process/process_metrics_posix.cc
+index 873a328aa2..5d7d8c11ad 100644
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -107,7 +107,7 @@ void IncreaseFdLimitTo(unsigned int max_
+@@ -107,7 +107,7 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
  
  #endif  // !BUILDFLAG(IS_FUCHSIA)
  
@@ -49,7 +37,7 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
          // BUILDFLAG(IS_ANDROID)
  
  size_t ProcessMetrics::GetMallocUsage() {
-@@ -133,9 +133,9 @@ size_t ProcessMetrics::GetMallocUsage()
+@@ -133,9 +133,9 @@ size_t ProcessMetrics::GetMallocUsage() {
    malloc_statistics_t stats = {0};
    malloc_zone_statistics(nullptr, &stats);
    return stats.size_in_use;
@@ -61,17 +49,31 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    // TODO(fuchsia): Not currently exposed. https://crbug.com/735087.
    return 0;
  #endif
---- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
-+++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
-@@ -35,7 +35,7 @@ bool MemoryUsage::IsSupported() {
+diff --git a/base/trace_event/malloc_dump_provider.cc b/base/trace_event/malloc_dump_provider.cc
+index f056277d4b..515d779cce 100644
+--- a/base/trace_event/malloc_dump_provider.cc
++++ b/base/trace_event/malloc_dump_provider.cc
+@@ -186,6 +186,7 @@ void ReportAppleAllocStats(size_t* total_virtual_size,
  
- MemoryUsage GetMemoryUsage() {
-   MemoryUsage result;
--#ifdef __linux__
-+#if defined(__linux__) && defined(__GLIBC__)
-   rusage res;
-   if (getrusage(RUSAGE_SELF, &res) == 0) {
-     result.max_rss_kb = res.ru_maxrss;
+ #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
+     (!BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
++     defined(__GLIBC__) && \
+      !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_FUCHSIA))
+ void ReportMallinfoStats(ProcessMemoryDump* pmd,
+                          size_t* total_virtual_size,
+@@ -358,8 +359,10 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+ #elif BUILDFLAG(IS_FUCHSIA)
+ // TODO(fuchsia): Port, see https://crbug.com/706592.
+ #else
++#ifdef __GLIBC__
+   ReportMallinfoStats(/*pmd=*/nullptr, &total_virtual_size, &resident_size,
+                       &allocated_objects_size, &allocated_objects_count);
++#endif
+ #endif
+ 
+   MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
+diff --git a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
+index 7392898797..0bf7c4ad99 100644
 --- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 +++ b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 @@ -125,7 +125,9 @@
@@ -84,6 +86,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  
  /* Define to 1 if you have the <malloc/malloc.h> header file. */
  /* #undef HAVE_MALLOC_MALLOC_H */
+diff --git a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
+index 1a767bcbd5..1ba48de49b 100644
 --- a/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 +++ b/third_party/swiftshader/third_party/llvm-subzero/lib/Support/Unix/Process.inc
 @@ -86,11 +86,11 @@ unsigned Process::getPageSize() {
@@ -100,3 +104,16 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
    struct mallinfo mi;
    mi = ::mallinfo();
    return mi.uordblks;
+diff --git a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
+index 4f1d517869..0afd270817 100644
+--- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
++++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
+@@ -38,7 +38,7 @@ bool MemoryUsage::IsSupported() {
+ 
+ MemoryUsage GetMemoryUsage() {
+   MemoryUsage result;
+-#ifdef __linux__
++#if defined(__linux__) && defined(__GLIBC__)
+   rusage res;
+   if (getrusage(RUSAGE_SELF, &res) == 0) {
+     result.mem_footprint_kb = res.ru_maxrss;
