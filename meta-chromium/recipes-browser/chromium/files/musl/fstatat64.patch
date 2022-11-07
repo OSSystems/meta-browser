@@ -1,4 +1,7 @@
-Undefine fstatat64 on musl before calling fstatat64 syscall
+From e59e3fc80614a133aac9efd2edbe745977f9468a Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Wed, 11 May 2022 09:02:52 -0700
+Subject: [PATCH] Undefine fstatat64 on musl before calling fstatat64 syscall
 
 Fixes
 
@@ -32,6 +35,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  third_party/lss/linux_syscall_support.h | 4 ++++
  1 file changed, 4 insertions(+)
 
+diff --git a/third_party/lss/linux_syscall_support.h b/third_party/lss/linux_syscall_support.h
+index 99a4b44491..a0a83a4aa4 100644
 --- a/third_party/lss/linux_syscall_support.h
 +++ b/third_party/lss/linux_syscall_support.h
 @@ -4947,9 +4947,13 @@ struct kernel_statx {

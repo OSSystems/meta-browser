@@ -1,4 +1,4 @@
-From 15e70cd705e32a742e4d31c4dcfaf7151c891fdb Mon Sep 17 00:00:00 2001
+From c0756cc5380474c8f71bf9c2097619bc6744907c Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] blink: Fix build with musl
@@ -8,12 +8,13 @@ other libcs e.g. musl are also options on linux
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  third_party/blink/renderer/platform/wtf/stack_util.cc | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/blink/renderer/platform/wtf/stack_util.cc b/third_party/blink/renderer/platform/wtf/stack_util.cc
-index 2ea99162e4..b84bae4065 100644
+index c46b195147..e229a69c30 100644
 --- a/third_party/blink/renderer/platform/wtf/stack_util.cc
 +++ b/third_party/blink/renderer/platform/wtf/stack_util.cc
 @@ -29,7 +29,7 @@ size_t GetUnderestimatedStackSize() {

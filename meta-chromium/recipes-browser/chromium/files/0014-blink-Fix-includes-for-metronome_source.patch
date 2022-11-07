@@ -1,0 +1,38 @@
+From c3fe8f03a581ec4eb794e31be9a3be02d87803c7 Mon Sep 17 00:00:00 2001
+From: Brian Ho <hob@chromium.org>
+Date: Mon, 14 Nov 2022 19:42:30 +0000
+Subject: [PATCH] blink: Fix includes for metronome_source
+
+A recent CL [1] added a vector of callbacks but did not add a
+corresponding invlude for std::vector. As a result, this breaks
+compilation on certain builds (ChromeOS amd64-generic official).
+
+This CL adds the proper include.
+
+[1] https://chromium-review.googlesource.com/c/chromium/src/+/4006113
+
+Upstream-Status: Backport [ 7d2ecc15a0922 ]
+Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
+
+Change-Id: I5fc15cc24bc8c248c1a4e8501464d82b1c01ac17
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/4021280
+Commit-Queue: Brian Ho <hob@chromium.org>
+Reviewed-by: Mirko Bonadei <mbonadei@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1071130}
+
+---
+ third_party/webrtc_overrides/metronome_source.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/webrtc_overrides/metronome_source.h b/third_party/webrtc_overrides/metronome_source.h
+index f62f0ab2e7..361e71ee0b 100644
+--- a/third_party/webrtc_overrides/metronome_source.h
++++ b/third_party/webrtc_overrides/metronome_source.h
+@@ -7,6 +7,7 @@
+ 
+ #include <atomic>
+ #include <set>
++#include <vector>
+ 
+ #include "base/callback.h"
+ #include "base/memory/ref_counted.h"

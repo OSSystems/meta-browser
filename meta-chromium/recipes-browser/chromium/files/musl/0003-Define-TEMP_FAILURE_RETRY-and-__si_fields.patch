@@ -1,4 +1,4 @@
-From 9380867d3c99a5d8f15b2ca7552253c1e36077af Mon Sep 17 00:00:00 2001
+From ba97f6ecfe7213dda439038e2fd0e0de9e943576 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] Define TEMP_FAILURE_RETRY and __si_fields
@@ -8,11 +8,14 @@ TEMP_FAILURE_RETRY is defined if its not already defined
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  sandbox/linux/seccomp-bpf/trap.cc | 5 +++++
  sandbox/linux/suid/sandbox.c      | 9 +++++++++
  2 files changed, 14 insertions(+)
 
+diff --git a/sandbox/linux/seccomp-bpf/trap.cc b/sandbox/linux/seccomp-bpf/trap.cc
+index 0ef42807ae..7494bba8e3 100644
 --- a/sandbox/linux/seccomp-bpf/trap.cc
 +++ b/sandbox/linux/seccomp-bpf/trap.cc
 @@ -27,6 +27,11 @@
@@ -27,6 +30,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  namespace {
  
  struct arch_sigsys {
+diff --git a/sandbox/linux/suid/sandbox.c b/sandbox/linux/suid/sandbox.c
+index 2180b9d137..14be27b53d 100644
 --- a/sandbox/linux/suid/sandbox.c
 +++ b/sandbox/linux/suid/sandbox.c
 @@ -44,6 +44,15 @@

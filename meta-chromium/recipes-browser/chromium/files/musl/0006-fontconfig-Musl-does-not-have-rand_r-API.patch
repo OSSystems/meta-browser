@@ -1,4 +1,4 @@
-From 13ab115c734877120f417c33f1c7d3f344ea3480 Mon Sep 17 00:00:00 2001
+From d7c522426984f33d650a5b1ec97a9239510783d0 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 13 Feb 2019 09:51:14 -0800
 Subject: [PATCH] fontconfig: Musl does not have random_r() API
@@ -7,6 +7,7 @@ Mark it to be glibc specific
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+
 ---
  third_party/fontconfig/include/config.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

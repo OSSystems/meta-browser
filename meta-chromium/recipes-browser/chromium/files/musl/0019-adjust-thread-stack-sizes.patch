@@ -1,4 +1,4 @@
-From bd123fec0dc81f72a9e26b00f5dce3f965ea5e71 Mon Sep 17 00:00:00 2001
+From cccb968a5847b68e4a43214e72be0ebbe6a8be13 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Fri, 19 Mar 2021 20:09:10 -0700
 Subject: [PATCH] adjust thread stack sizes
@@ -8,27 +8,18 @@ adjust the expecations accordingly
 
 Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+Signed-off-by: Randy MacLeod <randy.macleod@windriver.com>
+
 ---
- base/threading/platform_thread_linux.cc          | 3 ++-
  base/threading/platform_thread_unittest.cc       | 2 +-
  chrome/browser/shutdown_signal_handlers_posix.cc | 8 ++++++++
- 3 files changed, 11 insertions(+), 2 deletions(-)
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
---- a/base/threading/platform_thread_linux.cc
-+++ b/base/threading/platform_thread_linux.cc
-@@ -469,7 +469,8 @@ void TerminateOnThread() {}
- 
- size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
- #if !defined(THREAD_SANITIZER)
--  return 0;
-+  // use 2mb to avoid running out of space. This is what android uses
-+  return 2 * (1 << 20);
- #else
-   // ThreadSanitizer bloats the stack heavily. Evidence has been that the
-   // default stack size isn't enough for some browser tests.
+diff --git a/base/threading/platform_thread_unittest.cc b/base/threading/platform_thread_unittest.cc
+index 92d922f585..27f28a65ca 100644
 --- a/base/threading/platform_thread_unittest.cc
 +++ b/base/threading/platform_thread_unittest.cc
-@@ -526,7 +526,7 @@ TEST(PlatformThreadTest, GetDefaultThrea
+@@ -526,7 +526,7 @@ TEST(PlatformThreadTest, GetDefaultThreadStackSize) {
      ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) &&                \
       !defined(THREAD_SANITIZER)) ||                                    \
      (BUILDFLAG(IS_ANDROID) && !defined(ADDRESS_SANITIZER))
@@ -37,6 +28,8 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  #else
    EXPECT_GT(stack_size, 0u);
    EXPECT_LT(stack_size, 20u * (1 << 20));
+diff --git a/chrome/browser/shutdown_signal_handlers_posix.cc b/chrome/browser/shutdown_signal_handlers_posix.cc
+index b915ea58e5..293138ed0d 100644
 --- a/chrome/browser/shutdown_signal_handlers_posix.cc
 +++ b/chrome/browser/shutdown_signal_handlers_posix.cc
 @@ -188,11 +188,19 @@ void InstallShutdownSignalHandlers(

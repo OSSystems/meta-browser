@@ -1,4 +1,4 @@
-From 8cd645b4bc06b14d9296df1177e417e725e4036e Mon Sep 17 00:00:00 2001
+From 0dcae7668b878b7db5da83643a8dfd7709865d3b Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 22 Jan 2021 00:02:25 +0800
 Subject: [PATCH] avoid link latomic failure on CentOS 8 host
@@ -11,16 +11,17 @@ Upstream-Status: Inappropriate [oe specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
+
 ---
  base/BUILD.gn               | 2 ++
  build/config/linux/BUILD.gn | 2 ++
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index fb175ca07c990..f0e998aa6699f 100644
+index 7662d4fc55..8a2879a50b 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1541,7 +1541,9 @@ mixed_component("base") {
+@@ -1569,7 +1569,9 @@ mixed_component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -31,7 +32,7 @@ index fb175ca07c990..f0e998aa6699f 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index d304d081009f9..10232ba4181f3 100644
+index 8c377163a5..ed5cf517e2 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -40,7 +40,9 @@ config("runtime_library") {
