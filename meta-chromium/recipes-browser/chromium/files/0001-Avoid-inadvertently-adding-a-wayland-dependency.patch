@@ -1,0 +1,42 @@
+From e33cd253ab9bdf21b175f9a3a60f4dbfb8e1a73e Mon Sep 17 00:00:00 2001
+From: Tristan van Berkom <tristan.van.berkom@gmail.com>
+Date: Fri, 23 Sep 2022 18:00:56 +0000
+Subject: [PATCH] Avoid inadvertently adding a wayland dependency
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This BUILD.gn adds libWaylandClient.[cpp,h] to the sources on linux
+when using the ozone wayland backend, but adds a dependency on
+libwayland-client regardless of the ozone backend.
+
+This patch avoids adding the dependency when not building the
+wayland ozone backend.
+
+This fixes #177 (https://bugs.chromium.org/p/swiftshader/issues/detail?id=177)
+
+Change-Id: Ia1d58d200d1059e9737933431b3f9334ca545653
+Reviewed-on: https://swiftshader-review.googlesource.com/c/SwiftShader/+/68489
+Commit-Queue: Alexis Hétu <sugoi@google.com>
+Reviewed-by: Alexis Hétu <sugoi@google.com>
+Tested-by: Alexis Hétu <sugoi@google.com>
+---
+ src/WSI/BUILD.gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/swiftshader/src/WSI/BUILD.gn b/third_party/swiftshader/src/WSI/BUILD.gn
+index 4709332e2..c53a1c9c5 100644
+--- a/third_party/swiftshader/src/WSI/BUILD.gn
++++ b/third_party/swiftshader/src/WSI/BUILD.gn
+@@ -87,7 +87,7 @@ swiftshader_source_set("WSI") {
+     "../Vulkan:swiftshader_libvulkan_headers",
+   ]
+ 
+-  if (is_linux && !use_system_libwayland) {
++  if (is_linux && ozone_platform_wayland && !use_system_libwayland) {
+     # Use third-party targets
+     deps += [ "$wayland_gn_dir:wayland_client" ]
+   }
+-- 
+2.36.0.rc2.17.g4027e30c53
+
