@@ -23,6 +23,7 @@ SRC_URI += " \
     file://0012-Build-X11-parts-only-for-ozone_platform_x11.patch \
     file://0013-Fix-html_minifier-script-for-node-v12.patch \
     file://0014-grit-util-py-remove-deprecated-mode-for-open.patch \
+    file://0001-Avoid-inadvertently-adding-a-wayland-dependency.patch \
 "
 
 SRC_URI:append:libc-musl = "\
