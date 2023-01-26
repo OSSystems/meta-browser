@@ -16,6 +16,10 @@ DEPENDS += "\
         libxtst \
 "
 
+# Loaded at runtime.
+# https://source.chromium.org/chromium/chromium/src/+/main:ui/gfx/x/xlib_support.cc
+RDEPENDS:${PN} += "libx11-xcb"
+
 # Ozone is default path on Linux since M95.
 # Disable all backends except x11 to ensure this is
 # x11 only recipe.
