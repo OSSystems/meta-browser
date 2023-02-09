@@ -19,10 +19,8 @@ SRC_URI += " \
     file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
-    file://0010-Revert-ios-Fix-breakpoint-in-Swift-files.patch \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
     file://0013-Fix-html_minifier-script-for-node-v12.patch \
-    file://0014-blink-Fix-includes-for-metronome_source.patch \
     file://0015-drop-gsimple-template-names.patch \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
 "
@@ -69,6 +67,7 @@ DEPENDS += " \
     gtk+3 \
     jpeg \
     libdrm \
+    libffi \
     libwebp \
     libxkbcommon \
     libxslt \

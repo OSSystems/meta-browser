@@ -2,7 +2,7 @@
 """
 This script can be used to generate LIC_FILES_CHKSUM in chromium.inc.
 
-It uses Chromium's own tools/licenses.py script to scan for third_party
+It uses Chromium's own tools/licenses/licenses.py script to scan for third_party
 directories and license files. This means its output is generated on a
 best-effort basis, as some directories are non-compliant upstream or may not be
 found. It might also include directories which are not used in a
@@ -52,7 +52,7 @@ def find_chromium_licenses(chromium_root):
         import licenses
     except ImportError:
         raise ImportError('Failed to import licenses.py. Make sure %s '
-                          'contains tools/licenses.py.' % chromium_root)
+                          'contains tools/licenses/licenses.py.' % chromium_root)
 
     # Make sure the main Chromium LICENSE file is always present.
     license_files = set([os.path.join(chromium_root, 'LICENSE')])
@@ -101,10 +101,10 @@ if __name__ == '__main__':
                         'overwritten)')
     args = parser.parse_args()
 
-    tools_dir = os.path.join(args.chromium_root, 'tools')
-    if not os.path.isdir(tools_dir):
-        print('%s does not look like a valid directory.' % tools_dir)
+    tools_licenses_dir = os.path.join(args.chromium_root, 'tools/licenses')
+    if not os.path.isdir(tools_licenses_dir):
+        print('%s does not look like a valid directory.' % tools_licenses_dir)
         sys.exit(1)
-    sys.path = [tools_dir] + sys.path
+    sys.path = [tools_licenses_dir] + sys.path
 
     print_license_list(args.chromium_root, args.output_file)

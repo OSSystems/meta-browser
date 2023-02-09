@@ -13,13 +13,13 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index ae5bf78cd4..da79165261 100644
+index 08066ef5c4967..afe2be427e8f3 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1547,6 +1547,11 @@ config("default_warnings") {
+@@ -1562,6 +1562,11 @@ config("default_warnings") {
        cflags += [
          "-Wenum-compare-conditional",
- 
+
 +        # Disable unknown warnings, since system clang may not have
 +        # backported newer warning yet unlike internal clang that
 +        # chromium uses.
