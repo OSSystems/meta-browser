@@ -18,10 +18,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 7662d4fc55..8a2879a50b 100644
+index 904eaff4687de..1f192d024033a 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1569,7 +1569,9 @@ mixed_component("base") {
+@@ -1550,7 +1550,9 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -32,13 +32,13 @@ index 7662d4fc55..8a2879a50b 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index 8c377163a5..ed5cf517e2 100644
+index 131bb71d1d3b8..20f918ab82c9b 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -40,7 +40,9 @@ config("runtime_library") {
      defines = [ "OS_CHROMEOS" ]
    }
- 
+
 +  # Only target requires <atomic>
    if ((!is_chromeos || default_toolchain != "//build/toolchain/cros:target") &&
 +      (current_toolchain != host_toolchain) &&

@@ -21,10 +21,10 @@ Rebased-by: Randy MacLeod <randy.macleod@windriver.com>
  1 file changed, 38 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index a8acdbf354..22f47ace0d 100644
+index fe41eb6378372..6875b93d4f3cd 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -958,11 +958,6 @@ config("compiler_cpu_abi") {
+@@ -973,11 +973,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -36,7 +36,7 @@ index a8acdbf354..22f47ace0d 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -972,12 +967,6 @@ config("compiler_cpu_abi") {
+@@ -987,12 +982,6 @@ config("compiler_cpu_abi") {
        if (arm_tune != "") {
          cflags += [ "-mtune=$arm_tune" ]
        }
@@ -49,7 +49,7 @@ index a8acdbf354..22f47ace0d 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -985,9 +974,6 @@ config("compiler_cpu_abi") {
+@@ -1000,9 +989,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +59,7 @@ index a8acdbf354..22f47ace0d 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1067,8 +1053,6 @@ config("compiler_cpu_abi") {
+@@ -1082,8 +1068,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +68,7 @@ index a8acdbf354..22f47ace0d 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1116,9 +1100,6 @@ config("compiler_cpu_abi") {
+@@ -1131,9 +1115,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -78,7 +78,7 @@ index a8acdbf354..22f47ace0d 100644
            }
          } else {
            cflags += [
-@@ -1176,8 +1157,6 @@ config("compiler_cpu_abi") {
+@@ -1191,8 +1172,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -87,7 +87,7 @@ index a8acdbf354..22f47ace0d 100644
          } else {
            cflags += [
              "-EB",
-@@ -1339,23 +1318,6 @@ config("compiler_deterministic") {
+@@ -1354,23 +1333,6 @@ config("compiler_deterministic") {
        }
      }
    }
@@ -109,5 +109,5 @@ index a8acdbf354..22f47ace0d 100644
 -    }
 -  }
  }
- 
+
  config("clang_revision") {
