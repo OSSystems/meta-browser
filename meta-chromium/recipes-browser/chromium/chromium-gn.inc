@@ -475,12 +475,22 @@ do_install() {
 	# modifying the dummy "CHROME_EXTRA_ARGS" line
 	sed -i "s/^CHROME_EXTRA_ARGS=\"\"/CHROME_EXTRA_ARGS=\"${CHROMIUM_EXTRA_ARGS}\"/" ${D}${libdir}/chromium/chromium-wrapper
 
-	# This is ANGLE, not to be confused with the similarly named files under swiftshader/
+	# ANGLE.
 	if [ -e libEGL.so ]; then
-		install -m 0755 libEGL.so ${D}${libdir}/chromium/
+		install -m 0644 libEGL.so ${D}${libdir}/chromium/
+		install -m 0644 libGLESv2.so ${D}${libdir}/chromium/
 	fi
-	if [ -e libGLESv2.so ]; then
-		install -m 0755 libGLESv2.so ${D}${libdir}/chromium/
+
+	# libvulkan (for ANGLE).
+	if [ -e libvulkan.so.1 ]; then
+		install -m 0644 libvulkan.so.1 ${D}${libdir}/chromium/
+	fi
+
+	# Swiftshader VK.
+	if [ -e libvk_swiftshader.so ]; then
+		install -m 0644 libvk_swiftshader.so ${D}${libdir}/chromium/
+		# This is needed for ANGLE to find libvk_swiftshader.so.
+		install -m 0644 vk_swiftshader_icd.json ${D}${libdir}/chromium/
 	fi
 
 	if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'component-build', '', d)}" ]; then
@@ -492,13 +502,6 @@ do_install() {
 	# So we simply check whether it exists in all cases and ship it.
 	if [ -e libminigbm.so ]; then
 		install -m 0755 libminigbm.so ${D}${libdir}/chromium/
-	fi
-
-	# Swiftshader is only built for x86 and x86-64.
-	if [ -d "swiftshader" ]; then
-		install -d ${D}${libdir}/chromium/swiftshader
-		install -m 0644 swiftshader/libEGL.so ${D}${libdir}/chromium/swiftshader/
-		install -m 0644 swiftshader/libGLESv2.so ${D}${libdir}/chromium/swiftshader/
 	fi
 
 	# ChromeDriver.
