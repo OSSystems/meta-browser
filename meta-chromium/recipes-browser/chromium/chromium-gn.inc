@@ -33,6 +33,7 @@ SRC_URI += "\
     file://0016-Disable-crabbyavif-to-fix-build-errors.patch \
     file://0017-rust-Use-adler-instead-of-adler2.patch \
     file://0018-third_party-node-update_node_binaries-Update-nodejs-.patch \
+    file://0019-Reduce-minimum-browser-window-width-to-480px.patch \
 "
 
 # Missing third_party sources.
