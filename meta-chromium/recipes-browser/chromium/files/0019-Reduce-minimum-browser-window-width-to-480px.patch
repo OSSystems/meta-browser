@@ -1,0 +1,37 @@
+From 567930b5887c80f666433ba78810cab37cc1f680 Mon Sep 17 00:00:00 2001
+From: Marek Vasut <marex@denx.de>
+Date: Wed, 1 Mar 2023 23:54:47 +0100
+Subject: [PATCH] Reduce minimum browser window width to 480px
+
+The TST043015CNHX panel is a 480x272 panel. Chromium browser limits the
+minimum window width to 500px since commits:
+
+6b0ecc1e4532c ("Set lower bound on contents pane size.")
+580d6900dc7fc ("In tab dragging, the window size should be larger than its minimum size.")
+
+To make chromium browser usable on those tiny panels as well, reduce
+the minimum window width to 480px. The upstreaming of this change is
+in progress.
+
+Upstream-Status: Pending
+Signed-off-by: Marek Vasut <marex@denx.de>
+---
+ chrome/browser/ui/views/frame/browser_view_layout.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/chrome/browser/ui/views/frame/browser_view_layout.h b/chrome/browser/ui/views/frame/browser_view_layout.h
+index 9fc925e06e5e9..9346f321476c3 100644
+--- a/chrome/browser/ui/views/frame/browser_view_layout.h
++++ b/chrome/browser/ui/views/frame/browser_view_layout.h
+@@ -48,7 +48,7 @@ class BrowserViewLayout : public views::LayoutManager {
+   // very small window, even on large monitors (which is why a minimum height is
+   // not specified). This value is used for the main browser window only, not
+   // for popups.
+-  static constexpr int kMainBrowserContentsMinimumWidth = 500;
++  static constexpr int kMainBrowserContentsMinimumWidth = 480;
+ 
+   // |browser_view| may be null in tests.
+   BrowserViewLayout(std::unique_ptr<BrowserViewLayoutDelegate> delegate,
+-- 
+2.39.2
+
