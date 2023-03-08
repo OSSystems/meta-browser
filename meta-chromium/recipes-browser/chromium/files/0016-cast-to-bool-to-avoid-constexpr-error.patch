@@ -11,10 +11,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/third_party/blink/renderer/platform/media/web_media_player_impl.cc b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
-index 8ee5b92bff83f..8f7cca2151703 100644
+index 8449a7879e7bf..07c4d8002b221 100644
 --- a/third_party/blink/renderer/platform/media/web_media_player_impl.cc
 +++ b/third_party/blink/renderer/platform/media/web_media_player_impl.cc
-@@ -3924,15 +3924,15 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
+@@ -3685,15 +3685,15 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
      const T&... values) {
    std::string strkey = std::string(key);
 
