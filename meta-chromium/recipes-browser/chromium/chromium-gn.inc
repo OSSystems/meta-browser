@@ -23,6 +23,7 @@ SRC_URI += " \
     file://0013-Fix-html_minifier-script-for-node-v12.patch \
     file://0015-drop-gsimple-template-names.patch \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
+    file://0017-Reduce-minimum-browser-window-width-to-480px.patch \
 "
 
 SRC_URI:append:libc-musl = "\
