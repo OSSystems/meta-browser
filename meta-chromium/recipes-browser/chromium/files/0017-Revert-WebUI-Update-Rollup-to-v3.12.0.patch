@@ -1,0 +1,82 @@
+From 9c70ec531cccc671c7a9d578960bf1054c770d0d Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Mon, 10 Apr 2023 15:16:53 +0000
+Subject: [PATCH] Revert "WebUI: Update Rollup to v3.12.0"
+
+This is a (partial) revert of d63de446, because Rollup v3.12 requires
+Node v14, but Dunfell uses Node v12.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ third_party/node/package.json                                 | 2 +-
+ ui/webui/resources/tools/optimize_webui.gni                   | 2 +-
+ ui/webui/resources/tools/optimize_webui.py                    | 4 ++--
+ .../resources/tools/{rollup_plugin.mjs => rollup_plugin.js}   | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+ rename ui/webui/resources/tools/{rollup_plugin.mjs => rollup_plugin.js} (99%)
+
+diff --git a/third_party/node/package.json b/third_party/node/package.json
+index 3584fec13f333..1f7eea22272d2 100644
+--- a/third_party/node/package.json
++++ b/third_party/node/package.json
+@@ -22,7 +22,7 @@
+     "eslint": "8.33.0",
+     "eslint-plugin-jsdoc": "37.5.1",
+     "html-minifier": "4.0.0",
+-    "rollup": "3.12.0",
++    "rollup": "2.58.0",
+     "svgo": "2.8.0",
+     "terser": "5.16.2",
+     "typescript": "4.9.4"
+diff --git a/ui/webui/resources/tools/optimize_webui.gni b/ui/webui/resources/tools/optimize_webui.gni
+index f2c99eef5a44b..efda69abcfd2d 100644
+--- a/ui/webui/resources/tools/optimize_webui.gni
++++ b/ui/webui/resources/tools/optimize_webui.gni
+@@ -79,7 +79,7 @@ template("optimize_webui") {
+     }
+     args += [ "--external_paths" ] + external_paths
+
+-    inputs += [ "//ui/webui/resources/tools/rollup_plugin.mjs" ]
++    inputs += [ "//ui/webui/resources/tools/rollup_plugin.js" ]
+     args += [ "--js_module_in_files" ] + invoker.js_module_in_files
+
+     if (defined(invoker.out_manifest)) {
+diff --git a/ui/webui/resources/tools/optimize_webui.py b/ui/webui/resources/tools/optimize_webui.py
+index 6b5978eeb4145..0bae01b810133 100755
+--- a/ui/webui/resources/tools/optimize_webui.py
++++ b/ui/webui/resources/tools/optimize_webui.py
+@@ -93,7 +93,7 @@ def _update_dep_file(in_folder, args, out_file_path, manifest):
+ def _generate_rollup_config(tmp_out_dir, path_to_plugin, in_path, bundle_path,
+                             host_url, excludes, external_paths):
+   rollup_config_file = os.path.join(tmp_out_dir, bundle_path,
+-                                    'rollup.config.mjs')
++                                    'rollup.config.js')
+   config_content = r'''
+     import plugin from '{plugin_path}';
+     export default ({{
+@@ -160,7 +160,7 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
+
+   path_to_plugin = os.path.join(
+       os.path.relpath(_HERE_PATH, os.path.join(tmp_out_dir, bundle_path)),
+-      'rollup_plugin.mjs')
++      'rollup_plugin.js')
+   rollup_config_file = _generate_rollup_config(tmp_out_dir, path_to_plugin,
+                                                in_path, bundle_path,
+                                                args.host_url, excludes,
+diff --git a/ui/webui/resources/tools/rollup_plugin.mjs b/ui/webui/resources/tools/rollup_plugin.js
+similarity index 99%
+rename from ui/webui/resources/tools/rollup_plugin.mjs
+rename to ui/webui/resources/tools/rollup_plugin.js
+index 0e285318c1f54..e21dd1604753f 100644
+--- a/ui/webui/resources/tools/rollup_plugin.mjs
++++ b/ui/webui/resources/tools/rollup_plugin.js
+@@ -5,7 +5,7 @@
+ /**
+  * @fileoverview Plugin for rollup to correctly resolve resources.
+  */
+-import * as path from 'path';
++const path = require('path');
+
+ function normalizeSlashes(filepath) {
+   return filepath.replace(/\\/gi, '/');
