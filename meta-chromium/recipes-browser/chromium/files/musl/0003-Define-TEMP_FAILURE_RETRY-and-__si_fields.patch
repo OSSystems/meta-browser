@@ -14,8 +14,6 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  sandbox/linux/suid/sandbox.c      | 9 +++++++++
  2 files changed, 14 insertions(+)
 
-diff --git a/sandbox/linux/seccomp-bpf/trap.cc b/sandbox/linux/seccomp-bpf/trap.cc
-index 0ef42807ae..7494bba8e3 100644
 --- a/sandbox/linux/seccomp-bpf/trap.cc
 +++ b/sandbox/linux/seccomp-bpf/trap.cc
 @@ -27,6 +27,11 @@
@@ -30,8 +28,6 @@ index 0ef42807ae..7494bba8e3 100644
  namespace {
  
  struct arch_sigsys {
-diff --git a/sandbox/linux/suid/sandbox.c b/sandbox/linux/suid/sandbox.c
-index 2180b9d137..14be27b53d 100644
 --- a/sandbox/linux/suid/sandbox.c
 +++ b/sandbox/linux/suid/sandbox.c
 @@ -44,6 +44,15 @@
@@ -40,13 +36,13 @@ index 2180b9d137..14be27b53d 100644
  
 +#ifndef TEMP_FAILURE_RETRY
 +#define TEMP_FAILURE_RETRY(expression) \
-+  (__extension__                                                             \
-+    ({ long int __result;                                                    \
-+       do __result = (long int) (expression);                                \
-+       while (__result == -1L && errno == EINTR);                            \
++  (__extension__ \
++    ({ long int __result; \
++       do __result = (long int) (expression); \
++       while (__result == -1L && errno == EINTR); \
 +       __result; }))
 +#endif
 +
- #define HANDLE_EINTR(x) TEMP_FAILURE_RETRY(x)
- 
- static void FatalError(const char* msg, ...)
+ #define HANDLE_EINTR(x) ({ \
+   long eintr_wrapper_result; \
+   do { \
