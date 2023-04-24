@@ -20,18 +20,15 @@ version of nodejs than other branches.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/polymer/html_minifier.js b/tools/polymer/html_minifier.js
-index e86ef11a66..d2f9b1352d 100644
+index e86ef11a6620b..d2f9b1352dc0b 100644
 --- a/tools/polymer/html_minifier.js
 +++ b/tools/polymer/html_minifier.js
 @@ -14,7 +14,7 @@ const minify =
          .minify;
- 
+
  const path = require('path');
 -const fs = require('fs/promises');
 +const fs = require('fs').promises;
- 
+
  // Regex to extract the CSS contents out of the HTML string. It matches anything
  // that is wrapped by a '<style>...</style>' pair.
--- 
-2.34.1
-
