@@ -1,0 +1,20 @@
+gnu/libc-version.h is only in glibc therefore guard it with __GLIBC__
+rest of the code should be working with musl too.
+
+Upstream-Status: Pending
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+--- a/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
++++ b/chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.cc
+@@ -61,9 +61,10 @@
+
+ // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+ // of lacros-chrome is complete.
+-#if defined(__GLIBC__) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
++#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
++#if defined(__GLIBC__)
+ #include <gnu/libc-version.h>
+-
++#endif
+ #include "base/linux_util.h"
+ #include "base/strings/string_split.h"
+ #include "base/strings/string_util.h"
