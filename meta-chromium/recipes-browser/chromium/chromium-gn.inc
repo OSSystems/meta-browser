@@ -425,6 +425,9 @@ do_update_node_modules () {
 }
 addtask do_update_node_modules after do_configure before do_compile
 
+# npm accesses https://registry.npmjs.org/rollup
+do_update_node_modules[network] = "1"
+
 do_configure() {
 	cd ${S}
 	python3 ./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
