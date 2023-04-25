@@ -25,7 +25,6 @@ SRC_URI += " \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
     file://0017-Revert-WebUI-Update-Rollup-to-v3.12.0.patch \
     file://0018-Revert-Fix-std-span-autodetection-7805.patch \
-    file://0019-Backport-Fix-deps-for-feed_response.proto.patch \
     file://0020-Only-default-operator-on-declaration.patch \
     file://fix-libc-version-include.patch \
 "
