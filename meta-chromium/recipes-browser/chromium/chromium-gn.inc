@@ -23,11 +23,8 @@ SRC_URI += " \
     file://0013-Fix-html_minifier-script-for-node-v12.patch \
     file://0015-drop-gsimple-template-names.patch \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
-    file://0017-Revert-WebUI-Update-Rollup-to-v3.12.0.patch \
-    file://0018-Revert-Fix-std-span-autodetection-7805.patch \
-    file://0019-Backport-Fix-deps-for-feed_response.proto.patch \
-    file://0020-Only-default-operator-on-declaration.patch \
-    file://fix-libc-version-include.patch \
+    file://0017-Revert-Fix-std-span-autodetection-7805.patch \
+    file://0018-Only-default-operator-on-declaration.patch \
 "
 
 SRC_URI:append:libc-musl = "\
@@ -46,6 +43,7 @@ SRC_URI:append:libc-musl = "\
     file://musl/credentials-header.patch \
     file://musl/fstatat64.patch \
     file://musl/no-res-ninit-nclose.patch \
+    file://musl/fix-libc-version-include.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
@@ -411,19 +409,6 @@ do_add_nodejs_symlink () {
 	ln -sf "${nodejs_native_path}" "${chromium_node_dir}/node"
 }
 addtask add_nodejs_symlink after do_configure before do_compile
-
-# This is a workaround for nodejs in dunfell, whose version does not work
-# with the latest rollup release.
-do_update_node_modules () {
-	cd "${S}/third_party/node"
-	# https://source.chromium.org/chromium/chromium/src/+/main:third_party/node/update_npm_deps;l=19-23;drc=9d0a62c93ec2ed1856f01ea32719486342d0c21f
-	PATH="$PATH:${STAGING_BINDIR_NATIVE}" "${STAGING_BINDIR_NATIVE}/npm" install --no-bin-links --only=prod
-	patch -d node_modules/@types/d3/ -p1 < chromium_d3_types_index.patch
-	patch -d node_modules/html-minifier/ -p1 < html_minifier.patch
-	patch -p1 < typescript.patch
-	cd -
-}
-addtask do_update_node_modules after do_configure before do_compile
 
 do_configure() {
 	cd ${S}
