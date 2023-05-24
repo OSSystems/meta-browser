@@ -18,13 +18,19 @@ SRC_URI += " \
     file://0005-BUILD-do-not-specify-march-on-arm.patch \
     file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0009-nomerge-attribute-on-declaration-is-only-available-s.patch \
     file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
-    file://0013-Fix-html_minifier-script-for-node-v12.patch \
     file://0015-drop-gsimple-template-names.patch \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
     file://0017-Revert-Fix-std-span-autodetection-7805.patch \
     file://0018-Only-default-operator-on-declaration.patch \
+    file://0019-Backport-constexpr-std-string-fixes.patch \
+    file://0020-Revert-__attribute__-and-alignas-changes.patch \
+    file://0021-Add-missing-typename-s.patch \
+    file://0022-Backport-Avoid-capturing-structured-bindings.patch \
+    file://0023-Backport-IWYU-for-translate-TranslateUILanguagesMana.patch \
+    file://0024-Backport-Fix-erroneous-SupportsOstreamOperator-int-i.patch \
+    file://0025-Backport-Do-not-use-std-monospace-for-absl-variant.patch \
+    file://0026-Backport-std-string-ends_with-is-C-20.-Use-base-Ends.patch \
 "
 
 SRC_URI:append:libc-musl = "\

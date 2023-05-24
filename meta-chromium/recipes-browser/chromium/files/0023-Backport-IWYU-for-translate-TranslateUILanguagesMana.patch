@@ -1,0 +1,27 @@
+From d8ad13ef134f402c28778f975638c80d0191bb14 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 31 May 2023 09:36:06 +0000
+Subject: [PATCH] Backport "IWYU for translate::TranslateUILanguagesManager"
+
+This adds two missing includes, one of which can lead to compile errors
+if omitted. This patch will be included in upstream's 116 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4587962]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../translate/core/browser/translate_ui_languages_manager.h     | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/components/translate/core/browser/translate_ui_languages_manager.h b/components/translate/core/browser/translate_ui_languages_manager.h
+index a7e07edee31ee..650155569b74b 100644
+--- a/components/translate/core/browser/translate_ui_languages_manager.h
++++ b/components/translate/core/browser/translate_ui_languages_manager.h
+@@ -8,6 +8,8 @@
+ #include <stddef.h>
+ 
+ #include <string>
++#include <utility>
++#include <vector>
+ 
+ #include "base/memory/weak_ptr.h"
+ #include "third_party/icu/source/i18n/unicode/coll.h"
