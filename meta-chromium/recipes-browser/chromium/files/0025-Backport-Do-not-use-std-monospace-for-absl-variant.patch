@@ -1,0 +1,31 @@
+From 633cb6e0974a2d7a62db4a9ab4caa256f55f9bd7 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 1 Jun 2023 21:20:16 +0000
+Subject: [PATCH] Backport "Do not use std::monospace for absl::variant"
+
+This backported patch fixes a dunfell compile error due to incorrect
+usage of `std::monospace` instead of `absl::monospace`. The upstream
+patch will be included in the 114 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4372590]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ chrome/browser/webauthn/authenticator_request_dialog_model.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/chrome/browser/webauthn/authenticator_request_dialog_model.h b/chrome/browser/webauthn/authenticator_request_dialog_model.h
+index f4992a74bd66b..6a4bcf68bcdf6 100644
+--- a/chrome/browser/webauthn/authenticator_request_dialog_model.h
++++ b/chrome/browser/webauthn/authenticator_request_dialog_model.h
+@@ -181,9 +181,9 @@ class AuthenticatorRequestDialogModel {
+     // These types describe the type of Mechanism.
+     using Transport =
+         base::StrongAlias<class TransportTag, AuthenticatorTransport>;
+-    using WindowsAPI = base::StrongAlias<class WindowsAPITag, std::monostate>;
++    using WindowsAPI = base::StrongAlias<class WindowsAPITag, absl::monostate>;
+     using Phone = base::StrongAlias<class PhoneTag, std::string>;
+-    using AddPhone = base::StrongAlias<class AddPhoneTag, std::monostate>;
++    using AddPhone = base::StrongAlias<class AddPhoneTag, absl::monostate>;
+     using Type = absl::variant<Transport, WindowsAPI, Phone, AddPhone>;
+ 
+     Mechanism(Type type,

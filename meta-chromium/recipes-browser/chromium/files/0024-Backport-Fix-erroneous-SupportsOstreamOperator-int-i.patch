@@ -1,0 +1,954 @@
+From 77b8f73377ed0a1745e3a79b54d3161e134477fc Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 31 May 2023 09:47:40 +0000
+Subject: [PATCH] Backport "Fix erroneous SupportsOstreamOperator<int>
+ instantiation."
+
+This backported patch fixes a compilation error on dunfell. It will be
+included in the 114 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4448868]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ base/BUILD.gn                                 |   4 +
+ base/check_op.h                               |   1 +
+ base/strings/string_util.h                    |  90 --------------
+ base/strings/string_util_unittest.cc          |  74 ------------
+ base/strings/to_string.h                      | 110 ++++++++++++++++++
+ base/strings/to_string_test.cc                | 106 +++++++++++++++++
+ base/template_util.h                          |   9 --
+ base/template_util_unittest.cc                |  49 +-------
+ base/types/strong_alias.h                     |   4 +-
+ base/types/strong_alias_unittest.cc           |   8 +-
+ base/types/supports_ostream_operator.h        |  28 +++++
+ base/types/supports_ostream_operator_test.cc  |  68 +++++++++++
+ .../externally_managed_install_command.cc     |   2 +-
+ .../fetch_manifest_and_install_command.cc     |   1 +
+ .../commands/install_from_info_command.cc     |   1 +
+ .../commands/install_from_manifest_command.cc |   2 +-
+ .../commands/install_from_sync_command.cc     |   2 +-
+ .../commands/install_placeholder_command.cc   |   1 +
+ .../commands/manifest_update_check_command.cc |   1 +
+ .../manifest_update_finalize_command.cc       |   2 +-
+ .../commands/sub_app_install_command.cc       |   2 +-
+ ...pdate_protocol_handler_approval_command.cc |   2 +-
+ .../commands/web_app_uninstall_command.cc     |   2 +-
+ chrome/browser/web_applications/web_app.cc    |   2 +-
+ .../web_applications/web_app_registrar.cc     |   2 +-
+ .../common/persisted_trial_token_unittest.cc  |   2 +-
+ 26 files changed, 338 insertions(+), 237 deletions(-)
+ create mode 100644 base/strings/to_string.h
+ create mode 100644 base/strings/to_string_test.cc
+ create mode 100644 base/types/supports_ostream_operator.h
+ create mode 100644 base/types/supports_ostream_operator_test.cc
+
+diff --git a/base/BUILD.gn b/base/BUILD.gn
+index a3d75f04f6aff..c118467eeb3f9 100644
+--- a/base/BUILD.gn
++++ b/base/BUILD.gn
+@@ -665,6 +665,7 @@ component("base") {
+     "strings/stringprintf.cc",
+     "strings/stringprintf.h",
+     "strings/sys_string_conversions.h",
++    "strings/to_string.h",
+     "strings/utf_offset_string_conversions.cc",
+     "strings/utf_offset_string_conversions.h",
+     "strings/utf_string_conversion_utils.cc",
+@@ -943,6 +944,7 @@ component("base") {
+     "types/optional_util.h",
+     "types/pass_key.h",
+     "types/strong_alias.h",
++    "types/supports_ostream_operator.h",
+     "types/token_type.h",
+     "types/variant_util.h",
+     "unguessable_token.cc",
+@@ -3281,6 +3283,7 @@ test("base_unittests") {
+     "strings/stringize_macros_unittest.cc",
+     "strings/stringprintf_unittest.cc",
+     "strings/sys_string_conversions_unittest.cc",
++    "strings/to_string_test.cc",
+     "strings/utf_offset_string_conversions_unittest.cc",
+     "strings/utf_string_conversions_unittest.cc",
+     "substring_set_matcher/string_pattern_unittest.cc",
+@@ -3415,6 +3418,7 @@ test("base_unittests") {
+     "types/optional_util_unittest.cc",
+     "types/pass_key_unittest.cc",
+     "types/strong_alias_unittest.cc",
++    "types/supports_ostream_operator_test.cc",
+     "types/token_type_unittest.cc",
+     "types/variant_util_unittest.cc",
+     "unguessable_token_unittest.cc",
+diff --git a/base/check_op.h b/base/check_op.h
+index 07ad07d1e0e3b..d323229fc5371 100644
+--- a/base/check_op.h
++++ b/base/check_op.h
+@@ -15,6 +15,7 @@
+ #include "base/debug/debugging_buildflags.h"
+ #include "base/memory/raw_ptr_exclusion.h"
+ #include "base/template_util.h"
++#include "base/types/supports_ostream_operator.h"
+ 
+ // This header defines the (DP)CHECK_EQ etc. macros.
+ //
+diff --git a/base/strings/string_util.h b/base/strings/string_util.h
+index 120ffb20bef61..0367af552eadb 100644
+--- a/base/strings/string_util.h
++++ b/base/strings/string_util.h
+@@ -13,8 +13,6 @@
+ #include <stdint.h>
+ 
+ #include <initializer_list>
+-#include <memory>
+-#include <sstream>
+ #include <string>
+ #include <type_traits>
+ #include <vector>
+@@ -26,7 +24,6 @@
+ #include "base/cxx20_to_address.h"
+ #include "base/strings/string_piece.h"  // For implicit conversions.
+ #include "base/strings/string_util_internal.h"
+-#include "base/template_util.h"
+ #include "build/build_config.h"
+ 
+ namespace base {
+@@ -116,93 +113,6 @@ constexpr WStringPiece MakeWStringPiece(Iter begin, Iter end) {
+   return MakeBasicStringPiece<wchar_t>(begin, end);
+ }
+ 
+-// Convert a type with defined `operator<<` or `.ToString()` method into a
+-// string.
+-
+-// I/O manipulators are function pointers, but should be sent directly to the
+-// `ostream` instead of being cast to `const void*` like other function
+-// pointers.
+-template <typename T, typename = void>
+-constexpr bool IsIomanip = false;
+-template <typename T>
+-constexpr bool
+-    IsIomanip<T&(T&), std::enable_if_t<std::is_base_of_v<std::ios_base, T>>> =
+-        true;
+-
+-// Function pointers implicitly convert to `bool`, so use this to avoid printing
+-// function pointers as 1 or 0.
+-template <typename T, typename = void>
+-constexpr bool WillBeIncorrectlyStreamedAsBool = false;
+-template <typename T>
+-constexpr bool WillBeIncorrectlyStreamedAsBool<
+-    T,
+-    std::enable_if_t<std::is_function_v<typename std::remove_pointer_t<T>> &&
+-                     !IsIomanip<typename std::remove_pointer_t<T>>>> = true;
+-
+-// Fallback case when there is no better representation.
+-template <typename T, typename = void>
+-struct ToStringHelper {
+-  static void Stringify(const T& v, std::ostringstream& ss) {
+-    ss << "[" << sizeof(v) << "-byte object at 0x" << std::addressof(v) << "]";
+-  }
+-};
+-
+-// Most streamables.
+-template <typename T>
+-struct ToStringHelper<
+-    T,
+-    std::enable_if_t<base::internal::SupportsOstreamOperator<const T&>::value &&
+-                     !WillBeIncorrectlyStreamedAsBool<T>>> {
+-  static void Stringify(const T& v, std::ostringstream& ss) { ss << v; }
+-};
+-
+-// Functions and function pointers.
+-template <typename T>
+-struct ToStringHelper<
+-    T,
+-    std::enable_if_t<base::internal::SupportsOstreamOperator<const T&>::value &&
+-                     WillBeIncorrectlyStreamedAsBool<T>>> {
+-  static void Stringify(const T& v, std::ostringstream& ss) {
+-    ToStringHelper<const void*>::Stringify(reinterpret_cast<const void*>(v),
+-                                           ss);
+-  }
+-};
+-
+-// Non-streamables that have a `ToString` member.
+-template <typename T>
+-struct ToStringHelper<
+-    T,
+-    std::enable_if_t<
+-        !base::internal::SupportsOstreamOperator<const T&>::value &&
+-        base::internal::SupportsToString<const T&>::value>> {
+-  static void Stringify(const T& v, std::ostringstream& ss) {
+-    // .ToString() may not return a std::string, e.g. blink::WTF::String.
+-    ToStringHelper<decltype(v.ToString())>::Stringify(v.ToString(), ss);
+-  }
+-};
+-
+-// Non-streamable enums (i.e. scoped enums where no `operator<<` overload was
+-// declared).
+-template <typename T>
+-struct ToStringHelper<T,
+-                      std::enable_if_t<!base::internal::SupportsOstreamOperator<
+-                                           const T&>::value &&
+-                                       std::is_enum_v<T>>> {
+-  static void Stringify(const T& v, std::ostringstream& ss) {
+-    using UT = typename std::underlying_type_t<T>;
+-    ToStringHelper<UT>::Stringify(static_cast<UT>(v), ss);
+-  }
+-};
+-
+-template <typename... Ts>
+-std::string ToString(const Ts&... values) {
+-  std::ostringstream ss;
+-  (ToStringHelper<typename std::remove_cvref_t<decltype(values)>>::Stringify(
+-       values, ss),
+-   ...);
+-  return ss.str();
+-}
+-
+ // ASCII-specific tolower.  The standard library's tolower is locale sensitive,
+ // so we don't want to use it here.
+ template <typename CharT,
+diff --git a/base/strings/string_util_unittest.cc b/base/strings/string_util_unittest.cc
+index aba0e3143610e..4bb22e54c76fb 100644
+--- a/base/strings/string_util_unittest.cc
++++ b/base/strings/string_util_unittest.cc
+@@ -1351,80 +1351,6 @@ TEST(StringUtilTest, MakeBasicStringPieceTest) {
+   EXPECT_TRUE(MakeWStringPiece(baz.end(), baz.end()).empty());
+ }
+ 
+-enum class StreamableTestEnum { kGreeting, kLocation };
+-enum class NonStreamableTestEnum { kGreeting = 0, kLocation };
+-
+-std::ostream& operator<<(std::ostream& os, const StreamableTestEnum& value) {
+-  switch (value) {
+-    case StreamableTestEnum::kGreeting:
+-      return os << "hello";
+-    case StreamableTestEnum::kLocation:
+-      return os << "world";
+-  }
+-}
+-
+-class HasToString {
+- public:
+-  std::string ToString() const { return "yay!"; }
+-};
+-
+-class UnusualToString {
+- public:
+-  HasToString ToString() const { return HasToString(); }
+-};
+-
+-void Func() {}
+-
+-class NotStringifiable {};
+-
+-class OverloadsAddressOp {
+- public:
+-  OverloadsAddressOp* operator&() { return nullptr; }
+-  const OverloadsAddressOp* operator&() const { return nullptr; }
+-};
+-
+-TEST(StringUtilTest, ToString) {
+-  // Types with built-in <<.
+-  EXPECT_EQ(ToString("foo"), "foo");
+-  EXPECT_EQ(ToString(123), "123");
+-
+-  // Type with user-defined <<.
+-  EXPECT_EQ(ToString(StreamableTestEnum::kGreeting), "hello");
+-  EXPECT_EQ(ToString(StreamableTestEnum::kGreeting, " ",
+-                     StreamableTestEnum::kLocation),
+-            "hello world");
+-
+-  // Type with user-defined ToString().
+-  EXPECT_EQ(ToString(HasToString()), "yay!");
+-
+-  // Types with a ToString() that does not directly return a std::string should
+-  // still work.
+-  EXPECT_EQ(ToString(UnusualToString()), "yay!");
+-
+-  // Scoped enums without a defined << should print as their underlying type.
+-  EXPECT_EQ(ToString(NonStreamableTestEnum::kLocation), "1");
+-
+-  // I/O manipulators should have their expected effect, not be printed as
+-  // function pointers.
+-  EXPECT_EQ(ToString("42 in hex is ", std::hex, 42), "42 in hex is 2a");
+-
+-  // We don't care about the actual address, but a function pointer should not
+-  // be implicitly converted to bool.
+-  EXPECT_NE(ToString(&Func), ToString(true));
+-
+-  // Functions should be treated like function pointers.
+-  EXPECT_EQ(ToString(Func), ToString(&Func));
+-
+-  // Non-stringifiable types should be printed using a fallback.
+-  EXPECT_NE(ToString(NotStringifiable()).find("-byte object at 0x"),
+-            std::string::npos);
+-
+-  // Non-stringifiable types which overload operator& should print their real
+-  // address.
+-  EXPECT_NE(ToString(OverloadsAddressOp()),
+-            ToString(static_cast<OverloadsAddressOp*>(nullptr)));
+-}
+-
+ TEST(StringUtilTest, RemoveChars) {
+   const char kRemoveChars[] = "-/+*";
+   std::string input = "A-+bc/d!*";
+diff --git a/base/strings/to_string.h b/base/strings/to_string.h
+new file mode 100644
+index 0000000000000..216963efee469
+--- /dev/null
++++ b/base/strings/to_string.h
+@@ -0,0 +1,110 @@
++// Copyright 2023 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef BASE_STRINGS_TO_STRING_H_
++#define BASE_STRINGS_TO_STRING_H_
++
++#include <ios>
++#include <memory>
++#include <sstream>
++#include <string>
++#include <type_traits>
++
++#include "base/template_util.h"
++#include "base/types/supports_ostream_operator.h"
++
++namespace base {
++
++namespace internal {
++
++// I/O manipulators are function pointers, but should be sent directly to the
++// `ostream` instead of being cast to `const void*` like other function
++// pointers.
++template <typename T, typename = void>
++constexpr bool IsIomanip = false;
++template <typename T>
++constexpr bool
++    IsIomanip<T&(T&), std::enable_if_t<std::is_base_of_v<std::ios_base, T>>> =
++        true;
++
++// Function pointers implicitly convert to `bool`, so use this to avoid printing
++// function pointers as 1 or 0.
++template <typename T, typename = void>
++constexpr bool WillBeIncorrectlyStreamedAsBool = false;
++template <typename T>
++constexpr bool WillBeIncorrectlyStreamedAsBool<
++    T,
++    std::enable_if_t<std::is_function_v<std::remove_pointer_t<T>> &&
++                     !IsIomanip<std::remove_pointer_t<T>>>> = true;
++
++// Fallback case when there is no better representation.
++template <typename T, typename = void>
++struct ToStringHelper {
++  static void Stringify(const T& v, std::ostringstream& ss) {
++    ss << "[" << sizeof(v) << "-byte object at 0x" << std::addressof(v) << "]";
++  }
++};
++
++// Most streamables.
++template <typename T>
++struct ToStringHelper<
++    T,
++    std::enable_if_t<SupportsOstreamOperator<const T&>::value &&
++                     !WillBeIncorrectlyStreamedAsBool<T>>> {
++  static void Stringify(const T& v, std::ostringstream& ss) { ss << v; }
++};
++
++// Functions and function pointers.
++template <typename T>
++struct ToStringHelper<
++    T,
++    std::enable_if_t<SupportsOstreamOperator<const T&>::value &&
++                     WillBeIncorrectlyStreamedAsBool<T>>> {
++  static void Stringify(const T& v, std::ostringstream& ss) {
++    ToStringHelper<const void*>::Stringify(reinterpret_cast<const void*>(v),
++                                           ss);
++  }
++};
++
++// Non-streamables that have a `ToString` member.
++template <typename T>
++struct ToStringHelper<
++    T,
++    std::enable_if_t<!SupportsOstreamOperator<const T&>::value &&
++                     SupportsToString<const T&>::value>> {
++  static void Stringify(const T& v, std::ostringstream& ss) {
++    // .ToString() may not return a std::string, e.g. blink::WTF::String.
++    ToStringHelper<decltype(v.ToString())>::Stringify(v.ToString(), ss);
++  }
++};
++
++// Non-streamable enums (i.e. scoped enums where no `operator<<` overload was
++// declared).
++template <typename T>
++struct ToStringHelper<
++    T,
++    std::enable_if_t<!SupportsOstreamOperator<const T&>::value &&
++                     std::is_enum_v<T>>> {
++  static void Stringify(const T& v, std::ostringstream& ss) {
++    using UT = typename std::underlying_type_t<T>;
++    ToStringHelper<UT>::Stringify(static_cast<UT>(v), ss);
++  }
++};
++
++}  // namespace internal
++
++// Converts any type to a string, preferring defined operator<<() or ToString()
++// methods if they exist.
++template <typename... Ts>
++std::string ToString(const Ts&... values) {
++  std::ostringstream ss;
++  (internal::ToStringHelper<remove_cvref_t<decltype(values)>>::Stringify(values,
++                                                                         ss),
++   ...);
++  return ss.str();
++}
++
++}  // namespace base
++
++#endif  // BASE_STRINGS_TO_STRING_H_
+diff --git a/base/strings/to_string_test.cc b/base/strings/to_string_test.cc
+new file mode 100644
+index 0000000000000..7938205214649
+--- /dev/null
++++ b/base/strings/to_string_test.cc
+@@ -0,0 +1,106 @@
++// Copyright 2023 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "base/strings/to_string.h"
++
++#include <ios>
++#include <ostream>
++#include <string>
++
++#include "testing/gtest/include/gtest/gtest.h"
++
++namespace base {
++namespace {
++
++TEST(ToStringTest, Streamable) {
++  // Types with built-in <<.
++  EXPECT_EQ(ToString("foo"), "foo");
++  EXPECT_EQ(ToString(123), "123");
++}
++
++enum class StreamableTestEnum { kGreeting, kLocation };
++
++std::ostream& operator<<(std::ostream& os, const StreamableTestEnum& value) {
++  switch (value) {
++    case StreamableTestEnum::kGreeting:
++      return os << "hello";
++    case StreamableTestEnum::kLocation:
++      return os << "world";
++  }
++}
++
++TEST(ToStringTest, UserDefinedStreamable) {
++  // Type with user-defined <<.
++  EXPECT_EQ(ToString(StreamableTestEnum::kGreeting), "hello");
++  EXPECT_EQ(ToString(StreamableTestEnum::kGreeting, " ",
++                     StreamableTestEnum::kLocation),
++            "hello world");
++}
++
++class HasToString {
++ public:
++  std::string ToString() const { return "yay!"; }
++};
++
++TEST(ToStringTest, UserDefinedToString) {
++  // Type with user-defined ToString().
++  EXPECT_EQ(ToString(HasToString()), "yay!");
++}
++
++class UnusualToString {
++ public:
++  HasToString ToString() const { return HasToString(); }
++};
++
++TEST(ToStringTest, ToStringReturnsNonStdString) {
++  // Types with a ToString() that does not directly return a std::string should
++  // still work.
++  EXPECT_EQ(ToString(UnusualToString()), "yay!");
++}
++
++enum class NonStreamableTestEnum { kGreeting = 0, kLocation };
++
++TEST(ToStringTest, ScopedEnum) {
++  // Scoped enums without a defined << should print as their underlying type.
++  EXPECT_EQ(ToString(NonStreamableTestEnum::kLocation), "1");
++}
++
++TEST(ToStringTest, IoManip) {
++  // I/O manipulators should have their expected effect, not be printed as
++  // function pointers.
++  EXPECT_EQ(ToString("42 in hex is ", std::hex, 42), "42 in hex is 2a");
++}
++
++void Func() {}
++
++TEST(ToStringTest, FunctionPointer) {
++  // We don't care about the actual address, but a function pointer should not
++  // be implicitly converted to bool.
++  EXPECT_NE(ToString(&Func), ToString(true));
++
++  // Functions should be treated like function pointers.
++  EXPECT_EQ(ToString(Func), ToString(&Func));
++}
++
++class NotStringifiable {};
++
++class OverloadsAddressOp {
++ public:
++  OverloadsAddressOp* operator&() { return nullptr; }
++  const OverloadsAddressOp* operator&() const { return nullptr; }
++};
++
++TEST(ToStringTest, NonStringifiable) {
++  // Non-stringifiable types should be printed using a fallback.
++  EXPECT_NE(ToString(NotStringifiable()).find("-byte object at 0x"),
++            std::string::npos);
++
++  // Non-stringifiable types which overload operator& should print their real
++  // address.
++  EXPECT_NE(ToString(OverloadsAddressOp()),
++            ToString(static_cast<OverloadsAddressOp*>(nullptr)));
++}
++
++}  // namespace
++}  // namespace base
+diff --git a/base/template_util.h b/base/template_util.h
+index 415b3acf1c9a4..e192110d09534 100644
+--- a/base/template_util.h
++++ b/base/template_util.h
+@@ -18,15 +18,6 @@ namespace base {
+ 
+ namespace internal {
+ 
+-// Uses expression SFINAE to detect whether using operator<< would work.
+-template <typename T, typename = void>
+-struct SupportsOstreamOperator : std::false_type {};
+-template <typename T>
+-struct SupportsOstreamOperator<T,
+-                               decltype(void(std::declval<std::ostream&>()
+-                                             << std::declval<T>()))>
+-    : std::true_type {};
+-
+ template <typename T, typename = void>
+ struct SupportsToString : std::false_type {};
+ template <typename T>
+diff --git a/base/template_util_unittest.cc b/base/template_util_unittest.cc
+index 2774b5cac204f..efcea3d6d9adb 100644
+--- a/base/template_util_unittest.cc
++++ b/base/template_util_unittest.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "base/template_util.h"
+ 
++#include <stdint.h>
++
+ #include <string>
+ #include <type_traits>
+ 
+@@ -17,58 +19,11 @@ namespace {
+ enum SimpleEnum { SIMPLE_ENUM };
+ enum EnumWithExplicitType : uint64_t { ENUM_WITH_EXPLICIT_TYPE };
+ enum class ScopedEnum { SCOPED_ENUM };
+-enum class ScopedEnumWithOperator { SCOPED_ENUM_WITH_OPERATOR };
+-std::ostream& operator<<(std::ostream& os, ScopedEnumWithOperator v) {
+-  return os;
+-}
+ struct SimpleStruct {};
+-struct StructWithOperator {};
+-std::ostream& operator<<(std::ostream& os, const StructWithOperator& v) {
+-  return os;
+-}
+ struct StructWithToString {
+   std::string ToString() const { return ""; }
+ };
+ 
+-// A few standard types that definitely support printing.
+-static_assert(internal::SupportsOstreamOperator<int>::value,
+-              "ints should be printable");
+-static_assert(internal::SupportsOstreamOperator<const char*>::value,
+-              "C strings should be printable");
+-static_assert(internal::SupportsOstreamOperator<std::string>::value,
+-              "std::string should be printable");
+-
+-// Various kinds of enums operator<< support.
+-static_assert(internal::SupportsOstreamOperator<SimpleEnum>::value,
+-              "simple enum should be printable by value");
+-static_assert(internal::SupportsOstreamOperator<const SimpleEnum&>::value,
+-              "simple enum should be printable by const ref");
+-static_assert(internal::SupportsOstreamOperator<EnumWithExplicitType>::value,
+-              "enum with explicit type should be printable by value");
+-static_assert(
+-    internal::SupportsOstreamOperator<const EnumWithExplicitType&>::value,
+-    "enum with explicit type should be printable by const ref");
+-static_assert(!internal::SupportsOstreamOperator<ScopedEnum>::value,
+-              "scoped enum should not be printable by value");
+-static_assert(!internal::SupportsOstreamOperator<const ScopedEnum&>::value,
+-              "simple enum should not be printable by const ref");
+-static_assert(internal::SupportsOstreamOperator<ScopedEnumWithOperator>::value,
+-              "scoped enum with operator<< should be printable by value");
+-static_assert(
+-    internal::SupportsOstreamOperator<const ScopedEnumWithOperator&>::value,
+-    "scoped enum with operator<< should be printable by const ref");
+-
+-// operator<< support on structs.
+-static_assert(!internal::SupportsOstreamOperator<SimpleStruct>::value,
+-              "simple struct should not be printable by value");
+-static_assert(!internal::SupportsOstreamOperator<const SimpleStruct&>::value,
+-              "simple struct should not be printable by const ref");
+-static_assert(internal::SupportsOstreamOperator<StructWithOperator>::value,
+-              "struct with operator<< should be printable by value");
+-static_assert(
+-    internal::SupportsOstreamOperator<const StructWithOperator&>::value,
+-    "struct with operator<< should be printable by const ref");
+-
+ // .ToString() support on structs.
+ static_assert(!internal::SupportsToString<SimpleStruct>::value,
+               "simple struct value doesn't support .ToString()");
+diff --git a/base/types/strong_alias.h b/base/types/strong_alias.h
+index 8a757be57346c..7a4872a4a06ca 100644
+--- a/base/types/strong_alias.h
++++ b/base/types/strong_alias.h
+@@ -9,8 +9,8 @@
+ #include <type_traits>
+ #include <utility>
+ 
+-#include "base/template_util.h"
+ #include "base/trace_event/base_tracing_forward.h"
++#include "base/types/supports_ostream_operator.h"
+ 
+ namespace base {
+ 
+@@ -154,7 +154,7 @@ class StrongAlias {
+ template <typename TagType,
+           typename UnderlyingType,
+           typename = std::enable_if_t<
+-              base::internal::SupportsOstreamOperator<UnderlyingType>::value>>
++              internal::SupportsOstreamOperator<UnderlyingType>::value>>
+ std::ostream& operator<<(std::ostream& stream,
+                          const StrongAlias<TagType, UnderlyingType>& alias) {
+   return stream << alias.value();
+diff --git a/base/types/strong_alias_unittest.cc b/base/types/strong_alias_unittest.cc
+index 6cc211adc658e..7ab1444d1af57 100644
+--- a/base/types/strong_alias_unittest.cc
++++ b/base/types/strong_alias_unittest.cc
+@@ -14,7 +14,7 @@
+ #include <utility>
+ 
+ #include "base/strings/string_piece.h"
+-#include "base/template_util.h"
++#include "base/types/supports_ostream_operator.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ 
+ #if BUILDFLAG(ENABLE_BASE_TRACING)
+@@ -371,8 +371,7 @@ TEST(StrongAliasTest, EnsureConstexpr) {
+ void StreamOperatorExists() {
+   // Aliases of ints should be streamable because ints are streamable.
+   using StreamableAlias = StrongAlias<class IntTag, int>;
+-  static_assert(base::internal::SupportsOstreamOperator<StreamableAlias>::value,
+-                "");
++  static_assert(internal::SupportsOstreamOperator<StreamableAlias>::value);
+ 
+   // Aliases of a class which does not expose a stream operator should
+   // themselves not be streamable.
+@@ -381,8 +380,7 @@ void StreamOperatorExists() {
+     Scope() = default;
+   };
+   using NonStreamableAlias = StrongAlias<class ScopeTag, Scope>;
+-  static_assert(
+-      !base::internal::SupportsOstreamOperator<NonStreamableAlias>::value, "");
++  static_assert(!internal::SupportsOstreamOperator<NonStreamableAlias>::value);
+ }
+ 
+ #if BUILDFLAG(ENABLE_BASE_TRACING)
+diff --git a/base/types/supports_ostream_operator.h b/base/types/supports_ostream_operator.h
+new file mode 100644
+index 0000000000000..0803db4862be2
+--- /dev/null
++++ b/base/types/supports_ostream_operator.h
+@@ -0,0 +1,28 @@
++// Copyright 2023 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef BASE_TYPES_SUPPORTS_OSTREAM_OPERATOR_H_
++#define BASE_TYPES_SUPPORTS_OSTREAM_OPERATOR_H_
++
++#include <ostream>
++#include <type_traits>
++#include <utility>
++
++namespace base::internal {
++
++// Uses expression SFINAE to detect whether using operator<< would work.
++//
++// Note that the above #include of <ostream> is necessary to guarantee
++// consistent results here for basic types.
++template <typename T, typename = void>
++struct SupportsOstreamOperator : std::false_type {};
++template <typename T>
++struct SupportsOstreamOperator<T,
++                               decltype(void(std::declval<std::ostream&>()
++                                             << std::declval<T>()))>
++    : std::true_type {};
++
++}  // namespace base::internal
++
++#endif  // BASE_TYPES_SUPPORTS_OSTREAM_OPERATOR_H_
+diff --git a/base/types/supports_ostream_operator_test.cc b/base/types/supports_ostream_operator_test.cc
+new file mode 100644
+index 0000000000000..0f8c3a09d9e6d
+--- /dev/null
++++ b/base/types/supports_ostream_operator_test.cc
+@@ -0,0 +1,68 @@
++// Copyright 2023 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "base/types/supports_ostream_operator.h"
++
++#include <stdint.h>
++
++#include <ostream>
++#include <string>
++
++namespace base {
++namespace {
++
++enum SimpleEnum { SIMPLE_ENUM };
++enum EnumWithExplicitType : uint64_t { ENUM_WITH_EXPLICIT_TYPE };
++enum class ScopedEnum { SCOPED_ENUM };
++enum class ScopedEnumWithOperator { SCOPED_ENUM_WITH_OPERATOR };
++std::ostream& operator<<(std::ostream& os, ScopedEnumWithOperator v) {
++  return os;
++}
++struct SimpleStruct {};
++struct StructWithOperator {};
++std::ostream& operator<<(std::ostream& os, const StructWithOperator& v) {
++  return os;
++}
++
++// A few standard types that definitely support printing.
++static_assert(internal::SupportsOstreamOperator<int>::value,
++              "ints should be printable");
++static_assert(internal::SupportsOstreamOperator<const char*>::value,
++              "C strings should be printable");
++static_assert(internal::SupportsOstreamOperator<std::string>::value,
++              "std::string should be printable");
++
++// Various kinds of enums operator<< support.
++static_assert(internal::SupportsOstreamOperator<SimpleEnum>::value,
++              "simple enum should be printable by value");
++static_assert(internal::SupportsOstreamOperator<const SimpleEnum&>::value,
++              "simple enum should be printable by const ref");
++static_assert(internal::SupportsOstreamOperator<EnumWithExplicitType>::value,
++              "enum with explicit type should be printable by value");
++static_assert(
++    internal::SupportsOstreamOperator<const EnumWithExplicitType&>::value,
++    "enum with explicit type should be printable by const ref");
++static_assert(!internal::SupportsOstreamOperator<ScopedEnum>::value,
++              "scoped enum should not be printable by value");
++static_assert(!internal::SupportsOstreamOperator<const ScopedEnum&>::value,
++              "simple enum should not be printable by const ref");
++static_assert(internal::SupportsOstreamOperator<ScopedEnumWithOperator>::value,
++              "scoped enum with operator<< should be printable by value");
++static_assert(
++    internal::SupportsOstreamOperator<const ScopedEnumWithOperator&>::value,
++    "scoped enum with operator<< should be printable by const ref");
++
++// operator<< support on structs.
++static_assert(!internal::SupportsOstreamOperator<SimpleStruct>::value,
++              "simple struct should not be printable by value");
++static_assert(!internal::SupportsOstreamOperator<const SimpleStruct&>::value,
++              "simple struct should not be printable by const ref");
++static_assert(internal::SupportsOstreamOperator<StructWithOperator>::value,
++              "struct with operator<< should be printable by value");
++static_assert(
++    internal::SupportsOstreamOperator<const StructWithOperator&>::value,
++    "struct with operator<< should be printable by const ref");
++
++}  // namespace
++}  // namespace base
+diff --git a/chrome/browser/web_applications/commands/externally_managed_install_command.cc b/chrome/browser/web_applications/commands/externally_managed_install_command.cc
+index c9070bcef5a30..f7cf2599cdc61 100644
+--- a/chrome/browser/web_applications/commands/externally_managed_install_command.cc
++++ b/chrome/browser/web_applications/commands/externally_managed_install_command.cc
+@@ -9,7 +9,7 @@
+ 
+ #include "base/feature_list.h"
+ #include "base/functional/bind.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/web_applications/commands/web_app_command.h"
+ #include "chrome/browser/web_applications/external_install_options.h"
+diff --git a/chrome/browser/web_applications/commands/fetch_manifest_and_install_command.cc b/chrome/browser/web_applications/commands/fetch_manifest_and_install_command.cc
+index 5a644f592c9f2..10f8a088eeaa1 100644
+--- a/chrome/browser/web_applications/commands/fetch_manifest_and_install_command.cc
++++ b/chrome/browser/web_applications/commands/fetch_manifest_and_install_command.cc
+@@ -9,6 +9,7 @@
+ 
+ #include "base/feature_list.h"
+ #include "base/functional/bind.h"
++#include "base/strings/to_string.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/values.h"
+ #include "chrome/browser/profiles/profile.h"
+diff --git a/chrome/browser/web_applications/commands/install_from_info_command.cc b/chrome/browser/web_applications/commands/install_from_info_command.cc
+index 0bb088e86f57e..8c43b89793a99 100644
+--- a/chrome/browser/web_applications/commands/install_from_info_command.cc
++++ b/chrome/browser/web_applications/commands/install_from_info_command.cc
+@@ -11,6 +11,7 @@
+ #include "base/functional/bind.h"
+ #include "base/memory/weak_ptr.h"
+ #include "base/strings/stringprintf.h"
++#include "base/strings/to_string.h"
+ #include "chrome/browser/web_applications/locks/app_lock.h"
+ #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+ #include "chrome/browser/web_applications/web_app.h"
+diff --git a/chrome/browser/web_applications/commands/install_from_manifest_command.cc b/chrome/browser/web_applications/commands/install_from_manifest_command.cc
+index 634d8566c352e..59e3721160f14 100644
+--- a/chrome/browser/web_applications/commands/install_from_manifest_command.cc
++++ b/chrome/browser/web_applications/commands/install_from_manifest_command.cc
+@@ -11,7 +11,7 @@
+ #include "base/containers/flat_set.h"
+ #include "base/containers/flat_tree.h"
+ #include "base/functional/bind.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "chrome/browser/web_applications/locks/shared_web_contents_lock.h"
+ #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
+ #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
+diff --git a/chrome/browser/web_applications/commands/install_from_sync_command.cc b/chrome/browser/web_applications/commands/install_from_sync_command.cc
+index e8098f86b7f45..efea58bf47f73 100644
+--- a/chrome/browser/web_applications/commands/install_from_sync_command.cc
++++ b/chrome/browser/web_applications/commands/install_from_sync_command.cc
+@@ -10,7 +10,7 @@
+ #include "base/containers/flat_set.h"
+ #include "base/metrics/histogram_functions.h"
+ #include "base/metrics/histogram_macros.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/web_applications/commands/web_app_command.h"
+diff --git a/chrome/browser/web_applications/commands/install_placeholder_command.cc b/chrome/browser/web_applications/commands/install_placeholder_command.cc
+index efa19a4ae36f0..6640a522be4e7 100644
+--- a/chrome/browser/web_applications/commands/install_placeholder_command.cc
++++ b/chrome/browser/web_applications/commands/install_placeholder_command.cc
+@@ -7,6 +7,7 @@
+ #include <memory>
+ #include <utility>
+ 
++#include "base/strings/to_string.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/task/single_thread_task_runner.h"
+ #include "chrome/browser/profiles/profile.h"
+diff --git a/chrome/browser/web_applications/commands/manifest_update_check_command.cc b/chrome/browser/web_applications/commands/manifest_update_check_command.cc
+index 33e4c1eb3dfea..a0c793d99a619 100644
+--- a/chrome/browser/web_applications/commands/manifest_update_check_command.cc
++++ b/chrome/browser/web_applications/commands/manifest_update_check_command.cc
+@@ -5,6 +5,7 @@
+ #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
+ 
+ #include "base/feature_list.h"
++#include "base/strings/to_string.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/values.h"
+ #include "chrome/browser/web_applications/callback_utils.h"
+diff --git a/chrome/browser/web_applications/commands/manifest_update_finalize_command.cc b/chrome/browser/web_applications/commands/manifest_update_finalize_command.cc
+index 28268698ba2ab..88eb54ad260ae 100644
+--- a/chrome/browser/web_applications/commands/manifest_update_finalize_command.cc
++++ b/chrome/browser/web_applications/commands/manifest_update_finalize_command.cc
+@@ -8,7 +8,7 @@
+ 
+ #include "base/memory/raw_ptr.h"
+ #include "base/memory/weak_ptr.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/values.h"
+ #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
+diff --git a/chrome/browser/web_applications/commands/sub_app_install_command.cc b/chrome/browser/web_applications/commands/sub_app_install_command.cc
+index 31749a8d97c78..0bf4c30a910fd 100644
+--- a/chrome/browser/web_applications/commands/sub_app_install_command.cc
++++ b/chrome/browser/web_applications/commands/sub_app_install_command.cc
+@@ -12,7 +12,7 @@
+ #include "base/containers/flat_map.h"
+ #include "base/functional/callback.h"
+ #include "base/ranges/algorithm.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "base/values.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/web_applications/commands/web_app_command.h"
+diff --git a/chrome/browser/web_applications/commands/update_protocol_handler_approval_command.cc b/chrome/browser/web_applications/commands/update_protocol_handler_approval_command.cc
+index 79013ff6c0564..5fc5ab8799d5a 100644
+--- a/chrome/browser/web_applications/commands/update_protocol_handler_approval_command.cc
++++ b/chrome/browser/web_applications/commands/update_protocol_handler_approval_command.cc
+@@ -13,7 +13,7 @@
+ #include "base/functional/callback_helpers.h"
+ #include "base/memory/ptr_util.h"
+ #include "base/memory/weak_ptr.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "chrome/browser/web_applications/locks/app_lock.h"
+ #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+ #include "chrome/browser/web_applications/web_app_constants.h"
+diff --git a/chrome/browser/web_applications/commands/web_app_uninstall_command.cc b/chrome/browser/web_applications/commands/web_app_uninstall_command.cc
+index c321bc0e8e414..dbfb5ad2dcf72 100644
+--- a/chrome/browser/web_applications/commands/web_app_uninstall_command.cc
++++ b/chrome/browser/web_applications/commands/web_app_uninstall_command.cc
+@@ -11,7 +11,7 @@
+ #include "base/containers/contains.h"
+ #include "base/functional/bind.h"
+ #include "base/metrics/histogram_functions.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "chrome/browser/profiles/profile.h"
+ #include "chrome/browser/web_applications/locks/full_system_lock.h"
+ #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
+diff --git a/chrome/browser/web_applications/web_app.cc b/chrome/browser/web_applications/web_app.cc
+index fb6fc8ea83365..ed3261fcc0c60 100644
+--- a/chrome/browser/web_applications/web_app.cc
++++ b/chrome/browser/web_applications/web_app.cc
+@@ -16,7 +16,7 @@
+ #include "base/strings/strcat.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "base/strings/string_split.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "base/values.h"
+ #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+ #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
+diff --git a/chrome/browser/web_applications/web_app_registrar.cc b/chrome/browser/web_applications/web_app_registrar.cc
+index 44dfba1652b85..895eaf351653c 100644
+--- a/chrome/browser/web_applications/web_app_registrar.cc
++++ b/chrome/browser/web_applications/web_app_registrar.cc
+@@ -16,7 +16,7 @@
+ #include "base/functional/bind.h"
+ #include "base/functional/callback_helpers.h"
+ #include "base/observer_list.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "build/chromeos_buildflags.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/profiles/profile_manager.h"
+diff --git a/components/origin_trials/common/persisted_trial_token_unittest.cc b/components/origin_trials/common/persisted_trial_token_unittest.cc
+index a41327c97ab93..bd9d301126cf8 100644
+--- a/components/origin_trials/common/persisted_trial_token_unittest.cc
++++ b/components/origin_trials/common/persisted_trial_token_unittest.cc
+@@ -7,7 +7,7 @@
+ #include <string>
+ 
+ #include "base/containers/flat_set.h"
+-#include "base/strings/string_util.h"
++#include "base/strings/to_string.h"
+ #include "base/time/time.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ #include "third_party/blink/public/common/origin_trials/trial_token.h"

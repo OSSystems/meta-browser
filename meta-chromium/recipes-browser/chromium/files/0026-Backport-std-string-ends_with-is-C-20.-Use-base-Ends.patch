@@ -1,0 +1,28 @@
+From a9fee044f6317d350f1efe5afb6af88256ee1346 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Fri, 2 Jun 2023 10:03:44 +0000
+Subject: [PATCH] Backport "std::string::ends_with() is C++20. Use
+ base::EndsWith() instead."
+
+This backported patch fixes a dunfell compilation error and will be
+included upstream in the 115 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4523078]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ net/cookies/cookie_util.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/net/cookies/cookie_util.cc b/net/cookies/cookie_util.cc
+index 071c86710e640..797e89ba67780 100644
+--- a/net/cookies/cookie_util.cc
++++ b/net/cookies/cookie_util.cc
+@@ -326,7 +326,7 @@ bool GetCookieDomainWithString(const GURL& url,
+   // a sequence of individual domain name labels"; a label can only be empty if
+   // it is the last label in the name, but a name ending in `..` would have an
+   // empty label in the penultimate position and is thus invalid.
+-  if (url_host.ends_with("..")) {
++  if (base::EndsWith(url_host, "..")) {
+     return false;
+   }
+   // If no domain was specified in the domain string, default to a host cookie.

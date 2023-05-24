@@ -1,0 +1,103 @@
+From 90b6f5b07d977c14bd600b7d03ffc08a1215633f Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 25 May 2023 20:41:55 +0000
+Subject: [PATCH] Revert `__attribute__` and `alignas` changes
+
+https://crrev.com/c/4322480 made some changes to Chromium's use of
+attributes, which also included how they are used together with the
+alignas syntax. Quoting a comment introduced in that CL:
+> Historically, compilers had trouble mixing __attribute__((...)) syntax
+> with alignas(...) syntax. However, at least Clang is very accepting
+> nowadays.
+
+This isn't the case for the clang versions we use (<= 15), so we need to
+revert that change.
+
+Other changes from the linked CL are also suboptimal, e.g.
+[[clang::noinline]] and [[clang::always_inline]] are only available
+since clang 15, and using them on older versions leads to warnings (and
+in this case, they're used quite often, so the compile logs are quite
+cluttered). However, the changes are not easily revertable, because they
+require keyword order changes in lots of files. To avoid an increased
+number of conflicts when rebasing this patch for newer version, we just
+keep the warnings and ignore them. (The compiler should still generate
+reasonably performant code even without the explicit inlining
+annotations.)
+
+Upstream-Status: Inappropriate
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../partition_alloc_base/compiler_specific.h  | 23 +++++++++++++------
+ base/compiler_specific.h                      | 23 +++++++++++++------
+ 2 files changed, 32 insertions(+), 14 deletions(-)
+
+diff --git a/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h b/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
+index 77ec1fe9b64c9..d011f6e3678df 100644
+--- a/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
++++ b/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
+@@ -66,14 +66,23 @@
+ //
+ // In most places you can use the C++11 keyword "alignas", which is preferred.
+ //
+-// Historically, compilers had trouble mixing __attribute__((...)) syntax with
+-// alignas(...) syntax. However, at least Clang is very accepting nowadays. It
+-// may be that this macro can be removed entirely.
+-#if defined(__clang__)
+-#define PA_ALIGNAS(byte_alignment) alignas(byte_alignment)
+-#elif defined(COMPILER_MSVC)
++// But compilers have trouble mixing __attribute__((...)) syntax with
++// alignas(...) syntax.
++//
++// Doesn't work in clang or gcc:
++//   struct alignas(16) __attribute__((packed)) S { char c; };
++// Works in clang but not gcc:
++//   struct __attribute__((packed)) alignas(16) S2 { char c; };
++// Works in clang and gcc:
++//   struct alignas(16) S3 { char c; } __attribute__((packed));
++//
++// There are also some attributes that must be specified *before* a class
++// definition: visibility (used for exporting functions/classes) is one of
++// these attributes. This means that it is not possible to use alignas() with a
++// class that is marked as exported.
++#if defined(COMPILER_MSVC)
+ #define PA_ALIGNAS(byte_alignment) __declspec(align(byte_alignment))
+-#elif defined(COMPILER_GCC) && PA_HAS_ATTRIBUTE(aligned)
++#elif defined(COMPILER_GCC)
+ #define PA_ALIGNAS(byte_alignment) __attribute__((aligned(byte_alignment)))
+ #endif
+ 
+diff --git a/base/compiler_specific.h b/base/compiler_specific.h
+index a961fe938cc5b..d8c4fcf7eddb3 100644
+--- a/base/compiler_specific.h
++++ b/base/compiler_specific.h
+@@ -82,14 +82,23 @@
+ //
+ // In most places you can use the C++11 keyword "alignas", which is preferred.
+ //
+-// Historically, compilers had trouble mixing __attribute__((...)) syntax with
+-// alignas(...) syntax. However, at least Clang is very accepting nowadays. It
+-// may be that this macro can be removed entirely.
+-#if defined(__clang__)
+-#define ALIGNAS(byte_alignment) alignas(byte_alignment)
+-#elif defined(COMPILER_MSVC)
++// But compilers have trouble mixing __attribute__((...)) syntax with
++// alignas(...) syntax.
++//
++// Doesn't work in clang or gcc:
++//   struct alignas(16) __attribute__((packed)) S { char c; };
++// Works in clang but not gcc:
++//   struct __attribute__((packed)) alignas(16) S2 { char c; };
++// Works in clang and gcc:
++//   struct alignas(16) S3 { char c; } __attribute__((packed));
++//
++// There are also some attributes that must be specified *before* a class
++// definition: visibility (used for exporting functions/classes) is one of
++// these attributes. This means that it is not possible to use alignas() with a
++// class that is marked as exported.
++#if defined(COMPILER_MSVC)
+ #define ALIGNAS(byte_alignment) __declspec(align(byte_alignment))
+-#elif defined(COMPILER_GCC) && HAS_ATTRIBUTE(aligned)
++#elif defined(COMPILER_GCC)
+ #define ALIGNAS(byte_alignment) __attribute__((aligned(byte_alignment)))
+ #endif
+ 
