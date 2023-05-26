@@ -4,6 +4,8 @@ Date: Tue, 11 Apr 2023 15:37:58 +0200
 Subject: [PATCH] Revert "Fix std::span autodetection (#7805)"
 
 This reverts commit a6f41944899e65b38ec45ee82f6840248f06b471.
+
+Upstream-Status: Inappropriate
 ---
  .../src/include/flatbuffers/stl_emulation.h | 19 ++++++++-----------
  1 file changed, 8 insertions(+), 11 deletions(-)

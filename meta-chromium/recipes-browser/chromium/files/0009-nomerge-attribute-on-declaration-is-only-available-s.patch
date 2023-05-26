@@ -20,6 +20,8 @@ build error: 'nomerge' attribute cannot be applied to a declaration
 See https://reviews.llvm.org/D92800
 
 Change-Id: I32e1f7dc9049737d54d8a16de5308aa5aae1ced1
+
+Upstream-Status: Inappropriate
 ---
  base/compiler_specific.h | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)

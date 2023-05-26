@@ -8,7 +8,8 @@ the first declaration was removed in P2085R0, which clang only supports
 in versions 14 and above. Because dunfell still uses clang 12, we need
 to fix the few occurrences where this requirement isn't met.
 
-Upstream-Status: Unknown
+Upstream-Status: Inappropriate
+
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
  .../core/browser/affiliation/affiliation_fetcher_base.cc     | 3 ---
