@@ -1,6 +1,8 @@
 Source: https://git.alpinelinux.org/aports/plain/community/chromium/no-res-ninit-nclose.patch
 similar to dns-resolver.patch, musl doesn't have res_ninit and so on
 
+Upstream-Status: Pending
+
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/net/dns/public/scoped_res_state.cc
 +++ b/net/dns/public/scoped_res_state.cc
