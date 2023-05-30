@@ -1,7 +1,6 @@
-From d6eb718821bbeecc6d4c558563b9e9e8f4418005 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Tue, 22 May 2018 07:51:56 +0900
-Subject: [PATCH] Avoid using vmrs/vmsr on armel
+Subject: Avoid using vmrs/vmsr on armel
 
 ---
 Upstream-Status: Pending
@@ -10,7 +9,7 @@ Upstream-Status: Pending
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dom/media/webaudio/blink/DenormalDisabler.h b/dom/media/webaudio/blink/DenormalDisabler.h
-index b7a3ca321c..4f92d77968 100644
+index 51f56bd..ed06a09 100644
 --- a/dom/media/webaudio/blink/DenormalDisabler.h
 +++ b/dom/media/webaudio/blink/DenormalDisabler.h
 @@ -44,7 +44,7 @@ namespace WebCore {

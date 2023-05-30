@@ -6,16 +6,14 @@ Subject: [PATCH] Mark GLFeature::framebuffer_multisample as unsupported
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
 
 ---
-Upstream-Status: Pending
-
  gfx/gl/GLContext.cpp | 10 ++++++++++
  1 file changed, 10 insertions(+)
 
 diff --git a/gfx/gl/GLContext.cpp b/gfx/gl/GLContext.cpp
-index 28fbdbac39..92206fac11 100644
+index e2c534a4eb..6388d9fc3c 100644
 --- a/gfx/gl/GLContext.cpp
 +++ b/gfx/gl/GLContext.cpp
-@@ -705,6 +705,16 @@ bool GLContext::InitImpl() {
+@@ -751,6 +751,16 @@ bool GLContext::InitImpl() {
        MarkUnsupported(GLFeature::framebuffer_multisample);
      }
  
@@ -29,6 +27,6 @@ index 28fbdbac39..92206fac11 100644
 +    }
 +#endif
 +
- #ifdef XP_MACOSX
-     // The Mac Nvidia driver, for versions up to and including 10.8,
-     // don't seem to properly support this.  See 814839
+     if (IsMesa()) {
+       // DrawElementsInstanced hangs the driver.
+       MarkUnsupported(GLFeature::robust_buffer_access_behavior);

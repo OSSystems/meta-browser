@@ -1,0 +1,28 @@
+WASM2C used by Firfox does not support bulk-memory operations, and WASI doesn't support exceptions.
+
+This patch disabled these, and fixes "unexpected opcode: 0xfc 0xa" error while compiling Firefox
+diff --git a/Makefile b/Makefile
+index 8608289..f46077b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -109,6 +109,9 @@ build/wasi-libc.BUILT: build/llvm.BUILT
+ 		CC=$(BUILD_PREFIX)/bin/clang \
+ 		AR=$(BUILD_PREFIX)/bin/llvm-ar \
+ 		NM=$(BUILD_PREFIX)/bin/llvm-nm \
++		BULK_MEMORY_SOURCES= \
++		EXTRA_CFLAGS='-fno-exceptions -O2 -DNDEBUG -mno-bulk-memory ' \
++		THREAD_MODEL=single \
+ 		SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot
+ 	$(MAKE) -C $(ROOT_DIR)/src/wasi-libc \
+ 		CC=$(BUILD_PREFIX)/bin/clang \
+@@ -191,8 +194,8 @@ build/libcxx.BUILT: build/llvm.BUILT build/compiler-rt.BUILT build/wasi-libc.BUI
+ 	mkdir -p build/libcxx
+ 	cd build/libcxx && cmake -G Ninja $(LIBCXX_CMAKE_FLAGS:@PTHREAD@=OFF) \
+ 		-DCMAKE_SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
+-		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP) $(EXTRA_CFLAGS)" \
+-		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP) $(EXTRA_CXXFLAGS)" \
++		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP) $(EXTRA_CFLAGS) -fno-exceptions -mno-bulk-memory" \
++		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP) $(EXTRA_CXXFLAGS) -fno-cxx-exceptions -mno-bulk-memory" \
+ 		-DLIBCXX_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
+ 		-DLIBCXXABI_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
+ 		-DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \

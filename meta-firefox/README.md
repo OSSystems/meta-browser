@@ -1,3 +1,19 @@
+Note from OldManYellsAtCloud
+============
+
+This is an updated version of meta-firefox layer, with a newer version of Firefox.
+
+It is based on the meta-browser layer. It has been tested with Yocto Mickledore only, mostly due to lack of laptop power. I would expect it to work with previous version also, if meta-rust is pulled in.
+Feel free to test, and report back the results. 
+
+The layer build successfully with aarch64-poky-linux-gnu arch (tested with PinePhone). Tests with other architectures would be welcome.
+
+Plan to upstream this in the near future. If you want to help in, feel free to solve an issue or open a new one.
+
+Make sure to add `RUST_PANIC_STRATEGY = "abort"` to local.conf before compiling Rust.
+
+In case you are building the browser for a CPU without hardware encryption support (e.g. anything before armv8, like the first gen RPi), set the following in your distro.conf: `PREFERRED_VERSION_nss = "3.89"`
+
 OpenEmbedded/Yocto BSP layer for Firefox Browser
 ================================================
 
@@ -18,14 +34,6 @@ This layer depends on:
 * URI: git://github.com/kraj/meta-clang
   - branch: master
   - revision: HEAD
-
-* URI: git://github.com/meta-rust/meta-rust
-  - branch: master
-  - revision: HEAD
-
-* python2.7 and python on host for HOSTTOOLS
-  - e.g. on newer ubuntu which doesn't install python2 at all by default
-    you need to install python-is-python2 (which will pull python2-minimal/python2.7-minimal)
 
 Contributing
 ------------
@@ -75,13 +83,13 @@ PACKAGECONFIG knobs
 
 * openmax: (off by default)
   Enable OpenMAX IL decoder to play H.264 video.
-  This features is confirmed only on Renesas RZ/G1.
+  This features is confirmed only on Renesas RZ/G1. Note: it is untested with version 113+.
 
 * webgl: (off by default)
   Firefox on Linux doesn't enable WebGL against most GPUs by default. This
   option adds a config file to enable it focedly.
 
-* forbit-multiple-compositors: (off by default)
+* forbid-multiple-compositors: (off by default)
   This option allows to create only one GPU accelerated compositor, second and
   the following windows will use basic compositors. Multiple compositor may
   cause crash on platforms that doesn't support multiple EGL windows.

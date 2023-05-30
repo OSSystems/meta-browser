@@ -12,22 +12,20 @@ Signed-off-by: Takuro Ashie <ashie@clear-code.com>
  widget/nsBaseWidget.cpp | 7 +++++++
  1 file changed, 7 insertions(+)
 
-diff --git a/widget/nsBaseWidget.cpp b/widget/nsBaseWidget.cpp
-index 00411c736dd3..6f9ff218b8b7 100644
---- a/widget/nsBaseWidget.cpp
-+++ b/widget/nsBaseWidget.cpp
-@@ -131,6 +131,8 @@ int32_t nsIWidget::sPointerIdCounter = 0;
- // milliseconds.
- const uint32_t kAsyncDragDropTimeout = 1000;
+--- ./widget/nsBaseWidget.cpp	2023-06-05 20:45:30.405637478 +0200
++++ ./widget/nsBaseWidget.cpp	2023-06-05 20:47:42.418282855 +0200
+@@ -116,6 +116,8 @@
+ #define TOUCH_INJECT_LONG_TAP_DEFAULT_MSEC 1500
+ int32_t nsIWidget::sPointerIdCounter = 0;
  
 +static nsBaseWidget *sSingleCompositorWidget = nullptr;
 +
- namespace mozilla {
- namespace widget {
- 
-@@ -278,6 +280,9 @@ void nsBaseWidget::DestroyCompositor() {
-     RefPtr<CompositorSession> session = mCompositorSession.forget();
-     session->Shutdown();
+ // Some statics from nsIWidget.h
+ /*static*/
+ uint64_t AutoObserverNotifier::sObserverId = 0;
+@@ -341,6 +343,9 @@
+     mCompositorSession->Shutdown();
+     mCompositorSession = nullptr;
    }
 +
 +  if (sSingleCompositorWidget == this)
@@ -35,15 +33,12 @@ index 00411c736dd3..6f9ff218b8b7 100644
  }
  
  // This prevents the layer manager from starting a new transaction during
-@@ -1335,6 +1340,8 @@ void nsBaseWidget::CreateCompositor(int aWidth, int aHeight) {
+@@ -1512,6 +1517,8 @@
      gfxPlatform::GetPlatform()->NotifyCompositorCreated(
-         mLayerManager->GetCompositorBackendType());
+         mWindowRenderer->GetCompositorBackendType());
    }
 +
 +  sSingleCompositorWidget = this;
  }
  
  void nsBaseWidget::NotifyCompositorSessionLost(CompositorSession* aSession) {
--- 
-2.17.1
-

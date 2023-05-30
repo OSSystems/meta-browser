@@ -37,12 +37,12 @@ python do_install() {
     import json
     with open(manifest) as f:
         data = json.load(f)
-    d.setVar("EXTENSION", data["applications"]["gecko"]["id"])
+    d.setVar("EXTENSION", data["browser_specific_settings"]["gecko"]["id"])
     bb.build.exec_func("do_install_xpi_pack", d)
 }
 
 do_install_xpi_pack() {
-    install -D -m 0644 ${LANGUAGE}.xpi ${D}${libdir}/firefox/browser/extensions/${EXTENSION}.xpi
+    install -D -m 0644 ${LANGUAGE}.xpi ${D}${datadir}/mozilla/extensions/\{ec8030f7-c20a-464f-9b0e-13a3a9e97384\}/${EXTENSION}.xpi
 }
 
-FILES:${PN} += "${libdir}/firefox"
+FILES:${PN} += "${datadir}/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
