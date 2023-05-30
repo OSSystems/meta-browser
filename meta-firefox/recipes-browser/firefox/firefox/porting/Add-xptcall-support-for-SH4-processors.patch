@@ -1,14 +1,10 @@
-From 1a0ad7cf0cadece2714edb4a218d5a79dc88e3a3 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Fri, 30 Apr 2010 11:03:50 +0200
-Subject: [PATCH] Add xptcall support for SH4 processors
+Subject: Add xptcall support for SH4 processors
 
 Closes: #553593
 https://bugzilla.mozilla.org/show_bug.cgi?id=382214
-
 ---
-Upstream-Status: Pending
-
  xpcom/reflect/xptcall/md/unix/moz.build       |   5 +
  .../src/md/unix/xptcinvoke_linux_sh.cpp       | 203 +++++++++++++
  .../src/md/unix/xptcstubs_linux_sh.cpp        | 271 ++++++++++++++++++
@@ -17,12 +13,12 @@ Upstream-Status: Pending
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
 diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index 61a364abb6..52b7988924 100644
+index 1779c14..43a10a2 100644
 --- a/xpcom/reflect/xptcall/md/unix/moz.build
 +++ b/xpcom/reflect/xptcall/md/unix/moz.build
-@@ -252,6 +252,11 @@ if CONFIG['OS_ARCH'] == 'Linux':
+@@ -262,6 +262,11 @@ if CONFIG["OS_ARCH"] == "Linux":
              CXXFLAGS += [
-                 '-fno-integrated-as',
+                 "-fno-integrated-as",
              ]
 +    elif CONFIG['OS_TEST'] in ('sh4', 'sh4a'):
 +        SOURCES += [
@@ -30,11 +26,11 @@ index 61a364abb6..52b7988924 100644
 +            'xptcstubs_linux_sh.cpp',
 +        ]
  
- FINAL_LIBRARY = 'xul'
- 
+ if CONFIG["OS_ARCH"] == "Linux" and CONFIG["CPU_ARCH"] == "riscv64":
+     SOURCES += [
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 new file mode 100644
-index 0000000000..ca4807daca
+index 0000000..ca4807d
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 @@ -0,0 +1,203 @@
@@ -243,7 +239,7 @@ index 0000000000..ca4807daca
 +
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 new file mode 100644
-index 0000000000..cf9fceabd8
+index 0000000..cf9fcea
 --- /dev/null
 +++ b/xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 @@ -0,0 +1,271 @@

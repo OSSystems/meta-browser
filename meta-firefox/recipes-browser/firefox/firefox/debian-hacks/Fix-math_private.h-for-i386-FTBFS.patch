@@ -1,0 +1,24 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sat, 27 Nov 2021 06:49:44 +0900
+Subject: Fix math_private.h for i386 FTBFS
+
+---
+ modules/fdlibm/src/math_private.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/modules/fdlibm/src/math_private.h b/modules/fdlibm/src/math_private.h
+index 51d79f9..fafd7d6 100644
+--- a/modules/fdlibm/src/math_private.h
++++ b/modules/fdlibm/src/math_private.h
+@@ -30,7 +30,11 @@
+  * Adapted from https://github.com/freebsd/freebsd-src/search?q=__double_t
+  */
+ 
++#if defined __FLT_EVAL_METHOD__ && (__FLT_EVAL_METHOD__ == 2)
++typedef long double      __double_t;
++#else
+ typedef double      __double_t;
++#endif
+ typedef __double_t  double_t;
+ typedef float       __float_t;
+ 

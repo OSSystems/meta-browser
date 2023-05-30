@@ -1,25 +1,21 @@
-From fb5aa421cba3581f483dacdf90074e3c4e8b0d40 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sun, 2 Apr 2017 06:33:19 +0900
-Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
- not there
+Subject: Use the Mozilla Location Service key when the Google Key is not there
 
 ---
-Upstream-Status: Pending
-
- browser/app/profile/firefox.js | 2 +-
+ modules/libpref/init/all.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
-index d735929909..778d29763f 100644
---- a/browser/app/profile/firefox.js
-+++ b/browser/app/profile/firefox.js
-@@ -1394,7 +1394,7 @@ pref("dom.debug.propagate_gesture_events_through_content", false);
+diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
+index db545cd..71fb01f 100644
+--- a/modules/libpref/init/all.js
++++ b/modules/libpref/init/all.js
+@@ -3555,7 +3555,7 @@ pref("network.psl.onUpdate_notify", false);
  
  // All the Geolocation preferences are here.
  //
 -#ifndef EARLY_BETA_OR_EARLIER
 +#if !defined(EARLY_BETA_OR_EARLIER) && defined(GOOGLE_LOCATION_SERVICE_API_KEY)
- pref("geo.wifi.uri", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
+   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
  #else
- // Use MLS on Nightly and early Beta.
+   // Use MLS on Nightly and early Beta.

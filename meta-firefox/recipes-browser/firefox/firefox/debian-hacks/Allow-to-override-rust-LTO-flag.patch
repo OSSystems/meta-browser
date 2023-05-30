@@ -1,0 +1,31 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 14 Aug 2022 15:05:23 +0900
+Subject: Allow to override rust LTO flag
+
+---
+ config/makefiles/rust.mk | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/config/makefiles/rust.mk b/config/makefiles/rust.mk
+index a243ee5..5a97613 100644
+--- a/config/makefiles/rust.mk
++++ b/config/makefiles/rust.mk
+@@ -90,8 +90,9 @@ ifndef rustflags_sancov
+ # Never enable when coverage is enabled to work around https://github.com/rust-lang/rust/issues/90045.
+ ifndef MOZ_CODE_COVERAGE
+ ifeq (,$(findstring gkrust_gtest,$(RUST_LIBRARY_FILE)))
+-cargo_rustc_flags += -Clto
++cargo_rustc_flags += $(or $(DEBIAN_RUST_LTO),-Clto)
+ endif
++ifneq (-Clto=off,$(DEBIAN_RUST_LTO))
+ # We need -Cembed-bitcode=yes for all crates when using -Clto.
+ RUSTFLAGS += -Cembed-bitcode=yes
+ endif
+@@ -99,6 +100,7 @@ endif
+ endif
+ endif
+ endif
++endif
+ 
+ ifdef CARGO_INCREMENTAL
+ export CARGO_INCREMENTAL

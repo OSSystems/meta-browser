@@ -1,0 +1,44 @@
+From bca435c99d32e2fd9ff80789a62489d5550ff230 Mon Sep 17 00:00:00 2001
+From: Kas User <kas@example.com>
+Date: Sun, 11 Jun 2023 20:37:25 +0200
+Subject: [PATCH] Fix compiling with --enable-openmax config
+
+Fixes error: no viable conversion from 'OmxDecoderModule *' to 'already_AddRefed<PlatformDecoderModule>'
+---
+ dom/media/platforms/omx/OmxDecoderModule.cpp | 4 ++--
+ dom/media/platforms/omx/OmxDecoderModule.h   | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/dom/media/platforms/omx/OmxDecoderModule.cpp b/dom/media/platforms/omx/OmxDecoderModule.cpp
+index 2267e66cc3..d53ee07c5e 100644
+--- a/dom/media/platforms/omx/OmxDecoderModule.cpp
++++ b/dom/media/platforms/omx/OmxDecoderModule.cpp
+@@ -23,10 +23,10 @@ bool OmxDecoderModule::Init() {
+   return false;
+ }
+ 
+-OmxDecoderModule* OmxDecoderModule::Create() {
++already_AddRefed<PlatformDecoderModule> OmxDecoderModule::Create() {
+ #ifdef MOZ_OMX
+   if (Init()) {
+-    return new OmxDecoderModule();
++    return MakeAndAddRef<OmxDecoderModule>();
+   }
+ #endif
+   return nullptr;
+diff --git a/dom/media/platforms/omx/OmxDecoderModule.h b/dom/media/platforms/omx/OmxDecoderModule.h
+index 04fa809e54..932994ecaa 100644
+--- a/dom/media/platforms/omx/OmxDecoderModule.h
++++ b/dom/media/platforms/omx/OmxDecoderModule.h
+@@ -15,7 +15,7 @@ class OmxDecoderModule : public PlatformDecoderModule {
+  public:
+   // Called on main thread.
+   static bool Init();
+-  static OmxDecoderModule* Create();
++  static already_AddRefed<PlatformDecoderModule> Create();
+ 
+   already_AddRefed<MediaDataDecoder> CreateVideoDecoder(
+       const CreateDecoderParams& aParams) override;
+-- 
+2.30.2
+

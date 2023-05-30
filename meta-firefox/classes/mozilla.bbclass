@@ -1,9 +1,7 @@
 SECTION = "x11/utils"
 DEPENDS += "gnu-config-native virtual/libintl libxt libxi zip-native gtk+"
 
-SRC_URI += "file://mozconfig"
-
-inherit pkgconfig
+inherit pkgconfig cargo
 
 EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
                 --with-toolchain-prefix=${TARGET_SYS}- \
@@ -17,33 +15,33 @@ SELECTED_OPTIMIZATION = "-Os -fsigned-char -fno-strict-aliasing"
 export CROSS_COMPILE = "1"
 export MOZCONFIG = "${B}/mozconfig"
 export MOZ_OBJDIR = "${S}/firefox-build-dir"
+export MOZBUILD_STATE_PATH = "${S}/mozbuild_state"
 
-export HOST_CC = "${BUILD_CC}"
-export HOST_CXX = "${BUILD_CXX}"
-export HOST_CFLAGS = "${BUILD_CFLAGS}"
-export HOST_CXXFLAGS = "${BUILD_CXXFLAGS}"
-export HOST_LDFLAGS = "${BUILD_LDFLAGS}"
-export HOST_RANLIB = "${BUILD_RANLIB}"
-export HOST_AR = "${BUILD_AR}"
+export OUT_DIR="${S}/build/target/release/deps"
+export WASI_SYSROOT="${STAGING_DATADIR_NATIVE}/wasi-sysroot"
+
+export WASM_CC="${WASI_SYSROOT}/bin/clang -target wasm32-wasi "
+export WASM_CXX="${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
+
+#export WASM_CXXFLAGS=" -Xclang -target-feature -Xclang -bulk-memory "
+
+export BUILD_VERBOSE_LOG="1"
 
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
-	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=unwind"
-	# this needs to match with:
-	# firefox/68.9.0esr $ recipe-sysroot-native/usr/bin/rustc --version --verbose | grep ^host
-	# host: x86_64-unknown-linux-gnu
-	export RUST_HOST="${RUST_BUILD_SYS}"
-	export RUST_TARGET="${RUST_HOST_SYS}"
-	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
-	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
+	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=abort -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
+	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
+        export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
 	export INSTALL_SDK=0
 	export DESTDIR="${D}"
+
+        cd "${S}"
 
 	./mach "$@"
 }
 
-mozilla_do_configure() {
+do_configure:append() {
 	install -D -m 0644 ${WORKDIR}/mozconfig ${MOZCONFIG}
 	if [ ! -z "${EXTRA_OECONF}" ] ; then
 		for f in ${EXTRA_OECONF}
@@ -60,15 +58,18 @@ mozilla_do_configure() {
 	echo ac_add_options --enable-optimize=\"${SELECTED_OPTIMIZATION}\" \
 		>> ${MOZCONFIG}
 
+        oe_cargo_fix_env
 	mozilla_run_mach configure
 }
 
 mozilla_do_compile() {
+        oe_cargo_fix_env
 	mozilla_run_mach build
 }
 
 mozilla_do_install() {
+        oe_cargo_fix_env
 	mozilla_run_mach install
 }
 
-EXPORT_FUNCTIONS do_configure do_compile do_install
+EXPORT_FUNCTIONS do_install do_compile

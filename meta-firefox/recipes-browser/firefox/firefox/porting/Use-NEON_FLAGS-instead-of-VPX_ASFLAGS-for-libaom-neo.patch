@@ -1,19 +1,16 @@
-From 385639786b1988a6848691d929f00449aa0a7431 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 26 Nov 2018 09:59:56 +0900
-Subject: [PATCH] Use NEON_FLAGS instead of VPX_ASFLAGS for libaom neon code
+Subject: Use NEON_FLAGS instead of VPX_ASFLAGS for libaom neon code
 
 ---
-Upstream-Status: Pending
-
  media/libaom/moz.build | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/media/libaom/moz.build b/media/libaom/moz.build
-index 5f169b3941..8624607424 100644
+index fd8c7f2..db3f9ca 100644
 --- a/media/libaom/moz.build
 +++ b/media/libaom/moz.build
-@@ -65,7 +65,7 @@ elif CONFIG['CPU_ARCH'] == 'arm':
+@@ -55,7 +55,7 @@ elif CONFIG['CPU_ARCH'] == 'arm':
  
      for f in SOURCES:
          if f.endswith('neon.c'):

@@ -1,0 +1,26 @@
+. $topsrcdir/browser/config/mozconfig
+
+ac_add_options --enable-application=browser
+ac_add_options --enable-official-branding
+
+ac_add_options --enable-release
+
+ac_add_options --disable-strip
+ac_add_options --disable-install-strip
+
+# System libraries
+ac_add_options --with-system-zlib
+ac_add_options --with-system-libevent
+ac_add_options --enable-system-ffi
+ac_add_options --enable-system-pixman
+
+# Features
+ac_add_options --enable-mobile-optimize
+ac_add_options --enable-pulseaudio
+ac_add_options --disable-tests
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --disable-debug-symbols
+
+ac_add_options --allow-addon-sideload

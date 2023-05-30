@@ -6,8 +6,6 @@ Subject: [PATCH] GLLibraryLoader: Use given symbol lookup function first
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
 
 ---
-Upstream-Status: Pending
-
  gfx/gl/GLLibraryLoader.cpp | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 

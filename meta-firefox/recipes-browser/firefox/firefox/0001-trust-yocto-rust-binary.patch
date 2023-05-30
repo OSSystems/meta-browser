@@ -1,0 +1,23 @@
+From d372a0ee192003b01f5467f317831cb4d99251fb Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Tue, 30 May 2023 22:17:51 +0200
+Subject: [PATCH] update firefox
+
+---
+ build/moz.configure/rust.configure | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index 06c0778f5e..4f15da572b 100644
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -84,7 +84,8 @@ def unwrap_rustup(prog, name):
+                 # installed, but go ahead and unwrap anyway: the user might
+                 # have only certain versions, beta, or nightly installed, and
+                 # we'll catch invalid versions later.
+-                prog = from_rustup_which()
++                # prog = from_rustup_which()
++                pass
+ 
+         return normalize_path(prog)
+ 

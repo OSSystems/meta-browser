@@ -12,18 +12,19 @@ Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
 Signed-off-by: Takuro Ashie <ashie@clear-code.com>
 
 ---
- gfx/gl/GLContextProviderEGL.cpp | 6 ++++++
+ gfx/gl/GLContextProviderEGL.cpp | 7 ++++++-
  gfx/gl/GLLibraryEGL.cpp         | 2 ++
- 2 files changed, 8 insertions(+)
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/gfx/gl/GLContextProviderEGL.cpp b/gfx/gl/GLContextProviderEGL.cpp
-index 0ee98f3fce..ac6f29a2eb 100644
+index 954043ef9e..67db2312e8 100644
 --- a/gfx/gl/GLContextProviderEGL.cpp
 +++ b/gfx/gl/GLContextProviderEGL.cpp
-@@ -525,10 +525,16 @@ void GLContextEGL::GetWSIInfo(nsCString* const out) const {
-   out->Append(
-       (const char*)mEgl->fQueryString(EGL_DISPLAY(), LOCAL_EGL_EXTENSIONS));
- 
+@@ -571,12 +571,17 @@ void GLContextEGL::GetWSIInfo(nsCString* const out) const {
+   out->AppendLiteral("\nEGL_EXTENSIONS: ");
+   out->Append((const char*)mEgl->mLib->fQueryString(mEgl->mDisplay,
+                                                     LOCAL_EGL_EXTENSIONS));
+-
 +#if 0
  #ifndef ANDROID  // This query will crash some old android.
 +  // Bug 1209612: Crashes on a number of android drivers.
@@ -31,17 +32,18 @@ index 0ee98f3fce..ac6f29a2eb 100644
 +  // client extension list on ANDROID or embedded linux (we mostly need it on
 +  // ANGLE), and we'd rather not crash.
    out->AppendLiteral("\nEGL_EXTENSIONS(nullptr): ");
-   out->Append((const char*)mEgl->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
+   out->Append(
+       (const char*)mEgl->mLib->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
  #endif
 +#endif
  }
  
- // hold a reference to the given surface
+ bool GLContextEGL::HasExtBufferAge() const {
 diff --git a/gfx/gl/GLLibraryEGL.cpp b/gfx/gl/GLLibraryEGL.cpp
-index 812a66c79e..679b5426e9 100644
+index 3cca87c2bd..7e11cc2605 100644
 --- a/gfx/gl/GLLibraryEGL.cpp
 +++ b/gfx/gl/GLLibraryEGL.cpp
-@@ -834,12 +834,14 @@ void GLLibraryEGL::InitClientExtensions() {
+@@ -933,12 +933,14 @@ void GLLibraryEGL::InitLibExtensions() {
  
    const char* rawExtString = nullptr;
  

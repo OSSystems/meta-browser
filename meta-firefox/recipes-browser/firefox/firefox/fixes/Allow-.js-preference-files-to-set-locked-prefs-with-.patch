@@ -1,29 +1,27 @@
-From bc6e207320da4d0596c0d39712dd0ca7ea69186c Mon Sep 17 00:00:00 2001
 From: Mike Hommey <glandium@debian.org>
 Date: Sat, 21 Jun 2008 02:48:46 +0200
-Subject: [PATCH] Allow .js preference files to set locked prefs with
- lockPref()
+Subject: Allow .js preference files to set locked prefs with lockPref()
 
 ---
-Upstream-Status: Pending
-
- modules/libpref/parser/src/lib.rs | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ modules/libpref/parser/src/lib.rs | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
 diff --git a/modules/libpref/parser/src/lib.rs b/modules/libpref/parser/src/lib.rs
-index ca253e2b01..35bdaed674 100644
+index bce98c0..da33195a 100644
 --- a/modules/libpref/parser/src/lib.rs
 +++ b/modules/libpref/parser/src/lib.rs
-@@ -10,7 +10,7 @@
- //!
+@@ -11,8 +11,9 @@
+ //! ```text
  //! <pref-file>   = <pref>*
  //! <pref>        = <pref-spec> "(" <pref-name> "," <pref-value> <pref-attrs> ")" ";"
--//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref"
+-//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref" // in default pref files
++//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref" | "lockPref" // in default pref files
+ //! <pref-spec>   = "user_pref"                          // in user pref files
 +//! <pref-spec>   = "user_pref" | "pref" | "sticky_pref | lockPref"
  //! <pref-name>   = <string-literal>
  //! <pref-value>  = <string-literal> | "true" | "false" | <int-value>
  //! <int-value>   = <sign>? <int-literal>
-@@ -153,6 +153,7 @@ enum Token {
+@@ -169,6 +170,7 @@ enum Token {
      // Keywords
      Pref,       // pref
      StickyPref, // sticky_pref
@@ -31,40 +29,47 @@ index ca253e2b01..35bdaed674 100644
      UserPref,   // user_pref
      True,       // true
      False,      // false
-@@ -273,7 +274,7 @@ struct KeywordInfo {
-   token: Token,
+@@ -291,7 +293,7 @@ struct KeywordInfo {
+     token: Token,
  }
  
 -const KEYWORD_INFOS: [KeywordInfo; 7] = [
 +const KEYWORD_INFOS: [KeywordInfo; 8] = [
-   // These are ordered by frequency.
-   KeywordInfo { string: b"pref",        token: Token::Pref },
-   KeywordInfo { string: b"true",        token: Token::True },
-@@ -282,6 +283,7 @@ const KEYWORD_INFOS: [KeywordInfo; 7] = [
-   KeywordInfo { string: b"sticky",      token: Token::Sticky },
-   KeywordInfo { string: b"locked",      token: Token::Locked },
-   KeywordInfo { string: b"sticky_pref", token: Token::StickyPref },
-+  KeywordInfo { string: b"lockPref",    token: Token::LockPref },
+     // These are ordered by frequency.
+     KeywordInfo {
+         string: b"pref",
+@@ -321,6 +323,10 @@ const KEYWORD_INFOS: [KeywordInfo; 7] = [
+         string: b"sticky_pref",
+         token: Token::StickyPref,
+     },
++    KeywordInfo {
++        string: b"lockPref",
++        token: Token::LockPref,
++    },
  ];
  
  struct Parser<'t> {
-@@ -329,10 +331,11 @@ impl<'t> Parser<'t> {
+@@ -373,14 +379,15 @@ impl<'t> Parser<'t> {
          // this will be either the first token of a new pref, or EOF.
          loop {
              // <pref-spec>
 -            let (pref_value_kind, mut is_sticky) = match token {
--                Token::Pref => (PrefValueKind::Default, false),
--                Token::StickyPref => (PrefValueKind::Default, true),
--                Token::UserPref => (PrefValueKind::User, false),
 +            let (pref_value_kind, mut is_sticky, mut is_locked) = match token {
-+                Token::Pref => (PrefValueKind::Default, false, false),
-+                Token::StickyPref => (PrefValueKind::Default, true, false),
+                 Token::Pref if self.kind == PrefValueKind::Default => {
+-                    (PrefValueKind::Default, false)
++                    (PrefValueKind::Default, false, false)
+                 }
+                 Token::StickyPref if self.kind == PrefValueKind::Default => {
+-                    (PrefValueKind::Default, true)
++                    (PrefValueKind::Default, true, false)
+                 }
+-                Token::UserPref => (PrefValueKind::User, false),
 +                Token::LockPref => (PrefValueKind::Default, false, true),
 +                Token::UserPref => (PrefValueKind::User, false, false),
                  Token::SingleChar(EOF) => return !self.has_errors,
                  _ => {
                      token = self.error_and_recover(
-@@ -431,7 +434,6 @@ impl<'t> Parser<'t> {
+@@ -490,7 +497,6 @@ impl<'t> Parser<'t> {
              };
  
              // ("," <pref-attr>)*   // default pref files only

@@ -1,7 +1,6 @@
-From d1872015a2faf0c07319e0671257a21bdbe048c0 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Fri, 12 Jul 2019 18:37:52 +0900
-Subject: [PATCH] Use build id as langpack version for reproducibility
+Subject: Use build id as langpack version for reproducibility
 
 ---
 Upstream-Status: Pending
@@ -10,14 +9,14 @@ Upstream-Status: Pending
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/python/mozbuild/mozbuild/action/langpack_manifest.py b/python/mozbuild/mozbuild/action/langpack_manifest.py
-index 6f7269707a..0bfce4fd25 100644
+index 05adaa4..24b429b 100644
 --- a/python/mozbuild/mozbuild/action/langpack_manifest.py
 +++ b/python/mozbuild/mozbuild/action/langpack_manifest.py
-@@ -100,7 +100,7 @@ def get_timestamp_for_locale(path):
+@@ -116,7 +116,7 @@ def get_timestamp_for_locale(path):
          dt = get_dt_from_hg(path)
  
      if dt is None:
--        dt = datetime.datetime.utcnow()
+-        dt = get_build_date()
 +        return os.environ['MOZ_BUILD_DATE']
  
      dt = dt.replace(microsecond=0)
