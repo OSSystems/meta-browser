@@ -33,7 +33,7 @@ post to the list). Please cc the maintainers if you send your patches.
 * Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 * Khem Raj <raj.khem@gmail.com>
 * Otavio Salvador <otavio@ossystems.com.br>
-* Maksim Sisov <msisov@igalia.com>
+* Max Ihlenfeldt <max@igalia.com>
 
 When sending single patches, please use something like:
 ```
