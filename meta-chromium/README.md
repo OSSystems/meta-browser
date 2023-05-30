@@ -1,5 +1,4 @@
-OpenEmbedded/Yocto BSP layer for Chromium Browsers
-==================================================
+# OpenEmbedded/Yocto BSP layer for Chromium Browsers
 
 This layer provides web browser recipes for use with OpenEmbedded
 and/or Yocto.
@@ -19,8 +18,7 @@ This layer depends on:
   - branch: master
   - revision: HEAD
 
-Contributing
-------------
+## Contributing
 
 The preferred way to contribute to this layer is to send GitHub pull requests or
 report problems in GitHub's issue tracker.
@@ -29,8 +27,8 @@ Alternatively there is the classic way of review on the OpenEmbedded dev mailing
 list openembedded-devel@lists.openembedded.org (you have to be subscribed to
 post to the list). Please cc the maintainers if you send your patches.
 
-Maintainers
------------
+## Maintainers
+
 * Fabio Berton <fabio.berton@ossystems.com.br>
 * Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 * Khem Raj <raj.khem@gmail.com>
@@ -42,8 +40,8 @@ When sending single patches, please use something like:
 git send-email -1 -s --to openembedded-devel@lists.openembedded.org --subject-prefix='meta-browser][PATCH'
 ```
 
-Recipes
--------
+## Recipes
+
 recipes-browser/chromium:
 Chromium browser.
 
@@ -62,8 +60,8 @@ peculiarities:
 - Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
   built for the target, for which we use QEMU.
 
-Build requirements
-------------------
+## Build requirements
+
 This recipe requires clang, and GCC is not supported. Upstream Chromium has not
 tested or officially supported GCC for years, so it is safer and easier to
 follow their lead and only support one compiler.
@@ -71,14 +69,27 @@ follow their lead and only support one compiler.
 As part of its build process, Chromium builds and runs some binaries on the
 host. clang-native from the meta-clang layer is used to build those binaries.
 
-For building most of the code for your target, a C++14-compliant compiler is
-required. At least clang 7.0.0 (and thus the "thud" branch) is required.
-
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
 
-PACKAGECONFIG knobs
--------------------
+### dunfell-specific requirements
+
+The dunfell OE/Yocto branch is an LTS release, which is often at odds with
+Chromium's release model because it often requires recent versions of certain
+recipes to build correctly.
+
+This is particularly a problem for the toolchain (i.e. LLVM) and, at times,
+node.js. As such, dunfell users **must** ensure the following:
+* Chromium needs clang >= 12 and for that, meta-clang's **dunfell-clang12**
+  branch needs to be used.
+* Since Chromium 112, at least Nodejs 14 is required for parts of the build.
+  meta-oe needs to be at least a commit
+  116bfe8d5e5851e7fc5424f40da8691a19c5b5ee ("nodejs: make 14.18.1 available but
+  not default") and `PREFERRED_VERSION_nodejs-native = "14.%"` needs to be
+  added to `conf/local.conf`.
+
+## PACKAGECONFIG knobs
+
 * component-build: (off by default)
   Enables component build mode. By default, all of Chromium (with the exception
   of FFmpeg) is linked into one big binary. The linker step requires at least 8
@@ -128,8 +139,8 @@ PACKAGECONFIG knobs
   query battery status. If disabled, there will be warning messages seen on
   stderr and Battery Status Web API will not work.
 
-Google API keys
----------------
+## Google API keys
+
 Some Chromium features use Google APIs, and to access those APIs either an API
 Key or a set of OAuth 2.0 tokens is required. Setting up API keys is optional.
 
