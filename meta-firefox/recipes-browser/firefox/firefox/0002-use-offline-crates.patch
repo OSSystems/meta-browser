@@ -6,10 +6,10 @@ Subject: [PATCH] Compile time Cargo has no network access. Use local version
 
 diff --git a/Cargo.toml b/Cargo.toml
 index 52ca31640b..435c821d9b 100644
---- ./Cargo.toml	2023-06-07 13:53:01.112173187 +0200
-+++ ./Cargo.toml	2023-06-07 13:57:59.401631450 +0200
-@@ -156,36 +156,62 @@
- rure = { path = "third_party/rust/rure" }
+--- ./Cargo.toml	2023-07-04 16:55:50.411688003 +0200
++++ ./Cargo.toml	2023-07-04 17:16:19.777698068 +0200
+@@ -159,32 +159,55 @@
+ cssparser-macros = { path = "third_party/rust/cssparser-macros" }
  
  # Other overrides
 -chardetng = { git = "https://github.com/hsivonen/chardetng", rev="3484d3e3ebdc8931493aa5df4d7ee9360a90e76b" }
@@ -64,17 +64,13 @@ index 52ca31640b..435c821d9b 100644
 +
 +mapped_hyph = { path = "../mapped_hyph" }
 +
-+mp4parse = { path = "../mp4parse/mp4parse"}
-+mp4parse_capi = { path = "../mp4parse/mp4parse_capi"}
-+
 +jsparagus = { path = "../jsparagus" }
-+
+ 
 +uniffi-example-rondpoint = { path = "../uniffi-rs/examples/rondpoint" }
 +uniffi-example-geometry = { path = "../uniffi-rs/examples/geometry" }
 +uniffi-example-arithmetic = { path = "../uniffi-rs/examples/arithmetic" }
 +uniffi-example-sprites = { path = "../uniffi-rs/examples/sprites" }
 +uniffi-example-todolist = { path = "../uniffi-rs/examples/todolist" }
- 
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
  [patch.crates-io.mio]
@@ -86,7 +82,3 @@ index 52ca31640b..435c821d9b 100644
 -uniffi_build = "=0.23.0"
 -uniffi_macros = "=0.23.0"
 -weedle2 = "=4.0.0"
--
- # Backport https://github.com/mozilla/authenticator-rs/commit/2da9e991 to
- # authenticator-rs 0.4.0-alpha.14 for Bug 1824811.
- [patch.crates-io.authenticator]

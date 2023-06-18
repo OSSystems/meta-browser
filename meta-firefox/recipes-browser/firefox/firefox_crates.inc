@@ -1,6 +1,8 @@
 SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/cfg-if/1.0.0 \
            crate://crates.io/textwrap/0.15.2 \
+           crate://crates.io/mp4parse/0.17.0 \
+           crate://crates.io/mp4parse_capi/0.17.0 \
            crate://crates.io/rust_cascade/1.5.0 \
            crate://crates.io/dtoa/0.4.8 \
            crate://crates.io/tracing-core/0.1.30 \
@@ -16,6 +18,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/crossbeam-epoch/0.9.14 \
            crate://crates.io/oslog/0.1.0 \
            crate://crates.io/cssparser-macros/0.6.0 \
+           crate://crates.io/md-5/0.10.5 \
            crate://crates.io/serde_bytes/0.11.9 \
            crate://crates.io/enum-primitive-derive/0.2.2 \
            crate://crates.io/block-buffer/0.10.3 \
@@ -97,7 +100,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/coremidi-sys/3.1.0 \
            crate://crates.io/yaml-rust/0.4.5 \
            crate://crates.io/headers-core/0.2.0 \
-           crate://crates.io/app_units/0.7.1 \
+           crate://crates.io/app_units/0.7.2 \
            crate://crates.io/debugid/0.8.0 \
            crate://crates.io/signal-hook-registry/1.4.1 \
            crate://crates.io/naga/0.12.0 \
@@ -177,7 +180,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/serial_test_derive/0.6.0 \
            crate://crates.io/dogear/0.5.0 \
            crate://crates.io/heck/0.4.1 \
-           crate://crates.io/authenticator/0.4.0-alpha.14 \
+           crate://crates.io/authenticator/0.4.0-alpha.15 \
            crate://crates.io/miniz_oxide/0.6.2 \
            crate://crates.io/nss-gk-api/0.2.1 \
            crate://crates.io/plain/0.2.3 \
@@ -528,7 +531,6 @@ SRC_URI[rust_decimal-1.28.1.sha256sum] = "e13cf35f7140155d02ba4ec3294373d513a3c7
 SRC_URI[coremidi-sys-3.1.0.sha256sum] = "79a6deed0c97b2d40abbab77e4c97f81d71e162600423382c277dd640019116c"
 SRC_URI[yaml-rust-0.4.5.sha256sum] = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
 SRC_URI[headers-core-0.2.0.sha256sum] = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
-SRC_URI[app_units-0.7.1.sha256sum] = "fc3ec9d4c47b25a5a9e5c848e053640331c7cedb1637434d75db68b79fee8a7f"
 SRC_URI[debugid-0.8.0.sha256sum] = "bef552e6f588e446098f6ba40d89ac146c8c7b64aade83c051ee00bb5d2bc18d"
 SRC_URI[signal-hook-registry-1.4.1.sha256sum] = "d8229b473baa5980ac72ef434c4415e70c4b5e71b423043adb4ba059f89c99a1"
 SRC_URI[tempfile-3.3.0.sha256sum] = "5cdb1ef4eaeeaddc8fbd371e5017057064af0911902ef36b39801f67cc6d79e4"
@@ -863,8 +865,12 @@ SRC_URI[naga-0.12.0.sha256sum] = "f00ce114f2867153c079d4489629dbd27aa4b5387a8ba5
 SRC_URI[glean-52.7.0.sha256sum] = "cb5fc2dc8615ab49bfa879d64a02565b459881b72023ff39aca75e5581825695"
 SRC_URI[wgpu-types-0.16.0.sha256sum] = "5bd33a976130f03dcdcd39b3810c0c3fc05daf86f0aaf867db14bfb7c4a9a32b"
 SRC_URI[wast-56.0.0.sha256sum] = "6b54185c051d7bbe23757d50fe575880a2426a2f06d2e9f6a10fd9a4a42920c0"
-SRC_URI[authenticator-0.4.0-alpha.14.sha256sum] = "9f3aaf9a8213bf1a4cfafca1a38befe0873a2a4d8013136d2dd12227e14bb2ba"
 SRC_URI[gleam-0.15.0.sha256sum] = "0173481f2bb6e809bf4985de2e86c83876d84d2805830e3301cd37355e897f0f"
 SRC_URI[base64-0.21.0.sha256sum] = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 SRC_URI[wgpu-core-0.16.0.sha256sum] = "625bea30a0ba50d88025f95c80211d1a85c86901423647fb74f397f614abbd9a"
 SRC_URI[glean-core-52.7.0.sha256sum] = "3493e4f4df45199762f43a6d2298fa9d885fa5ddc9efdc118a41b38c69c7ad59"
+SRC_URI[mp4parse-0.17.0.sha256sum] = "63a35203d3c6ce92d5251c77520acb2e57108c88728695aa883f70023624c570"
+SRC_URI[mp4parse_capi-0.17.0.sha256sum] = "e8be950f2da4a58e35de80883fdca7470d36e4bc5a373a240b22763da72dc9c4"
+SRC_URI[md-5-0.10.5.sha256sum] = "6365506850d44bff6e2fbcb5176cf63650e48bd45ef2fe2665ae1570e0f4b9ca"
+SRC_URI[app_units-0.7.2.sha256sum] = "ad05ebc593047433bada8bc1bf31957b6516dad7bfb5def6f425581f5bcc982a"
+SRC_URI[authenticator-0.4.0-alpha.15.sha256sum] = "aa0e182b77b6b19eaf9c7b69fddf3be970169ec6d34eca3f5d682ab948727e57"

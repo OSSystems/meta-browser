@@ -94,6 +94,11 @@ PACKAGECONFIG knobs
   the following windows will use basic compositors. Multiple compositor may
   cause crash on platforms that doesn't support multiple EGL windows.
 
+* disable-sandboxed-libraries: (off by default)
+  By default WASM libraries are sanboxed for security purposes, however that can
+  introduce quite a big build-time overhead due to extra dependencies.
+  Setting this disallows sandboxing these libraries, and removes the wasi-sdk dependency.
+
 Runtime options
 ---------------
 * The enviromental variable `GDK_BACKEND=wayland` is needed to run Firefox with
