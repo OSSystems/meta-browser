@@ -22,7 +22,9 @@ LIC_FILES_CHKSUM = "file://nss/COPYING;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
 
 VERSION_DIR = "${@d.getVar('BP').upper().replace('-', '_').replace('.', '_') + '_RTM'}"
 
-SRC_URI = "http://ftp.mozilla.org/pub/security/nss/releases/${VERSION_DIR}/src/${BP}.tar.gz \
+PV = "3.89"
+
+SRC_URI = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_89_RTM/src/nss-3.89.tar.gz \
            file://nss.pc.in \
            file://0001-nss-fix-support-cross-compiling.patch \
            file://nss-no-rpath-for-cross-compiling.patch \
@@ -42,6 +44,7 @@ UPSTREAM_CHECK_REGEX = "NSS_(?P<pver>.+)_release_notes"
 
 inherit siteinfo
 
+S = "${WORKDIR}/nss-3.89"
 TD = "${S}/tentative-dist"
 TDS = "${S}/tentative-dist-staging"
 

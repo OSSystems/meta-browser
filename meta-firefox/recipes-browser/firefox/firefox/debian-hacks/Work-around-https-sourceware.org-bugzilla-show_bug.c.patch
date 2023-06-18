@@ -1,0 +1,24 @@
+From: Mike Hommey <mh@glandium.org>
+Date: Wed, 5 Jul 2023 05:25:35 +0900
+Subject: Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
+
+---
+ media/ffvpx/config_unix64.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/media/ffvpx/config_unix64.h b/media/ffvpx/config_unix64.h
+index c4311cf..b15c2be 100644
+--- a/media/ffvpx/config_unix64.h
++++ b/media/ffvpx/config_unix64.h
+@@ -204,7 +204,11 @@
+ #define HAVE_SYNC_VAL_COMPARE_AND_SWAP 1
+ #define HAVE_CABS 0
+ #define HAVE_CEXP 0
++#ifdef FFMPEG_DISABLE_INLINE_ASM
++#define HAVE_INLINE_ASM 0
++#else
+ #define HAVE_INLINE_ASM 1
++#endif
+ #define HAVE_SYMVER 1
+ #define HAVE_X86ASM 1
+ #define HAVE_BIGENDIAN 0
