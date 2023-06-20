@@ -1,0 +1,35 @@
+From 977cd841cf855ec232afecbabc4e3bf41a1626b2 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 13 Jun 2023 14:36:23 +0000
+Subject: [PATCH] Don't pass disable-auto-upgrade-debug-info to linker
+
+The version of aarch64-oe-linux-ld.lld we use on dunfell, kirkstone, and
+mickledore doesn't support this flag. Thus, we mustn't pass it if we
+want to avoid an "Unknown command line argument" linker error that stops
+the build.
+
+Upstream-Status: Inappropriate
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ build/config/compiler/BUILD.gn | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index bbfe6cb53ca2a..6dfecad718686 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -726,14 +726,6 @@ config("compiler") {
+       }
+
+       ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
+-
+-      if (!is_chromeos) {
+-        # TODO(https://crbug.com/972449): turn on for ChromeOS when that
+-        # toolchain has this flag.
+-        # We only use one version of LLVM within a build so there's no need to
+-        # upgrade debug info, which can be expensive since it runs the verifier.
+-        ldflags += [ "-Wl,-mllvm,-disable-auto-upgrade-debug-info" ]
+-      }
+     }
+
+     # TODO(https://crbug.com/1211155): investigate why this isn't effective on

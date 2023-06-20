@@ -1,0 +1,30 @@
+From 4ac53591bb534bb056da83f19897295487afab2c Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 20 Jun 2023 09:22:17 +0000
+Subject: [PATCH] Backport "IWYU for translate::TranslateUiLanguagesManager"
+
+This is the backport of a patch that fixes an "implicit instantiation of
+undefined template 'std::vector<std::string>'" compilation error. It
+will be included in upstream's 116 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4587962]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../shared_dictionary/shared_dictionary_writer_in_memory.h    | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/services/network/shared_dictionary/shared_dictionary_writer_in_memory.h b/services/network/shared_dictionary/shared_dictionary_writer_in_memory.h
+index b08607568024e..2eb109f7aa2fe 100644
+--- a/services/network/shared_dictionary/shared_dictionary_writer_in_memory.h
++++ b/services/network/shared_dictionary/shared_dictionary_writer_in_memory.h
+@@ -5,6 +5,10 @@
+ #ifndef SERVICES_NETWORK_SHARED_DICTIONARY_SHARED_DICTIONARY_WRITER_IN_MEMORY_H_
+ #define SERVICES_NETWORK_SHARED_DICTIONARY_SHARED_DICTIONARY_WRITER_IN_MEMORY_H_
+
++#include <memory>
++#include <string>
++#include <vector>
++
+ #include "base/component_export.h"
+ #include "base/functional/callback.h"
+ #include "crypto/secure_hash.h"

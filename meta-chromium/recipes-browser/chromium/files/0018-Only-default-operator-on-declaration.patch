@@ -15,11 +15,13 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  .../core/browser/affiliation/affiliation_fetcher_base.cc     | 3 ---
  .../core/browser/affiliation/affiliation_fetcher_base.h      | 3 ---
  .../core/browser/affiliation/affiliation_fetcher_interface.h | 2 +-
+ .../password_manager/core/browser/passkey_credential.cc      | 3 ---
+ .../password_manager/core/browser/passkey_credential.h       | 5 +----
  printing/page_setup.cc                                       | 4 ----
  printing/page_setup.h                                        | 4 ++--
  printing/print_settings.cc                                   | 5 -----
  printing/print_settings.h                                    | 4 ++--
- 7 files changed, 5 insertions(+), 20 deletions(-)
+ 9 files changed, 6 insertions(+), 27 deletions(-)
 
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
 index 5d5b95e0d787a..3a499529885be 100644
@@ -60,6 +62,41 @@ index 5bf889f5d940d..946eabe8dce6e 100644
    };
 
    AffiliationFetcherInterface() = default;
+diff --git a/components/password_manager/core/browser/passkey_credential.cc b/components/password_manager/core/browser/passkey_credential.cc
+index a775f1150d07c..6890826570f41 100644
+--- a/components/password_manager/core/browser/passkey_credential.cc
++++ b/components/password_manager/core/browser/passkey_credential.cc
+@@ -46,7 +46,4 @@ int PasskeyCredential::GetAuthenticatorLabel() const {
+   }
+ }
+
+-bool operator==(const PasskeyCredential& lhs,
+-                const PasskeyCredential& rhs) = default;
+-
+ }  // namespace password_manager
+diff --git a/components/password_manager/core/browser/passkey_credential.h b/components/password_manager/core/browser/passkey_credential.h
+index 7bf384bd7ff40..2573132d0ee3c 100644
+--- a/components/password_manager/core/browser/passkey_credential.h
++++ b/components/password_manager/core/browser/passkey_credential.h
+@@ -48,8 +48,7 @@ class PasskeyCredential {
+   const std::string& display_name() const { return display_name_; }
+
+  private:
+-  friend bool operator==(const PasskeyCredential& lhs,
+-                         const PasskeyCredential& rhs);
++  bool operator==(const PasskeyCredential& other) const = default;
+
+   // Authenticator type this passkey belongs to.
+   Source source_;
+@@ -75,8 +74,6 @@ class PasskeyCredential {
+   std::string display_name_;
+ };
+
+-bool operator==(const PasskeyCredential& lhs, const PasskeyCredential& rhs);
+-
+ }  // namespace password_manager
+
+ #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSKEY_CREDENTIAL_H_
 diff --git a/printing/page_setup.cc b/printing/page_setup.cc
 index c104f44cdc6b0..93d3d60078aa0 100644
 --- a/printing/page_setup.cc
