@@ -1,0 +1,36 @@
+From 4dfebd313fabd79aaf679f6b01581483ed323787 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 13 Jun 2023 15:48:12 +0000
+Subject: [PATCH] Avoid capturing structured bindings
+
+Similar to https://crrev.com/c/4526976, this patch removes some uses of
+structured bindings that lead to compile errors when using older
+versions of clang (observed with clang 15).
+
+Upstream-Status: Inappropriate [specific to older versions of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ media/base/cdm_promise_adapter.cc | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/media/base/cdm_promise_adapter.cc b/media/base/cdm_promise_adapter.cc
+index f013809a62e25..144809b9696c3 100644
+--- a/media/base/cdm_promise_adapter.cc
++++ b/media/base/cdm_promise_adapter.cc
+@@ -94,12 +94,12 @@ void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
+ void CdmPromiseAdapter::Clear(ClearReason reason) {
+   // Reject all outstanding promises.
+   DCHECK(thread_checker_.CalledOnValidThread());
+-  for (auto& [promise_id, promise] : promises_) {
++  for (auto& promise : promises_) {
+     TRACE_EVENT_NESTABLE_ASYNC_END1(
+-        "media", "CdmPromise", TRACE_ID_WITH_SCOPE("CdmPromise", promise_id),
++        "media", "CdmPromise", TRACE_ID_WITH_SCOPE("CdmPromise", promise.first),
+         "status", "cleared");
+-    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR,
+-                    ToSystemCode(reason), "Operation aborted.");
++    promise.second->reject(CdmPromise::Exception::INVALID_STATE_ERROR,
++                           ToSystemCode(reason), "Operation aborted.");
+   }
+   promises_.clear();
+ }

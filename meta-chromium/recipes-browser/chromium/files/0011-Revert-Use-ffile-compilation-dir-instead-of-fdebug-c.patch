@@ -24,10 +24,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 11 insertions(+), 17 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index fe0f989625879..1259819238f17 100644
+index 19badda7d644b..88e4bbfc4f8c5 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1286,7 +1286,6 @@ config("compiler_codegen") {
+@@ -1295,7 +1295,6 @@ config("compiler_codegen") {
  config("compiler_deterministic") {
    cflags = []
    ldflags = []
@@ -35,7 +35,7 @@ index fe0f989625879..1259819238f17 100644
 
    # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
    # deterministic build.  See https://crbug.com/314403
-@@ -1315,20 +1314,12 @@ config("compiler_deterministic") {
+@@ -1324,20 +1323,12 @@ config("compiler_deterministic") {
      # different build directory like "out/feature_a" and "out/feature_b" if
      # we build same files with same compile flag.
      # Other paths are already given in relative, no need to normalize them.

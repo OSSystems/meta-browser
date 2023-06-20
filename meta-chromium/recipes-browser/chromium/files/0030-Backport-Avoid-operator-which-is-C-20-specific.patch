@@ -1,0 +1,68 @@
+From f311ec882d402c604747e80e89d2e257723b83dd Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 21 Jun 2023 14:30:36 +0000
+Subject: [PATCH] Backport "Avoid operator<=>(), which is C++20-specific."
+
+This is the backport of a patch that removes the usage of `operator<=>`
+to fix a build error with the older versions of clang that we still use.
+It also removes a defaulted `operator==` (similar to
+0018-Only-default-operator-on-declaration.patch), which needs to be done
+in the same patch to avoid a conflict.
+
+The `operator<=>` fix will be included upstream in 115. When updating to
+that version, we can merge the defaulted `operator==` fix with the
+others in 0018-Only-default-operator-on-declaration.patch and remove
+this patch.
+
+Upstream-Status: Backport [https://crrev.com/c/4518991]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../password_manager/core/browser/password_form.cc       | 9 +++++----
+ components/password_manager/core/browser/password_form.h | 4 ++--
+ 2 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/components/password_manager/core/browser/password_form.cc b/components/password_manager/core/browser/password_form.cc
+index 380c5be98b7aa..de421a6a8b7dd 100644
+--- a/components/password_manager/core/browser/password_form.cc
++++ b/components/password_manager/core/browser/password_form.cc
+@@ -4,10 +4,10 @@
+
+ #include "components/password_manager/core/browser/password_form.h"
+
+-#include <compare>
+ #include <ostream>
+ #include <sstream>
+ #include <string>
++#include <tuple>
+
+ #include "base/json/json_writer.h"
+ #include "base/json/values_util.h"
+@@ -225,9 +225,10 @@ AlternativeElement& AlternativeElement::operator=(
+ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
+     default;
+ AlternativeElement::~AlternativeElement() = default;
+-bool AlternativeElement::operator==(const AlternativeElement&) const = default;
+-std::strong_ordering AlternativeElement::operator<=>(
+-    const AlternativeElement&) const = default;
++bool AlternativeElement::operator<(const AlternativeElement& other) const {
++    return std::tie(value, field_renderer_id, name) <
++           std::tie(other.value, other.field_renderer_id, other.name);
++}
+
+ std::ostream& operator<<(std::ostream& os, const AlternativeElement& element) {
+   base::Value::Dict element_json;
+diff --git a/components/password_manager/core/browser/password_form.h b/components/password_manager/core/browser/password_form.h
+index 52fa5ae1b4651..7450bef2b0ca4 100644
+--- a/components/password_manager/core/browser/password_form.h
++++ b/components/password_manager/core/browser/password_form.h
+@@ -44,8 +44,8 @@ struct AlternativeElement {
+   AlternativeElement& operator=(AlternativeElement&& rhs);
+   ~AlternativeElement();
+
+-  bool operator==(const AlternativeElement&) const;
+-  std::strong_ordering operator<=>(const AlternativeElement&) const;
++  bool operator==(const AlternativeElement&) const = default;
++  bool operator<(const AlternativeElement&) const;
+
+   // The value of the field.
+   std::u16string value;
