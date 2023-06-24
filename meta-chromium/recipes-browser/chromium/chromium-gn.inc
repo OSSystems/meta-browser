@@ -31,6 +31,7 @@ SRC_URI += " \
     file://0024-Backport-Fix-erroneous-SupportsOstreamOperator-int-i.patch \
     file://0025-Backport-Do-not-use-std-monospace-for-absl-variant.patch \
     file://0026-Backport-std-string-ends_with-is-C-20.-Use-base-Ends.patch \
+    file://0027-Track-Wayland-seats-other-than-primary.patch \
 "
 
 SRC_URI:append:libc-musl = "\
