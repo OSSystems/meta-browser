@@ -1,0 +1,27 @@
+From ad900d1ee33daaaa09d4284e2804cd5f9db0c07e Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 4 Jul 2023 10:05:09 +0000
+Subject: [PATCH] Fix ARM build with recent glibc
+
+For some reason zlib #undefs _FILE_OFFSET_BITS which doesn't play well
+with glibc 2.34's bminor/glibc@47f24c2 and the newly-introduced checks
+in features-time64.h. See also madler/zlib#447.
+
+Upstream-status: Inappropriate
+Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+---
+ third_party/zlib/gzguts.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/third_party/zlib/gzguts.h b/third_party/zlib/gzguts.h
+index 57faf37165a35..e5d6388190979 100644
+--- a/third_party/zlib/gzguts.h
++++ b/third_party/zlib/gzguts.h
+@@ -9,6 +9,7 @@
+ #  endif
+ #  ifdef _FILE_OFFSET_BITS
+ #    undef _FILE_OFFSET_BITS
++#    undef _TIME_BITS
+ #  endif
+ #endif
+
