@@ -54,6 +54,12 @@ SRC_URI:append:libc-musl = "\
     file://musl/fix-libc-version-include.patch \
 "
 
+# OE defines _TIME_BITS only for 32-bit ARM (ignoring architectures that we
+# don't support), see its meta/conf/distro/include/time64.inc.
+SRC_URI:append:arm = "\
+    file://0031-Fix-ARM-build-with-recent-glibc.patch \
+"
+
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
