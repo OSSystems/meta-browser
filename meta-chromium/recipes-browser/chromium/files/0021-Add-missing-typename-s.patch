@@ -6,82 +6,62 @@ Subject: [PATCH] Add missing "typename"s
 This adds some `typename`s in locations where they are needed in older
 versions of clang (probably < 16).
 
-The changes to c/b/d/b/download_bubble_update_service.h are a backport
-of https://crrev.com/c/4520587, which will be part of the 115 upstream
-release.
-
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
  .../download/bubble/download_bubble_update_service.cc       | 6 +++---
- .../download/bubble/download_bubble_update_service.h        | 4 ++--
- chrome/browser/printing/print_backend_service_manager.cc    | 2 +-
- chrome/browser/printing/print_backend_service_manager.h     | 2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ components/optimization_guide/core/tflite_model_executor.h  | 2 +-
+ .../core/html/parser/html_document_parser_fastpath.cc       | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/chrome/browser/download/bubble/download_bubble_update_service.cc b/chrome/browser/download/bubble/download_bubble_update_service.cc
-index 0dbffd34222f1..70d43e37c8324 100644
+index 41b647f7b445d..8940c6bb7fcaa 100644
 --- a/chrome/browser/download/bubble/download_bubble_update_service.cc
 +++ b/chrome/browser/download/bubble/download_bubble_update_service.cc
-@@ -87,7 +87,7 @@ ItemSortKey GetSortKey(const Item& item) {
+@@ -91,7 +91,7 @@ ItemSortKey GetSortKey(const Item& item) {
  // Helper to get an iterator to the last element in the cache. The cache
  // must not be empty.
  template <typename Item>
--SortedItems<Item>::iterator GetLastIter(SortedItems<Item>& cache) {
-+typename SortedItems<Item>::iterator GetLastIter(SortedItems<Item>& cache) {
+-SortedItems<Item>::const_iterator GetLastIter(const SortedItems<Item>& cache) {
++typename SortedItems<Item>::const_iterator GetLastIter(const SortedItems<Item>& cache) {
    CHECK(!cache.empty());
    auto it = cache.end();
    return std::prev(it);
-@@ -789,9 +789,9 @@ bool DownloadBubbleUpdateService::RemoveItemFromCacheImpl(
+@@ -967,9 +967,9 @@ bool DownloadBubbleUpdateService::CacheManager::RemoveItemFromCacheImpl(
  }
 
  template <typename Id, typename Item>
 -SortedItems<Item>::iterator
 +typename SortedItems<Item>::iterator
- DownloadBubbleUpdateService::RemoveItemFromCacheByIter(
+ DownloadBubbleUpdateService::CacheManager::RemoveItemFromCacheByIter(
 -    SortedItems<Item>::iterator iter,
 +    typename SortedItems<Item>::iterator iter,
      SortedItems<Item>& cache,
      IterMap<Id, Item>& iter_map) {
    CHECK(iter != cache.end());
-diff --git a/chrome/browser/download/bubble/download_bubble_update_service.h b/chrome/browser/download/bubble/download_bubble_update_service.h
-index de4e9e8a14b90..07ee16a3e8ad2 100644
---- a/chrome/browser/download/bubble/download_bubble_update_service.h
-+++ b/chrome/browser/download/bubble/download_bubble_update_service.h
-@@ -208,8 +208,8 @@ class DownloadBubbleUpdateService
-
-   // Removes item if we already have the iterator to it. Returns next iterator.
-   template <typename Id, typename Item>
--  SortedItems<Item>::iterator RemoveItemFromCacheByIter(
--      SortedItems<Item>::iterator iter,
-+  typename SortedItems<Item>::iterator RemoveItemFromCacheByIter(
-+      typename SortedItems<Item>::iterator iter,
-       SortedItems<Item>& cache,
-       IterMap<Id, Item>& iter_map);
-
-diff --git a/chrome/browser/printing/print_backend_service_manager.cc b/chrome/browser/printing/print_backend_service_manager.cc
-index b5a4b525a2d68..224369cd58cfa 100644
---- a/chrome/browser/printing/print_backend_service_manager.cc
-+++ b/chrome/browser/printing/print_backend_service_manager.cc
-@@ -1477,7 +1477,7 @@ template <class... T>
- void PrintBackendServiceManager::RunSavedCallbacks(
-     RemoteSavedCallbacks<T...>& saved_callbacks,
-     const RemoteId& remote_id,
--    std::remove_reference<T>::type... result) {
-+    typename std::remove_reference<T>::type... result) {
-   auto found_callbacks_map = saved_callbacks.find(remote_id);
-   if (found_callbacks_map == saved_callbacks.end())
-     return;  // No callbacks to run.
-diff --git a/chrome/browser/printing/print_backend_service_manager.h b/chrome/browser/printing/print_backend_service_manager.h
-index d812f3b26e9c8..3352148cbf985 100644
---- a/chrome/browser/printing/print_backend_service_manager.h
-+++ b/chrome/browser/printing/print_backend_service_manager.h
-@@ -587,7 +587,7 @@ class PrintBackendServiceManager {
-   template <class... T>
-   void RunSavedCallbacks(RemoteSavedCallbacks<T...>& saved_callbacks,
-                          const RemoteId& remote_id,
--                         std::remove_reference<T>::type... result);
-+                         typename std::remove_reference<T>::type... result);
-
-   // Test support for client ID management.
-   static void SetClientsForTesting(
+diff --git a/components/optimization_guide/core/tflite_model_executor.h b/components/optimization_guide/core/tflite_model_executor.h
+index c4f750f468493..b5635f4108bb4 100644
+--- a/components/optimization_guide/core/tflite_model_executor.h
++++ b/components/optimization_guide/core/tflite_model_executor.h
+@@ -189,7 +189,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+   void SendForBatchExecution(
+       BatchExecutionCallback callback_on_complete,
+       base::TimeTicks start_time,
+-      ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs)
++      typename ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs)
+       override {
+     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
+index 2dc0b30409283..a82f255090b3c 100644
+--- a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
++++ b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
+@@ -169,7 +169,7 @@ class HTMLFastPathParser {
+   using Span = base::span<const Char>;
+   using USpan = base::span<const UChar>;
+   // 32 matches that used by HTMLToken::Attribute.
+-  typedef std::conditional<std::is_same_v<Char, UChar>,
++  typedef typename std::conditional<std::is_same_v<Char, UChar>,
+                            UCharLiteralBuffer<32>,
+                            LCharLiteralBuffer<32>>::type LiteralBufferType;
+   typedef UCharLiteralBuffer<32> UCharLiteralBufferType;

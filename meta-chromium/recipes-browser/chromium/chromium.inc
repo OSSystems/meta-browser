@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "a9f3440feeab51f56b199797b83b458ca545bf67e114c62b21470fadd5a41dea"
+SRC_URI[sha256sum] = "ff9862d2e748c56940ffc222c2e6b2066a19ea1de0bc3fd99ed81c0b231172c0"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -212,6 +212,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/arcore-android-sdk/LICENSE;md5=c1bc4f7fbdd7a5a3f2c0dfefd457665e \
     file://${S}/third_party/ashmem/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/axe-core/LICENSE;md5=f27a50d2e878867827842f2c60e30bfc \
+    file://${S}/third_party/beto-core/LICENSE;md5=2b42edef8fa55315f34f2370b4715ca9 \
     file://${S}/third_party/bidimapper/LICENSE;md5=2b42edef8fa55315f34f2370b4715ca9 \
     file://${S}/third_party/blink/LICENSE_FOR_ABOUT_CREDITS;md5=11e90d553b211de885f245900c4ccf89 \
     file://${S}/third_party/boringssl/src/LICENSE;md5=2ca501bc96ce9ed0814e2c592c3f9593 \
@@ -246,6 +247,7 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/devtools-frontend/src/front_end/third_party/lighthouse/LICENSE;md5=a873c5645c184d51e0f9b34e1d7cf559 \
     file://${S}/third_party/devtools-frontend/src/front_end/third_party/lit/LICENSE;md5=4b390b7b932ca7872d1de2c834797cad \
     file://${S}/third_party/devtools-frontend/src/front_end/third_party/marked/LICENSE;md5=449f8b1cf0bfef1e5ec7824a4179ac6f \
+    file://${S}/third_party/devtools-frontend/src/front_end/third_party/puppeteer-replay/package/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/third_party/devtools-frontend/src/front_end/third_party/puppeteer/LICENSE;md5=b8f1fc4a170646d6f75d9572a3bd1339 \
     file://${S}/third_party/devtools-frontend/src/front_end/third_party/wasmparser/package/LICENSE;md5=2ee41112a44fe7014dce33e26468ba93 \
     file://${S}/third_party/distributed_point_functions/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \

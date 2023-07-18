@@ -1,0 +1,64 @@
+From f5f260d9976c5ab01683938c9c209a5253c93b22 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 3 Aug 2023 13:31:15 +0000
+Subject: [PATCH] Avoid parenthesized initialization of aggregates
+
+clang < 16 doesn't support C++20's "Parenthesized initialization of
+aggregates" [1]. To fix build errors with older clang versions, we need
+to either explicitly define a constructor that does the initialization,
+or initialize the aggregate using curly braces.
+
+[1] https://clang.llvm.org/cxx_status.html
+
+Upstream-Status: Inappropriate [specific to older versions of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../bound_session_refresh_cookie_fetcher_impl.cc              | 4 ++--
+ chrome/test/chromedriver/chrome/client_hints.h                | 1 +
+ .../blink/renderer/modules/canvas/canvas2d/canvas_style.cc    | 4 ++--
+ 3 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc b/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
+index 46be6f06b147a..dbb98f2648431 100644
+--- a/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
++++ b/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
+@@ -103,6 +103,6 @@ void BoundSessionRefreshCookieFetcherImpl::OnURLLoaderComplete(
+   net::Error net_error = static_cast<net::Error>(url_loader_->NetError());
+
+   std::move(callback_).Run(
+-      Result(net_error, headers ? absl::optional<int>(headers->response_code())
+-                                : absl::nullopt));
++      Result {net_error, headers ? absl::optional<int>(headers->response_code())
++                                : absl::nullopt});
+ }
+diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
+index 8c13bd3321c5e..42dc1acf75ec5 100644
+--- a/chrome/test/chromedriver/chrome/client_hints.h
++++ b/chrome/test/chromedriver/chrome/client_hints.h
+@@ -19,6 +19,7 @@ struct BrandVersion {
+   // * "major version" for "brands",
+   // * "full version" for "fullVersionList".
+   std::string version;
++  BrandVersion(std::string b, std::string v) : brand(b), version(v) {}
+ };
+
+ // User-Agent Client Hints
+diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
+index f0b4913914739..67c26acab818b 100644
+--- a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
++++ b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
+@@ -91,12 +91,12 @@ void CanvasStyle::ApplyToFlags(cc::PaintFlags& flags,
+     case kGradient:
+       GetCanvasGradient()->GetGradient()->ApplyToFlags(flags, SkMatrix::I(),
+                                                        ImageDrawOptions());
+-      flags.setColor(SkColor4f(0.0f, 0.0f, 0.0f, global_alpha));
++      flags.setColor(SkColor4f {0.0f, 0.0f, 0.0f, global_alpha});
+       break;
+     case kImagePattern:
+       GetCanvasPattern()->GetPattern()->ApplyToFlags(
+           flags, AffineTransformToSkMatrix(GetCanvasPattern()->GetTransform()));
+-      flags.setColor(SkColor4f(0.0f, 0.0f, 0.0f, global_alpha));
++      flags.setColor(SkColor4f {0.0f, 0.0f, 0.0f, global_alpha});
+       break;
+     default:
+       NOTREACHED();
