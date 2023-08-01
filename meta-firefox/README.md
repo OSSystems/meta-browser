@@ -99,6 +99,14 @@ PACKAGECONFIG knobs
   introduce quite a big build-time overhead due to extra dependencies.
   Setting this disallows sandboxing these libraries, and removes the wasi-sdk dependency.
 
+* wayland-only: (off by default)
+  Don't build Firefox with X11 dependencies. This config should not be enabled if x11-only
+  is enabled.
+
+* x11-only: (off by default)
+  Don't build Firefox with Wayland dependencies. This config should not be enable if wayland-only
+  is enabled.
+
 Runtime options
 ---------------
 * The enviromental variable `GDK_BACKEND=wayland` is needed to run Firefox with
