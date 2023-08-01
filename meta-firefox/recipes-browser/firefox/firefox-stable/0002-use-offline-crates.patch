@@ -1,0 +1,88 @@
+From b12d969042f8cbd50b7039f56150058892a088fa Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Tue, 30 May 2023 22:17:51 +0200
+Subject: [PATCH] Compile time Cargo has no network access. Use local version
+ of the crates.
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 52ca31640b..435c821d9b 100644
+--- ./Cargo.toml	2023-08-01 18:02:12.709179806 +0200
++++ ./Cargo.toml	2023-08-01 18:22:19.314989530 +0200
+@@ -169,33 +169,57 @@
+ phf_macros = { path = "third_party/rust/phf_macros" }
+ 
+ # Other overrides
+-chardetng = { git = "https://github.com/hsivonen/chardetng", rev="3484d3e3ebdc8931493aa5df4d7ee9360a90e76b" }
+-chardetng_c = { git = "https://github.com/hsivonen/chardetng_c", rev="ed8a4c6f900a90d4dbc1d64b856e61490a1c3570" }
+-coremidi = { git = "https://github.com/chris-zen/coremidi.git", rev="fc68464b5445caf111e41f643a2e69ccce0b4f83" }
+-cose = { git = "https://github.com/franziskuskiefer/cose-rust", rev = "43c22248d136c8b38fe42ea709d08da6355cf04b" }
++chardetng = { path = "../chardetng" }
++chardetng_c = { path = "../chardetng_c" }
++coremidi = { path = "../coremidi" }
++cose = { path = "../cose-rust" }
+ firefox-on-glean = { path = "toolkit/components/glean/api" }
+ libudev-sys = { path = "dom/webauthn/libudev-sys" }
+-packed_simd = { package = "packed_simd_2", git = "https://github.com/hsivonen/packed_simd", rev="412f9a0aa556611de021bde89dee8fefe6e0fbbd" }
+-midir = { git = "https://github.com/mozilla/midir.git", rev = "519e651241e867af3391db08f9ae6400bc023e18" }
++packed_simd = { path = "../packed_simd", version = "0.3.8", package = "packed_simd_2" }
++midir = { path = "../midir" }
+ # warp 0.3.3 + https://github.com/seanmonstar/warp/pull/1007
+-warp = { git = "https://github.com/glandium/warp", rev = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d" }
++warp = { path = "../warp" }
++
++neqo-http3 = { path = "../neqo/neqo-http3" }
++neqo-common = { path = "../neqo/neqo-common" }
++neqo-transport = { path = "../neqo/neqo-transport" }
++neqo-qpack = { path = "../neqo/neqo-qpack" }
++neqo-crypto = { path = "../neqo/neqo-crypto" }
++aa-stroke = { path = "../aa-stroke"}
+ 
+ # application-services overrides to make updating them all simpler.
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "86c84c217036c12283d19368867323a66bf35883" }
++interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
++sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
++sync15 = { path = "../application-services/components/sync15", version = "0.1.0" }
++tabs = { path = "../application-services/components/tabs", version = "0.1.0" }
++viaduct = { path = "../application-services/components/viaduct", version = "0.1.0" }
++webext-storage = { path = "../application-services/components/webext-storage", version = "0.1.0" }
++
++wgpu-core = { path = "../wgpu/wgpu-core" }
++wgpu-hal = { path = "../wgpu/wgpu-hal" }
++wgpu-types = { path = "../wgpu/wgpu-types" }
++
++wpf-gpu-raster = { path = "../wpf-gpu-raster" }
++
++audioipc2 = { path = "../audioipc/audioipc" }
++audioipc2-client = { path = "../audioipc/client" }
++audioipc2-server = { path = "../audioipc/server" }
++
++cubeb-coreaudio = { path = "../cubeb-coreaudio" }
++cubeb-pulse = { path = "../cubeb-pulse" }
++
++mapped_hyph = { path = "../mapped_hyph" }
++
++jsparagus = { path = "../jsparagus" }
++ 
++uniffi-example-rondpoint = { path = "../uniffi-rs/examples/rondpoint" }
++uniffi-example-geometry = { path = "../uniffi-rs/examples/geometry" }
++uniffi-example-arithmetic = { path = "../uniffi-rs/examples/arithmetic" }
++uniffi-example-sprites = { path = "../uniffi-rs/examples/sprites" }
++uniffi-example-todolist = { path = "../uniffi-rs/examples/todolist" }
++
+ 
+ # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
+ # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
+ [patch.crates-io.mio]
+ path = "third_party/rust/mio-0.6.23"
+-
+-[patch."https://github.com/mozilla/uniffi-rs.git"]
+-uniffi = "=0.23.0"
+-uniffi_bindgen = "=0.23.0"
+-uniffi_build = "=0.23.0"
+-uniffi_macros = "=0.23.0"
+-weedle2 = "=4.0.0"
