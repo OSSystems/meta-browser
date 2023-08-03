@@ -1,0 +1,50 @@
+From 5ffa5b7529d43a3283d71dfc97a83f2fdd0aba25 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 2 Aug 2023 15:46:56 +0000
+Subject: [PATCH] Backport "ozone/wayland: Fix nullptr deref in
+ WaylandWindowManager"
+
+This is a backport of https://crrev.com/c/4724882, which will be
+included in upstream's 117 release.
+
+Fixes #736.
+
+Upstream-Status: Backport [https://crrev.com/c/4724882]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../wayland/host/wayland_window_manager.cc    | 22 +++++++++++--------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_window_manager.cc b/ui/ozone/platform/wayland/host/wayland_window_manager.cc
+index d65cc6e3a627d..842ec4ba8a754 100644
+--- a/ui/ozone/platform/wayland/host/wayland_window_manager.cc
++++ b/ui/ozone/platform/wayland/host/wayland_window_manager.cc
+@@ -96,15 +96,19 @@ WaylandWindow* WaylandWindowManager::GetCurrentFocusedWindow() const {
+
+ WaylandWindow* WaylandWindowManager::GetCurrentPointerOrTouchFocusedWindow()
+     const {
+-  // In case there is an ongoing window dragging session, favor the window
+-  // according to the active drag source.
+-  //
+-  // TODO(https://crbug.com/1317063): Apply the same logic to data drag sessions
+-  // too?
+-  if (auto drag_source = connection_->window_drag_controller()->drag_source()) {
+-    return *drag_source == mojom::DragEventSource::kMouse
+-               ? GetCurrentPointerFocusedWindow()
+-               : GetCurrentTouchFocusedWindow();
++  // Might be nullptr if no input devices are available.
++  if (connection_->window_drag_controller()) {
++    // In case there is an ongoing window dragging session, favor the window
++    // according to the active drag source.
++    //
++    // TODO(https://crbug.com/1317063): Apply the same logic to data drag
++    // sessions too?
++    if (auto drag_source =
++            connection_->window_drag_controller()->drag_source()) {
++      return *drag_source == mojom::DragEventSource::kMouse
++                 ? GetCurrentPointerFocusedWindow()
++                 : GetCurrentTouchFocusedWindow();
++    }
+   }
+
+   for (const auto& entry : window_map_) {

@@ -33,6 +33,7 @@ SRC_URI += " \
     file://0028-Avoid-capturing-structured-bindings.patch \
     file://0029-Backport-IWYU-for-translate-TranslateUiLanguagesMana.patch \
     file://0030-Backport-Avoid-operator-which-is-C-20-specific.patch \
+    file://0031-Backport-ozone-wayland-Fix-nullptr-deref-in-WaylandW.patch \
 "
 
 SRC_URI:append:libc-musl = "\
