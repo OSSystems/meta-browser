@@ -29,9 +29,11 @@ export HOST_AR = "${BUILD_AR}"
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=unwind"
-	export RUST_HOST="${BUILD_SYS}"
-	export RUST_TARGET="${TARGET_SYS}"
-	export RUST_TARGET_PATH="${STAGING_LIBDIR_NATIVE}/rustlib"
+	# this needs to match with:
+	# firefox/68.9.0esr $ recipe-sysroot-native/usr/bin/rustc --version --verbose | grep ^host
+	# host: x86_64-unknown-linux-gnu
+	export RUST_HOST="${RUST_BUILD_SYS}"
+	export RUST_TARGET="${RUST_HOST_SYS}"
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
 	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
 
