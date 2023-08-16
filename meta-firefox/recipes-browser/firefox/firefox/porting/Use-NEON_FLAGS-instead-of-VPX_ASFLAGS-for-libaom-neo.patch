@@ -4,6 +4,8 @@ Date: Mon, 26 Nov 2018 09:59:56 +0900
 Subject: [PATCH] Use NEON_FLAGS instead of VPX_ASFLAGS for libaom neon code
 
 ---
+Upstream-Status: Pending
+
  media/libaom/moz.build | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 

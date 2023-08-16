@@ -4,6 +4,8 @@ Date: Mon, 21 Nov 2016 08:15:38 +0900
 Subject: [PATCH] Work around Debian bug #844357
 
 ---
+Upstream-Status: Pending
+
  widget/gtk/mozgtk/gtk3/moz.build | 4 ++++
  1 file changed, 4 insertions(+)
 

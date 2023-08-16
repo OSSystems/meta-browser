@@ -4,6 +4,8 @@ Date: Sun, 25 Sep 2016 09:22:22 +0900
 Subject: [PATCH] Allow to override ICU_DATA_FILE from the environment
 
 ---
+Upstream-Status: Pending
+
  build/autoconf/icu.m4 | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 

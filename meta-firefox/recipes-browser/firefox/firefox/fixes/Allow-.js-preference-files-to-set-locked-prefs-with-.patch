@@ -5,6 +5,8 @@ Subject: [PATCH] Allow .js preference files to set locked prefs with
  lockPref()
 
 ---
+Upstream-Status: Pending
+
  modules/libpref/parser/src/lib.rs | 16 +++++++++-------
  1 file changed, 9 insertions(+), 7 deletions(-)
 

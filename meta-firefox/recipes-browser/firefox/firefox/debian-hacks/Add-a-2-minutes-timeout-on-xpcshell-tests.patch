@@ -4,6 +4,8 @@ Date: Mon, 27 Dec 2010 10:44:28 +0100
 Subject: [PATCH] Add a 2 minutes timeout on xpcshell tests
 
 ---
+Upstream-Status: Pending
+
  testing/xpcshell/runxpcshelltests.py | 21 ++++++++++++++++++---
  1 file changed, 18 insertions(+), 3 deletions(-)
 

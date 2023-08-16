@@ -26,6 +26,8 @@ Fixes:
 
 Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
 ---
+Upstream-Status: Pending
+
  toolkit/components/telemetry/other/ProcessedStack.cpp | 1 +
  1 file changed, 1 insertion(+)
 
