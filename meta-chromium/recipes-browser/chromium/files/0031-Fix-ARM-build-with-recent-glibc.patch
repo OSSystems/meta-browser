@@ -7,7 +7,7 @@ For some reason zlib #undefs _FILE_OFFSET_BITS which doesn't play well
 with glibc 2.34's bminor/glibc@47f24c2 and the newly-introduced checks
 in features-time64.h. See also madler/zlib#447.
 
-Upstream-status: Inappropriate
+Upstream-Status: Inappropriate
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
 ---
  third_party/zlib/gzguts.h | 1 +
