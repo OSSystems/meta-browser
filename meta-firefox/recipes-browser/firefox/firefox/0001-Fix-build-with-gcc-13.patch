@@ -1,0 +1,43 @@
+From 2e395910adb6f7432fb2cfc4357589009270c7b0 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <Martin.Jansa@gmail.com>
+Date: Wed, 16 Aug 2023 17:07:47 +0000
+Subject: [PATCH] Fix build with gcc-13
+
+* fixes:
+  firefox/68.9.0esr/firefox-68.9.0/firefox-build-dir/dist/include/mozilla/gfx/Rect.h:313:47: error: no member named 'int32_t' in namespace 'std'
+  firefox/68.9.0esr/firefox-68.9.0/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp:45:20: error: no member named 'uint8_t' in namespace 'std'
+  firefox/68.9.0esr/firefox-68.9.0/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp:58:20: error: no member named 'uint16_t' in namespace 'std'
+  firefox/68.9.0esr/firefox-68.9.0/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp:71:20: error: no member named 'uint32_t' in namespace 'std'
+
+Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
+---
+Upstream-Status: Pending
+
+ gfx/2d/Rect.h                                      | 1 +
+ media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gfx/2d/Rect.h b/gfx/2d/Rect.h
+index be89904..1fceb99 100644
+--- a/gfx/2d/Rect.h
++++ b/gfx/2d/Rect.h
+@@ -15,6 +15,7 @@
+ #include "mozilla/Maybe.h"
+ 
+ #include <cmath>
++#include <cstdint>
+ 
+ namespace mozilla {
+ 
+diff --git a/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp b/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp
+index 143bfc5..18666a6 100644
+--- a/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp
++++ b/media/webrtc/signaling/src/sdp/RsdparsaSdpGlue.cpp
+@@ -3,6 +3,7 @@
+ /* This Source Code Form is subject to the terms of the Mozilla Public
+  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+  * You can obtain one at http://mozilla.org/MPL/2.0/. */
++#include <cstdint>
+ #include <string>
+ 
+ #include "signaling/src/sdp/RsdparsaSdpInc.h"
