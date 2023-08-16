@@ -4,6 +4,8 @@ Date: Sun, 5 Feb 2017 08:41:22 +0900
 Subject: [PATCH] Set program name from the remoting name
 
 ---
+Upstream-Status: Pending
+
  toolkit/xre/nsAppRunner.cpp | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 

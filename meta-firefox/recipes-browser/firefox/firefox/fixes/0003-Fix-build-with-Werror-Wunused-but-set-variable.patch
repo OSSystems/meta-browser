@@ -9,6 +9,8 @@ firefox/68.9.0esr-r0/firefox-68.9.0/gfx/harfbuzz/src/hb-subset-cff1.cc:467:33: e
 
 Signed-off-by: Martin Jansa <Martin.Jansa@gmail.com>
 ---
+Upstream-Status: Pending
+
  gfx/harfbuzz/src/hb-subset-cff1.cc | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 

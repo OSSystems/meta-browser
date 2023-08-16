@@ -6,6 +6,8 @@ Subject: [PATCH] Use remoting name for call to gdk_set_program_class
 Closes: #907574
 
 ---
+Upstream-Status: Pending
+
  widget/gtk/nsAppShell.cpp | 7 +++----
  1 file changed, 3 insertions(+), 4 deletions(-)
 

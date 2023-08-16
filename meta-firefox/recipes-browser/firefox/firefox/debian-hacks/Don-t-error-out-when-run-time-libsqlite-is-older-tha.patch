@@ -7,6 +7,8 @@ Subject: [PATCH] Don't error-out when run-time libsqlite is older than
 In Debian, we have shlibs to handle this.
 
 ---
+Upstream-Status: Pending
+
  storage/mozStorageService.cpp | 2 ++
  1 file changed, 2 insertions(+)
 

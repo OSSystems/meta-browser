@@ -5,6 +5,8 @@ Subject: [PATCH] Don't register plugins if the MOZILLA_DISABLE_PLUGINS
  environment variable is set
 
 ---
+Upstream-Status: Pending
+
  dom/plugins/base/nsPluginHost.cpp | 4 ++++
  1 file changed, 4 insertions(+)
 

@@ -11,6 +11,8 @@ This has the side effect to make these preferences there work again, and
 to disable the "set as default browser" dialog.
 
 ---
+Upstream-Status: Pending
+
  toolkit/xre/nsXREDirProvider.cpp | 2 ++
  1 file changed, 2 insertions(+)
 

@@ -4,6 +4,8 @@ Date: Sun, 2 Jun 2019 07:28:24 +0900
 Subject: [PATCH] Bug 1556197 - amend Bug-1544631 for fixing mips32.
 
 ---
+Upstream-Status: Pending
+
  js/src/jit/mips32/MacroAssembler-mips32-inl.h | 10 +++++++---
  1 file changed, 7 insertions(+), 3 deletions(-)
 

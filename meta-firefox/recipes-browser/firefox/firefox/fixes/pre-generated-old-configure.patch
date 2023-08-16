@@ -4,6 +4,8 @@ Date: Mon, 20 Aug 2018 10:16:20 +0900
 Subject: [PATCH] firefox: Update to 60.0esr :tada:
 
 ---
+Upstream-Status: Pending
+
  js/src/old-configure | 8987 ++++++++++++++++++++++++++++++++++++++++++
  old-configure        |   14 +-
  2 files changed, 8995 insertions(+), 6 deletions(-)
