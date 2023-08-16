@@ -9,7 +9,7 @@ commit 88652e61a4cfaf20130b73713468c8dc1dcf224a
 
     Use pre-generated old-configure instead.
 
-    Upstream-Status: Inappropriate [OE-specific]
+Upstream-Status: Inappropriate [OE-specific]
 
 ---
  build/moz.configure/old.configure | 2 ++
