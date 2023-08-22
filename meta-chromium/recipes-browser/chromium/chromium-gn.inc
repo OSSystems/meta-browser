@@ -303,6 +303,9 @@ GN_ARGS += ' \
 # but we can use whatever user configured in PARALLEL_MAKE
 GN_ARGS += 'max_jobs_per_link="${@oe.utils.parallel_make_argument(d, '%d')}"'
 
+# We haven't figured out how to best support Rust yet, so disable it for now.
+GN_ARGS += 'enable_rust=false'
+
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
 # If we do not pass |arm_arch| and friends to GN, it will deduce a value that
 # will then conflict with TUNE_CCARGS and CC.
