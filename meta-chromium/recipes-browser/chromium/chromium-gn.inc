@@ -304,6 +304,7 @@ GN_ARGS += ' \
 GN_ARGS += 'max_jobs_per_link="${@oe.utils.parallel_make_argument(d, '%d')}"'
 
 # We haven't figured out how to best support Rust yet, so disable it for now.
+# See the discussion at https://github.com/OSSystems/meta-browser/issues/723.
 GN_ARGS += 'enable_rust=false'
 
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
