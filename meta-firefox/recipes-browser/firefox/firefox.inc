@@ -46,7 +46,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://fixes/Allow-.js-preference-files-to-set-locked-prefs-with-.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
            file://porting/NSS-Fix-FTBFS-on-Hurd-because-of-MAXPATHLEN.patch \
-           file://porting/Use-NEON_FLAGS-instead-of-VPX_ASFLAGS-for-libaom-neo.patch \
            file://wayland/egl/bug1571603-Disable-eglQueryString-nullptr-EGL_EXTENSIONS.patch \
            file://wayland/egl/0001-Mark-GLFeature-framebuffer_multisample-as-unsupporte.patch \
            file://wayland/egl/0001-GLLibraryLoader-Use-given-symbol-lookup-function-fir.patch \

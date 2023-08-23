@@ -8,7 +8,8 @@ LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=1c7c8a999b435cb71deb
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-stable:"
 
-SRC_URI += "git://github.com/franziskuskiefer/cose-rust;protocol=https;branch=master;name=cose-rust;destsuffix=cose-rust"
+SRC_URI += "git://github.com/franziskuskiefer/cose-rust;protocol=https;branch=master;name=cose-rust;destsuffix=cose-rust \
+            file://porting/Use-NEON_FLAGS-instead-of-VPX_ASFLAGS-for-libaom-neo.patch"
 
 SRC_URI[sha256sum] = "575a0d11b487a03527cc90c5e6d556c09669201cbb584b73442b202ee1d3e2e6"
 
