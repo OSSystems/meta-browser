@@ -24,10 +24,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 11 insertions(+), 17 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 3f15e68205a6f..e2e30cbc80557 100644
+index 5cfc021..44b7150 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1385,7 +1385,6 @@ config("compiler_codegen") {
+@@ -1399,7 +1399,6 @@ config("compiler_codegen") {
  config("compiler_deterministic") {
    cflags = []
    ldflags = []
@@ -35,7 +35,7 @@ index 3f15e68205a6f..e2e30cbc80557 100644
 
    # Eliminate build metadata (__DATE__, __TIME__ and __TIMESTAMP__) for
    # deterministic build.  See https://crbug.com/314403
-@@ -1414,20 +1413,12 @@ config("compiler_deterministic") {
+@@ -1428,20 +1427,12 @@ config("compiler_deterministic") {
      # different build directory like "out/feature_a" and "out/feature_b" if
      # we build same files with same compile flag.
      # Other paths are already given in relative, no need to normalize them.
@@ -63,10 +63,10 @@ index 3f15e68205a6f..e2e30cbc80557 100644
        # We don't use clang -cc1as on Windows (yet? https://crbug.com/762167)
        asmflags = [ "-Wa,-fdebug-compilation-dir,." ]
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 7a43b1113a495..5bec423af6c89 100644
+index 8f5b3d4..e667d97 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
-@@ -267,8 +267,11 @@ declare_args() {
+@@ -268,8 +268,11 @@ declare_args() {
  # deterministic builds to reduce compile times, so this is less relevant for
  # official builders.
  strip_absolute_paths_from_debug_symbols_default =

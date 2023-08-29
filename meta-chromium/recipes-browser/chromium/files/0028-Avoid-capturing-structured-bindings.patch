@@ -15,7 +15,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/content/browser/service_worker/service_worker_context_wrapper.cc b/content/browser/service_worker/service_worker_context_wrapper.cc
-index 36391a685ac6f..e3cb9f0634b0e 100644
+index 6fbb7d7..bbdf737 100644
 --- a/content/browser/service_worker/service_worker_context_wrapper.cc
 +++ b/content/browser/service_worker/service_worker_context_wrapper.cc
 @@ -1396,9 +1396,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
@@ -31,7 +31,7 @@ index 36391a685ac6f..e3cb9f0634b0e 100644
    context_core_->registry()->FindRegistrationForClientUrl(
        ServiceWorkerRegistry::Purpose::kNotForNavigation,
 diff --git a/media/base/cdm_promise_adapter.cc b/media/base/cdm_promise_adapter.cc
-index f013809a62e25..144809b9696c3 100644
+index f013809..144809b 100644
 --- a/media/base/cdm_promise_adapter.cc
 +++ b/media/base/cdm_promise_adapter.cc
 @@ -94,12 +94,12 @@ void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,

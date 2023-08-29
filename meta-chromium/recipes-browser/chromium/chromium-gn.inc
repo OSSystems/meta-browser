@@ -25,14 +25,15 @@ SRC_URI += " \
     file://0018-Only-default-operator-on-declaration.patch \
     file://0020-Revert-__attribute__-and-alignas-changes.patch \
     file://0021-Add-missing-typename-s.patch \
-    file://0023-Backport-IWYU-for-translate-TranslateUILanguagesMana.patch \
     file://0027-Don-t-pass-disable-auto-upgrade-debug-info-to-linker.patch \
     file://0028-Avoid-capturing-structured-bindings.patch \
-    file://0029-Backport-IWYU-for-translate-TranslateUiLanguagesMana.patch \
     file://0032-Backport-ozone-wayland-Fix-nullptr-deref-in-WaylandW.patch \
     file://0033-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
     file://0034-Avoid-parenthesized-initialization-of-aggregates.patch \
     file://0035-Backport-IWYU-for-chromedriver-chrome-client_hints.h.patch \
+    file://0036-Avoid-std-ranges-find_if.patch \
+    file://0037-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
+    file://0038-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
 "
 
 SRC_URI:append:libc-musl = "\

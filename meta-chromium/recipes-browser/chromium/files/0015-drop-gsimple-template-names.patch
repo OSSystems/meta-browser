@@ -11,10 +11,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index e2e30cbc80557..c274a92b3f93e 100644
+index 44b7150..de0549d 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -860,9 +860,11 @@ config("compiler") {
+@@ -867,9 +867,11 @@ config("compiler") {
    # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
    #   lldb doesn't have the needed changes yet.
    # TODO(crbug.com/1379070): Remove if the upstream default ever changes.

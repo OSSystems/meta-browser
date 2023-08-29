@@ -22,7 +22,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  7 files changed, 3 insertions(+), 17 deletions(-)
 
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
-index 5d5b95e0d787a..3a499529885be 100644
+index 5d5b95e..3a49952 100644
 --- a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
 +++ b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
 @@ -179,7 +179,4 @@ void AffiliationFetcherBase::OnSimpleLoaderComplete(
@@ -34,7 +34,7 @@ index 5d5b95e0d787a..3a499529885be 100644
 -
  }  // namespace password_manager
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.h b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.h
-index baa57ab9fb852..fe6e322918e82 100644
+index baa57ab..fe6e322 100644
 --- a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.h
 +++ b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.h
 @@ -80,9 +80,6 @@ class AffiliationFetcherBase : public virtual AffiliationFetcherInterface {
@@ -48,7 +48,7 @@ index baa57ab9fb852..fe6e322918e82 100644
 
  #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_AFFILIATION_AFFILIATION_FETCHER_BASE_H_
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_interface.h b/components/password_manager/core/browser/affiliation/affiliation_fetcher_interface.h
-index 5bf889f5d940d..946eabe8dce6e 100644
+index 5bf889f..946eabe 100644
 --- a/components/password_manager/core/browser/affiliation/affiliation_fetcher_interface.h
 +++ b/components/password_manager/core/browser/affiliation/affiliation_fetcher_interface.h
 @@ -20,7 +20,7 @@ class AffiliationFetcherInterface {
@@ -61,10 +61,10 @@ index 5bf889f5d940d..946eabe8dce6e 100644
 
    AffiliationFetcherInterface() = default;
 diff --git a/components/password_manager/core/browser/passkey_credential.cc b/components/password_manager/core/browser/passkey_credential.cc
-index f0e46598704f4..12cf07ba62711 100644
+index 09fe156..4dd0ddb 100644
 --- a/components/password_manager/core/browser/passkey_credential.cc
 +++ b/components/password_manager/core/browser/passkey_credential.cc
-@@ -81,7 +81,4 @@ int PasskeyCredential::GetAuthenticatorLabel() const {
+@@ -103,7 +103,4 @@ int PasskeyCredential::GetAuthenticatorLabel() const {
    }
  }
 
@@ -73,10 +73,10 @@ index f0e46598704f4..12cf07ba62711 100644
 -
  }  // namespace password_manager
 diff --git a/components/password_manager/core/browser/passkey_credential.h b/components/password_manager/core/browser/passkey_credential.h
-index 71005a94024ee..66578b15e7c35 100644
+index 9553b16..5731c57 100644
 --- a/components/password_manager/core/browser/passkey_credential.h
 +++ b/components/password_manager/core/browser/passkey_credential.h
-@@ -57,8 +57,7 @@ class PasskeyCredential {
+@@ -66,8 +66,7 @@ class PasskeyCredential {
    const std::string& display_name() const { return display_name_; }
 
   private:
@@ -86,7 +86,7 @@ index 71005a94024ee..66578b15e7c35 100644
 
    // Authenticator type this passkey belongs to.
    Source source_;
-@@ -84,8 +83,6 @@ class PasskeyCredential {
+@@ -93,8 +92,6 @@ class PasskeyCredential {
    std::string display_name_;
  };
 
@@ -96,7 +96,7 @@ index 71005a94024ee..66578b15e7c35 100644
 
  #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSKEY_CREDENTIAL_H_
 diff --git a/components/password_manager/core/browser/password_form.cc b/components/password_manager/core/browser/password_form.cc
-index e11d5204e7527..c6c551aabc3de 100644
+index e11d520..c6c551a 100644
 --- a/components/password_manager/core/browser/password_form.cc
 +++ b/components/password_manager/core/browser/password_form.cc
 @@ -230,8 +230,6 @@ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
@@ -109,7 +109,7 @@ index e11d5204e7527..c6c551aabc3de 100644
    return std::tie(value, field_renderer_id, name) <
           std::tie(other.value, other.field_renderer_id, other.name);
 diff --git a/components/password_manager/core/browser/password_form.h b/components/password_manager/core/browser/password_form.h
-index a737d5382030f..7450bef2b0ca4 100644
+index a737d53..7450bef 100644
 --- a/components/password_manager/core/browser/password_form.h
 +++ b/components/password_manager/core/browser/password_form.h
 @@ -44,7 +44,7 @@ struct AlternativeElement {

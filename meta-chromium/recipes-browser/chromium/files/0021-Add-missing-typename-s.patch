@@ -11,11 +11,13 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
  .../download/bubble/download_bubble_update_service.cc       | 6 +++---
  components/optimization_guide/core/tflite_model_executor.h  | 2 +-
+ .../browser/web_ui_browser_interface_broker_registry.h      | 6 +++---
  .../core/html/parser/html_document_parser_fastpath.cc       | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ .../renderer/core/paint/object_paint_properties_sparse.h    | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/chrome/browser/download/bubble/download_bubble_update_service.cc b/chrome/browser/download/bubble/download_bubble_update_service.cc
-index 41b647f7b445d..8940c6bb7fcaa 100644
+index 93ec91e38b9b3..acd25f25d1579 100644
 --- a/chrome/browser/download/bubble/download_bubble_update_service.cc
 +++ b/chrome/browser/download/bubble/download_bubble_update_service.cc
 @@ -91,7 +91,7 @@ ItemSortKey GetSortKey(const Item& item) {
@@ -52,8 +54,26 @@ index c4f750f468493..b5635f4108bb4 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+diff --git a/content/public/browser/web_ui_browser_interface_broker_registry.h b/content/public/browser/web_ui_browser_interface_broker_registry.h
+index 0a419be66b325..7253c9680f722 100644
+--- a/content/public/browser/web_ui_browser_interface_broker_registry.h
++++ b/content/public/browser/web_ui_browser_interface_broker_registry.h
+@@ -127,10 +127,10 @@ class CONTENT_EXPORT WebUIBrowserInterfaceBrokerRegistry {
+   //
+   // TODO(crbug.com/1407936): Point to WebUIJsBridge documentation.
+   template <typename ControllerType>
+-  JsBridgeTraits<ControllerType>::BinderInitializer& ForWebUIWithJsBridge() {
++  typename JsBridgeTraits<ControllerType>::BinderInitializer& ForWebUIWithJsBridge() {
+     using Traits = JsBridgeTraits<ControllerType>;
+-    using Interface = Traits::Interface;
+-    using JsBridgeBinderInitializer = Traits::BinderInitializer;
++    using Interface = typename Traits::Interface;
++    using JsBridgeBinderInitializer = typename Traits::BinderInitializer;
+
+     // WebUIController::GetType() requires an instantiated WebUIController
+     // (because it's a virtual method and can't be static). Here we only have
 diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
-index 2dc0b30409283..a82f255090b3c 100644
+index f9cf9f5ae86ee..0566ae194ce4b 100644
 --- a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 +++ b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 @@ -169,7 +169,7 @@ class HTMLFastPathParser {
@@ -65,3 +85,18 @@ index 2dc0b30409283..a82f255090b3c 100644
                             UCharLiteralBuffer<32>,
                             LCharLiteralBuffer<32>>::type LiteralBufferType;
    typedef UCharLiteralBuffer<32> UCharLiteralBufferType;
+diff --git a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
+index 8bb1639676cd6..bc455d224954b 100644
+--- a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
++++ b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
+@@ -269,8 +269,8 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
+       NodeList& nodes,
+       NodeId node_id,
+       const ParentType& parent,
+-      NodeType::State&& state,
+-      const NodeType::AnimationState& animation_state =
++      typename NodeType::State&& state,
++      const typename NodeType::AnimationState& animation_state =
+           NodeType::AnimationState()) {
+     // First, check if we need to add a new node.
+     if (!nodes.HasField(node_id)) {

@@ -70,7 +70,7 @@ def find_chromium_licenses(chromium_root):
         # We are not interested in licenses for projects that are not marked as
         # used in the final product (ie. they might be optional development
         # aids, or only used in a build).
-        if metadata['License File'] != licenses.NOT_SHIPPED:
+        if metadata['Shipped'] == licenses.YES:
             license_files.add(metadata['License File'])
     return license_files
 
