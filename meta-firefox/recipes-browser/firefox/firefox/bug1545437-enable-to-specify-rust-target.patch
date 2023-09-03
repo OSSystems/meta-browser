@@ -1,0 +1,95 @@
+From 2817f07563070d71b624b4397af32d820efec244 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Thu, 18 Apr 2019 23:15:16 +0900
+Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name
+
+ r?glandium
+
+Certain build systems such as Yocto know more suitable Rust target name, so it
+would be better that there is a way to pass it to Mozilla's build system.
+
+Differential Revision: https://phabricator.services.mozilla.com/D28069
+
+--- ./build/moz.configure/rust.configure	2023-10-10 21:20:48.569221517 +0200
++++ ./build/moz.configure/rust.configure	2023-10-10 21:57:13.730821538 +0200
+@@ -280,8 +280,29 @@
+     return data
+ 
+ 
++option(env='RUST_HOST',
++       nargs=1,
++       help='Define the system type for Rust performing the build')
++
++@depends('RUST_HOST')
++@checking('rust host', lambda host: host)
++def rust_host_env(value):
++    if value:
++        return value[0]
++
++
++option(env='RUST_TARGET',
++       nargs=1,
++       help='Define the system type for Rust where the resulting executables will be used')
++
++@depends('RUST_TARGET')
++@checking('rust target', lambda target: target)
++def rust_target_env(value):
++    if value:
++        return value[0]
++
+ def detect_rustc_target(
+-    host_or_target, compiler_info, arm_target, rust_supported_targets
++    host_or_target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, host_or_target_str
+ ):
+     # Rust's --target options are similar to, but not exactly the same
+     # as, the autoconf-derived targets we use.  An example would be that
+@@ -292,6 +313,11 @@
+     # munging to get the correct option to rustc.
+     # We correlate the autoconf-derived targets with the list of targets
+     # rustc gives us with --print target-list.
++    specified_targets = {"host": rust_host_env, "target": rust_target_env}
++    specified_target = specified_targets[host_or_target_str]
++    if (specified_target):
++        return specified_target
++
+     candidates = rust_supported_targets.get(
+         (host_or_target.cpu, host_or_target.endianness, host_or_target.os), []
+     )
+@@ -479,15 +505,17 @@
+     rustc_info.host,
+     rust_supported_targets,
+     arm_target,
++    rust_host_env,
++    rust_target_env,
+     when=rust_compiler,
+ )
+ @checking("for rust host triplet")
+ @imports(_from="textwrap", _import="dedent")
+ def rust_host_triple(
+-    rustc, host, compiler_info, rustc_host, rust_supported_targets, arm_target
++    rustc, host, compiler_info, rustc_host, rust_supported_targets, arm_target, rust_host_env, rust_target_env
+ ):
+     rustc_target = detect_rustc_target(
+-        host, compiler_info, arm_target, rust_supported_targets
++        host, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "host"
+     )
+     if rustc_target != rustc_host:
+         if host.alias == rustc_target:
+@@ -516,14 +544,14 @@
+ 
+ 
+ @depends(
+-    rustc, target, c_compiler, rust_supported_targets, arm_target, when=rust_compiler
++    rustc, target, c_compiler, rust_supported_targets, arm_target, rust_host_env, rust_target_env, when=rust_compiler
+ )
+ @checking("for rust target triplet")
+ def rust_target_triple(
+-    rustc, target, compiler_info, rust_supported_targets, arm_target
++    rustc, target, compiler_info, rust_supported_targets, arm_target, rust_host_env, rust_target_env
+ ):
+     rustc_target = detect_rustc_target(
+-        target, compiler_info, arm_target, rust_supported_targets
++        target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
+     )
+     assert_rust_compile(target, rustc_target, rustc)
+     return rustc_target
