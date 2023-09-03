@@ -31,6 +31,9 @@ mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=abort -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
+	export RUST_HOST="${RUST_BUILD_SYS}"
+	export RUST_TARGET="${RUST_HOST_SYS}"
+
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
         export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
 	export INSTALL_SDK=0

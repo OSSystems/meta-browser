@@ -32,21 +32,7 @@ diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.confi
 index 4f15da572b..e5848e81c8 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
-@@ -260,10 +260,12 @@ def rust_compiler(rustc_info, cargo_info, target):
- 
- @depends(rustc, when=rust_compiler)
- @imports(_from="__builtin__", _import="ValueError")
-+@imports("os")
- def rust_supported_targets(rustc):
--    out = check_cmd_output(rustc, "--print", "target-list").splitlines()
-+    out = check_cmd_output("ls", "-1", os.environ["RUST_TARGET_PATH"]).splitlines()
-     data = {}
-     for t in out:
-+        t = t.split(".")[0]
-         try:
-             info = split_triplet(t, allow_wasi=True)
-         except ValueError:
-@@ -424,7 +426,7 @@ def detect_rustc_target(
+@@ -450,7 +450,7 @@ def detect_rustc_target(
  @imports(_from="tempfile", _import="mkstemp")
  @imports(_from="textwrap", _import="dedent")
  @imports(_from="mozbuild.configure.util", _import="LineIO")
@@ -55,7 +41,7 @@ index 4f15da572b..e5848e81c8 100644
      # Check to see whether our rustc has a reasonably functional stdlib
      # for our chosen target.
      target_arg = "--target=" + rustc_target
-@@ -450,6 +452,9 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
+@@ -476,6 +476,9 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
              in_path,
          ]
  
@@ -65,9 +51,9 @@ index 4f15da572b..e5848e81c8 100644
          def failed():
              die(
                  dedent(
-@@ -526,7 +531,7 @@ def rust_target_triple(
+@@ -554,7 +557,7 @@ def rust_target_triple(
      rustc_target = detect_rustc_target(
-         target, compiler_info, arm_target, rust_supported_targets
+         target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
      )
 -    assert_rust_compile(target, rustc_target, rustc)
 +    assert_rust_compile(target, rustc_target, rustc, True)
