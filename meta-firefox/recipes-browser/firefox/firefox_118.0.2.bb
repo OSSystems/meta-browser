@@ -13,7 +13,8 @@ SRC_URI += "git://github.com/franziskuskiefer/cose-rust;protocol=https;branch=ma
             git://github.com/rust-minidump/rust-minidump;protocol=https;branch=main;name=minidump-common;destsuffix=minidump-common \
             git://github.com/glandium/prost;protocol=https;branch=syn2-0.11.9;name=prost;destsuffix=prost \
             git://github.com/rust-diplomat/diplomat;protocol=https;branch=main;name=diplomat;destsuffix=diplomat \
-            git://github.com/unicode-org/icu4x;protocol=https;branch=main;name=icu4x;destsuffix=icu4x"
+            git://github.com/unicode-org/icu4x;protocol=https;branch=main;name=icu4x;destsuffix=icu4x \
+            git://github.com/hsivonen/packed_simd.git;protocol=https;branch=0_3_8;name=packed-simd;destsuffix=packed_simd"
 
 SRC_URI[sha256sum] = "89626520f2f0f782f37c074b94690e0f08dcf416be2b992f4aad68df5d727b21"
 
@@ -24,6 +25,7 @@ SRCREV_minidump-common = "87a29fba5e19cfae5ebf73a57ba31504a3872545"
 SRCREV_prost = "95964e9d33df3c2a9c3f14285e262867cab6f96b"
 SRCREV_diplomat = "8d125999893fedfdf30595e97334c21ec4b18da9"
 SRCREV_icu4x = "14e9a3a9857be74582abe2dfa7ab799c5eaac873"
+SRCREV_packed-simd = "412f9a0aa556611de021bde89dee8fefe6e0fbbd"
 
 PACKAGECONFIG[x11-only] = "--enable-default-toolkit=cairo-gtk3-x11-only,,,,,wayland-only"
 PACKAGECONFIG[wayland-only] = "--enable-default-toolkit=cairo-gtk3-wayland-only,,virtual/egl,,,x11-only"
