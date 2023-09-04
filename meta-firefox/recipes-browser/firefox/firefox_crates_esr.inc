@@ -1,4 +1,5 @@
 SRC_URI += "crate://crates.io/libloading/0.7.4 \
+           crate://crates.io/packed_simd/0.3.9 \
            crate://crates.io/cfg-if/1.0.0 \
            crate://crates.io/textwrap/0.15.2 \
            crate://crates.io/mp4parse/0.17.0 \
@@ -201,7 +202,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/fuchsia-zircon-sys/0.3.3 \
            crate://crates.io/linked-hash-map/0.5.6 \
            crate://crates.io/minidump-common/0.15.2 \
-           crate://crates.io/proc-macro2/1.0.51 \
+           crate://crates.io/proc-macro2/1.0.66 \
            crate://crates.io/plane-split/0.18.0 \
            crate://crates.io/profiling/1.0.7 \
            crate://crates.io/metal/0.24.0 \
@@ -212,7 +213,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/android_system_properties/0.1.5 \
            crate://crates.io/crypto-common/0.1.6 \
            crate://crates.io/rustc-hash/1.1.0 \
-           crate://crates.io/encoding_rs/0.8.32 \
+           crate://crates.io/encoding_rs/0.8.33 \
            crate://crates.io/range-map/0.2.0 \
            crate://crates.io/uniffi_build/0.23.0 \
            crate://crates.io/cstr/0.2.11 \
@@ -625,7 +626,6 @@ SRC_URI[nix-0.26.2.sha256sum] = "bfdda3d196821d6af13126e40375cdf7da646a96114af13
 SRC_URI[fuchsia-zircon-sys-0.3.3.sha256sum] = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
 SRC_URI[linked-hash-map-0.5.6.sha256sum] = "0717cef1bc8b636c6e1c1bbdefc09e6322da8a9321966e8928ef80d20f7f770f"
 SRC_URI[minidump-common-0.15.2.sha256sum] = "694717103b2c15f8c16ddfaec1333fe15673bc22b10ffa6164427415701974ba"
-SRC_URI[proc-macro2-1.0.51.sha256sum] = "5d727cae5b39d21da60fa540906919ad737832fe0b1c165da3a34d6548c849d6"
 SRC_URI[plane-split-0.18.0.sha256sum] = "8c1f7d82649829ecdef8e258790b0587acf0a8403f0ce963473d8e918acc1643"
 SRC_URI[profiling-1.0.7.sha256sum] = "74605f360ce573babfe43964cbe520294dcb081afbf8c108fc6e23036b4da2df"
 SRC_URI[metal-0.24.0.sha256sum] = "de11355d1f6781482d027a3b4d4de7825dcedb197bf573e0596d00008402d060"
@@ -636,7 +636,6 @@ SRC_URI[unicode-xid-0.2.4.sha256sum] = "f962df74c8c05a667b5ee8bcf162993134c104e9
 SRC_URI[android_system_properties-0.1.5.sha256sum] = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
 SRC_URI[crypto-common-0.1.6.sha256sum] = "1bfb12502f3fc46cca1bb51ac28df9d618d813cdc3d2f25b9fe775a34af26bb3"
 SRC_URI[rustc-hash-1.1.0.sha256sum] = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
-SRC_URI[encoding_rs-0.8.32.sha256sum] = "071a31f4ee85403370b58aca746f01041ede6f0da2730960ad001edc2b71b394"
 SRC_URI[range-map-0.2.0.sha256sum] = "12a5a2d6c7039059af621472a4389be1215a816df61aa4d531cfe85264aee95f"
 SRC_URI[uniffi_build-0.23.0.sha256sum] = "0ee1a28368ff3d83717e3d3e2e15a66269c43488c3f036914131bb68892f29fb"
 SRC_URI[cstr-0.2.11.sha256sum] = "8aa998c33a6d3271e3678950a22134cd7dd27cef86dee1b611b5b14207d1d90b"
@@ -874,3 +873,6 @@ SRC_URI[mp4parse_capi-0.17.0.sha256sum] = "e8be950f2da4a58e35de80883fdca7470d36e
 SRC_URI[md-5-0.10.5.sha256sum] = "6365506850d44bff6e2fbcb5176cf63650e48bd45ef2fe2665ae1570e0f4b9ca"
 SRC_URI[app_units-0.7.2.sha256sum] = "ad05ebc593047433bada8bc1bf31957b6516dad7bfb5def6f425581f5bcc982a"
 SRC_URI[authenticator-0.4.0-alpha.15.sha256sum] = "aa0e182b77b6b19eaf9c7b69fddf3be970169ec6d34eca3f5d682ab948727e57"
+SRC_URI[packed_simd-0.3.9.sha256sum] = "1f9f08af0c877571712e2e3e686ad79efad9657dbf0f7c3c8ba943ff6c38932d"
+SRC_URI[proc-macro2-1.0.66.sha256sum] = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
+SRC_URI[encoding_rs-0.8.33.sha256sum] = "7268b386296a025e474d5140678f75d6de9493ae55a5d709eeb9dd08149945e1"

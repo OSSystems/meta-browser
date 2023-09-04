@@ -57,7 +57,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/chris-zen/coremidi.git;protocol=https;branch=master;name=coremidi;destsuffix=coremidi \
            git://github.com/mozilla/midir.git;protocol=https;branch=firefox-vendoring;name=midir;destsuffix=midir \
            git://github.com/glandium/warp.git;protocol=https;branch=pemfile;name=warp;destsuffix=warp \
-           git://github.com/hsivonen/packed_simd.git;protocol=https;branch=0_3_8;name=packed-simd;destsuffix=packed_simd \
            git://github.com/mozilla-spidermonkey/jsparagus;protocol=https;branch=ci_generated;name=jsparagus;destsuffix=jsparagus \
            git://github.com/FirefoxGraphics/aa-stroke;protocol=https;branch=main;name=aa-stroke;destsuffix=aa-stroke \
            git://github.com/mozilla/cubeb-coreaudio-rs;protocol=https;branch=trailblazer;name=cubeb-coreaudio;destsuffix=cubeb-coreaudio \
@@ -75,7 +74,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
 SRCREV_chardetng = "3484d3e3ebdc8931493aa5df4d7ee9360a90e76b"
 SRCREV_chardetng_c = "ed8a4c6f900a90d4dbc1d64b856e61490a1c3570"
 SRCREV_coremidi = "fc68464b5445caf111e41f643a2e69ccce0b4f83"
-SRCREV_packed-simd = "412f9a0aa556611de021bde89dee8fefe6e0fbbd"
 SRCREV_midir = "519e651241e867af3391db08f9ae6400bc023e18"
 SRCREV_warp = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d"
 SRCREV_jsparagus = "64ba08e24749616de2344112f226d1ef4ba893ae"
