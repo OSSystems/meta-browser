@@ -66,7 +66,7 @@ ANY_OF_DISTRO_FEATURES = "opengl vulkan"
 # Append instead of assigning; the gtk-icon-cache class inherited above also
 # adds packages to DEPENDS.
 DEPENDS += " \
-    alsa-lib \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'alsa', 'alsa-lib', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'at-spi2-core', '', d)} \
     atk \
     bison-native \
@@ -159,6 +159,7 @@ GN_ARGS = " \
         is_component_build=${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'true', 'false', d)} \
         use_gnome_keyring=false \
         use_kerberos=false \
+        use_alsa=${@bb.utils.contains('DISTRO_FEATURES', 'alsa', 'true', 'false', d)} \
         use_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'true', 'false', d)} \
         use_system_libjpeg=true \
 "
