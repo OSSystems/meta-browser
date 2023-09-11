@@ -23,17 +23,16 @@ SRC_URI += " \
     file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
     file://0017-Revert-Fix-std-span-autodetection-7805.patch \
     file://0018-Only-default-operator-on-declaration.patch \
-    file://0019-Backport-constexpr-std-string-fixes.patch \
     file://0020-Revert-__attribute__-and-alignas-changes.patch \
     file://0021-Add-missing-typename-s.patch \
-    file://0022-Backport-Avoid-capturing-structured-bindings.patch \
     file://0023-Backport-IWYU-for-translate-TranslateUILanguagesMana.patch \
-    file://0026-Backport-std-string-ends_with-is-C-20.-Use-base-Ends.patch \
     file://0027-Don-t-pass-disable-auto-upgrade-debug-info-to-linker.patch \
     file://0028-Avoid-capturing-structured-bindings.patch \
     file://0029-Backport-IWYU-for-translate-TranslateUiLanguagesMana.patch \
-    file://0030-Backport-Avoid-operator-which-is-C-20-specific.patch \
-    file://0031-Backport-ozone-wayland-Fix-nullptr-deref-in-WaylandW.patch \
+    file://0032-Backport-ozone-wayland-Fix-nullptr-deref-in-WaylandW.patch \
+    file://0033-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
+    file://0034-Avoid-parenthesized-initialization-of-aggregates.patch \
+    file://0035-Backport-IWYU-for-chromedriver-chrome-client_hints.h.patch \
 "
 
 SRC_URI:append:libc-musl = "\

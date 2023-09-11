@@ -15,10 +15,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 8 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index bbfe6cb53ca2a..6dfecad718686 100644
+index c274a92b3f93e..de19e2490edd3 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -726,14 +726,6 @@ config("compiler") {
+@@ -756,14 +756,6 @@ config("compiler") {
        }
 
        ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
