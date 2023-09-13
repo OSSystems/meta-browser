@@ -17,10 +17,10 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 23a8da453c3d2..f7273a944ec68 100644
+index ae742b0..edf4dda 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -710,7 +710,7 @@ config("compiler") {
+@@ -713,7 +713,7 @@ config("compiler") {
 
      if (is_win) {
        ldflags += [
@@ -29,7 +29,7 @@ index 23a8da453c3d2..f7273a944ec68 100644
          "-mllvm:-import-instr-limit=$import_instr_limit",
          "/lldltocache:" +
              rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-@@ -724,11 +724,11 @@ config("compiler") {
+@@ -727,11 +727,11 @@ config("compiler") {
        # usage in crbug.com/1038040. Note this will increase build time in
        # Chrome OS.
 
@@ -47,7 +47,7 @@ index 23a8da453c3d2..f7273a944ec68 100644
          ldflags += [
            "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 4738ee80d307c..7a43b1113a495 100644
+index 1871701..8f5b3d4 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
 @@ -99,6 +99,11 @@ declare_args() {

@@ -14,7 +14,7 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/third_party/zlib/gzguts.h b/third_party/zlib/gzguts.h
-index 57faf37165a35..e5d6388190979 100644
+index e23f831..5b85ef7 100644
 --- a/third_party/zlib/gzguts.h
 +++ b/third_party/zlib/gzguts.h
 @@ -9,6 +9,7 @@

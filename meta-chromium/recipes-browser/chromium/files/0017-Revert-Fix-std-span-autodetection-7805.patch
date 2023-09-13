@@ -11,7 +11,7 @@ Upstream-Status: Inappropriate
  1 file changed, 8 insertions(+), 11 deletions(-)
 
 diff --git a/third_party/flatbuffers/src/include/flatbuffers/stl_emulation.h b/third_party/flatbuffers/src/include/flatbuffers/stl_emulation.h
-index fd3a8cda..452ddb83 100644
+index fd3a8cd..452ddb8 100644
 --- a/third_party/flatbuffers/src/include/flatbuffers/stl_emulation.h
 +++ b/third_party/flatbuffers/src/include/flatbuffers/stl_emulation.h
 @@ -41,18 +41,15 @@

@@ -16,7 +16,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 13 insertions(+), 9 deletions(-)
 
 diff --git a/ui/ozone/platform/wayland/host/wayland_window_manager.cc b/ui/ozone/platform/wayland/host/wayland_window_manager.cc
-index d65cc6e3a627d..842ec4ba8a754 100644
+index e4a8e45..2499972 100644
 --- a/ui/ozone/platform/wayland/host/wayland_window_manager.cc
 +++ b/ui/ozone/platform/wayland/host/wayland_window_manager.cc
 @@ -96,15 +96,19 @@ WaylandWindow* WaylandWindowManager::GetCurrentFocusedWindow() const {

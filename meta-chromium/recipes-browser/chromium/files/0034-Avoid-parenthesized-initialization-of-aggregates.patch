@@ -13,29 +13,50 @@ or initialize the aggregate using curly braces.
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- .../bound_session_refresh_cookie_fetcher_impl.cc              | 4 ++--
- chrome/test/chromedriver/chrome/client_hints.h                | 1 +
- .../blink/renderer/modules/canvas/canvas2d/canvas_style.cc    | 4 ++--
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ .../browser/content_settings/one_time_permission_provider.h  | 1 +
+ chrome/browser/ui/omnibox/chrome_omnibox_client.cc           | 4 ++--
+ chrome/test/chromedriver/chrome/client_hints.h               | 1 +
+ .../display_embedder/skia_output_surface_impl_on_gpu.cc      | 2 +-
+ net/dns/host_resolver_cache.cc                               | 2 +-
+ .../blink/renderer/modules/canvas/canvas2d/canvas_style.cc   | 4 ++--
+ .../blink/renderer/platform/fonts/palette_interpolation.cc   | 2 +-
+ ui/base/wayland/color_manager_util.h                         | 5 +++++
+ 8 files changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc b/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
-index 46be6f06b147a..dbb98f2648431 100644
---- a/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
-+++ b/chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher_impl.cc
-@@ -103,6 +103,6 @@ void BoundSessionRefreshCookieFetcherImpl::OnURLLoaderComplete(
-   net::Error net_error = static_cast<net::Error>(url_loader_->NetError());
+diff --git a/chrome/browser/content_settings/one_time_permission_provider.h b/chrome/browser/content_settings/one_time_permission_provider.h
+index 5599764896739..ea9006f23e312 100644
+--- a/chrome/browser/content_settings/one_time_permission_provider.h
++++ b/chrome/browser/content_settings/one_time_permission_provider.h
+@@ -86,6 +86,7 @@ class OneTimePermissionProvider
+     ContentSettingsType type;
+     ContentSettingsPattern primary_pattern;
+     ContentSettingsPattern secondary_pattern;
++    ContentSettingEntry(ContentSettingsType t, ContentSettingsPattern p, ContentSettingsPattern s) : type(t), primary_pattern(p), secondary_pattern(s) {}
+   };
 
-   std::move(callback_).Run(
--      Result(net_error, headers ? absl::optional<int>(headers->response_code())
--                                : absl::nullopt));
-+      Result {net_error, headers ? absl::optional<int>(headers->response_code())
-+                                : absl::nullopt});
- }
+   void DeleteEntriesAndNotify(
+diff --git a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
+index d923cdfa3229c..d2b9158a72d19 100644
+--- a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
++++ b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
+@@ -470,10 +470,10 @@ void ChromeOmniboxClient::OnAutocompleteAccept(
+               alternative_nav_match);
+
+   // Store the details necessary to open the omnibox match via browser commands.
+-  location_bar_->set_navigation_params(LocationBar::NavigationParams(
++  location_bar_->set_navigation_params(LocationBar::NavigationParams {
+       destination_url, disposition, transition, match_selection_timestamp,
+       destination_url_entered_without_scheme,
+-      destination_url_entered_with_http_scheme));
++      destination_url_entered_with_http_scheme});
+
+   if (browser_) {
+     auto navigation = chrome::OpenCurrentURL(browser_);
 diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
-index 8c13bd3321c5e..42dc1acf75ec5 100644
+index 593bfe6e8a25e..e737376e383d9 100644
 --- a/chrome/test/chromedriver/chrome/client_hints.h
 +++ b/chrome/test/chromedriver/chrome/client_hints.h
-@@ -19,6 +19,7 @@ struct BrandVersion {
+@@ -18,6 +18,7 @@ struct BrandVersion {
    // * "major version" for "brands",
    // * "full version" for "fullVersionList".
    std::string version;
@@ -43,11 +64,37 @@ index 8c13bd3321c5e..42dc1acf75ec5 100644
  };
 
  // User-Agent Client Hints
+diff --git a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
+index 3bace0dab10fa..96330cc3cbd15 100644
+--- a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
++++ b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
+@@ -1496,7 +1496,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
+
+       // Issue readbacks from the surfaces:
+       for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
+-        SkISize size(plane_surfaces[i]->width(), plane_surfaces[i]->height());
++        SkISize size {plane_surfaces[i]->width(), plane_surfaces[i]->height()};
+         SkImageInfo dst_info = SkImageInfo::Make(
+             size, (i == 0) ? kAlpha_8_SkColorType : kR8G8_unorm_SkColorType,
+             kUnpremul_SkAlphaType);
+diff --git a/net/dns/host_resolver_cache.cc b/net/dns/host_resolver_cache.cc
+index df037a1a440f7..5f3903b12eb43 100644
+--- a/net/dns/host_resolver_cache.cc
++++ b/net/dns/host_resolver_cache.cc
+@@ -159,7 +159,7 @@ void HostResolverCache::Set(
+
+   std::string domain_name = result->domain_name();
+   entries_.emplace(
+-      Key(std::move(domain_name), network_anonymization_key),
++      Key {std::move(domain_name), network_anonymization_key},
+       Entry(std::move(result), source, secure, staleness_generation_));
+
+   if (entries_.size() > max_entries_) {
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
-index f0b4913914739..67c26acab818b 100644
+index 883d769ca4b24..3dcd0d73468fc 100644
 --- a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
 +++ b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
-@@ -91,12 +91,12 @@ void CanvasStyle::ApplyToFlags(cc::PaintFlags& flags,
+@@ -83,12 +83,12 @@ void CanvasStyle::ApplyToFlags(cc::PaintFlags& flags,
      case kGradient:
        GetCanvasGradient()->GetGradient()->ApplyToFlags(flags, SkMatrix::I(),
                                                         ImageDrawOptions());
@@ -62,3 +109,52 @@ index f0b4913914739..67c26acab818b 100644
        break;
      default:
        NOTREACHED();
+diff --git a/third_party/blink/renderer/platform/fonts/palette_interpolation.cc b/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
+index 5a0121510aea0..2b4d21f2be4ea 100644
+--- a/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
++++ b/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
+@@ -31,7 +31,7 @@ Vector<FontPalette::FontPaletteOverride> PaletteInterpolation::MixColorRecords(
+         color_interpolation_space, hue_interpolation_method, start_color,
+         end_color, percentage, alpha_multiplier);
+
+-    FontPalette::FontPaletteOverride result_color_record(i, result_color);
++    FontPalette::FontPaletteOverride result_color_record {static_cast<int>(i), result_color};
+     result_color_records.push_back(result_color_record);
+   }
+   return result_color_records;
+diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
+index fa1dd422c0e60..c54ace574e52e 100644
+--- a/ui/base/wayland/color_manager_util.h
++++ b/ui/base/wayland/color_manager_util.h
+@@ -23,26 +23,31 @@ constexpr uint32_t kDefaultSinceVersion = 1;
+ struct TransferFnVersion {
+   skcms_TransferFunction transfer_fn;
+   uint32_t version;
++  TransferFnVersion(skcms_TransferFunction t, uint32_t v) : transfer_fn(t), version(v) {}
+ };
+
+ struct TransferVersion {
+   gfx::ColorSpace::TransferID transfer;
+   uint32_t version;
++  TransferVersion(gfx::ColorSpace::TransferID t, uint32_t v) : transfer(t), version(v) {}
+ };
+
+ struct PrimaryVersion {
+   gfx::ColorSpace::PrimaryID primary;
+   uint32_t version;
++  PrimaryVersion(gfx::ColorSpace::PrimaryID p, uint32_t v) : primary(p), version(v) {}
+ };
+
+ struct MatrixVersion {
+   gfx::ColorSpace::MatrixID matrix;
+   uint32_t version;
++  MatrixVersion(gfx::ColorSpace::MatrixID m, uint32_t v) : matrix(m), version(v) {}
+ };
+
+ struct RangeVersion {
+   gfx::ColorSpace::RangeID range;
+   uint32_t version;
++  RangeVersion(gfx::ColorSpace::RangeID r, uint32_t v) : range(r), version(v) {}
+ };
+
+ // A map from the zcr_color_manager_v1 chromaticity_names enum values

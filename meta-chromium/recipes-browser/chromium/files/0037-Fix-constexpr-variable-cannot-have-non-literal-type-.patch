@@ -1,0 +1,74 @@
+From 5224e38fa33ca027d7bbf5a7f9f500446d0bd517 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 31 Aug 2023 10:27:47 +0000
+Subject: [PATCH] Fix "constexpr variable cannot have non-literal type" errors
+
+Something about Chromium's `base::flat_map` /
+`base::internal::flat_tree` isn't considered a literal type by older
+clang versions, meaning they can't be used in constexpr expressions. We
+need to change them to be const instead.
+
+Upstream-Status: Inappropriate [specific to older versions of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ ui/base/wayland/color_manager_util.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
+index 0462061423583..8b729b663cad8 100644
+--- a/ui/base/wayland/color_manager_util.h
++++ b/ui/base/wayland/color_manager_util.h
+@@ -53,7 +53,7 @@ struct RangeVersion {
+ // A map from the zcr_color_manager_v1 chromaticity_names enum values
+ // representing well-known chromaticities, to their equivalent PrimaryIDs.
+ // See components/exo/wayland/protocol/chrome-color-management.xml
+-constexpr auto kChromaticityMap = base::MakeFixedFlatMap<
++const auto kChromaticityMap = base::MakeFixedFlatMap<
+     zcr_color_manager_v1_chromaticity_names,
+     PrimaryVersion>(
+     {{ZCR_COLOR_MANAGER_V1_CHROMATICITY_NAMES_BT601_525_LINE,
+@@ -108,7 +108,7 @@ constexpr auto kChromaticityMap = base::MakeFixedFlatMap<
+ // A map from the zcr_color_manager_v1 eotf_names enum values
+ // representing well-known EOTFs, to their equivalent TransferIDs.
+ // See components/exo/wayland/protocol/chrome-color-management.xml
+-constexpr auto kEotfMap = base::MakeFixedFlatMap<
++const auto kEotfMap = base::MakeFixedFlatMap<
+     zcr_color_manager_v1_eotf_names,
+     TransferVersion>({
+     {ZCR_COLOR_MANAGER_V1_EOTF_NAMES_LINEAR,
+@@ -176,7 +176,7 @@ constexpr auto kEotfMap = base::MakeFixedFlatMap<
+ // A map from the SDR zcr_color_manager_v1 eotf_names enum values
+ // representing well-known EOTFs, to their equivalent transfer functions.
+ // See components/exo/wayland/protocol/chrome-color-management.xml
+-constexpr auto kTransferMap =
++const auto kTransferMap =
+     base::MakeFixedFlatMap<zcr_color_manager_v1_eotf_names, TransferFnVersion>({
+         {ZCR_COLOR_MANAGER_V1_EOTF_NAMES_LINEAR,
+          TransferFnVersion(SkNamedTransferFn::kLinear, kDefaultSinceVersion)},
+@@ -196,7 +196,7 @@ constexpr auto kTransferMap =
+ // A map from the HDR zcr_color_manager_v1 eotf_names enum values
+ // representing well-known EOTFs, to their equivalent transfer functions.
+ // See components/exo/wayland/protocol/chrome-color-management.xml
+-constexpr auto kHDRTransferMap =
++const auto kHDRTransferMap =
+     base::MakeFixedFlatMap<zcr_color_manager_v1_eotf_names, TransferFnVersion>(
+         {{ZCR_COLOR_MANAGER_V1_EOTF_NAMES_LINEAR,
+           TransferFnVersion(SkNamedTransferFn::kLinear, kDefaultSinceVersion)},
+@@ -214,7 +214,7 @@ constexpr auto kHDRTransferMap =
+
+ // A map from zcr_color_manager_v1 matrix_names enum values to
+ // gfx::ColorSpace::MatrixIDs.
+-constexpr auto kMatrixMap =
++const auto kMatrixMap =
+     base::MakeFixedFlatMap<zcr_color_manager_v1_matrix_names, MatrixVersion>(
+         {{ZCR_COLOR_MANAGER_V1_MATRIX_NAMES_RGB,
+           MatrixVersion(gfx::ColorSpace::MatrixID::RGB, kDefaultSinceVersion)},
+@@ -251,7 +251,7 @@ constexpr auto kMatrixMap =
+
+ // A map from zcr_color_manager_v1 range_names enum values to
+ // gfx::ColorSpace::RangeIDs.
+-constexpr auto kRangeMap =
++const auto kRangeMap =
+     base::MakeFixedFlatMap<zcr_color_manager_v1_range_names, RangeVersion>(
+         {{ZCR_COLOR_MANAGER_V1_RANGE_NAMES_LIMITED,
+           RangeVersion(gfx::ColorSpace::RangeID::LIMITED,

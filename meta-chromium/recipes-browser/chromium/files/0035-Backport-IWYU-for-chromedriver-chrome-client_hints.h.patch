@@ -13,7 +13,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
-index 593bfe6e8a25e..8c13bd3321c5e 100644
+index e737376..42dc1ac 100644
 --- a/chrome/test/chromedriver/chrome/client_hints.h
 +++ b/chrome/test/chromedriver/chrome/client_hints.h
 @@ -7,6 +7,7 @@

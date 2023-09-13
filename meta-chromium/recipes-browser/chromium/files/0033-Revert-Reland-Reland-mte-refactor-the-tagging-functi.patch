@@ -29,10 +29,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 60 insertions(+), 51 deletions(-)
 
 diff --git a/base/allocator/partition_allocator/partition_root.cc b/base/allocator/partition_allocator/partition_root.cc
-index 27389db16946a..00a3fbb2984c8 100644
+index 3fc0b11..813afbf 100644
 --- a/base/allocator/partition_allocator/partition_root.cc
 +++ b/base/allocator/partition_allocator/partition_root.cc
-@@ -895,6 +895,10 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
+@@ -868,6 +868,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
        return;
      }
 
@@ -44,7 +44,7 @@ index 27389db16946a..00a3fbb2984c8 100644
      // Reserve address space for partition alloc.
      internal::PartitionAddressSpace::Init();
 diff --git a/base/allocator/partition_allocator/tagging.cc b/base/allocator/partition_allocator/tagging.cc
-index 6f0d49dffc3c6..63368e870fe0c 100644
+index 6f0d49d..63368e8 100644
 --- a/base/allocator/partition_allocator/tagging.cc
 +++ b/base/allocator/partition_allocator/tagging.cc
 @@ -12,9 +12,7 @@
@@ -140,7 +140,7 @@ index 6f0d49dffc3c6..63368e870fe0c 100644
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread() {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
 diff --git a/base/allocator/partition_allocator/tagging.h b/base/allocator/partition_allocator/tagging.h
-index 858c5c3f69fc5..476e84e849c12 100644
+index 858c5c3..476e84e 100644
 --- a/base/allocator/partition_allocator/tagging.h
 +++ b/base/allocator/partition_allocator/tagging.h
 @@ -56,16 +56,32 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
@@ -215,7 +215,7 @@ index 858c5c3f69fc5..476e84e849c12 100644
    return ptr;
  #endif
 diff --git a/base/allocator/partition_allocator/tagging_unittest.cc b/base/allocator/partition_allocator/tagging_unittest.cc
-index 5c25a46e62015..fab5db7212a34 100644
+index 5c25a46..fab5db7 100644
 --- a/base/allocator/partition_allocator/tagging_unittest.cc
 +++ b/base/allocator/partition_allocator/tagging_unittest.cc
 @@ -16,6 +16,7 @@ namespace partition_alloc::internal {
