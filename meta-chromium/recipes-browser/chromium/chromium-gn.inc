@@ -388,12 +388,12 @@ do_create_v8_qemu_wrapper[dirs] = "${B}"
 addtask create_v8_qemu_wrapper after do_patch before do_configure
 
 # Check the LLVMVERSION defined in the meta-clang layer. Given Chromium is
-# developed using new C++ features, the LLVMVERSION has to be >= 12. Otherwise,
+# developed using new C++ features, the LLVMVERSION has to be >= 14. Otherwise,
 # it is not guaranteed that Chromium will compile.
 python do_check_llvm_version () {
   from distutils.version import LooseVersion
 
-  min_llvm_version = "12.0.0"
+  min_llvm_version = "14.0.0"
   llvm_version = d.getVar('LLVMVERSION', False)
   if not llvm_version:
     bb.warn("Unable to determine LLVM version. Chromium may not be compiled "
@@ -403,7 +403,7 @@ python do_check_llvm_version () {
   if LooseVersion(llvm_version) < LooseVersion(min_llvm_version):
     bb.fatal("Your LLVMVERSION (%s) is lower than the minimum required "
              "LLVMVERSION (%s). If you are using dunfell, make sure you "
-             "use clang12 branch." % (llvm_version, min_llvm_version))
+             "use dunfell-clang14 branch." % (llvm_version, min_llvm_version))
 }
 addtask check_llvm_version before do_configure
 
