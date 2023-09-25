@@ -1,0 +1,328 @@
+From d4369b7ee7b0ede90a6c13062c27a378e169fe6f Mon Sep 17 00:00:00 2001
+From: Peter Kasting <pkasting@chromium.org>
+Date: Wed, 20 Sep 2023 19:10:38 +0000
+Subject: [PATCH] Backport "Remove std::ranges usage."
+
+This is a backport of a patch that fixes some build errors with older
+versions of clang. It will be included in upstream's 119 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4879418]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ ...asswords_private_delegate_impl_unittest.cc | 19 +++++++----------
+ .../test_passwords_private_delegate.cc        | 11 +++++-----
+ chrome/browser/ui/webauthn/sheet_models.cc    |  2 +-
+ .../chrome_authenticator_request_delegate.cc  |  1 +
+ .../core/browser/ui/passwords_grouper.cc      |  6 +++---
+ .../core/browser/passkey_sync_bridge.cc       |  5 +++--
+ .../core/browser/test_passkey_model.cc        |  8 +++----
+ ...nced_frame_config_mojom_traits_unittest.cc | 21 ++++++++-----------
+ .../webauth/authenticator_impl_unittest.cc    |  2 +-
+ device/fido/get_assertion_request_handler.cc  | 10 ++++-----
+ ui/base/resource/resource_bundle_unittest.cc  |  5 +++--
+ 11 files changed, 42 insertions(+), 48 deletions(-)
+
+diff --git a/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc b/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
+index beb89765e767e..84a0a94e6bfbf 100644
+--- a/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
++++ b/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
+@@ -13,6 +13,7 @@
+ #include "base/memory/ptr_util.h"
+ #include "base/memory/raw_ptr.h"
+ #include "base/rand_util.h"
++#include "base/ranges/algorithm.h"
+ #include "base/run_loop.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/test/bind.h"
+@@ -858,12 +859,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
+   const PasswordsPrivateDelegate::UiEntries& credentials =
+       GetCredentials(*delegate);
+   EXPECT_EQ(credentials.size(), 2u);
+-  const auto account_credential_it =
+-      std::ranges::find_if(credentials, [](const auto& credential) {
+-        return credential.stored_in ==
+-               api::passwords_private::PasswordStoreSet::
+-                   PASSWORD_STORE_SET_ACCOUNT;
+-      });
++  const auto account_credential_it = base::ranges::find(
++      credentials, api::passwords_private::PASSWORD_STORE_SET_ACCOUNT,
++      &api::passwords_private::PasswordUiEntry::stored_in);
+   ASSERT_NE(account_credential_it, credentials.end());
+
+   api::passwords_private::PasswordUiEntry updated_credential =
+@@ -880,12 +878,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
+   const PasswordsPrivateDelegate::UiEntries& updated_credentials =
+       GetCredentials(*delegate);
+   EXPECT_EQ(updated_credentials.size(), 2u);
+-  const auto refreshed_credential_it =
+-      std::ranges::find_if(updated_credentials, [](const auto& credential) {
+-        return credential.stored_in ==
+-               api::passwords_private::PasswordStoreSet::
+-                   PASSWORD_STORE_SET_ACCOUNT;
+-      });
++  const auto refreshed_credential_it = base::ranges::find(
++      updated_credentials, api::passwords_private::PASSWORD_STORE_SET_ACCOUNT,
++      &api::passwords_private::PasswordUiEntry::stored_in);
+   ASSERT_NE(account_credential_it, updated_credentials.end());
+   EXPECT_EQ(refreshed_credential_it->username, "new_user");
+ }
+diff --git a/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc b/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
+index 3963eba8ef739..31cbc00429fb5 100644
+--- a/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
++++ b/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
+@@ -8,6 +8,7 @@
+
+ #include "base/containers/contains.h"
+ #include "base/containers/cxx20_erase.h"
++#include "base/ranges/algorithm.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
+@@ -111,9 +112,9 @@ bool TestPasswordsPrivateDelegate::AddPassword(
+
+ bool TestPasswordsPrivateDelegate::ChangeCredential(
+     const api::passwords_private::PasswordUiEntry& credential) {
+-  const auto existing = std::ranges::find_if(
+-      current_entries_,
+-      [&credential](const auto& entry) { return entry.id == credential.id; });
++  const auto existing =
++      base::ranges::find(current_entries_, credential.id,
++                         &api::passwords_private::PasswordUiEntry::id);
+   if (existing == current_entries_.end()) {
+     return false;
+   }
+@@ -133,8 +134,8 @@ bool TestPasswordsPrivateDelegate::ChangeCredential(
+ void TestPasswordsPrivateDelegate::RemoveCredential(
+     int id,
+     api::passwords_private::PasswordStoreSet from_stores) {
+-  const auto [removed, _] = std::ranges::remove_if(
+-      current_entries_, [id](const auto& entry) { return entry.id == id; });
++  const auto removed = base::ranges::remove(
++      current_entries_, id, &api::passwords_private::PasswordUiEntry::id);
+   if (removed != current_entries_.end()) {
+     last_deleted_entry_ = std::move(*removed);
+     current_entries_.erase(removed);
+diff --git a/chrome/browser/ui/webauthn/sheet_models.cc b/chrome/browser/ui/webauthn/sheet_models.cc
+index 449c0f776f3fd..b6399bc25ea63 100644
+--- a/chrome/browser/ui/webauthn/sheet_models.cc
++++ b/chrome/browser/ui/webauthn/sheet_models.cc
+@@ -1496,7 +1496,7 @@ AuthenticatorMultiSourcePickerSheetModel::
+
+   using CredentialMech = AuthenticatorRequestDialogModel::Mechanism::Credential;
+   bool has_local_passkeys =
+-      std::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
++      base::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
+         return absl::holds_alternative<CredentialMech>(mech.type) &&
+                absl::get<CredentialMech>(mech.type).value() !=
+                    device::AuthenticatorType::kPhone;
+diff --git a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
+index 8f46dc87c761d..2245415a458de 100644
+--- a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
++++ b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
+@@ -16,6 +16,7 @@
+ #include "base/functional/callback.h"
+ #include "base/location.h"
+ #include "base/memory/raw_ptr.h"
++#include "base/ranges/algorithm.h"
+ #include "base/strings/string_piece.h"
+ #include "base/strings/string_split.h"
+ #include "base/sys_byteorder.h"
+diff --git a/components/password_manager/core/browser/ui/passwords_grouper.cc b/components/password_manager/core/browser/ui/passwords_grouper.cc
+index 1b016e0eb9561..c2fb42b4be85c 100644
+--- a/components/password_manager/core/browser/ui/passwords_grouper.cc
++++ b/components/password_manager/core/browser/ui/passwords_grouper.cc
+@@ -6,6 +6,7 @@
+
+ #include "base/check_op.h"
+ #include "base/containers/flat_set.h"
++#include "base/ranges/algorithm.h"
+ #include "base/strings/escape.h"
+ #include "base/strings/string_util.h"
+ #include "components/password_manager/core/browser/affiliation/affiliation_service.h"
+@@ -277,9 +278,8 @@ absl::optional<PasskeyCredential> PasswordsGrouper::GetPasskeyFor(
+   const std::vector<PasskeyCredential>& passkeys =
+       map_group_id_to_credentials_[group_id_iterator->second].passkeys;
+   const auto passkey_it =
+-      std::ranges::find_if(passkeys, [&credential](const auto& passkey) {
+-        return credential.passkey_credential_id == passkey.credential_id();
+-      });
++      base::ranges::find(passkeys, credential.passkey_credential_id,
++                         &PasskeyCredential::credential_id);
+   if (passkey_it == passkeys.end()) {
+     return absl::nullopt;
+   }
+diff --git a/components/webauthn/core/browser/passkey_sync_bridge.cc b/components/webauthn/core/browser/passkey_sync_bridge.cc
+index 782655dcc0c8f..8607d59215c27 100644
+--- a/components/webauthn/core/browser/passkey_sync_bridge.cc
++++ b/components/webauthn/core/browser/passkey_sync_bridge.cc
+@@ -16,6 +16,7 @@
+ #include "base/containers/span.h"
+ #include "base/feature_list.h"
+ #include "base/functional/callback_helpers.h"
++#include "base/ranges/algorithm.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "components/sync/base/features.h"
+ #include "components/sync/base/model_type.h"
+@@ -257,7 +258,7 @@ PasskeySyncBridge::GetPasskeysForRelyingPartyId(
+ bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id) {
+   // Find the credential with the given |credential_id|.
+   const auto passkey_it =
+-      std::ranges::find_if(data_, [&credential_id](const auto& passkey) {
++      base::ranges::find_if(data_, [&credential_id](const auto& passkey) {
+         return passkey.second.credential_id() == credential_id;
+       });
+   if (passkey_it == data_.end()) {
+@@ -308,7 +309,7 @@ bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
+                                       PasskeyChange change) {
+   // Find the credential with the given |credential_id|.
+   const auto passkey_it =
+-      std::ranges::find_if(data_, [&credential_id](const auto& passkey) {
++      base::ranges::find_if(data_, [&credential_id](const auto& passkey) {
+         return passkey.second.credential_id() == credential_id;
+       });
+   if (passkey_it == data_.end()) {
+diff --git a/components/webauthn/core/browser/test_passkey_model.cc b/components/webauthn/core/browser/test_passkey_model.cc
+index b2e6462607d21..af3525c5db247 100644
+--- a/components/webauthn/core/browser/test_passkey_model.cc
++++ b/components/webauthn/core/browser/test_passkey_model.cc
+@@ -7,6 +7,7 @@
+ #include <iterator>
+
+ #include "base/notreached.h"
++#include "base/ranges/algorithm.h"
+ #include "components/sync/protocol/webauthn_credential_specifics.pb.h"
+ #include "components/webauthn/core/browser/passkey_model_utils.h"
+
+@@ -71,10 +72,9 @@ bool TestPasskeyModel::DeletePasskey(const std::string& credential_id) {
+
+ bool TestPasskeyModel::UpdatePasskey(const std::string& credential_id,
+                                      PasskeyChange change) {
+-  const auto credential_it = std::ranges::find_if(
+-      credentials_, [&credential_id](const auto& credential) {
+-        return credential.credential_id() == credential_id;
+-      });
++  const auto credential_it =
++      base::ranges::find(credentials_, credential_id,
++                         &sync_pb::WebauthnCredentialSpecifics::credential_id);
+   if (credential_it == credentials_.end()) {
+     return false;
+   }
+diff --git a/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc b/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
+index 8f4d5a8adbc2f..f6ffabce1f05a 100644
+--- a/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
++++ b/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
+@@ -419,34 +419,31 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsTest) {
+   // Test `nested_configs`.
+   {
+     FencedFrameConfig test_nested_config(GenerateUrnUuid(), test_url);
+-    // Returns a lambda that compares two ranges using the given `pred`.
+-    const auto eq = [](const auto& pred) {
++    // Returns a lambda that compares two ranges using the given `proj`.
++    const auto cmp = [](const auto& proj) {
+       return [&](const auto& a, const auto& b) {
+-        return std::ranges::equal(a, b, pred);
++        return base::ranges::equal(a, b, {}, proj, proj);
+       };
+     };
+
+     {
+       std::vector<FencedFrameConfig> test_nested_configs = {test_nested_config};
+-      const auto pred = [](const auto& a, const auto& b) {
+-        return Project(a) == Project(b);
+-      };
++      const auto eq = cmp([](const auto& elem) { return Project(elem); });
+       TestProperty(&FencedFrameConfig::nested_configs_,
+                    &RedactedFencedFrameConfig::nested_configs,
+-                   test_nested_configs, eq(pred), eq(pred));
++                   test_nested_configs, eq, eq);
+     }
+
+     {
+       GURL test_urn("urn:uuid:abcd");
+       std::vector<std::pair<GURL, FencedFrameConfig>>
+           test_nested_urn_config_pairs = {{test_urn, test_nested_config}};
+-      const auto pred = [](const auto& a, const auto& b) {
+-        return std::make_pair(a.first, Project(a.second)) ==
+-               std::make_pair(b.first, Project(b.second));
+-      };
++      const auto eq = cmp([](const auto& elem) {
++        return std::make_pair(elem.first, Project(elem.second));
++      });
+       TestProperty(&FencedFrameProperties::nested_urn_config_pairs_,
+                    &RedactedFencedFrameProperties::nested_urn_config_pairs,
+-                   test_nested_urn_config_pairs, eq(pred), eq(pred));
++                   test_nested_urn_config_pairs, eq, eq);
+     }
+   }
+
+diff --git a/content/browser/webauth/authenticator_impl_unittest.cc b/content/browser/webauth/authenticator_impl_unittest.cc
+index 11c2624988eb5..73ddb9ad9da07 100644
+--- a/content/browser/webauth/authenticator_impl_unittest.cc
++++ b/content/browser/webauth/authenticator_impl_unittest.cc
+@@ -9300,7 +9300,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
+
+   void OnInvalidatedPairing(
+       std::unique_ptr<device::cablev2::Pairing> disabled_pairing) {
+-    pairings_.erase(std::ranges::find_if(
++    pairings_.erase(base::ranges::find_if(
+         pairings_, [&disabled_pairing](const auto& pairing) {
+           return device::cablev2::Pairing::EqualPublicKeys(pairing,
+                                                            disabled_pairing);
+diff --git a/device/fido/get_assertion_request_handler.cc b/device/fido/get_assertion_request_handler.cc
+index 5dc5e95b4a2e6..e9407eb550270 100644
+--- a/device/fido/get_assertion_request_handler.cc
++++ b/device/fido/get_assertion_request_handler.cc
+@@ -15,6 +15,7 @@
+ #include "base/functional/bind.h"
+ #include "base/json/json_writer.h"
+ #include "base/metrics/histogram_functions.h"
++#include "base/ranges/algorithm.h"
+ #include "base/stl_util.h"
+ #include "base/strings/string_number_conversions.h"
+ #include "base/timer/elapsed_timer.h"
+@@ -420,12 +421,9 @@ GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
+ void GetAssertionRequestHandler::PreselectAccount(
+     std::vector<uint8_t> credential_id) {
+   DCHECK(!preselected_credential_);
+-  DCHECK(
+-      request_.allow_list.empty() ||
+-      std::any_of(request_.allow_list.begin(), request_.allow_list.end(),
+-                  [credential_id](const PublicKeyCredentialDescriptor& desc) {
+-                    return desc.id == credential_id;
+-                  }));
++  DCHECK(request_.allow_list.empty() ||
++         base::Contains(request_.allow_list, credential_id,
++                        &PublicKeyCredentialDescriptor::id));
+   preselected_credential_ = std::move(credential_id);
+ }
+
+diff --git a/ui/base/resource/resource_bundle_unittest.cc b/ui/base/resource/resource_bundle_unittest.cc
+index efc9c87fc35b0..a37c51351d07e 100644
+--- a/ui/base/resource/resource_bundle_unittest.cc
++++ b/ui/base/resource/resource_bundle_unittest.cc
+@@ -20,6 +20,7 @@
+ #include "base/files/file_util.h"
+ #include "base/files/scoped_temp_dir.h"
+ #include "base/memory/ref_counted_memory.h"
++#include "base/ranges/algorithm.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "build/build_config.h"
+ #include "build/chromeos_buildflags.h"
+@@ -70,7 +71,7 @@ constexpr uint8_t kLottieExpected[] = {'t', 'e', 's', 't'};
+ // Mock of |lottie::ParseLottieAsStillImage|. Checks that |kLottieData| is
+ // properly stripped of the "LOTTIE" prefix.
+ gfx::ImageSkia ParseLottieAsStillImageForTesting(std::vector<uint8_t> data) {
+-  CHECK(std::ranges::equal(data, kLottieExpected));
++  CHECK(base::ranges::equal(data, kLottieExpected));
+
+   constexpr int kDimension = 16;
+   return gfx::ImageSkia(
+@@ -690,7 +691,7 @@ TEST_F(ResourceBundleImageTest, Lottie) {
+
+   absl::optional<std::vector<uint8_t>> data = resource_bundle->GetLottieData(3);
+   ASSERT_TRUE(data.has_value());
+-  EXPECT_TRUE(std::ranges::equal(*data, kLottieExpected));
++  EXPECT_TRUE(base::ranges::equal(*data, kLottieExpected));
+
+ #if BUILDFLAG(IS_CHROMEOS_ASH)
+   ui::ResourceBundle::SetLottieParsingFunctions(

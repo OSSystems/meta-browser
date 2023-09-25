@@ -9,15 +9,17 @@ versions of clang (probably < 16).
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- .../download/bubble/download_bubble_update_service.cc       | 6 +++---
- components/optimization_guide/core/tflite_model_executor.h  | 2 +-
- .../browser/web_ui_browser_interface_broker_registry.h      | 6 +++---
- .../core/html/parser/html_document_parser_fastpath.cc       | 2 +-
- .../renderer/core/paint/object_paint_properties_sparse.h    | 4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ .../download/bubble/download_bubble_update_service.cc  |  6 +++---
+ .../optimization_guide/core/tflite_model_executor.h    | 10 +++++-----
+ .../supervised_user/core/browser/proto_fetcher.cc      |  6 +++---
+ .../supervised_user/core/browser/proto_fetcher.h       |  4 ++--
+ .../browser/web_ui_browser_interface_broker_registry.h |  6 +++---
+ .../core/html/parser/html_document_parser_fastpath.cc  |  2 +-
+ .../core/paint/object_paint_properties_sparse.h        |  4 ++--
+ 7 files changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/chrome/browser/download/bubble/download_bubble_update_service.cc b/chrome/browser/download/bubble/download_bubble_update_service.cc
-index 93ec91e38b9b3..acd25f25d1579 100644
+index 93ec91e..acd25f2 100644
 --- a/chrome/browser/download/bubble/download_bubble_update_service.cc
 +++ b/chrome/browser/download/bubble/download_bubble_update_service.cc
 @@ -91,7 +91,7 @@ ItemSortKey GetSortKey(const Item& item) {
@@ -42,10 +44,10 @@ index 93ec91e38b9b3..acd25f25d1579 100644
      IterMap<Id, Item>& iter_map) {
    CHECK(iter != cache.end());
 diff --git a/components/optimization_guide/core/tflite_model_executor.h b/components/optimization_guide/core/tflite_model_executor.h
-index c4f750f468493..b5635f4108bb4 100644
+index 5f939a9..05daf13 100644
 --- a/components/optimization_guide/core/tflite_model_executor.h
 +++ b/components/optimization_guide/core/tflite_model_executor.h
-@@ -189,7 +189,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -212,7 +212,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    void SendForBatchExecution(
        BatchExecutionCallback callback_on_complete,
        base::TimeTicks start_time,
@@ -54,8 +56,92 @@ index c4f750f468493..b5635f4108bb4 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+@@ -234,7 +234,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+   // Starts the synchronous execution of the model. Returns model outputs.
+   // Model needs to be loaded. Synchronous calls do not load or unload model.
+   std::vector<absl::optional<OutputType>> SendForBatchExecutionSync(
+-      ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs)
++      typename ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs)
+       override {
+     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+@@ -389,7 +389,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+   // executes it on the model execution thread.
+   void LoadModelFileAndBatchExecute(
+       BatchExecutionCallback callback_on_complete,
+-      ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs) {
++      typename ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs) {
+     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+@@ -406,7 +406,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+
+   // Batch executes the loaded model for inputs.
+   void BatchExecuteLoadedModel(
+-      ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs,
++      typename ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs,
+       std::vector<absl::optional<OutputType>>* outputs) {
+     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+@@ -466,7 +466,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+   // Unloads the model if needed.
+   void BatchExecuteLoadedModelAndRunCallback(
+       BatchExecutionCallback callback_on_complete,
+-      ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs,
++      typename ModelExecutor<OutputType, InputType>::ConstRefInputVector inputs,
+       ExecutionStatus execution_status) {
+     DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
+     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+diff --git a/components/supervised_user/core/browser/proto_fetcher.cc b/components/supervised_user/core/browser/proto_fetcher.cc
+index 9c8e7b5..92a614d 100644
+--- a/components/supervised_user/core/browser/proto_fetcher.cc
++++ b/components/supervised_user/core/browser/proto_fetcher.cc
+@@ -399,7 +399,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
+   RetryingFetcherImpl(const RetryingFetcherImpl&) = delete;
+   RetryingFetcherImpl& operator=(const RetryingFetcherImpl&) = delete;
+
+-  void Start(ProtoFetcher<Response>::Callback callback) override {
++  void Start(typename ProtoFetcher<Response>::Callback callback) override {
+     callback_ = std::move(callback);
+     Retry();
+   }
+@@ -435,7 +435,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
+   }
+
+   // Client callback.
+-  ProtoFetcher<Response>::Callback callback_;
++  typename ProtoFetcher<Response>::Callback callback_;
+
+   // Retry controls.
+   base::OneShotTimer timer_;
+@@ -578,7 +578,7 @@ ParallelFetchManager<Request, Response>::ParallelFetchManager(
+ template <typename Request, typename Response>
+ void ParallelFetchManager<Request, Response>::Fetch(
+     const Request& request,
+-    Fetcher::Callback callback) {
++    typename Fetcher::Callback callback) {
+   CHECK(callback) << "Use base::DoNothing() instead of empty callback.";
+   KeyType key = requests_in_flight_.Add(MakeFetcher(request));
+   requests_in_flight_.Lookup(key)->Start(
+diff --git a/components/supervised_user/core/browser/proto_fetcher.h b/components/supervised_user/core/browser/proto_fetcher.h
+index 8266c99..9c41978 100644
+--- a/components/supervised_user/core/browser/proto_fetcher.h
++++ b/components/supervised_user/core/browser/proto_fetcher.h
+@@ -165,10 +165,10 @@ class ParallelFetchManager {
+
+   // Starts the fetch. Underlying fetcher is stored internally, and will be
+   // cleaned up after finish or when this manager is destroyed.
+-  void Fetch(const Request& request, Fetcher::Callback callback);
++  void Fetch(const Request& request, typename Fetcher::Callback callback);
+
+  private:
+-  using KeyType = base::IDMap<std::unique_ptr<Fetcher>>::KeyType;
++  using KeyType = typename base::IDMap<std::unique_ptr<Fetcher>>::KeyType;
+
+   // Remove fetcher under key from requests_in_flight_.
+   void Remove(KeyType key);
 diff --git a/content/public/browser/web_ui_browser_interface_broker_registry.h b/content/public/browser/web_ui_browser_interface_broker_registry.h
-index 0a419be66b325..7253c9680f722 100644
+index 0a419be..7253c96 100644
 --- a/content/public/browser/web_ui_browser_interface_broker_registry.h
 +++ b/content/public/browser/web_ui_browser_interface_broker_registry.h
 @@ -127,10 +127,10 @@ class CONTENT_EXPORT WebUIBrowserInterfaceBrokerRegistry {
@@ -73,7 +159,7 @@ index 0a419be66b325..7253c9680f722 100644
      // WebUIController::GetType() requires an instantiated WebUIController
      // (because it's a virtual method and can't be static). Here we only have
 diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
-index f9cf9f5ae86ee..0566ae194ce4b 100644
+index 4b5b670..59e1262 100644
 --- a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 +++ b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 @@ -169,7 +169,7 @@ class HTMLFastPathParser {
@@ -86,7 +172,7 @@ index f9cf9f5ae86ee..0566ae194ce4b 100644
                             LCharLiteralBuffer<32>>::type LiteralBufferType;
    typedef UCharLiteralBuffer<32> UCharLiteralBufferType;
 diff --git a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
-index 8bb1639676cd6..bc455d224954b 100644
+index e185115..6b3bc10 100644
 --- a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
 +++ b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
 @@ -269,8 +269,8 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {

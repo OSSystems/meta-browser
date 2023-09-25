@@ -67,11 +67,14 @@ def find_chromium_licenses(chromium_root):
             if input('Ignore (y)? ') == 'y':
                 continue
             raise
+        # buildtools/third_party directories don't have metadata.
+        if metadata == {}:
+            continue
         # We are not interested in licenses for projects that are not marked as
         # used in the final product (ie. they might be optional development
         # aids, or only used in a build).
         if metadata['Shipped'] == licenses.YES:
-            license_files.add(metadata['License File'])
+            license_files.update(set(metadata['License File']))
     return license_files
 
 

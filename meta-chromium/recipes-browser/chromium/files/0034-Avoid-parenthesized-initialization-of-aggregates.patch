@@ -13,21 +13,42 @@ or initialize the aggregate using curly braces.
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- .../browser/content_settings/one_time_permission_provider.h  | 1 +
- chrome/browser/ui/omnibox/chrome_omnibox_client.cc           | 4 ++--
- chrome/test/chromedriver/chrome/client_hints.h               | 1 +
- .../display_embedder/skia_output_surface_impl_on_gpu.cc      | 2 +-
- net/dns/host_resolver_cache.cc                               | 2 +-
- .../blink/renderer/modules/canvas/canvas2d/canvas_style.cc   | 4 ++--
- .../blink/renderer/platform/fonts/palette_interpolation.cc   | 2 +-
- ui/base/wayland/color_manager_util.h                         | 5 +++++
- 8 files changed, 14 insertions(+), 7 deletions(-)
+ base/trace_event/trace_log.cc                             | 4 ++--
+ .../content_settings/one_time_permission_provider.h       | 1 +
+ .../profile_management_navigation_throttle.cc             | 4 ++--
+ chrome/browser/ui/omnibox/chrome_omnibox_client.cc        | 4 ++--
+ chrome/test/chromedriver/chrome/client_hints.h            | 1 +
+ .../display_embedder/skia_output_surface_impl_on_gpu.cc   | 2 +-
+ content/browser/download/save_package.cc                  | 4 ++--
+ content/browser/renderer_host/render_frame_host_impl.cc   | 8 ++++----
+ net/dns/host_resolver_cache.cc                            | 2 +-
+ .../renderer/modules/canvas/canvas2d/canvas_style.cc      | 4 ++--
+ third_party/blink/renderer/platform/fonts/font_palette.h  | 4 ++--
+ .../renderer/platform/fonts/palette_interpolation.cc      | 2 +-
+ ui/base/wayland/color_manager_util.h                      | 5 +++++
+ ui/gtk/gtk_ui.cc                                          | 4 ++--
+ 14 files changed, 28 insertions(+), 21 deletions(-)
 
+diff --git a/base/trace_event/trace_log.cc b/base/trace_event/trace_log.cc
+index 87cf11a..16fc52f 100644
+--- a/base/trace_event/trace_log.cc
++++ b/base/trace_event/trace_log.cc
+@@ -2187,8 +2187,8 @@ void TraceLog::SetTraceBufferForTesting(
+ #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+ void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs& args) {
+   AutoLock lock(track_event_lock_);
+-  track_event_sessions_.emplace_back(args.internal_instance_index, *args.config,
+-                                     args.backend_type);
++  track_event_sessions_.push_back(TrackEventSession {args.internal_instance_index, *args.config,
++                                     args.backend_type});
+ }
+
+ void TraceLog::OnStart(const perfetto::DataSourceBase::StartArgs&) {
 diff --git a/chrome/browser/content_settings/one_time_permission_provider.h b/chrome/browser/content_settings/one_time_permission_provider.h
-index 5599764896739..ea9006f23e312 100644
+index 839bec7..2a00000 100644
 --- a/chrome/browser/content_settings/one_time_permission_provider.h
 +++ b/chrome/browser/content_settings/one_time_permission_provider.h
-@@ -86,6 +86,7 @@ class OneTimePermissionProvider
+@@ -92,6 +92,7 @@ class OneTimePermissionProvider
      ContentSettingsType type;
      ContentSettingsPattern primary_pattern;
      ContentSettingsPattern secondary_pattern;
@@ -35,11 +56,26 @@ index 5599764896739..ea9006f23e312 100644
    };
 
    void DeleteEntriesAndNotify(
+diff --git a/chrome/browser/enterprise/profile_management/profile_management_navigation_throttle.cc b/chrome/browser/enterprise/profile_management/profile_management_navigation_throttle.cc
+index aecaaf7..ae47f12 100644
+--- a/chrome/browser/enterprise/profile_management/profile_management_navigation_throttle.cc
++++ b/chrome/browser/enterprise/profile_management/profile_management_navigation_throttle.cc
+@@ -67,8 +67,8 @@ base::flat_map<std::string, SAMLProfileAttributes>& GetAttributeMap() {
+   // TODO(crbug.com/1445072): Add actual domains with attribute names.
+   profile_attributes->insert(std::make_pair(
+       "supported.test",
+-      SAMLProfileAttributes("placeholderName", "placeholderDomain",
+-                            "placeholderToken")));
++      SAMLProfileAttributes {"placeholderName", "placeholderDomain",
++                            "placeholderToken"}));
+
+   // Extract domains and attributes from the command line switch.
+   const base::CommandLine& command_line =
 diff --git a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
-index d923cdfa3229c..d2b9158a72d19 100644
+index 7ee2e06..e036eee 100644
 --- a/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
 +++ b/chrome/browser/ui/omnibox/chrome_omnibox_client.cc
-@@ -470,10 +470,10 @@ void ChromeOmniboxClient::OnAutocompleteAccept(
+@@ -474,10 +474,10 @@ void ChromeOmniboxClient::OnAutocompleteAccept(
                alternative_nav_match);
 
    // Store the details necessary to open the omnibox match via browser commands.
@@ -53,7 +89,7 @@ index d923cdfa3229c..d2b9158a72d19 100644
    if (browser_) {
      auto navigation = chrome::OpenCurrentURL(browser_);
 diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
-index 593bfe6e8a25e..e737376e383d9 100644
+index 593bfe6..e737376 100644
 --- a/chrome/test/chromedriver/chrome/client_hints.h
 +++ b/chrome/test/chromedriver/chrome/client_hints.h
 @@ -18,6 +18,7 @@ struct BrandVersion {
@@ -65,10 +101,10 @@ index 593bfe6e8a25e..e737376e383d9 100644
 
  // User-Agent Client Hints
 diff --git a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-index 3bace0dab10fa..96330cc3cbd15 100644
+index 2d82ab0..3e3f09e 100644
 --- a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
 +++ b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-@@ -1496,7 +1496,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
+@@ -1508,7 +1508,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
        // Issue readbacks from the surfaces:
        for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
@@ -77,11 +113,59 @@ index 3bace0dab10fa..96330cc3cbd15 100644
          SkImageInfo dst_info = SkImageInfo::Make(
              size, (i == 0) ? kAlpha_8_SkColorType : kR8G8_unorm_SkColorType,
              kUnpremul_SkAlphaType);
+diff --git a/content/browser/download/save_package.cc b/content/browser/download/save_package.cc
+index 2e3107a..61e502d 100644
+--- a/content/browser/download/save_package.cc
++++ b/content/browser/download/save_package.cc
+@@ -764,8 +764,8 @@ void SavePackage::Finish() {
+   if (download_) {
+     std::vector<download::DownloadSaveItemData::ItemInfo> files;
+     for (auto& item : saved_success_items_) {
+-      files.emplace_back(item.second->full_path(), item.second->url(),
+-                         item.second->referrer().url);
++      files.push_back(download::DownloadSaveItemData::ItemInfo {item.second->full_path(), item.second->url(),
++                         item.second->referrer().url});
+     }
+     download::DownloadSaveItemData::AttachItemData(download_, std::move(files));
+   }
+diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
+index 8525270..9b957c0 100644
+--- a/content/browser/renderer_host/render_frame_host_impl.cc
++++ b/content/browser/renderer_host/render_frame_host_impl.cc
+@@ -8509,7 +8509,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
+   for (const blink::FencedFrame::ReportingDestination& destination :
+        destinations) {
+     SendFencedFrameReportingBeaconInternal(
+-        DestinationEnumEvent(event_type, event_data), destination,
++        DestinationEnumEvent {event_type, event_data}, destination,
+         /*from_renderer=*/true, attribution_reporting_runtime_features,
+         GetFrameTreeNodeId());
+   }
+@@ -8545,7 +8545,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconToCustomURL(
+   }
+
+   SendFencedFrameReportingBeaconInternal(
+-      DestinationURLEvent(destination_url),
++      DestinationURLEvent {destination_url},
+       blink::FencedFrame::ReportingDestination::kBuyer,
+       /*from_renderer=*/true, attribution_reporting_runtime_features,
+       GetFrameTreeNodeId());
+@@ -8617,8 +8617,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
+   for (blink::FencedFrame::ReportingDestination destination :
+        info->destinations) {
+     initiator_rfh->SendFencedFrameReportingBeaconInternal(
+-        DestinationEnumEvent(blink::kFencedFrameTopNavigationBeaconType,
+-                             info->data),
++        DestinationEnumEvent {blink::kFencedFrameTopNavigationBeaconType,
++                             info->data},
+         destination,
+         /*from_renderer=*/false, info->attribution_reporting_runtime_features,
+         GetFrameTreeNodeId(), navigation_request.GetNavigationId());
 diff --git a/net/dns/host_resolver_cache.cc b/net/dns/host_resolver_cache.cc
-index df037a1a440f7..5f3903b12eb43 100644
+index e54ed00..7d1165e 100644
 --- a/net/dns/host_resolver_cache.cc
 +++ b/net/dns/host_resolver_cache.cc
-@@ -159,7 +159,7 @@ void HostResolverCache::Set(
+@@ -161,7 +161,7 @@ void HostResolverCache::Set(
 
    std::string domain_name = result->domain_name();
    entries_.emplace(
@@ -91,7 +175,7 @@ index df037a1a440f7..5f3903b12eb43 100644
 
    if (entries_.size() > max_entries_) {
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
-index 883d769ca4b24..3dcd0d73468fc 100644
+index 883d769..3dcd0d7 100644
 --- a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
 +++ b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
 @@ -83,12 +83,12 @@ void CanvasStyle::ApplyToFlags(cc::PaintFlags& flags,
@@ -109,8 +193,30 @@ index 883d769ca4b24..3dcd0d73468fc 100644
        break;
      default:
        NOTREACHED();
+diff --git a/third_party/blink/renderer/platform/fonts/font_palette.h b/third_party/blink/renderer/platform/fonts/font_palette.h
+index 01dac9c..f22b963 100644
+--- a/third_party/blink/renderer/platform/fonts/font_palette.h
++++ b/third_party/blink/renderer/platform/fonts/font_palette.h
+@@ -96,7 +96,7 @@ class PLATFORM_EXPORT FontPalette : public RefCounted<FontPalette> {
+       Color::ColorSpace color_interpolation_space,
+       absl::optional<Color::HueInterpolationMethod> hue_interpolation_method) {
+     return base::AdoptRef(new FontPalette(
+-        start, end, NonNormalizedPercentages(start_percentage, end_percentage),
++        start, end, NonNormalizedPercentages {start_percentage, end_percentage},
+         normalized_percentage, alpha_multiplier, color_interpolation_space,
+         hue_interpolation_method));
+   }
+@@ -170,7 +170,7 @@ class PLATFORM_EXPORT FontPalette : public RefCounted<FontPalette> {
+       double normalized_percentage) {
+     double end_percentage = normalized_percentage * 100.0;
+     double start_percentage = 100.0 - end_percentage;
+-    return NonNormalizedPercentages(start_percentage, end_percentage);
++    return NonNormalizedPercentages {start_percentage, end_percentage};
+   }
+
+   double GetAlphaMultiplier() const {
 diff --git a/third_party/blink/renderer/platform/fonts/palette_interpolation.cc b/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
-index 5a0121510aea0..2b4d21f2be4ea 100644
+index 1ce08e9..d652152 100644
 --- a/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
 +++ b/third_party/blink/renderer/platform/fonts/palette_interpolation.cc
 @@ -31,7 +31,7 @@ Vector<FontPalette::FontPaletteOverride> PaletteInterpolation::MixColorRecords(
@@ -123,7 +229,7 @@ index 5a0121510aea0..2b4d21f2be4ea 100644
    }
    return result_color_records;
 diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
-index fa1dd422c0e60..c54ace574e52e 100644
+index fa1dd42..c54ace5 100644
 --- a/ui/base/wayland/color_manager_util.h
 +++ b/ui/base/wayland/color_manager_util.h
 @@ -23,26 +23,31 @@ constexpr uint32_t kDefaultSinceVersion = 1;
@@ -158,3 +264,21 @@ index fa1dd422c0e60..c54ace574e52e 100644
  };
 
  // A map from the zcr_color_manager_v1 chromaticity_names enum values
+diff --git a/ui/gtk/gtk_ui.cc b/ui/gtk/gtk_ui.cc
+index c830167..bcb7d6b 100644
+--- a/ui/gtk/gtk_ui.cc
++++ b/ui/gtk/gtk_ui.cc
+@@ -955,11 +955,11 @@ ui::DisplayConfig GtkUi::GetDisplayConfig() const {
+     GdkRectangle geometry;
+     gdk_monitor_get_geometry(monitor, &geometry);
+     int monitor_scale = std::max(1, gdk_monitor_get_scale_factor(monitor));
+-    config.display_geometries.emplace_back(
++    config.display_geometries.emplace_back(ui::DisplayGeometry {
+         gfx::Rect(monitor_scale * geometry.x, monitor_scale * geometry.y,
+                   monitor_scale * geometry.width,
+                   monitor_scale * geometry.height),
+-        monitor_scale * font_scale);
++        static_cast<float>(monitor_scale * font_scale)});
+   }
+   return config;
+ }
