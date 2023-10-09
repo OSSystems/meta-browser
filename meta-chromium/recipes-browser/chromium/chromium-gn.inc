@@ -48,7 +48,6 @@ SRC_URI:append:libc-musl = "\
     file://musl/0020-Fix-tab-crashes-on-musl.patch \
     file://musl/0021-pthread_getname_np.patch \
     file://musl/0022-sys-stat.patch \
-    file://musl/scoped-file.patch \
     file://musl/credentials-header.patch \
     file://musl/fstatat64.patch \
     file://musl/no-res-ninit-nclose.patch \
