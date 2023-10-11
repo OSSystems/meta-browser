@@ -35,6 +35,7 @@ SRC_URI += " \
     file://0037-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
     file://0038-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
 "
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://boringssl_no_asm_config.patch', d)}"
 
 SRC_URI:append:libc-musl = "\
     file://musl/0001-mallinfo-implementation-is-glibc-specific.patch \

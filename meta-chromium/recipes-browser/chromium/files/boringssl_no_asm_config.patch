@@ -1,0 +1,18 @@
+Disable assembly routines on arm64/rpi4 since it uses
+AES crypto extentions and these extentions do not exist in rpi4
+
+This fixes random SIGILL seen in aes_hw_set_encrypt_key() on rpi4-64
+
+Upstream-Status: Inappropriate [Specific to armv8 minus crypto]
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+--- a/third_party/boringssl/BUILD.gn
++++ b/third_party/boringssl/BUILD.gn
+@@ -94,7 +94,7 @@ if (enable_rust_boringssl) {
+   }
+ }
+ 
+-if (is_msan) {
++if (is_msan || current_cpu == "arm64") {
+   # MSan instrumentation is incompatible with assembly optimizations.
+   # BoringSSL's GAS-compatible assembly knows how to detect MSan, but the NASM
+   # assembly does not, so we check for MSan explicitly.
