@@ -12,6 +12,7 @@ RDEPENDS:${PN}-dev = "dbus"
 # use system's nss in case the CPU has no native crypto support (e.g. armv7)
 DEPENDS += "${@bb.utils.contains("TUNE_FEATURES", "crypto", "", "nss-3.93", d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains("TUNE_FEATURES", "crypto", "", "nss-3.93 nspr", d)}"
+RDEPENDS:${PN} += "${@ 'gtk3-immodule-wayland' if 'wayland' in d.getVar('PACKAGECONFIG') and 'touchscreen' in d.getVar('MACHINE_FEATURES') else ''}"
 
 LICENSE = "MPL-2.0"
 
@@ -69,23 +70,37 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/gfx-rs/wgpu.git;protocol=https;branch=trunk;name=wgpu;destsuffix=wgpu \
            git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
            git://github.com/servo/rust-cssparser;protocol=https;branch=master;name=cssparser;destsuffix=cssparser \
+           git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
+           git://github.com/gfx-rs/naga;protocol=https;branch=master;name=naga;destsuffix=naga \
            "
 
+SRCREV_FOMAT .= "_chardetng"
 SRCREV_chardetng = "3484d3e3ebdc8931493aa5df4d7ee9360a90e76b"
+SRCREV_FORMAT .= "_chardetng_c"
 SRCREV_chardetng_c = "ed8a4c6f900a90d4dbc1d64b856e61490a1c3570"
+SRCREV_FORMAT .= "_coremidi"
 SRCREV_coremidi = "fc68464b5445caf111e41f643a2e69ccce0b4f83"
+SRCREV_FORMAT .="_midir"
 SRCREV_midir = "519e651241e867af3391db08f9ae6400bc023e18"
+SRCREV_FORMAT .= "_warp"
 SRCREV_warp = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d"
+SRCREV_FORMAT .= "_jsparagus"
 SRCREV_jsparagus = "64ba08e24749616de2344112f226d1ef4ba893ae"
-SRCREV_neqo = "80db3a01f3273c7e742ba560fa99246fc8b30c4f"
+SRCREV_FORMAT .= "_aa-stroke"
 SRCREV_aa-stroke = "07d3c25322518f294300e96246e09b95e118555d"
+SRCREV_FORMAT .= "_cubeb-coreaudio"
 SRCREV_cubeb-coreaudio = "93b5c01a131f65c83c11aeb317f4583405c5eb79"
+SRCREV_FORMAT .= "_cubeb-pulse"
 SRCREV_cubeb-pulse = "cf48897be5cbe147d051ebbbe1eaf5fd8fb6bbc9"
+SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
-SRCREV_wpf-gpu-raster = "a6514854d4518b02f2805719ff6cd74dae7dfde6"
-SRCREV_uniffi-rs = "bc7ff8977bf38d0fdd1a458810b14f434d4dc4de"
-SRCREV_wgpu = "73b4257b17cc62ecc8df6d6aa3730bd9c6cba4b9"
+SRCREV_FORMAT .= "_wpf-gpu-raster"
+SRCREV_wpf-gpu-raster = "5ab6fe33d00021325ee920b3c10526dc8301cf46"
+SRCREV_FORMAT .= "_wgpu"
+SRCREV_wgpu = "7c6b85756237f77bfe8d6231dfc7a1412ff662b6"
+SRCREV_FORMAT .= "_audioipc"
 SRCREV_audioipc = "0b51291d2483a17dce3e300c7784b369e02bee73"
+SRCREV_FORMAT .= "_cssparser"
 SRCREV_cssparser = "45bc47e2bcb846f1efb5aea156be5fe7d18624bf"
 
 # Add a config file to enable GPU acceleration by default.

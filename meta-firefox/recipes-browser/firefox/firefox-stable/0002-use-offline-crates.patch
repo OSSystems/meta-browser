@@ -1,6 +1,6 @@
---- ./Cargo.toml	2023-09-26 15:55:13.359137089 +0200
-+++ ./Cargo.toml	2023-09-26 16:18:04.268226068 +0200
-@@ -177,52 +177,53 @@
+--- ./Cargo.toml	2023-10-09 22:44:47.000000000 +0200
++++ ./Cargo.toml	2023-10-17 16:09:49.238142744 +0200
+@@ -177,52 +177,93 @@
  rure = { path = "third_party/rust/rure" }
  
  # Prost-derive v0.11.9 + https://github.com/tokio-rs/prost/pull/868
@@ -32,13 +32,6 @@
  # warp 0.3.3 + https://github.com/seanmonstar/warp/pull/1007
 -warp = { git = "https://github.com/glandium/warp", rev = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d" }
 +warp = { path = "../warp" }
-+
-+neqo-http3 = { path = "../neqo/neqo-http3" }
-+neqo-common = { path = "../neqo/neqo-common" }
-+neqo-transport = { path = "../neqo/neqo-transport" }
-+neqo-qpack = { path = "../neqo/neqo-qpack" }
-+neqo-crypto = { path = "../neqo/neqo-crypto" }
-+aa-stroke = { path = "../aa-stroke"}
 +
  # Allow webrender to have a versioned dependency on the older crate on crates.io
  # in order to build standalone.
@@ -76,10 +69,63 @@
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
  [patch.crates-io.mio]
  path = "third_party/rust/mio-0.6.23"
--
--[patch."https://github.com/mozilla/uniffi-rs.git"]
+ 
++[patch."https://github.com/mozilla-spidermonkey/jsparagus"]
++jsparagus = { path = "../jsparagus" }
++
++[patch."https://github.com/mozilla/neqo"]
++neqo-http3 = { path = "../neqo/neqo-http3", version = "0.6.5" }
++neqo-common = { path = "../neqo/neqo-common", version = "0.6.5" }
++neqo-transport = { path = "../neqo/neqo-transport", version = "0.6.5" }
++neqo-qpack = { path = "../neqo/neqo-qpack", version = "0.6.5" }
++neqo-crypto = { path = "../neqo/neqo-crypto", version = "0.6.5" }
++
++[patch."https://github.com/FirefoxGraphics/aa-stroke"]
++aa-stroke = { path = "../aa-stroke"}
++
++[patch."https://github.com/mozilla/audioipc"]
++audioipc2-client = { path = "../audioipc/client" }
++audioipc2-server = { path = "../audioipc/server" }
++
++[patch."https://github.com/mozilla/cubeb-coreaudio-rs"]
++cubeb-coreaudio = { path = "../cubeb-coreaudio" }
++
++[patch."https://github.com/mozilla/cubeb-pulse-rs"]
++cubeb-pulse = { path = "../cubeb-pulse" }
++
++[patch."https://github.com/jfkthame/mapped_hyph.git"]
++mapped_hyph = { path = "../mapped_hyph" }
++
++[patch."https://github.com/mozilla/mp4parse-rust"]
++mp4parse_capi = { path = "../mp4parse/mp4parse_capi", version = "0.17.0" }
++
+ [patch."https://github.com/mozilla/uniffi-rs.git"]
 -uniffi = "=0.24.3"
 -uniffi_bindgen = "=0.24.3"
 -uniffi_build = "=0.24.3"
 -uniffi_macros = "=0.24.3"
 -weedle2 = "=4.0.0"
++uniffi-example-arithmetic = { path = "../uniffi-rs/examples/arithmetic" }
++uniffi-example-geometry = { path = "../uniffi-rs/examples/geometry" }
++uniffi-example-rondpoint = { path = "../uniffi-rs/examples/rondpoint" }
++uniffi-example-sprites = { path = "../uniffi-rs/examples/sprites" }
++uniffi-example-todolist = { path = "../uniffi-rs/examples/todolist" }
++
++[patch."https://github.com/FirefoxGraphics/wpf-gpu-raster"]
++wpf-gpu-raster = { path = "../wpf-gpu-raster" }
++
++[patch."https://github.com/gfx-rs/wgpu"]
++wgpu-core = { path = "../wgpu/wgpu-core" }
++wgpu-types = { path = "../wgpu/wgpu-types" }
++wgpu-hal = { path = "../wgpu/wgpu-hal" }
++
++[patch."https://github.com/gfx-rs/naga"]
++naga = { path = "../naga" }
+--- ./.cargo/config.in	2023-10-17 21:46:58.338748888 +0200
++++ ./.cargo/config.in	2023-10-17 21:47:14.967005459 +0200
+@@ -150,4 +150,4 @@
+ # cargo will ignore it when it's here verbatim.
+ #filter substitution
+ [source."@REPLACE_NAME@"]
+-directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
++directory = "../../cargo_home/bitbake"
