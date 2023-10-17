@@ -148,7 +148,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/arrayvec/0.7.2 \
            crate://crates.io/cubeb-core/0.10.3 \
            crate://crates.io/aho-corasick/0.7.20 \
-           crate://crates.io/scroll_derive/0.11.0 \
+           crate://crates.io/scroll_derive/0.11.1 \
            crate://crates.io/audio_thread_priority/0.26.1 \
            crate://crates.io/self_cell/0.10.2 \
            crate://crates.io/static_assertions/1.1.0 \
@@ -562,7 +562,6 @@ SRC_URI[dwrote-0.11.0.sha256sum] = "439a1c2ba5611ad3ed731280541d36d2e9c4ac5e7fb8
 SRC_URI[arrayvec-0.7.2.sha256sum] = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 SRC_URI[cubeb-core-0.10.3.sha256sum] = "6203cd567a2ae4382077cc2160738517462c93cf77f3910fa18b2a74549abc84"
 SRC_URI[aho-corasick-0.7.20.sha256sum] = "cc936419f96fa211c1b9166887b38e5e40b19958e5b895be7c1f93adec7071ac"
-SRC_URI[scroll_derive-0.11.0.sha256sum] = "bdbda6ac5cd1321e724fa9cee216f3a61885889b896f073b8f82322789c5250e"
 SRC_URI[audio_thread_priority-0.26.1.sha256sum] = "8b7cd1bfd03dab20ad72e0c5e58d65818d62c0d199d8dec8361053d0f073dbae"
 SRC_URI[self_cell-0.10.2.sha256sum] = "1ef965a420fe14fdac7dd018862966a4c14094f900e1650bbc71ddd7d580c8af"
 SRC_URI[static_assertions-1.1.0.sha256sum] = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
@@ -936,3 +935,5 @@ SRC_URI[diplomat-0.5.2.sha256sum] = "131a7c8474cb3648784b28b131021017bf0e8a0acb2
 SRC_URI[diplomat_core-0.5.2.sha256sum] = "b7c69d55d3abfc5b4f487e4410df7971626d999d84b25de6ad0ffd5c278f58a1"
 SRC_URI[diplomat-runtime-0.5.2.sha256sum] = "7be78da2d794f65e463740e6f1a6b1e7a3973d62f40fd02d05cc71adbee7ea5a"
 SRC_URI[glean-core-53.2.0.sha256sum] = "6f72ce41516d772676db57c87fee1c99545bbda4b430793f24d0c81918cfbd8a"
+SRC_URI[scroll_derive-0.11.1.sha256sum] = "1db149f81d46d2deba7cd3c50772474707729550221e69588478ebf9ada425ae"
+
