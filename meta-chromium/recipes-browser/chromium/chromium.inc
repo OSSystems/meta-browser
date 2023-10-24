@@ -22,6 +22,9 @@ TOOLCHAIN:class-native = "clang"
 # part of the build still use libstdc++ and libgcc though (see
 # https://github.com/kraj/meta-clang/issues/449).
 RUNTIME = "llvm"
+# TC_CXX_RUNTIME is same as RUNTIME but adopted by yocto project
+# eventually RUNTIME will be removed
+TC_CXX_RUNTIME = "llvm"
 
 # meta-clang uses RUNTIME variable to add build dependencies on libcxx/compiler-rt
 # but does not add compiler options to commandline. It expects compiler's own
