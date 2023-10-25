@@ -1,5 +1,13 @@
---- ./Cargo.toml	2023-10-09 22:44:47.000000000 +0200
-+++ ./Cargo.toml	2023-10-17 16:09:49.238142744 +0200
+--- ./.cargo/config.in	2023-10-17 21:46:58.338748888 +0200
++++ ./.cargo/config.in	2023-10-17 21:47:14.967005459 +0200
+@@ -150,4 +150,4 @@
+ # cargo will ignore it when it's here verbatim.
+ #filter substitution
+ [source."@REPLACE_NAME@"]
+-directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
++directory = "../../cargo_home/bitbake"
+--- ./Cargo.toml.orig	2023-10-24 16:50:09.412574150 +0200
++++ ./Cargo.toml	2023-10-24 18:36:32.213699491 +0200
 @@ -177,52 +177,93 @@
  rure = { path = "third_party/rust/rure" }
  
@@ -19,36 +27,34 @@
  firefox-on-glean = { path = "toolkit/components/glean/api" }
  icu_testdata = { path = "intl/icu_testdata" }
  libudev-sys = { path = "dom/webauthn/libudev-sys" }
--packed_simd = { package = "packed_simd_2", git = "https://github.com/hsivonen/packed_simd", rev = "412f9a0aa556611de021bde89dee8fefe6e0fbbd" }
 -midir = { git = "https://github.com/mozilla/midir.git", rev = "519e651241e867af3391db08f9ae6400bc023e18" }
-+packed_simd = { path = "../packed_simd", version = "0.3.8", package = "packed_simd_2" }
 +midir = { path = "../midir" }
- # Avoid the dependency on chrono
--minidump-writer = { git = "https://github.com/rust-minidump/minidump-writer.git", rev = "a15bd5cab6a3de251c0c23264be14b977c0af09c" }
+ # Avoid the dependency on chrono and include Android support
+-minidump-writer = { git = "https://github.com/rust-minidump/minidump-writer.git", rev = "491eb330e78e310c32927e5cc3bd2350af1e93f8" }
 +minidump-writer = { path = "../minidump-writer", version = "0.8.1" }
  # Bump some dependencies
--minidump-common = { git = "https://github.com/rust-minidump/rust-minidump", rev = "87a29fba5e19cfae5ebf73a57ba31504a3872545" }
-+minidump-common = { path = "../minidump-common/minidump-common", version = "0.17.0" }
+-minidump-common = { git = "https://github.com/rust-minidump/rust-minidump", rev = "6ae42a7f992e8a88ebee661bc77bcedb95cd671f" }
++minidump-common = { path = "../minidump-common/minidump-common", version = "0.18.0" }
  # warp 0.3.3 + https://github.com/seanmonstar/warp/pull/1007
 -warp = { git = "https://github.com/glandium/warp", rev = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d" }
 +warp = { path = "../warp" }
-+
  # Allow webrender to have a versioned dependency on the older crate on crates.io
  # in order to build standalone.
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
  
  # application-services overrides to make updating them all simpler.
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "25972c388a4cf3a6d8256504f3a09b711db2fc6a" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
 +sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
 +sync15 = { path = "../application-services/components/sync15", version = "0.1.0" }
 +tabs = { path = "../application-services/components/tabs", version = "0.1.0" }
-+viaduct = { path = "../application-services/components/viaduct", version = "0.1.0" }
++viaduct = { path = "third_party/rust/viaduct", version = "0.1.0" }
 +webext-storage = { path = "../application-services/components/webext-storage", version = "0.1.0" }
  
  # ICU4X 1.2 with synstructure 0.13.x / syn 2.x. When updating to next version, this should be removed.
@@ -64,6 +70,8 @@
 +yoke-derive = { path = "../icu4x/utils/yoke/derive" }
 +zerofrom-derive = { path = "../icu4x/utils/zerofrom/derive" }
 +zerovec-derive = { path = "../icu4x/utils/zerovec/derive" }
++
++suggest = { path = "third_party/rust/suggest" }
  
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
@@ -121,11 +129,27 @@
 +
 +[patch."https://github.com/gfx-rs/naga"]
 +naga = { path = "../naga" }
---- ./.cargo/config.in	2023-10-17 21:46:58.338748888 +0200
-+++ ./.cargo/config.in	2023-10-17 21:47:14.967005459 +0200
-@@ -150,4 +150,4 @@
- # cargo will ignore it when it's here verbatim.
- #filter substitution
- [source."@REPLACE_NAME@"]
--directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
-+directory = "../../cargo_home/bitbake"
+--- ./third_party/rust/suggest/Cargo.toml.orig	2023-10-24 18:41:50.123092738 +0200
++++ ./third_party/rust/suggest/Cargo.toml	2023-10-24 18:58:09.679586717 +0200
+@@ -25,9 +25,8 @@
+ serde_json = "1"
+ thiserror = "1"
+ uniffi = "0.24.1"
+-
+-[dependencies.interrupt-support]
+-path = "../support/interrupt"
++interrupt-support = "0.1.0"
++sql-support = "0.1.0"
+ 
+ [dependencies.remote_settings]
+ path = "../remote_settings"
+@@ -43,9 +42,6 @@
+ version = "1"
+ features = ["derive"]
+ 
+-[dependencies.sql-support]
+-path = "../support/sql"
+-
+ [dev-dependencies]
+ expect-test = "1.4"
+ hex = "0.4"
