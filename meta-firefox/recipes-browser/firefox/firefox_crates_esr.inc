@@ -39,6 +39,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/thiserror-impl/1.0.38 \
            crate://crates.io/ohttp/0.3.1 \
            crate://crates.io/askama/0.12.1 \
+           crate://crates.io/askama/0.11.1 \
            crate://crates.io/chrono/0.4.19 \
            crate://crates.io/fastrand/1.9.0 \
            crate://crates.io/h2/0.3.15 \
@@ -175,6 +176,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/owning_ref/0.4.1 \
            crate://crates.io/clap/3.1.18 \
            crate://crates.io/serde/1.0.166 \
+           crate://crates.io/serde/1.0.152 \
            crate://crates.io/chunky-vec/0.1.0 \
            crate://crates.io/futures-core/0.3.26 \
            crate://crates.io/webrtc-sdp/0.3.10 \
@@ -229,6 +231,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/scopeguard/1.1.0 \
            crate://crates.io/comedy/0.2.0 \
            crate://crates.io/askama_derive/0.12.2 \
+           crate://crates.io/askama_derive/0.11.2 \
            crate://crates.io/serial_test/0.6.0 \
            crate://crates.io/glsl/6.0.2 \
            crate://crates.io/fluent/0.16.0 \
@@ -280,6 +283,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/alsa-sys/0.3.1 \
            crate://crates.io/dirs-sys/0.3.7 \
            crate://crates.io/serde_derive/1.0.166 \
+           crate://crates.io/serde_derive/1.0.152 \
            crate://crates.io/serde_with/1.14.0 \
            crate://crates.io/gpu-descriptor-types/0.1.1 \
            crate://crates.io/topological-sort/0.1.0 \
@@ -312,7 +316,7 @@ SRC_URI += "crate://crates.io/libloading/0.7.4 \
            crate://crates.io/rand_chacha/0.3.1 \
            crate://crates.io/foreign-types-shared/0.1.1 \
            crate://crates.io/libsqlite3-sys/0.25.2 \
-           crate://crates.io/quote/1.0.28 \
+           crate://crates.io/quote/1.0.23 \
            crate://crates.io/miow/0.3.7 \
            crate://crates.io/memoffset/0.8.0 \
            crate://crates.io/peeking_take_while/0.1.2 \
@@ -875,7 +879,6 @@ SRC_URI[packed_simd-0.3.9.sha256sum] = "1f9f08af0c877571712e2e3e686ad79efad9657d
 SRC_URI[encoding_rs-0.8.33.sha256sum] = "7268b386296a025e474d5140678f75d6de9493ae55a5d709eeb9dd08149945e1"
 SRC_URI[proc-macro2-1.0.67.sha256sum] = "3d433d9f1a3e8c1263d9456598b16fec66f4acc9a74dacffd35c7bb09b3a1328"
 SRC_URI[syn-1.0.107.sha256sum] = "1f4064b5b16e03ae50984a5a8ed5d4f8803e6bc1fd170a3cda91a1be4b18e3f5"
-SRC_URI[quote-1.0.28.sha256sum] = "1b9ab9c7eadfd8df19006f1cf1a4aed13540ed5cbc047010ece5826e10825488"
 SRC_URI[askama-0.12.1.sha256sum] = "b79091df18a97caea757e28cd2d5fda49c6cd4bd01ddffd7ff01ace0c0ad2c28"
 SRC_URI[askama_derive-0.12.2.sha256sum] = "9a0fc7dcf8bd4ead96b1d36b41df47c14beedf7b0301fc543d8f2384e66a2ec0"
 SRC_URI[proc-macro2-1.0.66.sha256sum] = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
@@ -884,3 +887,8 @@ SRC_URI[basic-toml-0.1.4.sha256sum] = "7bfc506e7a2370ec239e1d072507b2a80c8330836
 SRC_URI[askama_parser-0.1.1.sha256sum] = "c268a96e01a4c47c8c5c2472aaa570707e006a875ea63e819f75474ceedaf7b4"
 SRC_URI[serde-1.0.166.sha256sum] = "d01b7404f9d441d3ad40e6a636a7782c377d2abdbe4fa2440e2edcc2f4f10db8"
 SRC_URI[serde_derive-1.0.166.sha256sum] = "5dd83d6dde2b6b2d466e14d9d1acce8816dedee94f735eac6395808b3483c6d6"
+SRC_URI[quote-1.0.23.sha256sum] = "8856d8364d252a14d474036ea1358d63c9e6965c8e5c1885c18f73d70bff9c7b"
+SRC_URI[serde-1.0.152.sha256sum] = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccdf88ff5c12545d89d5efb"
+SRC_URI[serde_derive-1.0.152.sha256sum] = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
+SRC_URI[askama-0.11.1.sha256sum] = "fb98f10f371286b177db5eeb9a6e5396609555686a35e1d4f7b9a9c6d8af0139"
+SRC_URI[askama_derive-0.11.2.sha256sum] = "87bf87e6e8b47264efa9bde63d6225c6276a52e05e91bf37eaa8afd0032d6b71"
