@@ -7,12 +7,12 @@ Upstream-Status: Inappropriate [Specific to armv8 minus crypto]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 --- a/third_party/boringssl/BUILD.gn
 +++ b/third_party/boringssl/BUILD.gn
-@@ -94,7 +94,7 @@ if (enable_rust_boringssl) {
-   }
- }
- 
--if (is_msan) {
-+if (is_msan || current_cpu == "arm64") {
-   # MSan instrumentation is incompatible with assembly optimizations.
-   # BoringSSL's GAS-compatible assembly knows how to detect MSan, but the NASM
-   # assembly does not, so we check for MSan explicitly.
+@@ -139,7 +139,7 @@ if (is_win && !is_msan && current_cpu !=
+         public_configs = [ ":no_asm_config" ]
+       }
+     } else if (current_cpu == "arm64") {
+-      if (is_linux || is_chromeos || is_android) {
++      if (is_chromeos || is_android) {
+         sources += crypto_sources_linux_aarch64
+       } else if (is_apple) {
+         sources += crypto_sources_apple_aarch64
