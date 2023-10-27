@@ -1,0 +1,38 @@
+Fix error "__STDC_LIMIT_MACROS redefined" during clang compilation.
+
+For swig-4.1.0 change:
+
+    #2193 -DFOO on the SWIG command line now sets FOO to 1 for
+    consistency with C/C++ compiler preprocessors.  Previously
+    SWIG set FOO to an empty value.
+
+    Existing invocations of SWIG with `-DFOO` where the empty value
+    matters can be updated to `-DFOO=` which should work with both
+    old and new releases of SWIG.
+
+    *** POTENTIAL INCOMPATIBILITY ***
+
+See https://github.com/swig/swig/issues/2193
+
+This patch is backwards compatible with older versions of SWIG.
+---
+ lldb/bindings/CMakeLists.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lldb/bindings/CMakeLists.txt b/lldb/bindings/CMakeLists.txt
+index c8aa0bcf9681..aa4637101ad0 100644
+--- a/lldb/bindings/CMakeLists.txt
++++ b/lldb/bindings/CMakeLists.txt
+@@ -26,8 +26,8 @@ set(SWIG_COMMON_FLAGS
+   -features autodoc
+   -I${LLDB_SOURCE_DIR}/include
+   -I${CMAKE_CURRENT_SOURCE_DIR}
+-  -D__STDC_LIMIT_MACROS
+-  -D__STDC_CONSTANT_MACROS
++  -D__STDC_LIMIT_MACROS=
++  -D__STDC_CONSTANT_MACROS=
+   ${DARWIN_EXTRAS}
+ )
+ 
+-- 
+2.37.3

@@ -31,11 +31,14 @@ mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Cpanic=abort -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
-	export RUST_HOST="${RUST_BUILD_SYS}"
-	export RUST_TARGET="${RUST_HOST_SYS}"
+	# For Kirkstone meta-rust layer is required, however
+	# that seems to set different target/host triplets compared
+	# to the rust used in poky (in later releases)
+	export RUST_HOST='${@bb.utils.contains("LAYERSERIES_CORENAMES", "kirkstone", "${BUILD_SYS}", "${RUST_BUILD_SYS}", d)}'
+	export RUST_TARGET='${@bb.utils.contains("LAYERSERIES_CORENAMES", "kirkstone", "${TARGET_SYS}", "${RUST_HOST_SYS}", d)}'
 
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
-        export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
+	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
 	export INSTALL_SDK=0
 	export DESTDIR="${D}"
 

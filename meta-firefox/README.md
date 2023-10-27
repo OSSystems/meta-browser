@@ -3,16 +3,11 @@ Note from OldManYellsAtCloud
 
 This is an updated version of meta-firefox layer, with a newer version of Firefox.
 
-It is based on the meta-browser layer. It has been tested with Yocto Mickledore only, mostly due to lack of laptop power. I would expect it to work with previous version also, if meta-rust is pulled in.
-Feel free to test, and report back the results. 
-
-The layer build successfully with aarch64-poky-linux-gnu arch (tested with PinePhone). Tests with other architectures would be welcome.
+Currently supports Kirkstone, Mickledore and  Nanbield version of Yocto.
 
 Plan to upstream this in the near future. If you want to help in, feel free to solve an issue or open a new one.
 
 Make sure to add `RUST_PANIC_STRATEGY = "abort"` to local.conf before compiling Rust.
-
-In case you are building the browser for a CPU without hardware encryption support (e.g. anything before armv8, like the first gen RPi), set the following in your distro.conf: `PREFERRED_VERSION_nss = "3.89"`
 
 OpenEmbedded/Yocto BSP layer for Firefox Browser
 ================================================
@@ -32,6 +27,12 @@ This layer depends on:
   - revision: HEAD
 
 * URI: git://github.com/kraj/meta-clang
+  - branch: master (at least llvm version 16)
+  - revision: HEAD
+
+To build with Kirkstone, meta-rust layer is also required:
+
+* URI: https://github.com/meta-rust/meta-rust/
   - branch: master
   - revision: HEAD
 
@@ -41,21 +42,9 @@ Contributing
 The preferred way to contribute to this layer is to send GitHub pull requests or
 report problems in GitHub's issue tracker.
 
-Alternatively there is the classic way of review on the OpenEmbedded dev mailing
-list openembedded-devel@lists.openembedded.org (you have to be subscribed to
-post to the list). Please cc the maintainers if you send your patches.
-
 Maintainers
 -----------
-* Fabio Berton <fabio.berton@ossystems.com.br>
-* Khem Raj <raj.khem@gmail.com>
-* Otavio Salvador <otavio@ossystems.com.br>
-* Takuro Ashie <ashie@clear-code.com>
-
-When sending single patches, please use something like :
-```
-git send-email -1 -s --to openembedded-devel@lists.openembedded.org --subject-prefix='meta-browser][PATCH'
-```
+* OldManYellsAtCloud <skandigraun@gmail.com>
 
 Recipes
 -------
@@ -63,6 +52,9 @@ recipes-browser/firefox:
 Firefox browser.
 
 This recipe provides a package for the Firefox web browser.
+
+Two separate recipes are available: one for the latest stable version, and one
+for the latest ESR version.
 
 PACKAGECONFIG knobs
 -------------------
