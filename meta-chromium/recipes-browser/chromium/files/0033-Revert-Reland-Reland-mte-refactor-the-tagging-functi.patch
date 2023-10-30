@@ -29,10 +29,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 60 insertions(+), 51 deletions(-)
 
 diff --git a/base/allocator/partition_allocator/partition_root.cc b/base/allocator/partition_allocator/partition_root.cc
-index 3fc0b11..813afbf 100644
+index dd78098..c47b8ba 100644
 --- a/base/allocator/partition_allocator/partition_root.cc
 +++ b/base/allocator/partition_allocator/partition_root.cc
-@@ -868,6 +868,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
+@@ -864,6 +864,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
        return;
      }
 
@@ -44,7 +44,7 @@ index 3fc0b11..813afbf 100644
      // Reserve address space for partition alloc.
      internal::PartitionAddressSpace::Init();
 diff --git a/base/allocator/partition_allocator/tagging.cc b/base/allocator/partition_allocator/tagging.cc
-index 6f0d49d..63368e8 100644
+index a1584dc..c3751ea 100644
 --- a/base/allocator/partition_allocator/tagging.cc
 +++ b/base/allocator/partition_allocator/tagging.cc
 @@ -12,9 +12,7 @@
@@ -57,7 +57,7 @@ index 6f0d49d..63368e8 100644
  #include <sys/prctl.h>
  #define PR_SET_TAGGED_ADDR_CTRL 55
  #define PR_GET_TAGGED_ADDR_CTRL 56
-@@ -121,6 +119,12 @@ namespace {
+@@ -122,6 +120,12 @@ namespace {
    return ret;
  }
 
@@ -70,7 +70,7 @@ index 6f0d49d..63368e8 100644
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
  void* TagRegionRandomlyForMTE(void* ptr, size_t sz, uint64_t mask) {
    // Randomly tag a region (MTE-enabled systems only). The first 16-byte
-@@ -162,6 +166,7 @@ void* RemaskVoidPtrForMTE(void* ptr) {
+@@ -163,6 +167,7 @@ void* RemaskVoidPtrForMTE(void* ptr) {
    }
    return nullptr;
  }
@@ -78,7 +78,7 @@ index 6f0d49d..63368e8 100644
 
  void* TagRegionIncrementNoOp(void* ptr, size_t sz) {
    // Region parameters are checked even on non-MTE systems to check the
-@@ -178,49 +183,24 @@ void* TagRegionRandomlyNoOp(void* ptr, size_t sz, uint64_t mask) {
+@@ -179,49 +184,24 @@ void* TagRegionRandomlyNoOp(void* ptr, size_t sz, uint64_t mask) {
  void* RemaskVoidPtrNoOp(void* ptr) {
    return ptr;
  }
@@ -140,15 +140,15 @@ index 6f0d49d..63368e8 100644
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread() {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
 diff --git a/base/allocator/partition_allocator/tagging.h b/base/allocator/partition_allocator/tagging.h
-index 858c5c3..476e84e 100644
+index 1efbda2..f37ff1c 100644
 --- a/base/allocator/partition_allocator/tagging.h
 +++ b/base/allocator/partition_allocator/tagging.h
-@@ -56,16 +56,32 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
+@@ -56,23 +56,39 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
  PA_COMPONENT_EXPORT(PARTITION_ALLOC)
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread();
 
--// These forward-defined functions do not really exist in tagging.cc, they're resolved
--// by the dynamic linker to MTE-capable versions on the right hardware.
+-// These forward-defined functions do not really exist in tagging.cc, they're
+-// resolved by the dynamic linker to MTE-capable versions on the right hardware.
 -#if PA_CONFIG(HAS_MEMORY_TAGGING)
 -PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 -void* TagMemoryRangeIncrementInternal(void* ptr, size_t size);
@@ -186,26 +186,24 @@ index 858c5c3..476e84e 100644
 
  // Increments the tag of the memory range ptr. Useful for provable revocations
  // (e.g. free). Returns the pointer with the new tag. Ensures that the entire
-@@ -75,7 +91,7 @@ void* RemaskPointerInternal(void* ptr);
- template <typename T>
- PA_ALWAYS_INLINE T* TagMemoryRangeIncrement(T* ptr, size_t size) {
+ // range is set to the same tag.
+ PA_ALWAYS_INLINE void* TagMemoryRangeIncrement(void* ptr, size_t size) {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
--  return reinterpret_cast<T*>(TagMemoryRangeIncrementInternal(ptr, size));
-+  return reinterpret_cast<T*>(global_tag_memory_range_increment_fn(ptr, size));
+-  return TagMemoryRangeIncrementInternal(ptr, size);
++  return global_tag_memory_range_increment_fn(ptr, size);
  #else
    return ptr;
  #endif
-@@ -93,7 +109,8 @@ PA_ALWAYS_INLINE T* TagMemoryRangeRandomly(T* ptr,
-                                            size_t size,
-                                            uint64_t mask = 0u) {
+@@ -91,7 +107,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
+   void* ptr = reinterpret_cast<void*>(address);
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
--  return reinterpret_cast<T*>(TagMemoryRangeRandomlyInternal(ptr, size, mask));
-+  return reinterpret_cast<T*>(
+   return reinterpret_cast<void*>(
+-      TagMemoryRangeRandomlyInternal(ptr, size, mask));
 +      global_tag_memory_range_randomly_fn(ptr, size, mask));
  #else
    return ptr;
  #endif
-@@ -108,7 +125,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t ptr,
+@@ -101,7 +117,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
  template <typename T>
  PA_ALWAYS_INLINE T* TagPtr(T* ptr) {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)

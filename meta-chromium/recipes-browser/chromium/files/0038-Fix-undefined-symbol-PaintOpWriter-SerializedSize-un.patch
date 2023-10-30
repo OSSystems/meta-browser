@@ -19,7 +19,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 8 insertions(+)
 
 diff --git a/cc/paint/paint_op_writer.h b/cc/paint/paint_op_writer.h
-index 70153c0aa64ac..f47eb934c1eb1 100644
+index 70153c0..f47eb93 100644
 --- a/cc/paint/paint_op_writer.h
 +++ b/cc/paint/paint_op_writer.h
 @@ -122,6 +122,9 @@ class CC_PAINT_EXPORT PaintOpWriter {

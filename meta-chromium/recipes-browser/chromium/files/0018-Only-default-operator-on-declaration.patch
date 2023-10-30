@@ -22,10 +22,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  7 files changed, 3 insertions(+), 17 deletions(-)
 
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
-index 5d5b95e..3a49952 100644
+index b23dbe1..f67da2e 100644
 --- a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
 +++ b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
-@@ -179,7 +179,4 @@ void AffiliationFetcherBase::OnSimpleLoaderComplete(
+@@ -185,7 +185,4 @@ void AffiliationFetcherBase::OnSimpleLoaderComplete(
    }
  }
 
@@ -61,11 +61,11 @@ index 5bf889f..946eabe 100644
 
    AffiliationFetcherInterface() = default;
 diff --git a/components/password_manager/core/browser/passkey_credential.cc b/components/password_manager/core/browser/passkey_credential.cc
-index 09fe156..4dd0ddb 100644
+index 1939e54..b3d57f0 100644
 --- a/components/password_manager/core/browser/passkey_credential.cc
 +++ b/components/password_manager/core/browser/passkey_credential.cc
-@@ -103,7 +103,4 @@ int PasskeyCredential::GetAuthenticatorLabel() const {
-   }
+@@ -96,7 +96,4 @@ std::u16string PasskeyCredential::GetAuthenticatorLabel() const {
+   return l10n_util::GetStringUTF16(id);
  }
 
 -bool operator==(const PasskeyCredential& lhs,
@@ -73,10 +73,10 @@ index 09fe156..4dd0ddb 100644
 -
  }  // namespace password_manager
 diff --git a/components/password_manager/core/browser/passkey_credential.h b/components/password_manager/core/browser/passkey_credential.h
-index 9553b16..5731c57 100644
+index 42bf392..fcb53a7 100644
 --- a/components/password_manager/core/browser/passkey_credential.h
 +++ b/components/password_manager/core/browser/passkey_credential.h
-@@ -66,8 +66,7 @@ class PasskeyCredential {
+@@ -75,8 +75,7 @@ class PasskeyCredential {
    const std::string& display_name() const { return display_name_; }
 
   private:
@@ -86,8 +86,8 @@ index 9553b16..5731c57 100644
 
    // Authenticator type this passkey belongs to.
    Source source_;
-@@ -93,8 +92,6 @@ class PasskeyCredential {
-   std::string display_name_;
+@@ -106,8 +105,6 @@ class PasskeyCredential {
+   absl::optional<std::u16string> authenticator_label_;
  };
 
 -bool operator==(const PasskeyCredential& lhs, const PasskeyCredential& rhs);
@@ -96,10 +96,10 @@ index 9553b16..5731c57 100644
 
  #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSKEY_CREDENTIAL_H_
 diff --git a/components/password_manager/core/browser/password_form.cc b/components/password_manager/core/browser/password_form.cc
-index e11d520..c6c551a 100644
+index d4976fa..6161547 100644
 --- a/components/password_manager/core/browser/password_form.cc
 +++ b/components/password_manager/core/browser/password_form.cc
-@@ -230,8 +230,6 @@ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
+@@ -239,8 +239,6 @@ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
 
  AlternativeElement::~AlternativeElement() = default;
 
@@ -109,7 +109,7 @@ index e11d520..c6c551a 100644
    return std::tie(value, field_renderer_id, name) <
           std::tie(other.value, other.field_renderer_id, other.name);
 diff --git a/components/password_manager/core/browser/password_form.h b/components/password_manager/core/browser/password_form.h
-index a737d53..7450bef 100644
+index cdda601..3b58eaf 100644
 --- a/components/password_manager/core/browser/password_form.h
 +++ b/components/password_manager/core/browser/password_form.h
 @@ -44,7 +44,7 @@ struct AlternativeElement {

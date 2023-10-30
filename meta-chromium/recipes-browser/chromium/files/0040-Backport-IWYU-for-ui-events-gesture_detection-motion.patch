@@ -1,0 +1,29 @@
+From 9e87ac8b4205219e16cf4e6b40bc0dd4f1efb270 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 28 Sep 2023 09:45:56 +0000
+Subject: [PATCH] Backport "IWYU for
+ ui/events/gesture_detection/motion_event_generic.h"
+
+This backports some missing header includes that fix build errors with
+clang 14. The change will be included in upstream's 119 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4900578]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ ui/events/gesture_detection/motion_event_generic.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ui/events/gesture_detection/motion_event_generic.h b/ui/events/gesture_detection/motion_event_generic.h
+index 5460f7f..c3d1755 100644
+--- a/ui/events/gesture_detection/motion_event_generic.h
++++ b/ui/events/gesture_detection/motion_event_generic.h
+@@ -8,6 +8,9 @@
+ #include <stddef.h>
+ #include <stdint.h>
+
++#include <memory>
++#include <vector>
++
+ #include "base/time/time.h"
+ #include "third_party/abseil-cpp/absl/container/inlined_vector.h"
+ #include "ui/events/gesture_detection/gesture_detection_export.h"

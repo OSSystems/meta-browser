@@ -1,0 +1,35 @@
+From f8db4db434dd06eeaf0faa6ceb1fa673966556c2 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Thu, 28 Sep 2023 09:29:30 +0000
+Subject: [PATCH] Fix "implicitly deleted default constructor" build error
+
+clang 14 seems to sometimes be unable to generate a default constructor
+when const-qualified members that aren't initialized in the class
+declaration are present. This patch adds these missing in-class
+initializations.
+
+Upstream-Status: Inappropriate [specific to older version of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../interest_group/header_direct_from_seller_signals.h      | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/content/browser/interest_group/header_direct_from_seller_signals.h b/content/browser/interest_group/header_direct_from_seller_signals.h
+index 1e8cd85..790b751 100644
+--- a/content/browser/interest_group/header_direct_from_seller_signals.h
++++ b/content/browser/interest_group/header_direct_from_seller_signals.h
+@@ -86,11 +86,11 @@ class CONTENT_EXPORT HeaderDirectFromSellerSignals {
+   }
+
+  private:
+-  const absl::optional<std::string> seller_signals_;
++  const absl::optional<std::string> seller_signals_ = absl::nullopt;
+
+-  const absl::optional<std::string> auction_signals_;
++  const absl::optional<std::string> auction_signals_ = absl::nullopt;
+
+-  const base::flat_map<url::Origin, std::string> per_buyer_signals_;
++  const base::flat_map<url::Origin, std::string> per_buyer_signals_ = {};
+ };
+
+ }  // namespace content
