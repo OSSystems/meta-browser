@@ -10,62 +10,60 @@ inherit features_check gtk-icon-cache qemu
 OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
-SRC_URI += " \
+# Backported patches.
+SRC_URI += "\
+    file://backport/IWYU-for-chromedriver-chrome-client_hints.h.patch \
+    file://backport/IWYU-for-ui-events-gesture_detection-motion.patch \
+    file://backport/Remove-std-ranges-usage.patch \
+"
+# Non-specific patches.
+SRC_URI += "\
     file://0001-limit-number-of-LTO-jobs.patch \
     file://0002-Remove-the-GN-settings-done-for-clang-that-conflict-.patch \
     file://0003-v8-qemu-wrapper.patch \
     file://0004-wrapper-extra-flags.patch \
-    file://0005-BUILD-do-not-specify-march-on-arm.patch \
-    file://0007-Delete-compiler-options-not-available-in-release-ver.patch \
-    file://0008-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0011-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
-    file://0015-drop-gsimple-template-names.patch \
-    file://0016-cast-to-bool-to-avoid-constexpr-error.patch \
-    file://0017-Revert-Fix-std-span-autodetection-7805.patch \
-    file://0018-Only-default-operator-on-declaration.patch \
-    file://0020-Revert-__attribute__-and-alignas-changes.patch \
-    file://0021-Add-missing-typename-s.patch \
-    file://0027-Don-t-pass-disable-auto-upgrade-debug-info-to-linker.patch \
-    file://0028-Avoid-capturing-structured-bindings.patch \
-    file://0033-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
-    file://0034-Avoid-parenthesized-initialization-of-aggregates.patch \
-    file://0035-Backport-IWYU-for-chromedriver-chrome-client_hints.h.patch \
-    file://0036-Backport-Remove-std-ranges-usage.patch \
-    file://0037-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
-    file://0038-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
-    file://0039-Fix-implicitly-deleted-default-constructor-build-err.patch \
-    file://0040-Backport-IWYU-for-ui-events-gesture_detection-motion.patch \
+    file://0005-Delete-compiler-options-not-available-in-release-ver.patch \
+    file://0006-avoid-link-latomic-failure-on-CentOS-8-host.patch \
+    file://0007-Revert-Use-ffile-compilation-dir-instead-of-fdebug-c.patch \
+    file://0008-drop-gsimple-template-names.patch \
+    file://0009-cast-to-bool-to-avoid-constexpr-error.patch \
+    file://0010-Revert-Fix-std-span-autodetection-7805.patch \
+    file://0011-Only-default-operator-on-declaration.patch \
+    file://0012-Revert-__attribute__-and-alignas-changes.patch \
+    file://0013-Add-missing-typename-s.patch \
+    file://0014-Don-t-pass-disable-auto-upgrade-debug-info-to-linker.patch \
+    file://0015-Avoid-capturing-structured-bindings.patch \
+    file://0016-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
+    file://0017-Avoid-parenthesized-initialization-of-aggregates.patch \
+    file://0018-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
+    file://0019-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
+    file://0020-Fix-implicitly-deleted-default-constructor-build-err.patch \
 "
-SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://boringssl_no_asm_config.patch', d)}"
+# ARM/AArch64-specific patches.
+SRC_URI:append:arm = "\
+    file://arm/0001-BUILD-do-not-specify-march-on-arm.patch \
+    file://arm/0002-Fix-ARM-build-with-recent-glibc.patch \
+    file://arm/0003-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
+"
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0004-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
+# musl-specific patches.
 SRC_URI:append:libc-musl = "\
     file://musl/0001-mallinfo-implementation-is-glibc-specific.patch \
-    file://musl/0003-Define-TEMP_FAILURE_RETRY-and-__si_fields.patch \
-    file://musl/0005-breakpad-Fix-build-with-musl.patch \
-    file://musl/0006-fontconfig-Musl-does-not-have-rand_r-API.patch \
-    file://musl/0007-__libc_malloc-is-internal-to-glibc.patch \
-    file://musl/0012-debug-Fix-build-with-musl.patch \
-    file://musl/0015-mallopt-is-glibc-specific-API.patch \
-    file://musl/0018--Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
-    file://musl/0020-Fix-tab-crashes-on-musl.patch \
-    file://musl/0021-pthread_getname_np.patch \
-    file://musl/0022-sys-stat.patch \
-    file://musl/credentials-header.patch \
-    file://musl/fstatat64.patch \
-    file://musl/no-res-ninit-nclose.patch \
-    file://musl/fix-libc-version-include.patch \
-"
-
-# OE defines _TIME_BITS only for 32-bit ARM (ignoring architectures that we
-# don't support), see its meta/conf/distro/include/time64.inc.
-SRC_URI:append:arm = "\
-    file://0031-Fix-ARM-build-with-recent-glibc.patch \
-"
-
-# This fixes a build error with older versions of clang when V8 pointer
-# compression is disabled, which is the case for 32-bit ARM.
-SRC_URI:append:arm = "\
-    file://0041-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
+    file://musl/0002-Define-TEMP_FAILURE_RETRY-and-__si_fields.patch \
+    file://musl/0003-breakpad-Fix-build-with-musl.patch \
+    file://musl/0004-fontconfig-Musl-does-not-have-rand_r-API.patch \
+    file://musl/0005-__libc_malloc-is-internal-to-glibc.patch \
+    file://musl/0006-debug-Fix-build-with-musl.patch \
+    file://musl/0007-mallopt-is-glibc-specific-API.patch \
+    file://musl/0008-Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
+    file://musl/0009-Fix-tab-crashes-on-musl.patch \
+    file://musl/0010-pthread_getname_np.patch \
+    file://musl/0011-sys-stat.patch \
+    file://musl/0012-credentials-header.patch \
+    file://musl/0013-fstatat64.patch \
+    file://musl/0014-no-res-ninit-nclose.patch \
+    file://musl/0015-fix-libc-version-include.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"

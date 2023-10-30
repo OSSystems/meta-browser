@@ -8,6 +8,9 @@ if, and the assert will fail if the if-condition is false. Recent clang
 versions (e.g. clang 17) are able to handle this, but with clang <= 15,
 there is a build error because the static_assert fails.
 
+The assert only fails if pointer compression is disabled, and 32-bitt
+ARM is the only platform we support where that's the case.
+
 Given that the code compiles fine with clang 17, we know that the logic
 checks out, even if clang 14/15 is unable to recognize it. Thus, we just
 comment out the static_assert.
