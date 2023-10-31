@@ -3,7 +3,7 @@ Note from OldManYellsAtCloud
 
 This is an updated version of meta-firefox layer, with a newer version of Firefox.
 
-Currently supports Kirkstone, Mickledore and  Nanbield version of Yocto.
+Currently supports Dunfell, Kirkstone, Mickledore and  Nanbield version of Yocto.
 
 Plan to upstream this in the near future. If you want to help in, feel free to solve an issue or open a new one.
 
@@ -17,24 +17,23 @@ and/or Yocto.
 
 This layer depends on:
 
-* URI: git://git.openembedded.org/openembedded-core
-  - branch: master
-  - revision: HEAD
+Firefox can be successfully compiled with the following dependencies and branches/revisions:
 
-* URI: git://git.openembedded.org/meta-openembedded
-  - layers: meta-oe
-  - branch: master
-  - revision: HEAD
+| Yocto Version | meta-oe    | poky    | meta-clang | meta-rust |
+| ------------- | ---------- | ------- | ---------- | --------- |
+| Dunfell       | [Dunfell](https://github.com/openembedded/meta-openembedded/commit/300be975359fdb3a3b2bf7c6fe15dea7acac575d) | [Dunfell](https://git.yoctoproject.org/poky/commit/?h=dunfell&id=aeac1034661725b5c83e79f76238429fb236b090)        | [Dunfell](https://github.com/kraj/meta-clang/commit/67ac939d47b3dfc383fec7244e4a0ff85ca4340f)           | [Master](https://github.com/meta-rust/meta-rust/commit/e3082dc0728023b121d648da4c5c856943b5e425) |
+| Kirkstone     | [Kirkstone](https://github.com/openembedded/meta-openembedded/commit/529620141e773080a6a7be4615fb7993204af883)  | [Kirkstone](https://git.yoctoproject.org/poky/commit/?h=kirkstone&id=75239ddd8d67c00139c6e88c1c2a790b471b12c5) | [Kirkstone](https://github.com/kraj/meta-clang/commit/2d08d6bf376a1e06c53164fd6283b03ec2309da4) | [Master](https://github.com/meta-rust/meta-rust/commit/e3082dc0728023b121d648da4c5c856943b5e425) |
+| Mickledore    | [Mickledore](https://github.com/openembedded/meta-openembedded/commit/922f41b39f364e5b6be596b4b51e0fb37ffe1971) | [Mickledore](https://git.yoctoproject.org/poky/commit/?h=mickledore&id=a57506c46d92bf0767060102d2139be06d46f575) | [Master](https://github.com/kraj/meta-clang/commit/869df95b61ba44a7ad6bc57da8a31e459eec5059)  | N/A       |
+| Nanbield      | [Nanbield](https://github.com/openembedded/meta-openembedded/commit/278c3f75e32f38f71bb52d161fe06bcb6f6bdd2f) | [Nanbield](https://git.yoctoproject.org/poky/commit/?h=nanbield&id=0e351df0425968fd58983e445391012e64f7f4ad)  | [Master](https://github.com/kraj/meta-clang/commit/869df95b61ba44a7ad6bc57da8a31e459eec5059) | N/A       |
 
-* URI: git://github.com/kraj/meta-clang
-  - branch: master (at least llvm version 16)
-  - revision: HEAD
+Mickledore and Nanbield work with the Rust recipes included in poky.
 
-To build with Kirkstone, meta-rust layer is also required:
+Kirkstone however has a too old Rust version, and Dunfell has no Rust.
+These version require the meta-rust layer also. For Kirkstone make sure to set the 
+`PREFERRED_VERSION` for rust (&co) to the versions in the meta-rust layer.
 
-* URI: https://github.com/meta-rust/meta-rust/
-  - branch: master
-  - revision: HEAD
+The revisions in the table are indicative only. If there are newer commits in the
+branch, they are expected to be compatible.
 
 Contributing
 ------------

@@ -8,7 +8,7 @@ v3 certificates, and other security standards."
 HOMEPAGE = "http://www.mozilla.org/projects/security/pki/nss/"
 SECTION = "libs"
 
-DEPENDS = "sqlite3 nspr zlib nss-3.93-native"
+DEPENDS = "sqlite3 nspr zlib nss-3.94-native"
 DEPENDS:class-native = "sqlite3-native nspr-native zlib-native"
 
 CONFLICTS = "nss"
@@ -22,9 +22,9 @@ LIC_FILES_CHKSUM = "file://nss/COPYING;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
 
 VERSION_DIR = "${@d.getVar('BP').upper().replace('-', '_').replace('.', '_') + '_RTM'}"
 
-PV = "3.93"
+PV = "3.94"
 
-SRC_URI = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_93_RTM/src/nss-3.93.tar.gz \
+SRC_URI = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_94_RTM/src/nss-3.94.tar.gz \
            file://nss.pc.in \
            file://0001-nss-fix-support-cross-compiling.patch \
            file://nss-no-rpath-for-cross-compiling.patch \
@@ -37,14 +37,14 @@ SRC_URI = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_93_RTM/src/ns
            file://nss-fix-nsinstall-build.patch \
            file://0001-freebl-add-a-configure-option-to-disable-ARM-HW-cryp.patch \
            "
-SRC_URI[sha256sum] = "15f54bb72048eb105f8c0e936a04b899e74c3db9a19bbc1e00acee2af9476a8a"
+SRC_URI[sha256sum] = "463ae180ee9e5ee9e3ad4f629326657e236780cc865572a930a16520abad9dd8"
 
 UPSTREAM_CHECK_URI = "https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/NSS_Releases"
 UPSTREAM_CHECK_REGEX = "NSS_(?P<pver>.+)_release_notes"
 
 inherit siteinfo
 
-S = "${WORKDIR}/nss-3.93"
+S = "${WORKDIR}/nss-3.94"
 TD = "${S}/tentative-dist"
 TDS = "${S}/tentative-dist-staging"
 
@@ -249,7 +249,7 @@ do_install:append:class-target() {
     install -m 0644 ${WORKDIR}/system-pkcs11.txt ${D}${sysconfdir}/pki/nssdb/pkcs11.txt
 }
 
-PACKAGE_WRITE_DEPS += "nss-3.93-native"
+PACKAGE_WRITE_DEPS += "nss-3.94-native"
 
 pkg_postinst:${PN} () {
     for I in $D${libdir}/lib*.chk; do
