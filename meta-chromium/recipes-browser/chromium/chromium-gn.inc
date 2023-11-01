@@ -124,7 +124,7 @@ BUILD_CC:toolchain-clang = "clang"
 BUILD_CXX:toolchain-clang = "clang++"
 BUILD_LD:toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "upower use-egl"
+PACKAGECONFIG ??= "upower use-egl use-v4l2"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -158,6 +158,10 @@ PACKAGECONFIG[upower] = ",,,upower"
 # but remember to also use proprietary codecs so that H.264 is supported. Also note
 # that not all the hardware configs might be supported.
 PACKAGECONFIG[use-vaapi] = "use_vaapi=true use_libgav1_parser=true,use_vaapi=false,libva"
+# Enable stateless V4L2 M2M video decoding support.
+# This requires 'proprietary-codecs' PACKAGECONFIG
+# to decode h264 streams on the V4L2 M2M device.
+PACKAGECONFIG[use-v4l2] = "use_v4l2_codec=true,use_v4l2_codec=false"
 
 # Base GN arguments, mostly related to features we want to enable or disable.
 GN_ARGS = " \
@@ -382,6 +386,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-angle=gles-egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-v4l2', '--ozone-platform-hint=wayland --enable-features=AcceleratedVideoDecoder,AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL', '', d)} \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
