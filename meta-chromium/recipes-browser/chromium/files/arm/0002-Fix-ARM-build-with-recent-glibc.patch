@@ -5,7 +5,11 @@ Subject: [PATCH] Fix ARM build with recent glibc
 
 For some reason zlib #undefs _FILE_OFFSET_BITS which doesn't play well
 with glibc 2.34's bminor/glibc@47f24c2 and the newly-introduced checks
-in features-time64.h. See also madler/zlib#447.
+in features-time64.h. This is because OE defines _TIME_BITS only for
+32-bit ARM (ignoring architectures that we don't support), see its
+meta/conf/distro/include/time64.inc.
+
+See also madler/zlib#447.
 
 Upstream-Status: Inappropriate
 Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
