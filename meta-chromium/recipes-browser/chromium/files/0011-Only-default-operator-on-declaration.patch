@@ -61,10 +61,10 @@ index 5bf889f..946eabe 100644
 
    AffiliationFetcherInterface() = default;
 diff --git a/components/password_manager/core/browser/passkey_credential.cc b/components/password_manager/core/browser/passkey_credential.cc
-index 1939e54..b3d57f0 100644
+index 9c79b70..2a88233 100644
 --- a/components/password_manager/core/browser/passkey_credential.cc
 +++ b/components/password_manager/core/browser/passkey_credential.cc
-@@ -96,7 +96,4 @@ std::u16string PasskeyCredential::GetAuthenticatorLabel() const {
+@@ -99,7 +99,4 @@ std::u16string PasskeyCredential::GetAuthenticatorLabel() const {
    return l10n_util::GetStringUTF16(id);
  }
 
@@ -73,10 +73,10 @@ index 1939e54..b3d57f0 100644
 -
  }  // namespace password_manager
 diff --git a/components/password_manager/core/browser/passkey_credential.h b/components/password_manager/core/browser/passkey_credential.h
-index 42bf392..fcb53a7 100644
+index 6549ca5..faa9da9 100644
 --- a/components/password_manager/core/browser/passkey_credential.h
 +++ b/components/password_manager/core/browser/passkey_credential.h
-@@ -75,8 +75,7 @@ class PasskeyCredential {
+@@ -76,8 +76,7 @@ class PasskeyCredential {
    const std::string& display_name() const { return display_name_; }
 
   private:
@@ -86,7 +86,7 @@ index 42bf392..fcb53a7 100644
 
    // Authenticator type this passkey belongs to.
    Source source_;
-@@ -106,8 +105,6 @@ class PasskeyCredential {
+@@ -107,8 +106,6 @@ class PasskeyCredential {
    absl::optional<std::u16string> authenticator_label_;
  };
 
@@ -96,10 +96,10 @@ index 42bf392..fcb53a7 100644
 
  #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSKEY_CREDENTIAL_H_
 diff --git a/components/password_manager/core/browser/password_form.cc b/components/password_manager/core/browser/password_form.cc
-index d4976fa..6161547 100644
+index 3dac412..f60b23f 100644
 --- a/components/password_manager/core/browser/password_form.cc
 +++ b/components/password_manager/core/browser/password_form.cc
-@@ -239,8 +239,6 @@ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
+@@ -242,8 +242,6 @@ AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
 
  AlternativeElement::~AlternativeElement() = default;
 
@@ -109,10 +109,10 @@ index d4976fa..6161547 100644
    return std::tie(value, field_renderer_id, name) <
           std::tie(other.value, other.field_renderer_id, other.name);
 diff --git a/components/password_manager/core/browser/password_form.h b/components/password_manager/core/browser/password_form.h
-index cdda601..3b58eaf 100644
+index a27301f..c2597aa 100644
 --- a/components/password_manager/core/browser/password_form.h
 +++ b/components/password_manager/core/browser/password_form.h
-@@ -44,7 +44,7 @@ struct AlternativeElement {
+@@ -45,7 +45,7 @@ struct AlternativeElement {
    AlternativeElement& operator=(AlternativeElement&& rhs);
    ~AlternativeElement();
 

@@ -18,22 +18,24 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  .../profile_management_navigation_throttle.cc             | 4 ++--
  chrome/browser/ui/omnibox/chrome_omnibox_client.cc        | 4 ++--
  chrome/test/chromedriver/chrome/client_hints.h            | 1 +
+ .../autofill/core/browser/contact_info_sync_util.cc       | 6 +++---
  .../display_embedder/skia_output_surface_impl_on_gpu.cc   | 2 +-
  content/browser/download/save_package.cc                  | 4 ++--
  content/browser/renderer_host/render_frame_host_impl.cc   | 8 ++++----
+ content/browser/webid/idp_network_request_manager.cc      | 2 +-
  net/dns/host_resolver_cache.cc                            | 2 +-
  .../renderer/modules/canvas/canvas2d/canvas_style.cc      | 4 ++--
  third_party/blink/renderer/platform/fonts/font_palette.h  | 4 ++--
  .../renderer/platform/fonts/palette_interpolation.cc      | 2 +-
  ui/base/wayland/color_manager_util.h                      | 5 +++++
  ui/gtk/gtk_ui.cc                                          | 4 ++--
- 14 files changed, 28 insertions(+), 21 deletions(-)
+ 16 files changed, 32 insertions(+), 25 deletions(-)
 
 diff --git a/base/trace_event/trace_log.cc b/base/trace_event/trace_log.cc
-index 87cf11a..16fc52f 100644
+index 269daf4..5154b66 100644
 --- a/base/trace_event/trace_log.cc
 +++ b/base/trace_event/trace_log.cc
-@@ -2187,8 +2187,8 @@ void TraceLog::SetTraceBufferForTesting(
+@@ -2190,8 +2190,8 @@ void TraceLog::SetTraceBufferForTesting(
  #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
  void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs& args) {
    AutoLock lock(track_event_lock_);
@@ -89,10 +91,10 @@ index 7ee2e06..e036eee 100644
    if (browser_) {
      auto navigation = chrome::OpenCurrentURL(browser_);
 diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
-index 593bfe6..e737376 100644
+index 8c13bd3..42dc1ac 100644
 --- a/chrome/test/chromedriver/chrome/client_hints.h
 +++ b/chrome/test/chromedriver/chrome/client_hints.h
-@@ -18,6 +18,7 @@ struct BrandVersion {
+@@ -19,6 +19,7 @@ struct BrandVersion {
    // * "major version" for "brands",
    // * "full version" for "fullVersionList".
    std::string version;
@@ -100,11 +102,28 @@ index 593bfe6..e737376 100644
  };
 
  // User-Agent Client Hints
+diff --git a/components/autofill/core/browser/contact_info_sync_util.cc b/components/autofill/core/browser/contact_info_sync_util.cc
+index 2f91040..6f63517 100644
+--- a/components/autofill/core/browser/contact_info_sync_util.cc
++++ b/components/autofill/core/browser/contact_info_sync_util.cc
+@@ -174,9 +174,9 @@ class ContactInfoProfileSetter {
+     CHECK(observations.empty());
+     for (const sync_pb::ContactInfoSpecifics::Observation& proto_observation :
+          proto_observations) {
+-      observations.emplace_back(proto_observation.type(),
+-                                ProfileTokenQuality::FormSignatureHash(
+-                                    proto_observation.form_hash()));
++      observations.push_back(ProfileTokenQuality::Observation {static_cast<unsigned char>(proto_observation.type()),
++                             ProfileTokenQuality::FormSignatureHash(
++                                 proto_observation.form_hash())});
+     }
+   }
+
 diff --git a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-index 2d82ab0..3e3f09e 100644
+index 9e04843..e4981a9 100644
 --- a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
 +++ b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-@@ -1508,7 +1508,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
+@@ -1521,7 +1521,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
        // Issue readbacks from the surfaces:
        for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
@@ -129,10 +148,10 @@ index 2e3107a..61e502d 100644
      download::DownloadSaveItemData::AttachItemData(download_, std::move(files));
    }
 diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
-index 8525270..9b957c0 100644
+index af16b10..c33d16c 100644
 --- a/content/browser/renderer_host/render_frame_host_impl.cc
 +++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -8509,7 +8509,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
+@@ -8672,7 +8672,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
    for (const blink::FencedFrame::ReportingDestination& destination :
         destinations) {
      SendFencedFrameReportingBeaconInternal(
@@ -141,7 +160,7 @@ index 8525270..9b957c0 100644
          /*from_renderer=*/true, attribution_reporting_runtime_features,
          GetFrameTreeNodeId());
    }
-@@ -8545,7 +8545,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconToCustomURL(
+@@ -8708,7 +8708,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconToCustomURL(
    }
 
    SendFencedFrameReportingBeaconInternal(
@@ -150,7 +169,7 @@ index 8525270..9b957c0 100644
        blink::FencedFrame::ReportingDestination::kBuyer,
        /*from_renderer=*/true, attribution_reporting_runtime_features,
        GetFrameTreeNodeId());
-@@ -8617,8 +8617,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
+@@ -8779,8 +8779,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
    for (blink::FencedFrame::ReportingDestination destination :
         info->destinations) {
      initiator_rfh->SendFencedFrameReportingBeaconInternal(
@@ -161,6 +180,19 @@ index 8525270..9b957c0 100644
          destination,
          /*from_renderer=*/false, info->attribution_reporting_runtime_features,
          GetFrameTreeNodeId(), navigation_request.GetNavigationId());
+diff --git a/content/browser/webid/idp_network_request_manager.cc b/content/browser/webid/idp_network_request_manager.cc
+index 063373b..7bed790 100644
+--- a/content/browser/webid/idp_network_request_manager.cc
++++ b/content/browser/webid/idp_network_request_manager.cc
+@@ -604,7 +604,7 @@ void OnTokenRequestParsed(
+     if (response_error) {
+       int error_code = response_error->FindInt(kErrorCodeKey).value_or(0);
+       GURL error_url = ExtractUrl(*response_error, kErrorUrlKey);
+-      token_result.error = TokenError(error_code, error_url);
++      token_result.error = TokenError {error_code, error_url};
+     }
+   }
+
 diff --git a/net/dns/host_resolver_cache.cc b/net/dns/host_resolver_cache.cc
 index e54ed00..7d1165e 100644
 --- a/net/dns/host_resolver_cache.cc

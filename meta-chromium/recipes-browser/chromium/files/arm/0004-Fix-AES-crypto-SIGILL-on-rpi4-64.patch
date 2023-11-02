@@ -1,3 +1,8 @@
+From 2f3893237ecfe28851d4bd1f7fa1c1755a59cde8 Mon Sep 17 00:00:00 2001
+From: Khem Raj <raj.khem@gmail.com>
+Date: Thu, 2 Nov 2023 13:54:43 +0000
+Subject: [PATCH] Fix AES crypto SIGILL on rpi4-64
+
 Disable assembly routines on arm64/rpi4 since it uses
 AES crypto extentions and these extentions do not exist in rpi4
 
@@ -5,12 +10,18 @@ This fixes random SIGILL seen in aes_hw_set_encrypt_key() on rpi4-64
 
 Upstream-Status: Inappropriate [Specific to armv8 minus crypto]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
+---
+ third_party/boringssl/BUILD.gn | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/boringssl/BUILD.gn b/third_party/boringssl/BUILD.gn
+index c4e7925..d46adeee 100644
 --- a/third_party/boringssl/BUILD.gn
 +++ b/third_party/boringssl/BUILD.gn
-@@ -94,7 +94,7 @@ if (enable_rust_boringssl) {
+@@ -98,7 +98,7 @@ if (enable_rust_boringssl) {
    }
  }
- 
+
 -if (is_msan) {
 +if (is_msan || current_cpu == "arm64") {
    # MSan instrumentation is incompatible with assembly optimizations.

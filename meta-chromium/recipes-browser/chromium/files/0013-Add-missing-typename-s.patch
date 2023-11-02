@@ -44,10 +44,10 @@ index 93ec91e..acd25f2 100644
      IterMap<Id, Item>& iter_map) {
    CHECK(iter != cache.end());
 diff --git a/components/optimization_guide/core/tflite_model_executor.h b/components/optimization_guide/core/tflite_model_executor.h
-index 5f939a9..05daf13 100644
+index bbb5208..a256a85 100644
 --- a/components/optimization_guide/core/tflite_model_executor.h
 +++ b/components/optimization_guide/core/tflite_model_executor.h
-@@ -212,7 +212,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -240,7 +240,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    void SendForBatchExecution(
        BatchExecutionCallback callback_on_complete,
        base::TimeTicks start_time,
@@ -56,7 +56,7 @@ index 5f939a9..05daf13 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -234,7 +234,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -262,7 +262,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // Starts the synchronous execution of the model. Returns model outputs.
    // Model needs to be loaded. Synchronous calls do not load or unload model.
    std::vector<absl::optional<OutputType>> SendForBatchExecutionSync(
@@ -65,7 +65,7 @@ index 5f939a9..05daf13 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -389,7 +389,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -417,7 +417,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // executes it on the model execution thread.
    void LoadModelFileAndBatchExecute(
        BatchExecutionCallback callback_on_complete,
@@ -74,7 +74,7 @@ index 5f939a9..05daf13 100644
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-@@ -406,7 +406,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -434,7 +434,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
 
    // Batch executes the loaded model for inputs.
    void BatchExecuteLoadedModel(
@@ -83,7 +83,7 @@ index 5f939a9..05daf13 100644
        std::vector<absl::optional<OutputType>>* outputs) {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -466,7 +466,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -494,7 +494,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // Unloads the model if needed.
    void BatchExecuteLoadedModelAndRunCallback(
        BatchExecutionCallback callback_on_complete,
@@ -172,10 +172,10 @@ index 4b5b670..59e1262 100644
                             LCharLiteralBuffer<32>>::type LiteralBufferType;
    typedef UCharLiteralBuffer<32> UCharLiteralBufferType;
 diff --git a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
-index e185115..6b3bc10 100644
+index 9adc6df..be94e55 100644
 --- a/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
 +++ b/third_party/blink/renderer/core/paint/object_paint_properties_sparse.h
-@@ -269,8 +269,8 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
+@@ -272,8 +272,8 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
        NodeList& nodes,
        NodeId node_id,
        const ParentType& parent,

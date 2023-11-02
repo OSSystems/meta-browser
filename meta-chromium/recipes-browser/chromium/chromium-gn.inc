@@ -12,9 +12,13 @@ B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
 SRC_URI += "\
-    file://backport/IWYU-for-chromedriver-chrome-client_hints.h.patch \
     file://backport/IWYU-for-ui-events-gesture_detection-motion.patch \
     file://backport/Remove-std-ranges-usage.patch \
+    file://backport/lacros-Include-string_view-from-net-cert-pk.patch \
+    file://backport/IWYU-Add-includes-for-size_t-and-int64_t-us.patch \
+    file://backport/IWYU-for-chrome-browser-ui-views-dark_mode_.patch \
+    file://backport/Initialize-ServerCvc-with-designated-initia.patch \
+    file://backport/IWYU-for-net-filter-zstd_source_stream.cc.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
