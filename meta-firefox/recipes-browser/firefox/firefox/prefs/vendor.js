@@ -7,4 +7,3 @@ pref("devtools.webide.autoinstallFxdtAdapters", false);
 // Forbid application updates
 lockPref("app.update.enabled", false);
 lockPref("extensions.update.enabled", false);
-lockPref("extensions.autoDisableScopes", 10);
