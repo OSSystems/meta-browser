@@ -1,18 +1,22 @@
 DESCRIPTION ?= "Browser made by mozilla"
 
-DEPENDS += "pulseaudio cbindgen-native clang-native \
+DEPENDS:append = "pulseaudio cbindgen-native clang-native \
             nodejs-native python-zstandard gtk+3 \
             libevent dbus-glib"
 
-DEPENDS += '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", "wasi-sdk-native", d)}'
+DEPENDS:x86-64:append = " nasm-native "
+DEPENDS:x86:append = " nasm-native "
 
 RDEPENDS:${PN} = "libva"
 RDEPENDS:${PN}-dev = "dbus"
 
-# use system's nss in case the CPU has no native crypto support (e.g. armv7)
-DEPENDS += "${@bb.utils.contains("TUNE_FEATURES", "crypto", "", "nss-3.94", d)}"
-RDEPENDS:${PN} += "${@bb.utils.contains("TUNE_FEATURES", "crypto", "", "nss-3.94 nspr-4.35", d)}"
-RDEPENDS:${PN} += "${@ 'gtk3-immodule-wayland' if 'wayland' in d.getVar('PACKAGECONFIG') and 'touchscreen' in d.getVar('MACHINE_FEATURES') else ''}"
+# Use system's nss in case the CPU has no native crypto support (e.g. armv7)
+# On dunfell and kirkstone use the vendored version, as they contain too old version.
+# This is only for ARM arch: Firefox's nss explicitly includes code using hw-crypto support for this arch.
+ARM_AND_NO_HW_CRYPTO = "${@ True if 'crypto' not in d.getVar('TUNE_FEATURES') and \
+                        ( 'arm' in d.getVar('TARGET_ARCH') or \
+                          'aarch64' in d.getVar('TARGET_ARCH') \
+                        ) else False }"
 
 LICENSE = "MPL-2.0"
 
@@ -23,6 +27,11 @@ S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 
 inherit mozilla
+
+# target-c-int-width size for rust target
+# in poky it is defined as 64, however it fails to compile
+# a small handful of crates.
+TARGET_C_INT_WIDTH[riscv64gc] = "32"
 
 SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${PV}.source.tar.xz \
            file://mozilla-firefox.png \
@@ -132,6 +141,9 @@ PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
                    ${@bb.utils.contains_any("TARGET_ARCH", "x86_64 arm aarch64", "webrtc", "", d)} \
 "
+
+PACKAGECONFIG:append = "${@ ' system-nss system-nspr ' if ${ARM_AND_NO_HW_CRYPTO} else '' }"
+
 PACKAGECONFIG[alsa] = "--enable-alsa,--disable-alsa,alsa-lib"
 PACKAGECONFIG[wayland] = "--enable-default-toolkit=cairo-gtk3-wayland,--enable-default-toolkit=cairo-gtk3,virtual/egl,"
 PACKAGECONFIG[gpu] = ",,,"
@@ -139,10 +151,23 @@ PACKAGECONFIG[openmax] = "--enable-openmax,,,"
 PACKAGECONFIG[webgl] = ",,,"
 PACKAGECONFIG[webrtc] = "--enable-webrtc,--disable-webrtc,,"
 PACKAGECONFIG[forbid-multiple-compositors] = ",,,"
-PACKAGECONFIG[disable-sandboxed-libraries] = ",,,"
+PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries,,,"
 
-EXTRA_OECONF += '${@bb.utils.contains("TUNE_FEATURES", "crypto", "", "--with-system-nss", d)}'
-EXTRA_OECONF += '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "--without-wasm-sandboxed-libraries", "", d)}'
+# nspr and nss dependencies are handled separately, due to requiring
+# different versions depending on Yocto version and CPU capabilities.
+PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.94,nss-3.94"
+PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
+PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
+PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"
+PACKAGECONFIG[system-pixman] = "--enable-system-pixman,,pixman,pixman"
+PACKAGECONFIG[system-jpeg] = "--with-system-jpeg,,libjpeg-turbo,libjpeg-turbo"
+PACKAGECONFIG[system-libevent] = "--with-system-libevent,,libevent,libevent"
+PACKAGECONFIG[system-libvpx] = "--with-system-libvpx,,libvpx,libvpx"
+PACKAGECONFIG[system-png] = "--with-system-png,,libpng,libpng"
+PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
+
+DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", "wasi-sdk-native", d)}'
 
 do_compile:prepend(){
     head -n 38 "${WORKDIR}/cargo_home/config" > "${WORKDIR}/cargo_home/config_tmp"

@@ -8,8 +8,8 @@ v3 certificates, and other security standards."
 HOMEPAGE = "http://www.mozilla.org/projects/security/pki/nss/"
 SECTION = "libs"
 
-DEPENDS = "sqlite3 nspr zlib nss-3.94-native"
-DEPENDS:class-native = "sqlite3-native nspr-native zlib-native"
+DEPENDS = "sqlite3 nspr-4.35 zlib nss-3.94-native"
+DEPENDS:class-native = "sqlite3-native nspr-4.35-native zlib-native"
 
 CONFLICTS = "nss"
 
