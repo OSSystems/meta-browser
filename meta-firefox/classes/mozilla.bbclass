@@ -1,5 +1,5 @@
 SECTION = "x11/utils"
-DEPENDS += "gnu-config-native virtual/libintl libxt libxi zip-native gtk+"
+DEPENDS:append = " gnu-config-native virtual/libintl libxt libxi zip-native gtk+ "
 
 inherit pkgconfig cargo
 

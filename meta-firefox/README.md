@@ -29,7 +29,7 @@ Firefox can be successfully compiled with the following dependencies and branche
 Mickledore and Nanbield work with the Rust recipes included in poky.
 
 Kirkstone however has a too old Rust version, and Dunfell has no Rust.
-These version require the meta-rust layer also. For Kirkstone make sure to set the 
+These versions require the meta-rust layer also. For Kirkstone make sure to set the 
 `PREFERRED_VERSION` for rust (&co) to the versions in the meta-rust layer.
 
 The revisions in the table are indicative only. If there are newer commits in the
@@ -54,6 +54,10 @@ This recipe provides a package for the Firefox web browser.
 
 Two separate recipes are available: one for the latest stable version, and one
 for the latest ESR version.
+
+recipes-browser/firefox-i10l:
+Language packs for Firefox. The default language is English, but installing any
+of these packages will make the new language available in the settings menu.
 
 PACKAGECONFIG knobs
 -------------------
@@ -86,7 +90,7 @@ PACKAGECONFIG knobs
   cause crash on platforms that doesn't support multiple EGL windows.
 
 * disable-sandboxed-libraries: (off by default)
-  By default WASM libraries are sanboxed for security purposes, however that can
+  By default WASM libraries are sandboxed for security purposes, however that can
   introduce quite a big build-time overhead due to extra dependencies.
   Setting this disallows sandboxing these libraries, and removes the wasi-sdk dependency.
 
@@ -97,6 +101,41 @@ PACKAGECONFIG knobs
 * x11-only: (off by default)
   Don't build Firefox with Wayland dependencies. This config should not be enable if wayland-only
   is enabled.
+
+* system-nspr: (off by default and autodetected in some cases)
+  Use NSPR from the operating system, instead of building it with Firefox. In case an ARM CPU
+  is the target without cryptographic capabilities, this config is automatically enabled.
+
+* system-nss: (off by default and autodetected in some cases)
+  Use NSS from the operating system, instead of building it with Firefox. In case an ARM CPU
+  is the target without cryptographic capabilities, this config is automatically enabled.
+
+* system-ffi: (off by default)
+  Use system libffi
+
+* system-icu: (off by default)
+  Use system ICU.
+
+* system-zlib: (off by default)
+  Use system libz.
+
+* system-pixman: (off by default)
+  Use system pixman.
+
+* system-jpeg: (off by default)
+  Use system libjpeg.
+
+* system-libevent: (off by default)
+  Use system libevent.
+
+* system-libvpx: (off by default)
+  Use system libvpx.
+
+* system-png: (off by default)
+  Use system libpng (APNG support is required).
+
+* system-webp: (off by default)
+  Use system libwebp.
 
 Runtime options
 ---------------
