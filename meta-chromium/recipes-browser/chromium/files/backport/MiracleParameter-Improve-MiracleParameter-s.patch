@@ -1,0 +1,1490 @@
+From 41b88f656882a235c769dfa19f5f2db2185c62e9 Mon Sep 17 00:00:00 2001
+From: Minoru Chikamune <chikamune@chromium.org>
+Date: Wed, 4 Oct 2023 04:47:54 +0000
+Subject: [PATCH] Backport "MiracleParameter: Improve MiracleParameter's
+ performance"
+
+When using kirkstone's and dunfell's clang 14, we get a "constexpr
+constructor's parameter type 'std::string' is not a literal type" build
+error. However, the code in question has already been refactored
+upstream, which coincidentally also gets rid of this problematic
+constexpr ctor. The patch will be included in upstream's 120 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4904588]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ components/miracle_parameter/common/BUILD.gn  |   9 +-
+ .../common/public/miracle_parameter.cc        |  82 +++
+ .../common/public/miracle_parameter.h         | 318 ++++------
+ .../public/miracle_parameter_unittest.cc      | 542 +++++++++---------
+ .../resource_scheduler/resource_scheduler.cc  |  24 +-
+ 5 files changed, 511 insertions(+), 464 deletions(-)
+ create mode 100644 components/miracle_parameter/common/public/miracle_parameter.cc
+
+diff --git a/components/miracle_parameter/common/BUILD.gn b/components/miracle_parameter/common/BUILD.gn
+index 253697a..b339d1f 100644
+--- a/components/miracle_parameter/common/BUILD.gn
++++ b/components/miracle_parameter/common/BUILD.gn
+@@ -2,8 +2,13 @@
+ # Use of this source code is governed by a BSD-style license that can be
+ # found in the LICENSE file.
+
+-source_set("common") {
+-  sources = [ "public/miracle_parameter.h" ]
++component("common") {
++  defines = [ "IS_MIRACLE_PARAMETER_IMPL" ]
++
++  sources = [
++    "public/miracle_parameter.cc",
++    "public/miracle_parameter.h",
++  ]
+
+   deps = [ "//base" ]
+ }
+diff --git a/components/miracle_parameter/common/public/miracle_parameter.cc b/components/miracle_parameter/common/public/miracle_parameter.cc
+new file mode 100644
+index 0000000..ce6d686
+--- /dev/null
++++ b/components/miracle_parameter/common/public/miracle_parameter.cc
+@@ -0,0 +1,82 @@
++// Copyright 2023 The Chromium Authors
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#include "components/miracle_parameter/common/public/miracle_parameter.h"
++
++#include "base/strings/strcat.h"
++#include "base/system/sys_info.h"
++
++namespace miracle_parameter {
++
++namespace {
++
++std::string GetFieldTrialParamByFeatureAsString(
++    const base::Feature& feature,
++    const std::string& param_name,
++    const std::string& default_value) {
++  const std::string value =
++      base::GetFieldTrialParamValueByFeature(feature, param_name);
++  return value.empty() ? default_value : value;
++}
++
++}  // namespace
++
++std::string GetParamNameWithSuffix(const std::string& param_name) {
++  int physical_memory_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
++  const char* suffix =
++      physical_memory_mb < kMiracleParameterMemory512MB  ? "ForLessThan512MB"
++      : physical_memory_mb < kMiracleParameterMemory1GB  ? "For512MBTo1GB"
++      : physical_memory_mb < kMiracleParameterMemory2GB  ? "For1GBTo2GB"
++      : physical_memory_mb < kMiracleParameterMemory4GB  ? "For2GBTo4GB"
++      : physical_memory_mb < kMiracleParameterMemory8GB  ? "For4GBTo8GB"
++      : physical_memory_mb < kMiracleParameterMemory16GB ? "For8GBTo16GB"
++                                                         : "For16GBAndAbove";
++  return base::StrCat({param_name, suffix});
++}
++
++std::string GetMiracleParameterAsString(const base::Feature& feature,
++                                        const std::string& param_name,
++                                        const std::string& default_value) {
++  return GetFieldTrialParamByFeatureAsString(
++      feature, GetParamNameWithSuffix(param_name),
++      GetFieldTrialParamByFeatureAsString(feature, param_name, default_value));
++}
++
++double GetMiracleParameterAsDouble(const base::Feature& feature,
++                                   const std::string& param_name,
++                                   double default_value) {
++  return base::GetFieldTrialParamByFeatureAsDouble(
++      feature, GetParamNameWithSuffix(param_name),
++      base::GetFieldTrialParamByFeatureAsDouble(feature, param_name,
++                                                default_value));
++}
++
++int GetMiracleParameterAsInt(const base::Feature& feature,
++                             const std::string& param_name,
++                             int default_value) {
++  return base::GetFieldTrialParamByFeatureAsInt(
++      feature, GetParamNameWithSuffix(param_name),
++      base::GetFieldTrialParamByFeatureAsInt(feature, param_name,
++                                             default_value));
++}
++
++bool GetMiracleParameterAsBool(const base::Feature& feature,
++                               const std::string& param_name,
++                               bool default_value) {
++  return base::GetFieldTrialParamByFeatureAsBool(
++      feature, GetParamNameWithSuffix(param_name),
++      base::GetFieldTrialParamByFeatureAsBool(feature, param_name,
++                                              default_value));
++}
++
++base::TimeDelta GetMiracleParameterAsTimeDelta(const base::Feature& feature,
++                                               const std::string& param_name,
++                                               base::TimeDelta default_value) {
++  return base::GetFieldTrialParamByFeatureAsTimeDelta(
++      feature, GetParamNameWithSuffix(param_name),
++      base::GetFieldTrialParamByFeatureAsTimeDelta(feature, param_name,
++                                                   default_value));
++}
++
++}  // namespace miracle_parameter
+diff --git a/components/miracle_parameter/common/public/miracle_parameter.h b/components/miracle_parameter/common/public/miracle_parameter.h
+index 123099f..e9a298c 100644
+--- a/components/miracle_parameter/common/public/miracle_parameter.h
++++ b/components/miracle_parameter/common/public/miracle_parameter.h
+@@ -5,72 +5,50 @@
+ #ifndef COMPONENTS_MIRACLE_PARAMETER_COMMON_PUBLIC_MIRACLE_PARAMETER_H_
+ #define COMPONENTS_MIRACLE_PARAMETER_COMMON_PUBLIC_MIRACLE_PARAMETER_H_
+
+-#include <type_traits>
++#include "base/component_export.h"
++#include "base/containers/span.h"
+ #include "base/feature_list.h"
+ #include "base/metrics/field_trial_params.h"
+-#include "base/strings/strcat.h"
+-#include "base/system/sys_info.h"
+-#include "base/time/time.h"
+-#include "base/types/always_false.h"
+
+ namespace miracle_parameter {
+
+-const int kMiracleParameterMemory512MB = 512;
+-const int kMiracleParameterMemory1GB = 1024;
+-const int kMiracleParameterMemory2GB = 2 * 1024;
+-const int kMiracleParameterMemory4GB = 4 * 1024;
+-const int kMiracleParameterMemory8GB = 8 * 1024;
+-const int kMiracleParameterMemory16GB = 16 * 1024;
+-
+-// Base class for MiracleParameter.
+-template <typename T>
+-class MiracleParameterBase {
+- public:
+-  constexpr MiracleParameterBase(const base::Feature* feature,
+-                                 const char* param_name,
+-                                 T default_value)
+-      : feature_(feature),
+-        param_name_(param_name),
+-        default_value_(default_value) {}
+-
+-  virtual T Get() const = 0;
+-
+- protected:
+-  std::string GetNameWithSuffix() const {
+-    int physical_memory_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+-
+-    const char* suffix =
+-        physical_memory_mb < kMiracleParameterMemory512MB  ? "ForLessThan512MB"
+-        : physical_memory_mb < kMiracleParameterMemory1GB  ? "For512MBTo1GB"
+-        : physical_memory_mb < kMiracleParameterMemory2GB  ? "For1GBTo2GB"
+-        : physical_memory_mb < kMiracleParameterMemory4GB  ? "For2GBTo4GB"
+-        : physical_memory_mb < kMiracleParameterMemory8GB  ? "For4GBTo8GB"
+-        : physical_memory_mb < kMiracleParameterMemory16GB ? "For8GBTo16GB"
+-                                                           : "For16GBAndAbove";
+-
+-    return base::StrCat({param_name_, suffix});
++namespace {
++
++template <typename Enum>
++Enum GetFieldTrialParamByFeatureAsEnum(
++    const base::Feature& feature,
++    const std::string& param_name,
++    const Enum default_value,
++    const base::span<const typename base::FeatureParam<Enum>::Option>&
++        options) {
++  std::string string_value =
++      base::GetFieldTrialParamValueByFeature(feature, param_name);
++  if (string_value.empty()) {
++    return default_value;
++  }
++
++  for (const auto& option : options) {
++    if (string_value == option.name) {
++      return option.value;
++    }
+   }
+
+-  // This field is not a raw_ptr<> because this class is used with constexpr.
+-  RAW_PTR_EXCLUSION const base::Feature* const feature_;
+-  const char* const param_name_;
+-  const T default_value_;
+-};
++  base::LogInvalidEnumValue(feature, param_name, string_value,
++                            static_cast<int>(default_value));
++  return default_value;
++}
+
+-// Shared declaration for various MiracleParameter<T> types.
+-//
+-// This template is defined for the following types T:
+-//   bool
+-//   int
+-//   double
+-//   std::string
+-//   enum types
+-//   TimeDelta
+-//
+-// Unlike FeatureParam, MiracleParameter determines the parameter value based on
+-// the amount of physical memory when the following suffix is used as a
+-// parameter name. If there are no parameter settings that have the following
+-// suffixes, MiracleParameter behaves the same as the FeatureParam.
++}  // namespace
++
++constexpr int kMiracleParameterMemory512MB = 512;
++constexpr int kMiracleParameterMemory1GB = 1024;
++constexpr int kMiracleParameterMemory2GB = 2 * 1024;
++constexpr int kMiracleParameterMemory4GB = 4 * 1024;
++constexpr int kMiracleParameterMemory8GB = 8 * 1024;
++constexpr int kMiracleParameterMemory16GB = 16 * 1024;
++
++// GetParamNameWithSuffix put a parameter name suffix based on
++// the amount of physical memory.
+ //
+ // - "ForLessThan512MB" for less than 512MB memory devices.
+ // - "For512MBTo1GB" for 512MB to 1GB memory devices.
+@@ -79,157 +57,109 @@ class MiracleParameterBase {
+ // - "For4GBTo8GB" for 4GB to 8GB memory devices.
+ // - "For8GBTo16GB" for 8GB to 16GB memory devices.
+ // - "For16GBAndAbove" for 16GB memory and above devices.
+-template <typename T, bool IsEnum = std::is_enum_v<T>>
+-class MiracleParameter {
+- public:
+-  // Prevent use of MiracleParameter<> with unsupported types (e.g. void*). Uses
+-  // T in its definition so that evaluation is deferred until the template is
+-  // instantiated.
+-  static_assert(base::AlwaysFalse<T>, "unsupported MiracleParameter<> type");
+-};
+-
+-// Provides a similar feature with FeatureParam<std::string> except the return
+-// value is determined by the amount of physical memory.
+-template <>
+-class MiracleParameter<std::string> : public MiracleParameterBase<std::string> {
+- public:
+-  constexpr MiracleParameter(const base::Feature* feature,
+-                             const char* param_name,
+-                             std::string default_value)
+-      : MiracleParameterBase(feature, param_name, std::move(default_value)) {}
+-
+-  std::string Get() const override {
+-    const std::string value =
+-        base::GetFieldTrialParamValueByFeature(*feature_, GetNameWithSuffix());
+-
+-    if (!value.empty()) {
+-      return value;
+-    }
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++std::string GetParamNameWithSuffix(const std::string& param_name);
+
+-    // If there are no memory dependent parameter settings, MiracleParameter
+-    // behaves the same as the FeatureParam.
+-    const std::string fallback_value =
+-        base::GetFieldTrialParamValueByFeature(*feature_, param_name_);
+-    return fallback_value.empty() ? default_value_ : fallback_value;
+-  }
+-};
++// Provides a similar behavior with FeatureParam<std::string> except the return
++// value is determined by the amount of physical memory.
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++std::string GetMiracleParameterAsString(const base::Feature& feature,
++                                        const std::string& param_name,
++                                        const std::string& default_value);
+
+-// Provides a similar feature with FeatureParam<double> except the return value
++// Provides a similar behavior with FeatureParam<double> except the return value
+ // is determined by the amount of physical memory.
+-template <>
+-class MiracleParameter<double> : public MiracleParameterBase<double> {
+- public:
+-  constexpr MiracleParameter(const base::Feature* feature,
+-                             const char* param_name,
+-                             double default_value)
+-      : MiracleParameterBase(feature, param_name, default_value) {}
+-
+-  double Get() const override {
+-    return base::GetFieldTrialParamByFeatureAsDouble(
+-        *feature_, GetNameWithSuffix(),
+-        base::GetFieldTrialParamByFeatureAsDouble(*feature_, param_name_,
+-                                                  default_value_));
+-  }
+-};
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++double GetMiracleParameterAsDouble(const base::Feature& feature,
++                                   const std::string& param_name,
++                                   double default_value);
+
+-// Provides a similar feature with FeatureParam<int> except the return value is
++// Provides a similar behavior with FeatureParam<int> except the return value is
+ // determined by the amount of physical memory.
+-template <>
+-class MiracleParameter<int> : public MiracleParameterBase<int> {
+- public:
+-  constexpr MiracleParameter(const base::Feature* feature,
+-                             const char* param_name,
+-                             int default_value)
+-      : MiracleParameterBase(feature, param_name, default_value) {}
+-
+-  int Get() const override {
+-    return base::GetFieldTrialParamByFeatureAsInt(
+-        *feature_, GetNameWithSuffix(),
+-        base::GetFieldTrialParamByFeatureAsInt(*feature_, param_name_,
+-                                               default_value_));
+-  }
+-};
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++int GetMiracleParameterAsInt(const base::Feature& feature,
++                             const std::string& param_name,
++                             int default_value);
+
+-// Provides a similar feature with FeatureParam<bool> except the return value is
+-// determined by the amount of physical memory.
+-template <>
+-class MiracleParameter<bool> : public MiracleParameterBase<bool> {
+- public:
+-  constexpr MiracleParameter(const base::Feature* feature,
+-                             const char* param_name,
+-                             bool default_value)
+-      : MiracleParameterBase(feature, param_name, default_value) {}
+-
+-  bool Get() const override {
+-    return base::GetFieldTrialParamByFeatureAsBool(
+-        *feature_, GetNameWithSuffix(),
+-        base::GetFieldTrialParamByFeatureAsBool(*feature_, param_name_,
+-                                                default_value_));
++// Provides a similar behavior with FeatureParam<bool> except the return value
++// is determined by the amount of physical memory.
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++bool GetMiracleParameterAsBool(const base::Feature& feature,
++                               const std::string& param_name,
++                               bool default_value);
++
++// Provides a similar behavior with FeatureParam<base::TimeDelta> except the
++// return value is determined by the amount of physical memory.
++COMPONENT_EXPORT(MIRACLE_PARAMETER)
++base::TimeDelta GetMiracleParameterAsTimeDelta(const base::Feature& feature,
++                                               const std::string& param_name,
++                                               base::TimeDelta default_value);
++
++// Provides a similar behavior with FeatureParam<Enum> except the return value
++// is determined by the amount of physical memory.
++template <typename Enum>
++Enum GetMiracleParameterAsEnum(
++    const base::Feature& feature,
++    const std::string& param_name,
++    const Enum default_value,
++    const base::span<const typename base::FeatureParam<Enum>::Option> options) {
++  return GetFieldTrialParamByFeatureAsEnum(
++      feature, GetParamNameWithSuffix(param_name),
++      GetFieldTrialParamByFeatureAsEnum(feature, param_name, default_value,
++                                        options),
++      options);
++}
++
++#define MIRACLE_PARAMETER_FOR_STRING(function_name, feature, param_name,    \
++                                     default_value)                         \
++  std::string function_name() {                                             \
++    static const std::string value =                                        \
++        miracle_parameter::GetMiracleParameterAsString(feature, param_name, \
++                                                       default_value);      \
++    return value;                                                           \
+   }
+-};
+
+-// Provides a similar feature with FeatureParam<TimeDelta> except the return
+-// value is determined by the amount of physical memory.
+-template <>
+-class MiracleParameter<base::TimeDelta>
+-    : public MiracleParameterBase<base::TimeDelta> {
+- public:
+-  constexpr MiracleParameter(const base::Feature* feature,
+-                             const char* param_name,
+-                             base::TimeDelta default_value)
+-      : MiracleParameterBase(feature, param_name, std::move(default_value)) {}
+-
+-  base::TimeDelta Get() const override {
+-    return base::GetFieldTrialParamByFeatureAsTimeDelta(
+-        *feature_, GetNameWithSuffix(),
+-        base::GetFieldTrialParamByFeatureAsTimeDelta(*feature_, param_name_,
+-                                                     default_value_));
++#define MIRACLE_PARAMETER_FOR_DOUBLE(function_name, feature, param_name,    \
++                                     default_value)                         \
++  double function_name() {                                                  \
++    static const double value =                                             \
++        miracle_parameter::GetMiracleParameterAsDouble(feature, param_name, \
++                                                       default_value);      \
++    return value;                                                           \
+   }
+-};
+
+-// Provides a similar feature with FeatureParam<Enum> except the return value is
+-// determined by the amount of physical memory.
+-template <typename Enum>
+-class MiracleParameter<Enum, true> : public MiracleParameterBase<Enum> {
+- public:
+-  constexpr MiracleParameter(
+-      const base::Feature* feature,
+-      const char* param_name,
+-      const Enum default_value,
+-      const base::span<const typename base::FeatureParam<Enum>::Option> options)
+-      : MiracleParameterBase<Enum>(feature, param_name, default_value),
+-        options_(std::move(options)) {}
+-
+-  Enum Get() const override {
+-    return GetFieldTrialParamByFeatureAsEnum(
+-        *this->feature_, this->GetNameWithSuffix(),
+-        GetFieldTrialParamByFeatureAsEnum(*this->feature_, this->param_name_,
+-                                          this->default_value_));
++#define MIRACLE_PARAMETER_FOR_INT(function_name, feature, param_name,     \
++                                  default_value)                          \
++  int function_name() {                                                   \
++    static const int value = miracle_parameter::GetMiracleParameterAsInt( \
++        feature, param_name, default_value);                              \
++    return value;                                                         \
+   }
+
+- private:
+-  Enum GetFieldTrialParamByFeatureAsEnum(const base::Feature& feature,
+-                                         const std::string& param_name,
+-                                         const Enum default_value) const {
+-    std::string string_value =
+-        base::GetFieldTrialParamValueByFeature(feature, param_name);
+-    if (string_value.empty()) {
+-      return default_value;
+-    }
+-
+-    for (const auto& option : options_) {
+-      if (string_value == option.name) {
+-        return option.value;
+-      }
+-    }
++#define MIRACLE_PARAMETER_FOR_BOOL(function_name, feature, param_name,      \
++                                   default_value)                           \
++  bool function_name() {                                                    \
++    static const bool value = miracle_parameter::GetMiracleParameterAsBool( \
++        feature, param_name, default_value);                                \
++    return value;                                                           \
++  }
+
+-    base::LogInvalidEnumValue(feature, param_name, string_value,
+-                              static_cast<int>(default_value));
+-    return default_value;
++#define MIRACLE_PARAMETER_FOR_TIME_DELTA(function_name, feature, param_name,   \
++                                         default_value)                        \
++  base::TimeDelta function_name() {                                            \
++    static const base::TimeDelta value =                                       \
++        miracle_parameter::GetMiracleParameterAsTimeDelta(feature, param_name, \
++                                                          default_value);      \
++    return value;                                                              \
+   }
+
+-  const base::span<const typename base::FeatureParam<Enum>::Option> options_;
+-};
++#define MIRACLE_PARAMETER_FOR_ENUM(function_name, feature, param_name,      \
++                                   default_value, type, options)            \
++  type function_name() {                                                    \
++    static const type value = miracle_parameter::GetMiracleParameterAsEnum( \
++        feature, param_name, default_value, base::make_span(options));      \
++    return value;                                                           \
++  }
+
+ }  // namespace miracle_parameter
+
+diff --git a/components/miracle_parameter/common/public/miracle_parameter_unittest.cc b/components/miracle_parameter/common/public/miracle_parameter_unittest.cc
+index 391807e..5a1af57 100644
+--- a/components/miracle_parameter/common/public/miracle_parameter_unittest.cc
++++ b/components/miracle_parameter/common/public/miracle_parameter_unittest.cc
+@@ -27,7 +27,7 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
+       trial_name, total_probability, default_group_name, entropy_provider);
+ }
+
+-const char* BoolToString(bool value) {
++const std::string BoolToString(bool value) {
+   return value ? "true" : "false";
+ }
+
+@@ -73,7 +73,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForString) {
+   const char kCDefault[] = "default-for-c";
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = kAForLessThan512MB;
+   params["aFor512MBTo1GB"] = kAFor512MBTo1GB;
+@@ -86,99 +86,104 @@ TEST_F(MiracleParameterTest, MiracleParameterForString) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<std::string> a{&kFeature, "a", kADefault};
+-  static const MiracleParameter<std::string> b{&kFeature, "b", kBDefault};
+-  static const MiracleParameter<std::string> c{&kFeature, "c", kCDefault};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsString(kFeature, "a", kADefault);
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsString(kFeature, "b", kBDefault);
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsString(kFeature, "c", kCDefault);
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+ }
+
+@@ -196,7 +201,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForDouble) {
+   const double kCDefault = 1.1;
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = base::ToString(kAForLessThan512MB);
+   params["aFor512MBTo1GB"] = base::ToString(kAFor512MBTo1GB);
+@@ -209,99 +214,104 @@ TEST_F(MiracleParameterTest, MiracleParameterForDouble) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<double> a{&kFeature, "a", kADefault};
+-  static const MiracleParameter<double> b{&kFeature, "b", kBDefault};
+-  static const MiracleParameter<double> c{&kFeature, "c", kCDefault};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsDouble(kFeature, "a", kADefault);
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsDouble(kFeature, "b", kBDefault);
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsDouble(kFeature, "c", kCDefault);
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+ }
+
+@@ -319,7 +329,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForInt) {
+   const int kCDefault = 11;
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = base::ToString(kAForLessThan512MB);
+   params["aFor512MBTo1GB"] = base::ToString(kAFor512MBTo1GB);
+@@ -332,99 +342,104 @@ TEST_F(MiracleParameterTest, MiracleParameterForInt) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<int> a{&kFeature, "a", kADefault};
+-  static const MiracleParameter<int> b{&kFeature, "b", kBDefault};
+-  static const MiracleParameter<int> c{&kFeature, "c", kCDefault};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsInt(kFeature, "a", kADefault);
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsInt(kFeature, "b", kBDefault);
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsInt(kFeature, "c", kCDefault);
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+ }
+
+@@ -442,7 +457,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForBool) {
+   const bool kCDefault = true;
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = BoolToString(kAForLessThan512MB);
+   params["aFor512MBTo1GB"] = BoolToString(kAFor512MBTo1GB);
+@@ -455,99 +470,104 @@ TEST_F(MiracleParameterTest, MiracleParameterForBool) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<bool> a{&kFeature, "a", kADefault};
+-  static const MiracleParameter<bool> b{&kFeature, "b", kBDefault};
+-  static const MiracleParameter<bool> c{&kFeature, "c", kCDefault};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsBool(kFeature, "a", kADefault);
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsBool(kFeature, "b", kBDefault);
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsBool(kFeature, "c", kCDefault);
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+ }
+
+@@ -565,7 +585,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForTimeDelta) {
+   const base::TimeDelta kCDefault = base::Seconds(11);
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = "1s";
+   params["aFor512MBTo1GB"] = "2s";
+@@ -578,99 +598,104 @@ TEST_F(MiracleParameterTest, MiracleParameterForTimeDelta) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<base::TimeDelta> a{&kFeature, "a", kADefault};
+-  static const MiracleParameter<base::TimeDelta> b{&kFeature, "b", kBDefault};
+-  static const MiracleParameter<base::TimeDelta> c{&kFeature, "c", kCDefault};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsTimeDelta(kFeature, "a", kADefault);
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsTimeDelta(kFeature, "b", kBDefault);
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsTimeDelta(kFeature, "c", kCDefault);
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(kBDefault, b.Get());
+-    EXPECT_EQ(kCParamValue, c.Get());
++    EXPECT_EQ(kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(kBDefault, GetParamB());
++    EXPECT_EQ(kCParamValue, GetParamC());
+   }
+ }
+
+@@ -704,7 +729,7 @@ TEST_F(MiracleParameterTest, MiracleParameterForEnum) {
+   };
+
+   // Set up the field trial params.
+-  const std::string kTrialName = "GetFieldTrialParamsByFeature";
++  const std::string kTrialName = "TrialName";
+   std::map<std::string, std::string> params;
+   params["aForLessThan512MB"] = "a-value-for-less-than-512mb";
+   params["aFor512MBTo1GB"] = "a-value-for-512mb-to-1gb";
+@@ -717,102 +742,107 @@ TEST_F(MiracleParameterTest, MiracleParameterForEnum) {
+   base::AssociateFieldTrialParams(kTrialName, "A", params);
+   scoped_refptr<base::FieldTrial> trial(CreateFieldTrial(
+       kTrialName, /*total_probability=*/100, /*default_group_name=*/"A"));
+-
+-  // Prepare MiracleParameters.
+   static BASE_FEATURE(kFeature, "TestFeature",
+                       base::FEATURE_ENABLED_BY_DEFAULT);
+-  static const MiracleParameter<ParamEnum> a{
+-      &kFeature, "a", ParamEnum::kADefault, base::make_span(param_enums)};
+-  static const MiracleParameter<ParamEnum> b{
+-      &kFeature, "b", ParamEnum::kBDefault, base::make_span(param_enums)};
+-  static const MiracleParameter<ParamEnum> c{
+-      &kFeature, "c", ParamEnum::kCDefault, base::make_span(param_enums)};
+   CreateFeatureWithTrial(kFeature, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                          trial.get());
+
++  auto GetParamA = [&]() {
++    return GetMiracleParameterAsEnum(kFeature, "a", ParamEnum::kADefault,
++                                     base::make_span(param_enums));
++  };
++  auto GetParamB = [&]() {
++    return GetMiracleParameterAsEnum(kFeature, "b", ParamEnum::kBDefault,
++                                     base::make_span(param_enums));
++  };
++  auto GetParamC = [&]() {
++    return GetMiracleParameterAsEnum(kFeature, "c", ParamEnum::kCDefault,
++                                     base::make_span(param_enums));
++  };
++
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB - 1);
+-    EXPECT_EQ(ParamEnum::kAForLessThan512MB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAForLessThan512MB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory512MB);
+-    EXPECT_EQ(ParamEnum::kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB - 1);
+-    EXPECT_EQ(ParamEnum::kAFor512MBTo1GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor512MBTo1GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory1GB);
+-    EXPECT_EQ(ParamEnum::kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB - 1);
+-    EXPECT_EQ(ParamEnum::kAFor1GBTo2GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor1GBTo2GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory2GB);
+-    EXPECT_EQ(ParamEnum::kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB - 1);
+-    EXPECT_EQ(ParamEnum::kAFor2GBTo4GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor2GBTo4GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory4GB);
+-    EXPECT_EQ(ParamEnum::kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB - 1);
+-    EXPECT_EQ(ParamEnum::kAFor4GBTo8GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor4GBTo8GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory8GB);
+-    EXPECT_EQ(ParamEnum::kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB - 1);
+-    EXPECT_EQ(ParamEnum::kAFor8GBTo16GB, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor8GBTo16GB, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+   {
+     base::test::ScopedAmountOfPhysicalMemoryOverride memory_override(
+         kMiracleParameterMemory16GB);
+-    EXPECT_EQ(ParamEnum::kAFor16GBAndAbove, a.Get());
+-    EXPECT_EQ(ParamEnum::kBDefault, b.Get());
+-    EXPECT_EQ(ParamEnum::kCParamValue, c.Get());
++    EXPECT_EQ(ParamEnum::kAFor16GBAndAbove, GetParamA());
++    EXPECT_EQ(ParamEnum::kBDefault, GetParamB());
++    EXPECT_EQ(ParamEnum::kCParamValue, GetParamC());
+   }
+ }
+
+diff --git a/services/network/resource_scheduler/resource_scheduler.cc b/services/network/resource_scheduler/resource_scheduler.cc
+index b0e1d55..ca54212 100644
+--- a/services/network/resource_scheduler/resource_scheduler.cc
++++ b/services/network/resource_scheduler/resource_scheduler.cc
+@@ -120,18 +120,18 @@ constexpr base::FeatureParam<net::RequestPriority>::Option
+ // The maximum number of requests to allow be in-flight at any point in time per
+ // host. This limit does not apply to hosts that support request prioritization
+ // when |delay_requests_on_multiplexed_connections| is true.
+-constexpr miracle_parameter::MiracleParameter<int>
+-    kMaxNumDelayableRequestsPerHostPerClient(
+-        &kMaxNumDelayableRequestsPerHostPerClientFeature,
+-        "MaxNumDelayableRequestsPerHostPerClient",
+-        6);
++MIRACLE_PARAMETER_FOR_INT(GetMaxNumDelayableRequestsPerHostPerClient,
++                          kMaxNumDelayableRequestsPerHostPerClientFeature,
++                          "MaxNumDelayableRequestsPerHostPerClient",
++                          6)
+
+ // The priority level below which resources are considered to be delayable.
+-constexpr miracle_parameter::MiracleParameter<net::RequestPriority>
+-    kDelayablePriorityThreshold(&kDelayablePriorityThresholdFeature,
+-                                "DelayablePriorityThreshold",
+-                                net::MEDIUM,
+-                                base::make_span(kRequestPriorities));
++MIRACLE_PARAMETER_FOR_ENUM(GetDelayablePriorityThreshold,
++                           kDelayablePriorityThresholdFeature,
++                           "DelayablePriorityThreshold",
++                           net::MEDIUM,
++                           net::RequestPriority,
++                           kRequestPriorities)
+
+ // Returns the duration after which the timer to dispatch queued requests should
+ // fire.
+@@ -814,7 +814,7 @@ class ResourceScheduler::Client
+       attributes |= kAttributeInFlight;
+
+     const net::RequestPriority kPriorityThreshold =
+-        kDelayablePriorityThreshold.Get();
++        GetDelayablePriorityThreshold();
+     if (request->url_request()->priority() < kPriorityThreshold) {
+       if (params_for_network_quality_
+               .delay_requests_on_multiplexed_connections) {
+@@ -862,7 +862,7 @@ class ResourceScheduler::Client
+     }
+
+     const size_t kMaxSameHostCount =
+-        kMaxNumDelayableRequestsPerHostPerClient.Get();
++        GetMaxNumDelayableRequestsPerHostPerClient();
+     size_t same_host_count = 0;
+     for (const auto* in_flight_request : in_flight_requests_) {
+       if (active_request_host == in_flight_request->scheme_host_port()) {

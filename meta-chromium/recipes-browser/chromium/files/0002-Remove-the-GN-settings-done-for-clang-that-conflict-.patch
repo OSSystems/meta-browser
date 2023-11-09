@@ -21,10 +21,10 @@ Rebased-by: Randy MacLeod <randy.macleod@windriver.com>
  1 file changed, 38 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 2a810d9..f991efd 100644
+index 8b22e38..cc8eac8 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1112,11 +1112,6 @@ config("compiler_cpu_abi") {
+@@ -1133,11 +1133,6 @@ config("compiler_cpu_abi") {
          ]
        }
      } else if (current_cpu == "arm") {
@@ -36,7 +36,7 @@ index 2a810d9..f991efd 100644
        if (!is_nacl) {
          cflags += [
            "-march=$arm_arch",
-@@ -1126,12 +1121,6 @@ config("compiler_cpu_abi") {
+@@ -1147,12 +1142,6 @@ config("compiler_cpu_abi") {
        if (arm_tune != "") {
          cflags += [ "-mtune=$arm_tune" ]
        }
@@ -49,7 +49,7 @@ index 2a810d9..f991efd 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1139,9 +1128,6 @@ config("compiler_cpu_abi") {
+@@ -1160,9 +1149,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +59,7 @@ index 2a810d9..f991efd 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1221,8 +1207,6 @@ config("compiler_cpu_abi") {
+@@ -1242,8 +1228,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +68,7 @@ index 2a810d9..f991efd 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1270,9 +1254,6 @@ config("compiler_cpu_abi") {
+@@ -1291,9 +1275,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -78,7 +78,7 @@ index 2a810d9..f991efd 100644
            }
          } else {
            cflags += [
-@@ -1330,8 +1311,6 @@ config("compiler_cpu_abi") {
+@@ -1351,8 +1332,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -87,7 +87,7 @@ index 2a810d9..f991efd 100644
          } else {
            cflags += [
              "-EB",
-@@ -1494,23 +1473,6 @@ config("compiler_deterministic") {
+@@ -1515,23 +1494,6 @@ config("compiler_deterministic") {
        }
      }
    }

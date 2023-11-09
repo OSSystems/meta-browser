@@ -16,10 +16,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  3 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/content/browser/service_worker/service_worker_context_wrapper.cc b/content/browser/service_worker/service_worker_context_wrapper.cc
-index 3267cdb..de88ef7 100644
+index d8d68ec..1c0777b 100644
 --- a/content/browser/service_worker/service_worker_context_wrapper.cc
 +++ b/content/browser/service_worker/service_worker_context_wrapper.cc
-@@ -1412,9 +1412,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
+@@ -1443,9 +1443,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
    auto [document_url, key, callback] = std::move(*request);
 
    DCHECK(document_url.is_valid());
@@ -53,7 +53,7 @@ index f013809..144809b 100644
    promises_.clear();
  }
 diff --git a/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc b/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
-index 64c7a74..484fa5c 100644
+index 29d3b99..6af269e 100644
 --- a/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
 +++ b/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
 @@ -3452,7 +3452,9 @@ void NGGridLayoutAlgorithm::PlaceGridItems(

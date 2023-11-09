@@ -22,10 +22,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  7 files changed, 3 insertions(+), 17 deletions(-)
 
 diff --git a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
-index b23dbe1..f67da2e 100644
+index be25342..c6372a3 100644
 --- a/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
 +++ b/components/password_manager/core/browser/affiliation/affiliation_fetcher_base.cc
-@@ -185,7 +185,4 @@ void AffiliationFetcherBase::OnSimpleLoaderComplete(
+@@ -183,7 +183,4 @@ void AffiliationFetcherBase::OnSimpleLoaderComplete(
    }
  }
 

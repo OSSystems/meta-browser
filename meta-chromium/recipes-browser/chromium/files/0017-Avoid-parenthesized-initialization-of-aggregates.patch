@@ -13,29 +13,56 @@ or initialize the aggregate using curly braces.
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- base/trace_event/trace_log.cc                             | 4 ++--
- .../content_settings/one_time_permission_provider.h       | 1 +
- .../profile_management_navigation_throttle.cc             | 4 ++--
- chrome/browser/ui/omnibox/chrome_omnibox_client.cc        | 4 ++--
- chrome/test/chromedriver/chrome/client_hints.h            | 1 +
- .../autofill/core/browser/contact_info_sync_util.cc       | 6 +++---
- .../display_embedder/skia_output_surface_impl_on_gpu.cc   | 2 +-
- content/browser/download/save_package.cc                  | 4 ++--
- content/browser/renderer_host/render_frame_host_impl.cc   | 8 ++++----
- content/browser/webid/idp_network_request_manager.cc      | 2 +-
- net/dns/host_resolver_cache.cc                            | 2 +-
- .../renderer/modules/canvas/canvas2d/canvas_style.cc      | 4 ++--
- third_party/blink/renderer/platform/fonts/font_palette.h  | 4 ++--
- .../renderer/platform/fonts/palette_interpolation.cc      | 2 +-
- ui/base/wayland/color_manager_util.h                      | 5 +++++
- ui/gtk/gtk_ui.cc                                          | 4 ++--
- 16 files changed, 32 insertions(+), 25 deletions(-)
+ base/metrics/persistent_histogram_allocator.cc       |  4 ++--
+ base/trace_event/trace_log.cc                        |  4 ++--
+ .../content_settings/one_time_permission_provider.h  |  1 +
+ .../profile_management_navigation_throttle.cc        |  4 ++--
+ chrome/browser/ui/omnibox/chrome_omnibox_client.cc   |  4 ++--
+ .../embedded_permission_prompt_ask_view.cc           | 12 ++++++------
+ .../embedded_permission_prompt_policy_view.cc        |  6 +++---
+ ...dded_permission_prompt_previously_granted_view.cc |  8 ++++----
+ chrome/test/chromedriver/chrome/client_hints.h       |  1 +
+ .../autofill/core/browser/contact_info_sync_util.cc  |  6 +++---
+ .../autofill/core/browser/webdata/autofill_table.cc  |  4 ++--
+ .../core/browser/password_manager.cc                 |  2 +-
+ .../skia_output_surface_impl_on_gpu.cc               |  2 +-
+ content/browser/download/save_package.cc             |  4 ++--
+ .../browser/interest_group/interest_group_storage.cc |  4 ++--
+ .../browser/renderer_host/render_frame_host_impl.cc  | 12 ++++++------
+ content/browser/webid/federated_auth_request_impl.cc |  2 +-
+ net/dns/host_resolver_cache.cc                       |  2 +-
+ .../renderer/modules/canvas/canvas2d/canvas_style.cc |  4 ++--
+ .../blink/renderer/platform/fonts/font_palette.h     |  4 ++--
+ .../renderer/platform/fonts/palette_interpolation.cc |  2 +-
+ ui/base/wayland/color_manager_util.h                 |  5 +++++
+ ui/gtk/gtk_ui.cc                                     |  4 ++--
+ 23 files changed, 54 insertions(+), 47 deletions(-)
+
+diff --git a/base/metrics/persistent_histogram_allocator.cc b/base/metrics/persistent_histogram_allocator.cc
+index de2c814..af7da11 100644
+--- a/base/metrics/persistent_histogram_allocator.cc
++++ b/base/metrics/persistent_histogram_allocator.cc
+@@ -221,13 +221,13 @@ PersistentSparseHistogramDataManager::LoadRecords(
+     // The sample-record could be for any sparse histogram. Add the reference
+     // to the appropriate collection for later use.
+     if (found_id == match_id) {
+-      found_records.emplace_back(ref, value);
++      found_records.push_back(ReferenceAndSample {ref, value});
+       found = true;
+     } else {
+       std::vector<ReferenceAndSample>* samples =
+           GetSampleMapRecordsWhileLocked(found_id);
+       CHECK(samples);
+-      samples->emplace_back(ref, value);
++      samples->push_back(ReferenceAndSample {ref, value});
+     }
+   }
 
 diff --git a/base/trace_event/trace_log.cc b/base/trace_event/trace_log.cc
-index 269daf4..5154b66 100644
+index dd3b5db..3049638 100644
 --- a/base/trace_event/trace_log.cc
 +++ b/base/trace_event/trace_log.cc
-@@ -2190,8 +2190,8 @@ void TraceLog::SetTraceBufferForTesting(
+@@ -2191,8 +2191,8 @@ void TraceLog::SetTraceBufferForTesting(
  #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
  void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs& args) {
    AutoLock lock(track_event_lock_);
@@ -47,10 +74,10 @@ index 269daf4..5154b66 100644
 
  void TraceLog::OnStart(const perfetto::DataSourceBase::StartArgs&) {
 diff --git a/chrome/browser/content_settings/one_time_permission_provider.h b/chrome/browser/content_settings/one_time_permission_provider.h
-index 839bec7..2a00000 100644
+index 0714071..5ab131d 100644
 --- a/chrome/browser/content_settings/one_time_permission_provider.h
 +++ b/chrome/browser/content_settings/one_time_permission_provider.h
-@@ -92,6 +92,7 @@ class OneTimePermissionProvider
+@@ -94,6 +94,7 @@ class OneTimePermissionProvider
      ContentSettingsType type;
      ContentSettingsPattern primary_pattern;
      ContentSettingsPattern secondary_pattern;
@@ -90,6 +117,84 @@ index 7ee2e06..e036eee 100644
 
    if (browser_) {
      auto navigation = chrome::OpenCurrentURL(browser_);
+diff --git a/chrome/browser/ui/views/permissions/embedded_permission_prompt_ask_view.cc b/chrome/browser/ui/views/permissions/embedded_permission_prompt_ask_view.cc
+index cb04891..798435d 100644
+--- a/chrome/browser/ui/views/permissions/embedded_permission_prompt_ask_view.cc
++++ b/chrome/browser/ui/views/permissions/embedded_permission_prompt_ask_view.cc
+@@ -46,8 +46,8 @@ EmbeddedPermissionPromptAskView::GetRequestLinesConfiguration() {
+   std::vector<RequestLineConfiguration> lines;
+
+   for (auto* request : delegate()->Requests()) {
+-    lines.emplace_back(&permissions::GetIconId(request->request_type()),
+-                       request->GetMessageTextFragment());
++    lines.push_back(RequestLineConfiguration {&permissions::GetIconId(request->request_type()),
++                       request->GetMessageTextFragment()});
+   }
+   return lines;
+ }
+@@ -56,12 +56,12 @@ std::vector<EmbeddedPermissionPromptAskView::ButtonConfiguration>
+ EmbeddedPermissionPromptAskView::GetButtonsConfiguration() {
+   std::vector<ButtonConfiguration> buttons;
+   if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
+-    buttons.emplace_back(
++    buttons.push_back(ButtonConfiguration {
+         l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW_THIS_TIME),
+-        ButtonType::kAllowThisTime, ui::ButtonStyle::kTonal);
++        ButtonType::kAllowThisTime, ui::ButtonStyle::kTonal});
+   }
+-  buttons.emplace_back(l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW),
+-                       ButtonType::kAllow, ui::ButtonStyle::kTonal);
++  buttons.push_back(ButtonConfiguration {l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW),
++                       ButtonType::kAllow, ui::ButtonStyle::kTonal});
+   return buttons;
+ }
+
+diff --git a/chrome/browser/ui/views/permissions/embedded_permission_prompt_policy_view.cc b/chrome/browser/ui/views/permissions/embedded_permission_prompt_policy_view.cc
+index 07787a4..c6927f7 100644
+--- a/chrome/browser/ui/views/permissions/embedded_permission_prompt_policy_view.cc
++++ b/chrome/browser/ui/views/permissions/embedded_permission_prompt_policy_view.cc
+@@ -40,7 +40,7 @@ void EmbeddedPermissionPromptPolicyView::RunButtonCallback(int button_id) {
+ std::vector<EmbeddedPermissionPromptPolicyView::RequestLineConfiguration>
+ EmbeddedPermissionPromptPolicyView::GetRequestLinesConfiguration() {
+   std::vector<RequestLineConfiguration> lines;
+-  lines.emplace_back(&vector_icons::kBusinessIcon, GetMessageText());
++  lines.push_back(RequestLineConfiguration {&vector_icons::kBusinessIcon, GetMessageText()});
+
+   return lines;
+ }
+@@ -48,8 +48,8 @@ EmbeddedPermissionPromptPolicyView::GetRequestLinesConfiguration() {
+ std::vector<EmbeddedPermissionPromptPolicyView::ButtonConfiguration>
+ EmbeddedPermissionPromptPolicyView::GetButtonsConfiguration() {
+   std::vector<ButtonConfiguration> buttons;
+-  buttons.emplace_back(l10n_util::GetStringUTF16(IDS_EMBEDDED_PROMPT_OK_LABEL),
+-                       ButtonType::kPolicyOK, ui::ButtonStyle::kTonal);
++  buttons.push_back(ButtonConfiguration {l10n_util::GetStringUTF16(IDS_EMBEDDED_PROMPT_OK_LABEL),
++                       ButtonType::kPolicyOK, ui::ButtonStyle::kTonal});
+   return buttons;
+ }
+
+diff --git a/chrome/browser/ui/views/permissions/embedded_permission_prompt_previously_granted_view.cc b/chrome/browser/ui/views/permissions/embedded_permission_prompt_previously_granted_view.cc
+index 6cf10e6..2958432 100644
+--- a/chrome/browser/ui/views/permissions/embedded_permission_prompt_previously_granted_view.cc
++++ b/chrome/browser/ui/views/permissions/embedded_permission_prompt_previously_granted_view.cc
+@@ -58,13 +58,13 @@ EmbeddedPermissionPromptPreviouslyGrantedView::GetRequestLinesConfiguration() {
+ std::vector<EmbeddedPermissionPromptPreviouslyGrantedView::ButtonConfiguration>
+ EmbeddedPermissionPromptPreviouslyGrantedView::GetButtonsConfiguration() {
+   std::vector<ButtonConfiguration> buttons;
+-  buttons.emplace_back(
++  buttons.push_back(ButtonConfiguration {
+       l10n_util::GetStringUTF16(IDS_EMBEDDED_PROMPT_CONTINUE_ALLOWING),
+-      ButtonType::kContinueAllowing, ui::ButtonStyle::kTonal);
++      ButtonType::kContinueAllowing, ui::ButtonStyle::kTonal});
+
+-  buttons.emplace_back(
++  buttons.push_back(ButtonConfiguration {
+       l10n_util::GetStringUTF16(IDS_EMBEDDED_PROMPT_STOP_ALLOWING),
+-      ButtonType::kStopAllowing, ui::ButtonStyle::kTonal);
++      ButtonType::kStopAllowing, ui::ButtonStyle::kTonal});
+   return buttons;
+ }
+
 diff --git a/chrome/test/chromedriver/chrome/client_hints.h b/chrome/test/chromedriver/chrome/client_hints.h
 index 8c13bd3..42dc1ac 100644
 --- a/chrome/test/chromedriver/chrome/client_hints.h
@@ -103,27 +208,57 @@ index 8c13bd3..42dc1ac 100644
 
  // User-Agent Client Hints
 diff --git a/components/autofill/core/browser/contact_info_sync_util.cc b/components/autofill/core/browser/contact_info_sync_util.cc
-index 2f91040..6f63517 100644
+index b5b0a0b..5485171 100644
 --- a/components/autofill/core/browser/contact_info_sync_util.cc
 +++ b/components/autofill/core/browser/contact_info_sync_util.cc
-@@ -174,9 +174,9 @@ class ContactInfoProfileSetter {
-     CHECK(observations.empty());
-     for (const sync_pb::ContactInfoSpecifics::Observation& proto_observation :
-          proto_observations) {
--      observations.emplace_back(proto_observation.type(),
--                                ProfileTokenQuality::FormSignatureHash(
--                                    proto_observation.form_hash()));
-+      observations.push_back(ProfileTokenQuality::Observation {static_cast<unsigned char>(proto_observation.type()),
-+                             ProfileTokenQuality::FormSignatureHash(
-+                                 proto_observation.form_hash())});
+@@ -195,9 +195,9 @@ class ContactInfoProfileSetter {
+       CHECK(observations.empty());
+       for (const sync_pb::ContactInfoSpecifics::Observation& proto_observation :
+            metadata.observations()) {
+-        observations.emplace_back(proto_observation.type(),
+-                                  ProfileTokenQuality::FormSignatureHash(
+-                                      proto_observation.form_hash()));
++        observations.push_back(ProfileTokenQuality::Observation {static_cast<unsigned char>(proto_observation.type()),
++                               ProfileTokenQuality::FormSignatureHash(
++                                   proto_observation.form_hash())});
+       }
      }
    }
+diff --git a/components/autofill/core/browser/webdata/autofill_table.cc b/components/autofill/core/browser/webdata/autofill_table.cc
+index 695aa42..1f9cdd3 100644
+--- a/components/autofill/core/browser/webdata/autofill_table.cc
++++ b/components/autofill/core/browser/webdata/autofill_table.cc
+@@ -1733,10 +1733,10 @@ std::unique_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
+     }
 
+     base::span<const uint8_t> observations_data = s.ColumnBlob(3);
+-    field_type_values.emplace_back(
++    field_type_values.push_back(FieldTypeData {
+         type, s.ColumnString16(1), s.ColumnInt(2),
+         std::vector<uint8_t>(observations_data.begin(),
+-                             observations_data.end()));
++                             observations_data.end())});
+
+     if (type == ADDRESS_HOME_COUNTRY) {
+       country_code = base::UTF16ToUTF8(s.ColumnString16(1));
+diff --git a/components/password_manager/core/browser/password_manager.cc b/components/password_manager/core/browser/password_manager.cc
+index b2e6dc0..df2cd5b 100644
+--- a/components/password_manager/core/browser/password_manager.cc
++++ b/components/password_manager/core/browser/password_manager.cc
+@@ -625,7 +625,7 @@ void PasswordManager::OnUserModifiedNonPasswordField(
+   // |driver| might be empty on iOS or in tests.
+   int driver_id = driver ? driver->GetId() : 0;
+   possible_usernames_.Put(
+-      PossibleUsernameFieldIdentifier(driver_id, renderer_id),
++      PossibleUsernameFieldIdentifier {driver_id, renderer_id},
+       PossibleUsernameData(GetSignonRealm(driver->GetLastCommittedURL()),
+                            renderer_id, value, base::Time::Now(), driver_id,
+                            autocomplete_attribute_has_username, is_likely_otp));
 diff --git a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-index 9e04843..e4981a9 100644
+index ba3a96f..5b9e64d 100644
 --- a/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
 +++ b/components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.cc
-@@ -1521,7 +1521,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
+@@ -1530,7 +1530,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
 
        // Issue readbacks from the surfaces:
        for (size_t i = 0; i < CopyOutputResult::kNV12MaxPlanes; ++i) {
@@ -133,10 +268,10 @@ index 9e04843..e4981a9 100644
              size, (i == 0) ? kAlpha_8_SkColorType : kR8G8_unorm_SkColorType,
              kUnpremul_SkAlphaType);
 diff --git a/content/browser/download/save_package.cc b/content/browser/download/save_package.cc
-index 2e3107a..61e502d 100644
+index 0e87ea7..0b92afb 100644
 --- a/content/browser/download/save_package.cc
 +++ b/content/browser/download/save_package.cc
-@@ -764,8 +764,8 @@ void SavePackage::Finish() {
+@@ -769,8 +769,8 @@ void SavePackage::Finish() {
    if (download_) {
      std::vector<download::DownloadSaveItemData::ItemInfo> files;
      for (auto& item : saved_success_items_) {
@@ -147,11 +282,28 @@ index 2e3107a..61e502d 100644
      }
      download::DownloadSaveItemData::AttachItemData(download_, std::move(files));
    }
+diff --git a/content/browser/interest_group/interest_group_storage.cc b/content/browser/interest_group/interest_group_storage.cc
+index 9988166..3e45db9 100644
+--- a/content/browser/interest_group/interest_group_storage.cc
++++ b/content/browser/interest_group/interest_group_storage.cc
+@@ -2854,10 +2854,10 @@ DoGetKAnonymityData(sql::Database& db,
+
+   std::vector<StorageInterestGroup::KAnonymityData> k_anon_data;
+   while (interest_group_kanon_query.Step()) {
+-    k_anon_data.emplace_back(
++    k_anon_data.push_back(StorageInterestGroup::KAnonymityData {
+         /*key=*/interest_group_kanon_query.ColumnString(0),
+         /*is_k_anonymous=*/interest_group_kanon_query.ColumnBool(1),
+-        /*last_updated=*/interest_group_kanon_query.ColumnTime(2));
++        /*last_updated=*/interest_group_kanon_query.ColumnTime(2)});
+   }
+   if (!interest_group_kanon_query.Succeeded()) {
+     return absl::nullopt;
 diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
-index af16b10..c33d16c 100644
+index 44ab3ea..1117290 100644
 --- a/content/browser/renderer_host/render_frame_host_impl.cc
 +++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -8672,7 +8672,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
+@@ -8567,7 +8567,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
    for (const blink::FencedFrame::ReportingDestination& destination :
         destinations) {
      SendFencedFrameReportingBeaconInternal(
@@ -160,7 +312,7 @@ index af16b10..c33d16c 100644
          /*from_renderer=*/true, attribution_reporting_runtime_features,
          GetFrameTreeNodeId());
    }
-@@ -8708,7 +8708,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconToCustomURL(
+@@ -8603,7 +8603,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconToCustomURL(
    }
 
    SendFencedFrameReportingBeaconInternal(
@@ -169,41 +321,52 @@ index af16b10..c33d16c 100644
        blink::FencedFrame::ReportingDestination::kBuyer,
        /*from_renderer=*/true, attribution_reporting_runtime_features,
        GetFrameTreeNodeId());
-@@ -8779,8 +8779,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
-   for (blink::FencedFrame::ReportingDestination destination :
-        info->destinations) {
-     initiator_rfh->SendFencedFrameReportingBeaconInternal(
--        DestinationEnumEvent(blink::kFencedFrameTopNavigationBeaconType,
--                             info->data),
-+        DestinationEnumEvent {blink::kFencedFrameTopNavigationBeaconType,
-+                             info->data},
-         destination,
-         /*from_renderer=*/false, info->attribution_reporting_runtime_features,
-         GetFrameTreeNodeId(), navigation_request.GetNavigationId());
-diff --git a/content/browser/webid/idp_network_request_manager.cc b/content/browser/webid/idp_network_request_manager.cc
-index 063373b..7bed790 100644
---- a/content/browser/webid/idp_network_request_manager.cc
-+++ b/content/browser/webid/idp_network_request_manager.cc
-@@ -604,7 +604,7 @@ void OnTokenRequestParsed(
-     if (response_error) {
-       int error_code = response_error->FindInt(kErrorCodeKey).value_or(0);
-       GURL error_url = ExtractUrl(*response_error, kErrorUrlKey);
--      token_result.error = TokenError(error_code, error_url);
-+      token_result.error = TokenError {error_code, error_url};
-     }
-   }
+@@ -8703,8 +8703,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameAutomaticReportingBeacon(
+         data = info->data;
+       }
+       initiator_rfh->SendFencedFrameReportingBeaconInternal(
+-          DestinationEnumEvent(blink::kFencedFrameTopNavigationBeaconType,
+-                               data),
++          DestinationEnumEvent {blink::kFencedFrameTopNavigationBeaconType,
++                               data},
+           destination,
+           /*from_renderer=*/false, attribution_reporting_features,
+           GetFrameTreeNodeId(), navigation_request.GetNavigationId());
+@@ -8717,8 +8717,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameAutomaticReportingBeacon(
+     for (blink::FencedFrame::ReportingDestination destination :
+          info->destinations) {
+       initiator_rfh->SendFencedFrameReportingBeaconInternal(
+-          DestinationEnumEvent(blink::kFencedFrameTopNavigationBeaconType,
+-                               info->data),
++          DestinationEnumEvent {blink::kFencedFrameTopNavigationBeaconType,
++                               info->data},
+           destination,
+           /*from_renderer=*/false, info->attribution_reporting_runtime_features,
+           GetFrameTreeNodeId(), navigation_request.GetNavigationId());
+diff --git a/content/browser/webid/federated_auth_request_impl.cc b/content/browser/webid/federated_auth_request_impl.cc
+index 0780c4d..5ec4189 100644
+--- a/content/browser/webid/federated_auth_request_impl.cc
++++ b/content/browser/webid/federated_auth_request_impl.cc
+@@ -1881,7 +1881,7 @@ void FederatedAuthRequestImpl::ShowErrorDialog(
+       base::BindOnce(&FederatedAuthRequestImpl::CompleteRequestWithError,
+                      weak_ptr_factory_.GetWeakPtr()));
+   absl::optional<TokenError> token_error =
+-      error ? absl::make_optional<TokenError>(error->code, error->url)
++      error ? absl::optional<TokenError>(TokenError {error->code, error->url})
+             : absl::nullopt;
 
+   // TODO(crbug.com/1485710): Refactor IdentityCredentialTokenError
 diff --git a/net/dns/host_resolver_cache.cc b/net/dns/host_resolver_cache.cc
-index e54ed00..7d1165e 100644
+index 00871ce..054e574 100644
 --- a/net/dns/host_resolver_cache.cc
 +++ b/net/dns/host_resolver_cache.cc
-@@ -161,7 +161,7 @@ void HostResolverCache::Set(
+@@ -368,7 +368,7 @@ void HostResolverCache::Set(
 
    std::string domain_name = result->domain_name();
    entries_.emplace(
 -      Key(std::move(domain_name), network_anonymization_key),
 +      Key {std::move(domain_name), network_anonymization_key},
-       Entry(std::move(result), source, secure, staleness_generation_));
+       Entry(std::move(result), source, secure, staleness_generation));
 
    if (entries_.size() > max_entries_) {
 diff --git a/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc b/third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.cc
@@ -261,7 +424,7 @@ index 1ce08e9..d652152 100644
    }
    return result_color_records;
 diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
-index fa1dd42..c54ace5 100644
+index 2efa825..6496db3 100644
 --- a/ui/base/wayland/color_manager_util.h
 +++ b/ui/base/wayland/color_manager_util.h
 @@ -23,26 +23,31 @@ constexpr uint32_t kDefaultSinceVersion = 1;
@@ -297,10 +460,10 @@ index fa1dd42..c54ace5 100644
 
  // A map from the zcr_color_manager_v1 chromaticity_names enum values
 diff --git a/ui/gtk/gtk_ui.cc b/ui/gtk/gtk_ui.cc
-index c830167..bcb7d6b 100644
+index a91b303..290e57e 100644
 --- a/ui/gtk/gtk_ui.cc
 +++ b/ui/gtk/gtk_ui.cc
-@@ -955,11 +955,11 @@ ui::DisplayConfig GtkUi::GetDisplayConfig() const {
+@@ -993,11 +993,11 @@ ui::DisplayConfig GtkUi::GetDisplayConfig() const {
      GdkRectangle geometry;
      gdk_monitor_get_geometry(monitor, &geometry);
      int monitor_scale = std::max(1, gdk_monitor_get_scale_factor(monitor));

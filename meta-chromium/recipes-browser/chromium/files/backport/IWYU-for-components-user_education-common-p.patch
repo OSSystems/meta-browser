@@ -1,0 +1,27 @@
+From cab1f77315350d10640a899dd7647cc80c6de956 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Fri, 10 Nov 2023 12:43:41 +0000
+Subject: [PATCH] Backport "IWYU for
+ components/user_education/common/product_messaging_controller.cc"
+
+This fixes a build error due to a missing header include. The patch will
+be included in upstream's 121 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5030000]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ components/user_education/common/product_messaging_controller.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/components/user_education/common/product_messaging_controller.cc b/components/user_education/common/product_messaging_controller.cc
+index 787cbb8..0e428a4 100644
+--- a/components/user_education/common/product_messaging_controller.cc
++++ b/components/user_education/common/product_messaging_controller.cc
+@@ -6,6 +6,7 @@
+
+ #include <sstream>
+ #include <utility>
++#include <vector>
+
+ #include "base/containers/contains.h"
+ #include "base/functional/callback.h"

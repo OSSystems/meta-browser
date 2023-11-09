@@ -15,10 +15,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
-index c54ace5..e25abe8 100644
+index 2efa825..49ec648 100644
 --- a/ui/base/wayland/color_manager_util.h
 +++ b/ui/base/wayland/color_manager_util.h
-@@ -53,7 +53,7 @@ struct RangeVersion {
+@@ -48,7 +48,7 @@ struct RangeVersion {
  // A map from the zcr_color_manager_v1 chromaticity_names enum values
  // representing well-known chromaticities, to their equivalent PrimaryIDs.
  // See components/exo/wayland/protocol/chrome-color-management.xml
@@ -27,7 +27,7 @@ index c54ace5..e25abe8 100644
      zcr_color_manager_v1_chromaticity_names,
      PrimaryVersion>(
      {{ZCR_COLOR_MANAGER_V1_CHROMATICITY_NAMES_BT601_525_LINE,
-@@ -108,7 +108,7 @@ constexpr auto kChromaticityMap = base::MakeFixedFlatMap<
+@@ -103,7 +103,7 @@ constexpr auto kChromaticityMap = base::MakeFixedFlatMap<
  // A map from the zcr_color_manager_v1 eotf_names enum values
  // representing well-known EOTFs, to their equivalent TransferIDs.
  // See components/exo/wayland/protocol/chrome-color-management.xml
@@ -36,7 +36,7 @@ index c54ace5..e25abe8 100644
      zcr_color_manager_v1_eotf_names,
      TransferVersion>({
      {ZCR_COLOR_MANAGER_V1_EOTF_NAMES_LINEAR,
-@@ -176,7 +176,7 @@ constexpr auto kEotfMap = base::MakeFixedFlatMap<
+@@ -174,7 +174,7 @@ constexpr auto kEotfMap = base::MakeFixedFlatMap<
  // A map from the SDR zcr_color_manager_v1 eotf_names enum values
  // representing well-known EOTFs, to their equivalent transfer functions.
  // See components/exo/wayland/protocol/chrome-color-management.xml
@@ -45,7 +45,7 @@ index c54ace5..e25abe8 100644
      base::MakeFixedFlatMap<zcr_color_manager_v1_eotf_names, TransferFnVersion>({
          {ZCR_COLOR_MANAGER_V1_EOTF_NAMES_LINEAR,
           TransferFnVersion(SkNamedTransferFn::kLinear, kDefaultSinceVersion)},
-@@ -196,7 +196,7 @@ constexpr auto kTransferMap =
+@@ -194,7 +194,7 @@ constexpr auto kTransferMap =
  // A map from the HDR zcr_color_manager_v1 eotf_names enum values
  // representing well-known EOTFs, to their equivalent transfer functions.
  // See components/exo/wayland/protocol/chrome-color-management.xml

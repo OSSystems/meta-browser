@@ -17,7 +17,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 06812fb..2a810d9 100644
+index 6d05512..8b22e38 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
 @@ -721,7 +721,7 @@ config("compiler") {
@@ -47,10 +47,10 @@ index 06812fb..2a810d9 100644
          ldflags += [
            "-Wl,-cache_path_lto," +
 diff --git a/build/config/compiler/compiler.gni b/build/config/compiler/compiler.gni
-index 1871701..8f5b3d4 100644
+index b1d9297..4c7f32c 100644
 --- a/build/config/compiler/compiler.gni
 +++ b/build/config/compiler/compiler.gni
-@@ -99,6 +99,11 @@ declare_args() {
+@@ -98,6 +98,11 @@ declare_args() {
    # If true, use Goma for ThinLTO code generation where applicable.
    use_goma_thin_lto = false
 

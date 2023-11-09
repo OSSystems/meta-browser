@@ -1,0 +1,36 @@
+From e0dbbcc27be46dc0927b3ce9ab987569ece14db7 Mon Sep 17 00:00:00 2001
+From: Chisoon Jeong <chisoon.jeong@lge.com>
+Date: Thu, 12 Oct 2023 16:54:06 +0000
+Subject: [PATCH] Backport "Replace std::ranges, which is banned c++20 feature
+ at the moment, with base::ranges"
+
+This fixes a build error due to a C++20 feature being used. The patch
+will be included in upstream's 120 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4931295]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ components/autofill/core/browser/payments/iban_save_manager.cc | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/components/autofill/core/browser/payments/iban_save_manager.cc b/components/autofill/core/browser/payments/iban_save_manager.cc
+index d5b4048..4e8a7c4 100644
+--- a/components/autofill/core/browser/payments/iban_save_manager.cc
++++ b/components/autofill/core/browser/payments/iban_save_manager.cc
+@@ -4,6 +4,7 @@
+
+ #include "components/autofill/core/browser/payments/iban_save_manager.h"
+
++#include "base/ranges/algorithm.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "components/autofill/core/browser/data_model/iban.h"
+ #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+@@ -63,7 +64,7 @@ bool IbanSaveManager::AttemptToOfferIbanLocalSave(
+ bool IbanSaveManager::ShouldOfferLocalSave(const Iban& iban_import_candidate) {
+   // Only offer to save new IBANs. Users can go to the payment methods settings
+   // page to update existing IBANs if desired.
+-  return std::ranges::none_of(
++  return base::ranges::none_of(
+       personal_data_manager_->GetLocalIbans(), [&](const auto& iban) {
+         return iban->value() == iban_import_candidate.value();
+       });

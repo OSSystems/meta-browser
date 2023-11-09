@@ -1,0 +1,33 @@
+From 382092584d32686b8d1d028cdb10c6bd6e8a72f0 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Fri, 10 Nov 2023 11:33:24 +0000
+Subject: [PATCH] Don't delete CrashKeyWithName dtor
+
+With the versions of clang and/or libcxx used on mickledore, kirkstone,
+and dunfell, we get a compiler error when deleting this dtor. The reason
+is that there is a `base::NoDestructor<std::deque<CrashKeyWithName>>`
+usage, which apparently still requires the destructor to not be deleted.
+
+As the code compiles fine upstream and the constructor will never
+actually run thanks to `base::NoDestructor`, we can just not delete the
+dtor to fix the error.
+
+Upstream-Status: Inappropriate [specific to older versions of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ chrome/common/crash_keys.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/chrome/common/crash_keys.cc b/chrome/common/crash_keys.cc
+index 680c8ec..a8e4bcc 100644
+--- a/chrome/common/crash_keys.cc
++++ b/chrome/common/crash_keys.cc
+@@ -45,7 +45,7 @@ class CrashKeyWithName {
+   CrashKeyWithName& operator=(const CrashKeyWithName&) = delete;
+   CrashKeyWithName(CrashKeyWithName&&) = delete;
+   CrashKeyWithName& operator=(CrashKeyWithName&&) = delete;
+-  ~CrashKeyWithName() = delete;
++  // ~CrashKeyWithName() = delete;
+
+   void Clear() { crash_key_.Clear(); }
+   void Set(base::StringPiece value) { crash_key_.Set(value); }
