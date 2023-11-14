@@ -12,7 +12,8 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  ...asswords_private_delegate_impl_unittest.cc | 19 +++++++----------
  .../test_passwords_private_delegate.cc        | 11 +++++-----
  chrome/browser/ui/webauthn/sheet_models.cc    |  2 +-
- .../chrome_authenticator_request_delegate.cc  |  1 +
+ .../authenticator_request_dialog_model.cc     |  2 +-
+ .../chrome_authenticator_request_delegate.cc  |  5 +++--
  .../core/browser/ui/passwords_grouper.cc      |  6 +++---
  .../core/browser/passkey_sync_bridge.cc       |  5 +++--
  .../core/browser/test_passkey_model.cc        |  8 +++----
@@ -20,10 +21,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  .../webauth/authenticator_impl_unittest.cc    |  2 +-
  device/fido/get_assertion_request_handler.cc  | 10 ++++-----
  ui/base/resource/resource_bundle_unittest.cc  |  5 +++--
- 11 files changed, 42 insertions(+), 48 deletions(-)
+ 12 files changed, 45 insertions(+), 51 deletions(-)
 
 diff --git a/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc b/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
-index beb89765e767e..84a0a94e6bfbf 100644
+index 424682a..24a28005 100644
 --- a/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
 +++ b/chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc
 @@ -13,6 +13,7 @@
@@ -34,7 +35,7 @@ index beb89765e767e..84a0a94e6bfbf 100644
  #include "base/run_loop.h"
  #include "base/strings/utf_string_conversions.h"
  #include "base/test/bind.h"
-@@ -858,12 +859,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
+@@ -875,12 +876,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
    const PasswordsPrivateDelegate::UiEntries& credentials =
        GetCredentials(*delegate);
    EXPECT_EQ(credentials.size(), 2u);
@@ -50,7 +51,7 @@ index beb89765e767e..84a0a94e6bfbf 100644
    ASSERT_NE(account_credential_it, credentials.end());
 
    api::passwords_private::PasswordUiEntry updated_credential =
-@@ -880,12 +878,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
+@@ -897,12 +895,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
    const PasswordsPrivateDelegate::UiEntries& updated_credentials =
        GetCredentials(*delegate);
    EXPECT_EQ(updated_credentials.size(), 2u);
@@ -67,7 +68,7 @@ index beb89765e767e..84a0a94e6bfbf 100644
    EXPECT_EQ(refreshed_credential_it->username, "new_user");
  }
 diff --git a/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc b/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
-index 3963eba8ef739..31cbc00429fb5 100644
+index 3963eba..31cbc00 100644
 --- a/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
 +++ b/chrome/browser/extensions/api/passwords_private/test_passwords_private_delegate.cc
 @@ -8,6 +8,7 @@
@@ -103,20 +104,33 @@ index 3963eba8ef739..31cbc00429fb5 100644
      last_deleted_entry_ = std::move(*removed);
      current_entries_.erase(removed);
 diff --git a/chrome/browser/ui/webauthn/sheet_models.cc b/chrome/browser/ui/webauthn/sheet_models.cc
-index 449c0f776f3fd..b6399bc25ea63 100644
+index e72087c..1d1999f 100644
 --- a/chrome/browser/ui/webauthn/sheet_models.cc
 +++ b/chrome/browser/ui/webauthn/sheet_models.cc
-@@ -1496,7 +1496,7 @@ AuthenticatorMultiSourcePickerSheetModel::
-
-   using CredentialMech = AuthenticatorRequestDialogModel::Mechanism::Credential;
+@@ -1499,7 +1499,7 @@ AuthenticatorMultiSourcePickerSheetModel::
+   using ICloudKeychainMech =
+       AuthenticatorRequestDialogModel::Mechanism::ICloudKeychain;
    bool has_local_passkeys =
 -      std::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
 +      base::ranges::any_of(dialog_model->mechanisms(), [](const auto& mech) {
          return absl::holds_alternative<CredentialMech>(mech.type) &&
-                absl::get<CredentialMech>(mech.type).value() !=
+                absl::get<CredentialMech>(mech.type).value().source !=
                     device::AuthenticatorType::kPhone;
+diff --git a/chrome/browser/webauthn/authenticator_request_dialog_model.cc b/chrome/browser/webauthn/authenticator_request_dialog_model.cc
+index 7695aa0..fa983dd 100644
+--- a/chrome/browser/webauthn/authenticator_request_dialog_model.cc
++++ b/chrome/browser/webauthn/authenticator_request_dialog_model.cc
+@@ -495,7 +495,7 @@ void AuthenticatorRequestDialogModel::
+     // extra step. Jump to Windows instead.
+     if (base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
+         transport_availability_.has_win_native_api_authenticator &&
+-        std::ranges::all_of(mechanisms_, [](const auto& mech) {
++        base::ranges::all_of(mechanisms_, [](const auto& mech) {
+           return absl::holds_alternative<Mechanism::WindowsAPI>(mech.type) ||
+                  (absl::holds_alternative<Mechanism::Credential>(mech.type) &&
+                   absl::get<Mechanism::Credential>(mech.type).value().source ==
 diff --git a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
-index 8f46dc87c761d..2245415a458de 100644
+index 15773fa..828d6db 100644
 --- a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
 +++ b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
 @@ -16,6 +16,7 @@
@@ -127,8 +141,19 @@ index 8f46dc87c761d..2245415a458de 100644
  #include "base/strings/string_piece.h"
  #include "base/strings/string_split.h"
  #include "base/sys_byteorder.h"
+@@ -886,8 +887,8 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
+     if (data.has_platform_authenticator_credential ==
+             device::FidoRequestHandlerBase::RecognizedCredential::
+                 kHasRecognizedCredential &&
+-        std::ranges::none_of(data.recognized_credentials,
+-                             IsCredentialFromPlatformAuthenticator)) {
++        base::ranges::none_of(data.recognized_credentials,
++                              IsCredentialFromPlatformAuthenticator)) {
+       data.has_platform_authenticator_credential = device::
+           FidoRequestHandlerBase::RecognizedCredential::kNoRecognizedCredential;
+     }
 diff --git a/components/password_manager/core/browser/ui/passwords_grouper.cc b/components/password_manager/core/browser/ui/passwords_grouper.cc
-index 1b016e0eb9561..c2fb42b4be85c 100644
+index 1b016e0..c2fb42b 100644
 --- a/components/password_manager/core/browser/ui/passwords_grouper.cc
 +++ b/components/password_manager/core/browser/ui/passwords_grouper.cc
 @@ -6,6 +6,7 @@
@@ -152,7 +177,7 @@ index 1b016e0eb9561..c2fb42b4be85c 100644
      return absl::nullopt;
    }
 diff --git a/components/webauthn/core/browser/passkey_sync_bridge.cc b/components/webauthn/core/browser/passkey_sync_bridge.cc
-index 782655dcc0c8f..8607d59215c27 100644
+index 93129fe..794c696 100644
 --- a/components/webauthn/core/browser/passkey_sync_bridge.cc
 +++ b/components/webauthn/core/browser/passkey_sync_bridge.cc
 @@ -16,6 +16,7 @@
@@ -161,9 +186,9 @@ index 782655dcc0c8f..8607d59215c27 100644
  #include "base/functional/callback_helpers.h"
 +#include "base/ranges/algorithm.h"
  #include "base/strings/string_number_conversions.h"
+ #include "base/trace_event/trace_event.h"
  #include "components/sync/base/features.h"
- #include "components/sync/base/model_type.h"
-@@ -257,7 +258,7 @@ PasskeySyncBridge::GetPasskeysForRelyingPartyId(
+@@ -258,7 +259,7 @@ PasskeySyncBridge::GetPasskeysForRelyingPartyId(
  bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id) {
    // Find the credential with the given |credential_id|.
    const auto passkey_it =
@@ -172,7 +197,7 @@ index 782655dcc0c8f..8607d59215c27 100644
          return passkey.second.credential_id() == credential_id;
        });
    if (passkey_it == data_.end()) {
-@@ -308,7 +309,7 @@ bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
+@@ -309,7 +310,7 @@ bool PasskeySyncBridge::UpdatePasskey(const std::string& credential_id,
                                        PasskeyChange change) {
    // Find the credential with the given |credential_id|.
    const auto passkey_it =
@@ -182,7 +207,7 @@ index 782655dcc0c8f..8607d59215c27 100644
        });
    if (passkey_it == data_.end()) {
 diff --git a/components/webauthn/core/browser/test_passkey_model.cc b/components/webauthn/core/browser/test_passkey_model.cc
-index b2e6462607d21..af3525c5db247 100644
+index b2e6462..af3525c 100644
 --- a/components/webauthn/core/browser/test_passkey_model.cc
 +++ b/components/webauthn/core/browser/test_passkey_model.cc
 @@ -7,6 +7,7 @@
@@ -208,7 +233,7 @@ index b2e6462607d21..af3525c5db247 100644
      return false;
    }
 diff --git a/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc b/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
-index 8f4d5a8adbc2f..f6ffabce1f05a 100644
+index 8f4d5a8..f6ffabc 100644
 --- a/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
 +++ b/content/browser/fenced_frame/redacted_fenced_frame_config_mojom_traits_unittest.cc
 @@ -419,34 +419,31 @@ TEST_F(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsTest) {
@@ -256,10 +281,10 @@ index 8f4d5a8adbc2f..f6ffabce1f05a 100644
    }
 
 diff --git a/content/browser/webauth/authenticator_impl_unittest.cc b/content/browser/webauth/authenticator_impl_unittest.cc
-index 11c2624988eb5..73ddb9ad9da07 100644
+index 4a3e33e..fffb106 100644
 --- a/content/browser/webauth/authenticator_impl_unittest.cc
 +++ b/content/browser/webauth/authenticator_impl_unittest.cc
-@@ -9300,7 +9300,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
+@@ -9332,7 +9332,7 @@ class AuthenticatorCableV2Test : public AuthenticatorImplRequestDelegateTest {
 
    void OnInvalidatedPairing(
        std::unique_ptr<device::cablev2::Pairing> disabled_pairing) {
@@ -269,7 +294,7 @@ index 11c2624988eb5..73ddb9ad9da07 100644
            return device::cablev2::Pairing::EqualPublicKeys(pairing,
                                                             disabled_pairing);
 diff --git a/device/fido/get_assertion_request_handler.cc b/device/fido/get_assertion_request_handler.cc
-index 5dc5e95b4a2e6..e9407eb550270 100644
+index 507cc2b..1925024 100644
 --- a/device/fido/get_assertion_request_handler.cc
 +++ b/device/fido/get_assertion_request_handler.cc
 @@ -15,6 +15,7 @@
@@ -280,24 +305,31 @@ index 5dc5e95b4a2e6..e9407eb550270 100644
  #include "base/stl_util.h"
  #include "base/strings/string_number_conversions.h"
  #include "base/timer/elapsed_timer.h"
-@@ -420,12 +421,9 @@ GetAssertionRequestHandler::~GetAssertionRequestHandler() = default;
- void GetAssertionRequestHandler::PreselectAccount(
-     std::vector<uint8_t> credential_id) {
+@@ -370,7 +371,7 @@ bool AllowListOnlyHybridOrInternal(const CtapGetAssertionRequest& request) {
+
+ bool AllowListIncludedTransport(const CtapGetAssertionRequest& request,
+                                 FidoTransportProtocol transport) {
+-  return std::ranges::any_of(
++  return base::ranges::any_of(
+       request.allow_list,
+       [transport](const PublicKeyCredentialDescriptor& cred) {
+         return cred.transports.empty() ||
+@@ -441,11 +442,8 @@ void GetAssertionRequestHandler::PreselectAccount(
+     PublicKeyCredentialDescriptor credential) {
    DCHECK(!preselected_credential_);
--  DCHECK(
--      request_.allow_list.empty() ||
--      std::any_of(request_.allow_list.begin(), request_.allow_list.end(),
--                  [credential_id](const PublicKeyCredentialDescriptor& desc) {
--                    return desc.id == credential_id;
--                  }));
-+  DCHECK(request_.allow_list.empty() ||
-+         base::Contains(request_.allow_list, credential_id,
+   DCHECK(request_.allow_list.empty() ||
+-         std::ranges::any_of(
+-             request_.allow_list,
+-             [&credential](const PublicKeyCredentialDescriptor& desc) {
+-               return desc.id == credential.id;
+-             }));
++         base::Contains(request_.allow_list, credential.id,
 +                        &PublicKeyCredentialDescriptor::id));
-   preselected_credential_ = std::move(credential_id);
+   preselected_credential_ = std::move(credential);
  }
 
 diff --git a/ui/base/resource/resource_bundle_unittest.cc b/ui/base/resource/resource_bundle_unittest.cc
-index efc9c87fc35b0..a37c51351d07e 100644
+index efc9c87..a37c513 100644
 --- a/ui/base/resource/resource_bundle_unittest.cc
 +++ b/ui/base/resource/resource_bundle_unittest.cc
 @@ -20,6 +20,7 @@

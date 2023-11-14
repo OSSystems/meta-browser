@@ -10,32 +10,16 @@ versions of clang (observed with clang 15).
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- chrome/browser/ui/autofill/chrome_autofill_client.cc      | 4 +++-
  .../service_worker/service_worker_context_wrapper.cc      | 3 ++-
  media/base/cdm_promise_adapter.cc                         | 8 ++++----
  .../core/layout/ng/grid/ng_grid_layout_algorithm.cc       | 8 ++++++--
- 4 files changed, 15 insertions(+), 8 deletions(-)
+ 3 files changed, 12 insertions(+), 7 deletions(-)
 
-diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/browser/ui/autofill/chrome_autofill_client.cc
-index cefb0eb..ecc2c67 100644
---- a/chrome/browser/ui/autofill/chrome_autofill_client.cc
-+++ b/chrome/browser/ui/autofill/chrome_autofill_client.cc
-@@ -1100,7 +1100,9 @@ void ChromeAutofillClient::PropagateAutofillPredictionsDeprecated(
-           &renderer_form);
-     }
-
--    for (const auto& [frame_token, frame_forms] : renderer_forms_by_frame) {
-+    for (const auto& it : renderer_forms_by_frame) {
-+      const auto& frame_token = it.first;
-+      const auto& frame_forms = it.second;
-       // Attempt to find the RFH with this `frame_token`.
-       content::RenderFrameHost* rfh = nullptr;
-       GetWebContents().ForEachRenderFrameHost(
 diff --git a/content/browser/service_worker/service_worker_context_wrapper.cc b/content/browser/service_worker/service_worker_context_wrapper.cc
-index 0d1a5e0..d1ff819 100644
+index 3267cdb..de88ef7 100644
 --- a/content/browser/service_worker/service_worker_context_wrapper.cc
 +++ b/content/browser/service_worker/service_worker_context_wrapper.cc
-@@ -1409,9 +1409,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
+@@ -1412,9 +1412,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
    auto [document_url, key, callback] = std::move(*request);
 
    DCHECK(document_url.is_valid());
@@ -69,10 +53,10 @@ index f013809..144809b 100644
    promises_.clear();
  }
 diff --git a/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc b/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
-index de1d5fc..5b08cdb 100644
+index 64c7a74..484fa5c 100644
 --- a/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
 +++ b/third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.cc
-@@ -3431,7 +3431,9 @@ void NGGridLayoutAlgorithm::PlaceGridItems(
+@@ -3452,7 +3452,9 @@ void NGGridLayoutAlgorithm::PlaceGridItems(
    DCHECK(out_row_break_between);
 
    const auto& container_space = ConstraintSpace();
@@ -83,7 +67,7 @@ index de1d5fc..5b08cdb 100644
 
    const auto* cached_layout_subtree = container_space.GridLayoutSubtree();
    const auto container_writing_direction =
-@@ -3595,7 +3597,9 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
+@@ -3616,7 +3618,9 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
 
    // TODO(ikilpatrick): Update |SetHasSeenAllChildren| and early exit if true.
    const auto& constraint_space = ConstraintSpace();

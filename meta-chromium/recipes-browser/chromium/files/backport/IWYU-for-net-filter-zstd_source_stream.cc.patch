@@ -1,0 +1,26 @@
+From cf79a8ee88a364a30b9f58acf32c237b4956b0c6 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 7 Nov 2023 16:17:03 +0000
+Subject: [PATCH] Backport "IWYU for net/filter/zstd_source_stream.cc"
+
+This fixes a build error due to a missing header include. The patch will
+be included in upstream's 121 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5010396]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ net/filter/zstd_source_stream.cc | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/net/filter/zstd_source_stream.cc b/net/filter/zstd_source_stream.cc
+index bd337d1..551729a 100644
+--- a/net/filter/zstd_source_stream.cc
++++ b/net/filter/zstd_source_stream.cc
+@@ -5,6 +5,7 @@
+ #include "net/filter/zstd_source_stream.h"
+
+ #include <algorithm>
++#include <unordered_map>
+ #include <utility>
+
+ #define ZSTD_STATIC_LINKING_ONLY

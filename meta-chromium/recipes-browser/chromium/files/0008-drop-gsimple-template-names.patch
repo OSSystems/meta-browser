@@ -7,25 +7,22 @@ Upstream-Status: Inappropriate clang-12 only.
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
 
 ---
- build/config/compiler/BUILD.gn | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ build/config/compiler/BUILD.gn | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 7c9a46e..52ad177 100644
+index 06812fb..bc29b94 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -866,9 +866,11 @@ config("compiler") {
-   # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
-   #   lldb doesn't have the needed changes yet.
-   # TODO(crbug.com/1379070): Remove if the upstream default ever changes.
--  if (is_clang && !is_nacl && !is_win && !is_apple) {
--    cflags_cc += [ "-gsimple-template-names" ]
--  }
-+  # Drop for 109 due to dunfell:
-+  #   clang-12: error: unknown argument: '-gsimple-template-names'
-+  #if (is_clang && !is_nacl && !is_win && !is_apple) {
-+  #  cflags_cc += [ "-gsimple-template-names" ]
-+  #}
+@@ -192,7 +192,10 @@ declare_args() {
+   # This greatly reduces the size of debug builds, at the cost of
+   # debugging information which is required by some specialized
+   # debugging tools.
+-  simple_template_names = is_clang && !is_nacl && !is_win && !is_apple
++  #
++  # Disabled because the version of clang used on dunfell doesn't recognize the
++  # argument.
++  simple_template_names = false
+ }
 
-   # MLGO specific flags. These flags enable an ML-based inliner trained on
-   # Chrome on Android (arm32) with ThinLTO enabled, optimizing for size.
+ declare_args() {
