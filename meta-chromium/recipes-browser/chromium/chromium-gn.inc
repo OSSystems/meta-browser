@@ -12,13 +12,13 @@ B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
 SRC_URI += "\
-    file://backport/IWYU-for-ui-events-gesture_detection-motion.patch \
-    file://backport/Remove-std-ranges-usage.patch \
-    file://backport/lacros-Include-string_view-from-net-cert-pk.patch \
-    file://backport/IWYU-Add-includes-for-size_t-and-int64_t-us.patch \
     file://backport/IWYU-for-chrome-browser-ui-views-dark_mode_.patch \
-    file://backport/Initialize-ServerCvc-with-designated-initia.patch \
     file://backport/IWYU-for-net-filter-zstd_source_stream.cc.patch \
+    file://backport/Replace-std-ranges-which-is-banned-c-20-fea.patch \
+    file://backport/IWYU-for-components-user_education-common-p.patch \
+    file://backport/MiracleParameter-Improve-MiracleParameter-s.patch \
+    file://backport/Replace-std-ranges-with-base-ranges.patch \
+    file://backport/atspi-mark-possibly-unused-gn-variables.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
@@ -42,6 +42,7 @@ SRC_URI += "\
     file://0018-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
     file://0019-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
     file://0020-Fix-implicitly-deleted-default-constructor-build-err.patch \
+    file://0021-Don-t-delete-CrashKeyWithName-dtor.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\

@@ -29,7 +29,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 60 insertions(+), 51 deletions(-)
 
 diff --git a/base/allocator/partition_allocator/partition_root.cc b/base/allocator/partition_allocator/partition_root.cc
-index 340c4eb..0045771 100644
+index 93bca10..97887ac 100644
 --- a/base/allocator/partition_allocator/partition_root.cc
 +++ b/base/allocator/partition_allocator/partition_root.cc
 @@ -963,6 +963,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
@@ -140,10 +140,10 @@ index 07345bf..fb3fcdd 100644
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread() {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
 diff --git a/base/allocator/partition_allocator/tagging.h b/base/allocator/partition_allocator/tagging.h
-index 43c8731..74ccf73 100644
+index d7c18fd..820d476 100644
 --- a/base/allocator/partition_allocator/tagging.h
 +++ b/base/allocator/partition_allocator/tagging.h
-@@ -57,23 +57,39 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
+@@ -60,23 +60,39 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
  PA_COMPONENT_EXPORT(PARTITION_ALLOC)
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread();
 
@@ -194,7 +194,7 @@ index 43c8731..74ccf73 100644
  #else
    return ptr;
  #endif
-@@ -92,7 +108,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
+@@ -95,7 +111,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
    void* ptr = reinterpret_cast<void*>(address);
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
    return reinterpret_cast<void*>(
@@ -203,7 +203,7 @@ index 43c8731..74ccf73 100644
  #else
    return ptr;
  #endif
-@@ -102,7 +118,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
+@@ -105,7 +121,7 @@ PA_ALWAYS_INLINE void* TagMemoryRangeRandomly(uintptr_t address,
  template <typename T>
  PA_ALWAYS_INLINE T* TagPtr(T* ptr) {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)

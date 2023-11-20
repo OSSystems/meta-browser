@@ -15,10 +15,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/content/browser/interest_group/header_direct_from_seller_signals.h b/content/browser/interest_group/header_direct_from_seller_signals.h
-index 1e8cd85..790b751 100644
+index 59c695e..6dcbc2d 100644
 --- a/content/browser/interest_group/header_direct_from_seller_signals.h
 +++ b/content/browser/interest_group/header_direct_from_seller_signals.h
-@@ -86,11 +86,11 @@ class CONTENT_EXPORT HeaderDirectFromSellerSignals {
+@@ -97,11 +97,11 @@ class CONTENT_EXPORT HeaderDirectFromSellerSignals {
    }
 
   private:

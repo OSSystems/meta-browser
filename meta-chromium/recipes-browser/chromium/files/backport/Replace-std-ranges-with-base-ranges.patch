@@ -1,0 +1,29 @@
+From 9ad1b54baf118dd313a33ff55bfbe1c9538830e5 Mon Sep 17 00:00:00 2001
+From: Chisoon Jeong <chisoon.jeong@lge.com>
+Date: Thu, 12 Oct 2023 16:27:48 +0000
+Subject: [PATCH] Backport "Replace std::ranges with base::ranges"
+
+This fixes a build error due to a C++20 feature being used. The patch
+will be included in upstream's 120 release.
+
+Upstream-Status: Backport [https://crrev.com/c/4933700]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ .../browser/webauthn/chrome_authenticator_request_delegate.cc | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
+index a4613801..7189970 100644
+--- a/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
++++ b/chrome/browser/webauthn/chrome_authenticator_request_delegate.cc
+@@ -879,8 +879,8 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
+     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
+   if (base::FeatureList::IsEnabled(device::kWebAuthnFilterGooglePasskeys) &&
+       dialog_model()->relying_party_id() == kGoogleRpId &&
+-      std::ranges::any_of(data.recognized_credentials,
+-                          IsCredentialFromPlatformAuthenticator)) {
++      base::ranges::any_of(data.recognized_credentials,
++                           IsCredentialFromPlatformAuthenticator)) {
+     // Regrettably, Chrome will create webauthn credentials for things other
+     // than authentication (e.g. credit card autofill auth) under the rp id
+     // "google.com". To differentiate those credentials from actual passkeys you

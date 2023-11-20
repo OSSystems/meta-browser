@@ -13,10 +13,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index f991efd..0b69949 100644
+index cc8eac8..65b2b2d 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1735,6 +1735,11 @@ config("default_warnings") {
+@@ -1777,6 +1777,11 @@ config("default_warnings") {
        cflags += [
          "-Wenum-compare-conditional",
 

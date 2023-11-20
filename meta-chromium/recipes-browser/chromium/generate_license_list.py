@@ -61,20 +61,21 @@ def find_chromium_licenses(chromium_root):
         if d in SKIPPED_DIRECTORIES:
             continue
         try:
-            metadata = licenses.ParseDir(d, chromium_root)
+            metadata_list = licenses.ParseDir(d, chromium_root)
         except licenses.LicenseError as e:
             print('Exception in directory %s: %s' % (d, e))
             if input('Ignore (y)? ') == 'y':
                 continue
             raise
-        # buildtools/third_party directories don't have metadata.
-        if metadata == {}:
-            continue
-        # We are not interested in licenses for projects that are not marked as
-        # used in the final product (ie. they might be optional development
-        # aids, or only used in a build).
-        if metadata['Shipped'] == licenses.YES:
-            license_files.update(set(metadata['License File']))
+        for metadata in metadata_list:
+            # buildtools/third_party directories don't have metadata.
+            if metadata == {}:
+                continue
+            # We are not interested in licenses for projects that are not marked as
+            # used in the final product (ie. they might be optional development
+            # aids, or only used in a build).
+            if metadata['Shipped'] == licenses.YES:
+                license_files.update(set(metadata['License File']))
     return license_files
 
 
