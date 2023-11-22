@@ -1,19 +1,57 @@
---- ./.cargo/config.in	2023-10-17 21:46:58.338748888 +0200
-+++ ./.cargo/config.in	2023-10-17 21:47:14.967005459 +0200
-@@ -150,4 +150,4 @@
+From dd1f4ef0b01724b28860ffb39ae14b2b6bdad4d7 Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Tue, 30 May 2023 22:17:51 +0200
+Subject: [PATCH] update firefox
+
+Upstream-status: Inappropriate
+---
+ .cargo/config.in                    |  2 +-
+ Cargo.toml                          | 92 +++++++++++++++++++++--------
+ third_party/rust/suggest/Cargo.toml |  8 +--
+ 3 files changed, 69 insertions(+), 33 deletions(-)
+
+diff --git a/.cargo/config.in b/.cargo/config.in
+index c1348d778b..4c6d08c6ac 100644
+--- a/.cargo/config.in
++++ b/.cargo/config.in
+@@ -145,4 +145,4 @@ directory = "third_party/rust"
  # cargo will ignore it when it's here verbatim.
  #filter substitution
  [source."@REPLACE_NAME@"]
 -directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
 +directory = "../../cargo_home/bitbake"
---- ./Cargo.toml.orig	2023-10-24 16:50:09.412574150 +0200
-+++ ./Cargo.toml	2023-10-24 18:36:32.213699491 +0200
-@@ -177,52 +177,93 @@
- rure = { path = "third_party/rust/rure" }
+diff --git a/third_party/rust/suggest/Cargo.toml b/third_party/rust/suggest/Cargo.toml
+index 6c6b5e88fc..86afb754e8 100644
+--- a/third_party/rust/suggest/Cargo.toml
++++ b/third_party/rust/suggest/Cargo.toml
+@@ -29,9 +29,8 @@ parking_lot = ">=0.11,<=0.12"
+ serde_json = "1"
+ thiserror = "1"
+ uniffi = "0.24.1"
+-
+-[dependencies.interrupt-support]
+-path = "../support/interrupt"
++interrupt-support = "0.1.0"
++sql-support = "0.1.0"
  
- # Prost-derive v0.11.9 + https://github.com/tokio-rs/prost/pull/868
--prost-derive = { git = "https://github.com/glandium/prost", rev = "95964e9d33df3c2a9c3f14285e262867cab6f96b" }
-+prost-derive = { path = "../prost/prost-derive" }
+ [dependencies.remote_settings]
+ path = "../remote_settings"
+@@ -47,9 +46,6 @@ features = [
+ version = "1"
+ features = ["derive"]
+ 
+-[dependencies.sql-support]
+-path = "../support/sql"
+-
+ [dev-dependencies]
+ expect-test = "1.4"
+ hex = "0.4"
+diff --git a/Cargo.toml b/Cargo.toml
+index 4682b976d3..da623f118f 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -178,49 +178,92 @@ moz_asserts = { path = "mozglue/static/rust/moz_asserts" }
+ rure = { path = "third_party/rust/rure" }
  
  # Other overrides
 -chardetng = { git = "https://github.com/hsivonen/chardetng", rev = "3484d3e3ebdc8931493aa5df4d7ee9360a90e76b" }
@@ -43,19 +81,20 @@
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
  
  # application-services overrides to make updating them all simpler.
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--suggest = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "1a59041d0c7d36ef1abc713a48304c5333e45a1a" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "c82bccfa500813f273f4db0ead64fc73bfa2b34c" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
 +sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
 +sync15 = { path = "../application-services/components/sync15", version = "0.1.0" }
 +tabs = { path = "../application-services/components/tabs", version = "0.1.0" }
 +viaduct = { path = "third_party/rust/viaduct", version = "0.1.0" }
 +webext-storage = { path = "../application-services/components/webext-storage", version = "0.1.0" }
++suggest = { path = "third_party/rust/suggest" }
  
  # ICU4X 1.2 with synstructure 0.13.x / syn 2.x. When updating to next version, this should be removed.
 -diplomat = { git = "https://github.com/rust-diplomat/diplomat", rev = "8d125999893fedfdf30595e97334c21ec4b18da9" }
@@ -70,8 +109,6 @@
 +yoke-derive = { path = "../icu4x/utils/yoke/derive" }
 +zerofrom-derive = { path = "../icu4x/utils/zerofrom/derive" }
 +zerovec-derive = { path = "../icu4x/utils/zerovec/derive" }
-+
-+suggest = { path = "third_party/rust/suggest" }
  
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
@@ -129,27 +166,6 @@
 +
 +[patch."https://github.com/gfx-rs/naga"]
 +naga = { path = "../naga" }
---- ./third_party/rust/suggest/Cargo.toml.orig	2023-10-24 18:41:50.123092738 +0200
-+++ ./third_party/rust/suggest/Cargo.toml	2023-10-24 18:58:09.679586717 +0200
-@@ -25,9 +25,8 @@
- serde_json = "1"
- thiserror = "1"
- uniffi = "0.24.1"
--
--[dependencies.interrupt-support]
--path = "../support/interrupt"
-+interrupt-support = "0.1.0"
-+sql-support = "0.1.0"
- 
- [dependencies.remote_settings]
- path = "../remote_settings"
-@@ -43,9 +42,6 @@
- version = "1"
- features = ["derive"]
- 
--[dependencies.sql-support]
--path = "../support/sql"
--
- [dev-dependencies]
- expect-test = "1.4"
- hex = "0.4"
++
++[patch."https://github.com/gfx-rs/metal-rs/"]
++metal = { path = "../metal" }

@@ -1,0 +1,60 @@
+From 6054fb81375d29e189f280d3c37e6e9b927397c7 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@homa.ne.jp>
+Date: Wed, 8 May 2019 14:42:24 +0900
+Subject: [PATCH] Disable eglQueryString(nullptr, EGL_EXTENSIONS)
+
+Because it causes crash on certain environments such as PowerVR drivers,
+and such extensions aren't used on Linux in fact.
+
+Upstream-Status: Inappropriate [OE-specific: https://bugzilla.mozilla.org/show_bug.cgi?id=1571603]
+
+Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
+---
+ gfx/gl/GLContextProviderEGL.cpp | 7 ++++++-
+ gfx/gl/GLLibraryEGL.cpp         | 2 ++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/gfx/gl/GLContextProviderEGL.cpp b/gfx/gl/GLContextProviderEGL.cpp
+index eefb9d7ac4..0a47425887 100644
+--- a/gfx/gl/GLContextProviderEGL.cpp
++++ b/gfx/gl/GLContextProviderEGL.cpp
+@@ -581,12 +581,17 @@ void GLContextEGL::GetWSIInfo(nsCString* const out) const {
+   out->AppendLiteral("\nEGL_EXTENSIONS: ");
+   out->Append((const char*)mEgl->mLib->fQueryString(mEgl->mDisplay,
+                                                     LOCAL_EGL_EXTENSIONS));
+-
++#if 0
+ #ifndef ANDROID  // This query will crash some old android.
++  // Bug 1209612: Crashes on a number of android drivers.
++  // Ideally we would only blocklist this there, but for now we don't need the
++  // client extension list on ANDROID or embedded linux (we mostly need it on
++  // ANGLE), and we'd rather not crash.
+   out->AppendLiteral("\nEGL_EXTENSIONS(nullptr): ");
+   out->Append(
+       (const char*)mEgl->mLib->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
+ #endif
++#endif
+ }
+ 
+ bool GLContextEGL::HasExtBufferAge() const {
+diff --git a/gfx/gl/GLLibraryEGL.cpp b/gfx/gl/GLLibraryEGL.cpp
+index a90d73d2a2..4de8e7068f 100644
+--- a/gfx/gl/GLLibraryEGL.cpp
++++ b/gfx/gl/GLLibraryEGL.cpp
+@@ -932,12 +932,14 @@ void GLLibraryEGL::InitLibExtensions() {
+ 
+   const char* rawExtString = nullptr;
+ 
++#if 0
+ #ifndef ANDROID
+   // Bug 1209612: Crashes on a number of android drivers.
+   // Ideally we would only blocklist this there, but for now we don't need the
+   // client extension list on ANDROID (we mostly need it on ANGLE), and we'd
+   // rather not crash.
+   rawExtString = (const char*)fQueryString(nullptr, LOCAL_EGL_EXTENSIONS);
++#endif
+ #endif
+ 
+   if (!rawExtString) {

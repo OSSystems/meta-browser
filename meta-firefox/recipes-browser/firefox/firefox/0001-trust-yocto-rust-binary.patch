@@ -1,14 +1,15 @@
-From d372a0ee192003b01f5467f317831cb4d99251fb Mon Sep 17 00:00:00 2001
+From b21e63b236479eab56298cb129df147cfba8a171 Mon Sep 17 00:00:00 2001
 From: skandigraun <skandigraun@gmail.com>
 Date: Tue, 30 May 2023 22:17:51 +0200
 Subject: [PATCH] update firefox
 
+Upstream-Status: Inappropriate
 ---
  build/moz.configure/rust.configure | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index 06c0778f5e..4f15da572b 100644
+index aa81ffbe03..e32c2f347c 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
 @@ -84,7 +84,8 @@ def unwrap_rustup(prog, name):

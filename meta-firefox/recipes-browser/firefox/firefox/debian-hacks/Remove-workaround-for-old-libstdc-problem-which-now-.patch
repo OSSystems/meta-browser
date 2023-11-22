@@ -1,6 +1,7 @@
+From a34797e858fbbcdb8623a6ea69a69828611637b6 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Mon, 15 Aug 2022 14:49:40 +0900
-Subject: Remove workaround for old libstdc++ problem, which now causes
+Subject: [PATCH] Remove workaround for old libstdc++ problem, which now causes
  problems with GCC 12 on arm
 
 ---
@@ -10,7 +11,7 @@ Subject: Remove workaround for old libstdc++ problem, which now causes
  3 files changed, 12 deletions(-)
 
 diff --git a/intl/icu/source/common/unicode/std_string.h b/intl/icu/source/common/unicode/std_string.h
-index bf87230..c8388ef 100644
+index bf87230167..c8388ef9fd 100644
 --- a/intl/icu/source/common/unicode/std_string.h
 +++ b/intl/icu/source/common/unicode/std_string.h
 @@ -29,11 +29,6 @@
@@ -26,7 +27,7 @@ index bf87230..c8388ef 100644
  
  #endif /* U_SHOW_CPLUSPLUS_API */
 diff --git a/intl/icu/source/common/utypeinfo.h b/intl/icu/source/common/utypeinfo.h
-index c666373..5d97240 100644
+index c6663734fc..5d9724059b 100644
 --- a/intl/icu/source/common/utypeinfo.h
 +++ b/intl/icu/source/common/utypeinfo.h
 @@ -24,9 +24,6 @@
@@ -40,7 +41,7 @@ index c666373..5d97240 100644
  
  #endif
 diff --git a/intl/icu/source/io/unicode/ustream.h b/intl/icu/source/io/unicode/ustream.h
-index 927342c..93ef51c 100644
+index 927342cb03..93ef51c3ec 100644
 --- a/intl/icu/source/io/unicode/ustream.h
 +++ b/intl/icu/source/io/unicode/ustream.h
 @@ -34,10 +34,6 @@

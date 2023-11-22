@@ -1,0 +1,31 @@
+From 0fa1cb5ceb1df4cdfb0d160e93f119c8ac3d31af Mon Sep 17 00:00:00 2001
+From: KSR_Yasuda <yasuda@kyoto-sr.co.jp>
+Date: Wed, 23 Aug 2017 15:39:07 +0900
+Subject: [PATCH] GLLibraryLoader: Use given symbol lookup function first
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
+---
+ gfx/gl/GLLibraryLoader.cpp | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/gfx/gl/GLLibraryLoader.cpp b/gfx/gl/GLLibraryLoader.cpp
+index e73f312d29..17d875f85e 100644
+--- a/gfx/gl/GLLibraryLoader.cpp
++++ b/gfx/gl/GLLibraryLoader.cpp
+@@ -61,12 +61,12 @@ PRFuncPtr SymbolLoader::GetProcAddress(const char* const name) const {
+ #endif
+ 
+   PRFuncPtr ret = nullptr;
+-  if (!ret && mLib) {
+-    ret = PR_FindFunctionSymbol(mLib, name);
+-  }
+   if (!ret && mPfn) {
+     ret = mPfn(name);
+   }
++  if (!ret && mLib) {
++    ret = PR_FindFunctionSymbol(mLib, name);
++  }
+   return ret;
+ }
+ 

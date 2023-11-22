@@ -1,10 +1,11 @@
-From fa55d120f5ebaded0e0df977fdc8fd6782afb4a7 Mon Sep 17 00:00:00 2001
+From 7702984baa64f7fa975ddce407e844607430e197 Mon Sep 17 00:00:00 2001
 From: INAJIMA Daisuke <inajima@soum.co.jp>
 Date: Thu, 29 Aug 2019 19:54:59 +0900
 Subject: [PATCH] openmax: Import latest OpenMAX IL 1.1.2 headers
 
 Upstream-Status: Submitted [https://bugzilla.mozilla.org/show_bug.cgi?id=1590977]
 Signed-off-by: INAJIMA Daisuke <inajima@soum.co.jp>
+
 ---
  media/openmax_il/il112/OMX_Audio.h        |  2 +-
  media/openmax_il/il112/OMX_Component.h    |  2 +-
@@ -24,7 +25,7 @@ Signed-off-by: INAJIMA Daisuke <inajima@soum.co.jp>
  15 files changed, 25 insertions(+), 23 deletions(-)
 
 diff --git a/media/openmax_il/il112/OMX_Audio.h b/media/openmax_il/il112/OMX_Audio.h
-index 9d084e87428a..0f7b8c8ce273 100644
+index 9d084e8742..0f7b8c8ce2 100644
 --- a/media/openmax_il/il112/OMX_Audio.h
 +++ b/media/openmax_il/il112/OMX_Audio.h
 @@ -1,5 +1,5 @@
@@ -35,7 +36,7 @@ index 9d084e87428a..0f7b8c8ce273 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Component.h b/media/openmax_il/il112/OMX_Component.h
-index 8526f3abc1b6..137c67fae787 100644
+index 8526f3abc1..137c67fae7 100644
 --- a/media/openmax_il/il112/OMX_Component.h
 +++ b/media/openmax_il/il112/OMX_Component.h
 @@ -1,5 +1,5 @@
@@ -46,7 +47,7 @@ index 8526f3abc1b6..137c67fae787 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_ComponentExt.h b/media/openmax_il/il112/OMX_ComponentExt.h
-index e32dcbed2eff..50ac5c6476b7 100644
+index e32dcbed2e..50ac5c6476 100644
 --- a/media/openmax_il/il112/OMX_ComponentExt.h
 +++ b/media/openmax_il/il112/OMX_ComponentExt.h
 @@ -1,5 +1,5 @@
@@ -57,7 +58,7 @@ index e32dcbed2eff..50ac5c6476b7 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_ContentPipe.h b/media/openmax_il/il112/OMX_ContentPipe.h
-index 403ea55d2992..a1f37c84efe4 100644
+index 403ea55d29..a1f37c84ef 100644
 --- a/media/openmax_il/il112/OMX_ContentPipe.h
 +++ b/media/openmax_il/il112/OMX_ContentPipe.h
 @@ -1,5 +1,5 @@
@@ -68,7 +69,7 @@ index 403ea55d2992..a1f37c84efe4 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Core.h b/media/openmax_il/il112/OMX_Core.h
-index 6c858e42f5cc..bfe57d1352ab 100644
+index 6c858e42f5..bfe57d1352 100644
 --- a/media/openmax_il/il112/OMX_Core.h
 +++ b/media/openmax_il/il112/OMX_Core.h
 @@ -1,5 +1,5 @@
@@ -79,7 +80,7 @@ index 6c858e42f5cc..bfe57d1352ab 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_CoreExt.h b/media/openmax_il/il112/OMX_CoreExt.h
-index 5974d0261647..1a97300a4f0c 100644
+index 5974d02616..1a97300a4f 100644
 --- a/media/openmax_il/il112/OMX_CoreExt.h
 +++ b/media/openmax_il/il112/OMX_CoreExt.h
 @@ -1,5 +1,5 @@
@@ -90,7 +91,7 @@ index 5974d0261647..1a97300a4f0c 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_IVCommon.h b/media/openmax_il/il112/OMX_IVCommon.h
-index 37763ec0840d..e514342f4c8f 100644
+index 37763ec084..e514342f4c 100644
 --- a/media/openmax_il/il112/OMX_IVCommon.h
 +++ b/media/openmax_il/il112/OMX_IVCommon.h
 @@ -1,5 +1,5 @@
@@ -101,7 +102,7 @@ index 37763ec0840d..e514342f4c8f 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Image.h b/media/openmax_il/il112/OMX_Image.h
-index 599fb2d6c834..dabd0c8f60b9 100644
+index 599fb2d6c8..dabd0c8f60 100644
 --- a/media/openmax_il/il112/OMX_Image.h
 +++ b/media/openmax_il/il112/OMX_Image.h
 @@ -1,5 +1,5 @@
@@ -112,7 +113,7 @@ index 599fb2d6c834..dabd0c8f60b9 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_ImageExt.h b/media/openmax_il/il112/OMX_ImageExt.h
-index 664a0848747d..e7cae029b60d 100644
+index 664a084874..e7cae029b6 100644
 --- a/media/openmax_il/il112/OMX_ImageExt.h
 +++ b/media/openmax_il/il112/OMX_ImageExt.h
 @@ -1,5 +1,5 @@
@@ -123,7 +124,7 @@ index 664a0848747d..e7cae029b60d 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Index.h b/media/openmax_il/il112/OMX_Index.h
-index cb94da28b408..1e549dc8685d 100644
+index cb94da28b4..1e549dc868 100644
 --- a/media/openmax_il/il112/OMX_Index.h
 +++ b/media/openmax_il/il112/OMX_Index.h
 @@ -1,5 +1,5 @@
@@ -134,7 +135,7 @@ index cb94da28b408..1e549dc8685d 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_IndexExt.h b/media/openmax_il/il112/OMX_IndexExt.h
-index d22df56bd94b..2895e2c6d111 100644
+index d22df56bd9..2895e2c6d1 100644
 --- a/media/openmax_il/il112/OMX_IndexExt.h
 +++ b/media/openmax_il/il112/OMX_IndexExt.h
 @@ -1,5 +1,5 @@
@@ -145,7 +146,7 @@ index d22df56bd94b..2895e2c6d111 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Other.h b/media/openmax_il/il112/OMX_Other.h
-index a3abbec0e41f..1bf7434c6604 100644
+index 85c7ea0e13..3915c24a0b 100644
 --- a/media/openmax_il/il112/OMX_Other.h
 +++ b/media/openmax_il/il112/OMX_Other.h
 @@ -1,5 +1,5 @@
@@ -156,7 +157,7 @@ index a3abbec0e41f..1bf7434c6604 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_Types.h b/media/openmax_il/il112/OMX_Types.h
-index 873ba7a48676..527ba2354eca 100644
+index 873ba7a486..527ba2354e 100644
 --- a/media/openmax_il/il112/OMX_Types.h
 +++ b/media/openmax_il/il112/OMX_Types.h
 @@ -1,5 +1,5 @@
@@ -218,7 +219,7 @@ index 873ba7a48676..527ba2354eca 100644
  #endif /* WIN32 */
  #endif
 diff --git a/media/openmax_il/il112/OMX_Video.h b/media/openmax_il/il112/OMX_Video.h
-index af36238b88a1..f3660ec7d521 100644
+index af36238b88..f3660ec7d5 100644
 --- a/media/openmax_il/il112/OMX_Video.h
 +++ b/media/openmax_il/il112/OMX_Video.h
 @@ -1,5 +1,5 @@
@@ -229,7 +230,7 @@ index af36238b88a1..f3660ec7d521 100644
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
 diff --git a/media/openmax_il/il112/OMX_VideoExt.h b/media/openmax_il/il112/OMX_VideoExt.h
-index 5e79b47b1a68..1aeb5264fc6f 100644
+index 5e79b47b1a..1aeb5264fc 100644
 --- a/media/openmax_il/il112/OMX_VideoExt.h
 +++ b/media/openmax_il/il112/OMX_VideoExt.h
 @@ -1,5 +1,5 @@
@@ -239,6 +240,3 @@ index 5e79b47b1a68..1aeb5264fc6f 100644
   *
   * Permission is hereby granted, free of charge, to any person obtaining
   * a copy of this software and associated documentation files (the
--- 
-2.23.0
-

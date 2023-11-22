@@ -1,0 +1,21 @@
+From: Mike Hommey <glandium@debian.org>
+Date: Thu, 13 Mar 2008 20:30:19 +0100
+Subject: Set DPI to system settings
+
+---
+ modules/libpref/init/StaticPrefList.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/modules/libpref/init/StaticPrefList.yaml b/modules/libpref/init/StaticPrefList.yaml
+index 7c717a2..9138ac13 100644
+--- a/modules/libpref/init/StaticPrefList.yaml
++++ b/modules/libpref/init/StaticPrefList.yaml
+@@ -8081,7 +8081,7 @@
+ # interpretation of physical units such as "pt".
+ - name: layout.css.dpi
+   type: int32_t
+-  value: -1
++  value: 0
+   mirror: always
+ 
+ # Whether Container Queries are enabled

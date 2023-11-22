@@ -1,13 +1,15 @@
+From 24d2cd7afb094965ceba5da65d416005d2b2a64b Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Wed, 5 Jul 2023 05:25:35 +0900
-Subject: Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
+Subject: [PATCH] Work around
+ https://sourceware.org/bugzilla/show_bug.cgi?id=30578
 
 ---
  media/ffvpx/config_unix64.h | 4 ++++
  1 file changed, 4 insertions(+)
 
 diff --git a/media/ffvpx/config_unix64.h b/media/ffvpx/config_unix64.h
-index c4311cf..b15c2be 100644
+index dce3ed7f08..aed52eb92a 100644
 --- a/media/ffvpx/config_unix64.h
 +++ b/media/ffvpx/config_unix64.h
 @@ -204,7 +204,11 @@

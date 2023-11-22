@@ -1,0 +1,47 @@
+From 436a7bb5101d33a6f9bff1ffaa180ace81e2c527 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Sun, 17 Feb 2019 16:36:53 +0900
+Subject: [PATCH] Enable to suppress multiple compositors
+
+Because embedded devices might not support multiple EGL windows.
+
+Upstream-Status: Inappropriate [embedded specific]
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
+---
+ widget/nsBaseWidget.cpp | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/widget/nsBaseWidget.cpp b/widget/nsBaseWidget.cpp
+index 29a3ec35fa..508981a856 100644
+--- a/widget/nsBaseWidget.cpp
++++ b/widget/nsBaseWidget.cpp
+@@ -112,6 +112,8 @@ using namespace mozilla;
+ #define TOUCH_INJECT_LONG_TAP_DEFAULT_MSEC 1500
+ int32_t nsIWidget::sPointerIdCounter = 0;
+ 
++static nsBaseWidget *sSingleCompositorWidget = nullptr;
++
+ // Some statics from nsIWidget.h
+ /*static*/
+ uint64_t AutoObserverNotifier::sObserverId = 0;
+@@ -338,6 +340,9 @@ void nsBaseWidget::DestroyCompositor() {
+     mCompositorSession->Shutdown();
+     mCompositorSession = nullptr;
+   }
++
++  if (sSingleCompositorWidget == this)
++    sSingleCompositorWidget = nullptr;
+ }
+ 
+ // This prevents the layer manager from starting a new transaction during
+@@ -1527,6 +1532,8 @@ void nsBaseWidget::CreateCompositor(int aWidth, int aHeight) {
+     gfxPlatform::GetPlatform()->NotifyCompositorCreated(
+         mWindowRenderer->GetCompositorBackendType());
+   }
++
++  sSingleCompositorWidget = this;
+ }
+ 
+ void nsBaseWidget::NotifyCompositorSessionLost(CompositorSession* aSession) {

@@ -1,0 +1,37 @@
+From 24d4717aaf778bbcbf71b517a847e3186a203b3a Mon Sep 17 00:00:00 2001
+From: Mike Hommey <glandium@debian.org>
+Date: Sat, 21 Jun 2008 03:09:21 +0200
+Subject: [PATCH] Add another preferences directory for applications:
+ preferences/syspref
+
+It was existing in previous versions of iceweasel as a symlink to
+/etc/iceweasel/pref.
+
+This has the side effect to make these preferences there work again, and
+to disable the "set as default browser" dialog.
+
+---
+ toolkit/xre/nsXREDirProvider.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+index dac063c8a1..516ffd8d24 100644
+--- a/toolkit/xre/nsXREDirProvider.cpp
++++ b/toolkit/xre/nsXREDirProvider.cpp
+@@ -678,6 +678,8 @@ static nsresult DeleteDirIfExists(nsIFile* dir) {
+ 
+ static const char* const kAppendPrefDir[] = {"defaults", "preferences",
+                                              nullptr};
++static const char *const kAppendSysPrefDir[] = { "defaults", "syspref", nullptr };
++
+ #ifdef MOZ_BACKGROUNDTASKS
+ static const char* const kAppendBackgroundTasksPrefDir[] = {
+     "defaults", "backgroundtasks", nullptr};
+@@ -699,6 +701,7 @@ nsXREDirProvider::GetFiles(const char* aProperty,
+       LoadDirIntoArray(mXULAppDir, kAppendBackgroundTasksPrefDir, directories);
+     }
+ #endif
++    LoadDirIntoArray(mXULAppDir, kAppendSysPrefDir, directories);
+ 
+     rv = NS_NewArrayEnumerator(aResult, directories, NS_GET_IID(nsIFile));
+   } else if (!strcmp(aProperty, NS_APP_CHROME_DIR_LIST)) {

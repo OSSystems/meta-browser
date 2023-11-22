@@ -1,0 +1,32 @@
+From 20e61e4652894cd42280c6a89b3e9091c776eeef Mon Sep 17 00:00:00 2001
+From: Hiroshi Hatake <hatake@clear-code.com>
+Date: Mon, 25 Jun 2018 11:41:19 +0900
+Subject: [PATCH] Mark GLFeature::framebuffer_multisample as unsupported
+
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
+---
+ gfx/gl/GLContext.cpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/gfx/gl/GLContext.cpp b/gfx/gl/GLContext.cpp
+index 3d6c2d3822..c1af1d6756 100644
+--- a/gfx/gl/GLContext.cpp
++++ b/gfx/gl/GLContext.cpp
+@@ -750,6 +750,16 @@ bool GLContext::InitImpl() {
+       MarkUnsupported(GLFeature::framebuffer_multisample);
+     }
+ 
++#ifdef MOZ_WAYLAND
++    if (Vendor() == GLVendor::Imagination &&
++        Renderer() == GLRenderer::SGX544MP) {
++      // PowerVR SGX544MP's EGL does not have valid
++      // glRenderbufferStorageMultisampleANGLE implementation, which breaks
++      // WebGL.
++      MarkUnsupported(GLFeature::framebuffer_multisample);
++    }
++#endif
++
+     if (IsMesa()) {
+       // DrawElementsInstanced hangs the driver.
+       MarkUnsupported(GLFeature::robust_buffer_access_behavior);
