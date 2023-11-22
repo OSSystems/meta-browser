@@ -3,6 +3,7 @@ From: Mike Hommey <mh@glandium.org>
 Date: Fri, 17 Feb 2012 17:47:15 +0100
 Subject: [PATCH] Don't auto-disable extensions in system directories
 
+Upstream-Status: Inappropriate
 ---
  browser/app/profile/firefox.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

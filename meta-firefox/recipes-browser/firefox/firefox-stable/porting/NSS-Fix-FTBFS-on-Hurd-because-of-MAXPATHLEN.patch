@@ -3,6 +3,7 @@ From: Mike Hommey <mh@glandium.org>
 Date: Mon, 13 Jan 2014 12:00:25 +0900
 Subject: [PATCH] Fix FTBFS on Hurd because of MAXPATHLEN
 
+Upstream-Status: Pending
 ---
  security/nss/cmd/shlibsign/shlibsign.c | 21 ++++++++++++++++-----
  security/nss/lib/freebl/unix_rand.c    |  4 ++++

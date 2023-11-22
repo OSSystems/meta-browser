@@ -7,6 +7,8 @@ position or minimized state. Workaround this until the real bug is found
 and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
+
+Upstream-Status: Pending
 ---
  browser/components/sessionstore/SessionStore.jsm | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)

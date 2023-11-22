@@ -2,6 +2,7 @@ From: Mike Hommey <mh@glandium.org>
 Date: Sun, 2 Apr 2017 06:33:19 +0900
 Subject: Use the Mozilla Location Service key when the Google Key is not there
 
+Upstream-Status: Inappropriate
 ---
  modules/libpref/init/all.js | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

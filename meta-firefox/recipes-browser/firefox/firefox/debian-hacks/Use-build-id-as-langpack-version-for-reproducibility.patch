@@ -3,6 +3,8 @@ From: Mike Hommey <mh@glandium.org>
 Date: Fri, 12 Jul 2019 18:37:52 +0900
 Subject: [PATCH] Use build id as langpack version for reproducibility
 
+Upstream-Status: Pending
+
 ---
  python/mozbuild/mozbuild/action/langpack_manifest.py | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

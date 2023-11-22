@@ -10,6 +10,7 @@ and fixed (probably in xulrunner).
 
 Closes: #552426, #553453
 
+Upstream-Status: Pending
 ---
  browser/components/sessionstore/SessionStore.sys.mjs | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)

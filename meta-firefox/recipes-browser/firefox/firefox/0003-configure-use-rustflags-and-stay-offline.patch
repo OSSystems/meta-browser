@@ -10,6 +10,8 @@ the offline crates this layer is using. It can't be updated with offline flag.
 2 - ./build/moz.configure/rust.configure - try to find the targets supported by Yocto,
 and make sure that in case it is compiled for target, add the relevant rustflags (cross-linker, etc)
 
+Upstream-Status: Inappropriate
+
 ---
  build/RunCbindgen.py               | 2 +-
  build/moz.configure/rust.configure | 7 +++++--

@@ -6,6 +6,7 @@ Subject: [PATCH] Add xptcall support for SH4 processors
 Closes: #553593
 https://bugzilla.mozilla.org/show_bug.cgi?id=382214
 
+Upstream-Status: Pending
 ---
  xpcom/reflect/xptcall/md/unix/moz.build       |   5 +
  .../src/md/unix/xptcinvoke_linux_sh.cpp       | 203 +++++++++++++

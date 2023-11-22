@@ -3,6 +3,8 @@ From: Mike Hommey <mh@glandium.org>
 Date: Sat, 27 Nov 2021 06:49:44 +0900
 Subject: [PATCH] Fix math_private.h for i386 FTBFS
 
+Upstream-Status: Pending
+
 ---
  modules/fdlibm/src/math_private.h | 4 ++++
  1 file changed, 4 insertions(+)
