@@ -1,16 +1,17 @@
-From bca435c99d32e2fd9ff80789a62489d5550ff230 Mon Sep 17 00:00:00 2001
+From 6a2359ab504338d1e6cea6edc4f5cf77690e099c Mon Sep 17 00:00:00 2001
 From: Kas User <kas@example.com>
 Date: Sun, 11 Jun 2023 20:37:25 +0200
 Subject: [PATCH] Fix compiling with --enable-openmax config
 
 Fixes error: no viable conversion from 'OmxDecoderModule *' to 'already_AddRefed<PlatformDecoderModule>'
+
 ---
  dom/media/platforms/omx/OmxDecoderModule.cpp | 4 ++--
  dom/media/platforms/omx/OmxDecoderModule.h   | 2 +-
  2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/dom/media/platforms/omx/OmxDecoderModule.cpp b/dom/media/platforms/omx/OmxDecoderModule.cpp
-index 2267e66cc3..d53ee07c5e 100644
+index c6945cd5a1..cdb7dbf95e 100644
 --- a/dom/media/platforms/omx/OmxDecoderModule.cpp
 +++ b/dom/media/platforms/omx/OmxDecoderModule.cpp
 @@ -23,10 +23,10 @@ bool OmxDecoderModule::Init() {
@@ -39,6 +40,3 @@ index 04fa809e54..932994ecaa 100644
  
    already_AddRefed<MediaDataDecoder> CreateVideoDecoder(
        const CreateDecoderParams& aParams) override;
--- 
-2.30.2
-

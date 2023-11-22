@@ -1,13 +1,14 @@
+From 2aa3072b93a72ab02140ffb1f79dc4e8128ea4bf Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Sat, 27 Nov 2021 06:49:44 +0900
-Subject: Fix math_private.h for i386 FTBFS
+Subject: [PATCH] Fix math_private.h for i386 FTBFS
 
 ---
  modules/fdlibm/src/math_private.h | 4 ++++
  1 file changed, 4 insertions(+)
 
 diff --git a/modules/fdlibm/src/math_private.h b/modules/fdlibm/src/math_private.h
-index 51d79f9..fafd7d6 100644
+index b588a5905f..06f2af0a94 100644
 --- a/modules/fdlibm/src/math_private.h
 +++ b/modules/fdlibm/src/math_private.h
 @@ -30,7 +30,11 @@

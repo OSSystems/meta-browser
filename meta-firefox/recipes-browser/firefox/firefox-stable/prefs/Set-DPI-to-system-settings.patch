@@ -1,0 +1,23 @@
+From 8d163d359ee370efe0256f29dfad02e0351b2d93 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <glandium@debian.org>
+Date: Thu, 13 Mar 2008 20:30:19 +0100
+Subject: [PATCH] Set DPI to system settings
+
+Upstream-status: Inappropriate
+---
+ modules/libpref/init/StaticPrefList.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/modules/libpref/init/StaticPrefList.yaml b/modules/libpref/init/StaticPrefList.yaml
+index 60a520bb76..b7e0f04dcd 100644
+--- a/modules/libpref/init/StaticPrefList.yaml
++++ b/modules/libpref/init/StaticPrefList.yaml
+@@ -8081,7 +8081,7 @@
+ # interpretation of physical units such as "pt".
+ - name: layout.css.dpi
+   type: int32_t
+-  value: -1
++  value: 0
+   mirror: always
+ 
+ # Whether to always underline links.

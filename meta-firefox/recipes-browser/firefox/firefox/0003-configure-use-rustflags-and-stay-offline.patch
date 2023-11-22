@@ -1,4 +1,4 @@
-From 7bc1dcc3e871f22b0e254f835eb41fec644c9641 Mon Sep 17 00:00:00 2001
+From 33384697ce300a6bd5120ab410615ae1fc4e874a Mon Sep 17 00:00:00 2001
 From: skandigraun <skandigraun@gmail.com>
 Date: Tue, 30 May 2023 22:17:51 +0200
 Subject: [PATCH] update firefox
@@ -11,9 +11,9 @@ the offline crates this layer is using. It can't be updated with offline flag.
 and make sure that in case it is compiled for target, add the relevant rustflags (cross-linker, etc)
 
 ---
- build/RunCbindgen.py               |  2 +-
- build/moz.configure/rust.configure | 11 ++++++++---
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ build/RunCbindgen.py               | 2 +-
+ build/moz.configure/rust.configure | 7 +++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/build/RunCbindgen.py b/build/RunCbindgen.py
 index f797cad385..dc118a1dce 100644
@@ -29,7 +29,7 @@ index f797cad385..dc118a1dce 100644
              "--format-version",
              "1",
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index 4f15da572b..e5848e81c8 100644
+index e32c2f347c..5a5fb0814f 100644
 --- a/build/moz.configure/rust.configure
 +++ b/build/moz.configure/rust.configure
 @@ -450,7 +450,7 @@ def detect_rustc_target(

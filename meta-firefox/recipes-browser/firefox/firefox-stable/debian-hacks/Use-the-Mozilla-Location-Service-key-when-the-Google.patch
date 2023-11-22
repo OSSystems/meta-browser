@@ -1,0 +1,23 @@
+From 68654e650ecbef61ce2bcc6447936cb7ff72c038 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 2 Apr 2017 06:33:19 +0900
+Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
+ not there
+
+---
+ modules/libpref/init/all.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
+index 86bfe71247..b9674823de 100644
+--- a/modules/libpref/init/all.js
++++ b/modules/libpref/init/all.js
+@@ -3084,7 +3084,7 @@ pref("network.psl.onUpdate_notify", false);
+ 
+ // All the Geolocation preferences are here.
+ //
+-#ifndef EARLY_BETA_OR_EARLIER
++#if !defined(EARLY_BETA_OR_EARLIER) && defined(GOOGLE_LOCATION_SERVICE_API_KEY)
+   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
+ #else
+   // Use MLS on Nightly and early Beta.

@@ -1,17 +1,17 @@
+From dd65c3fac7e7a65006add6f9964fbc68fd7898b0 Mon Sep 17 00:00:00 2001
 From: Mike Hommey <mh@glandium.org>
 Date: Thu, 9 Jun 2016 14:45:44 +0900
-Subject: Don't build image/ gtests
+Subject: [PATCH] Don't build image/ gtests
 
 Building them causes an ICE with GCC 4.7. As they are not part of what
 is shipped, and not currently run either, just skip building them.
----
-Upstream-Status: Pending
 
+---
  image/moz.build | 2 --
  1 file changed, 2 deletions(-)
 
 diff --git a/image/moz.build b/image/moz.build
-index 8754b1b..d4b46ff 100644
+index 87dbefcdd2..4eae02d54e 100644
 --- a/image/moz.build
 +++ b/image/moz.build
 @@ -5,8 +5,6 @@

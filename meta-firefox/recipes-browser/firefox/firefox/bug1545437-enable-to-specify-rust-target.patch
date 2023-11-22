@@ -1,4 +1,4 @@
-From 2817f07563070d71b624b4397af32d820efec244 Mon Sep 17 00:00:00 2001
+From f991ffad1f34fe341e008172bd19ca5782660c0c Mon Sep 17 00:00:00 2001
 From: Takuro Ashie <ashie@clear-code.com>
 Date: Thu, 18 Apr 2019 23:15:16 +0900
 Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name
@@ -10,9 +10,15 @@ would be better that there is a way to pass it to Mozilla's build system.
 
 Differential Revision: https://phabricator.services.mozilla.com/D28069
 
---- ./build/moz.configure/rust.configure	2023-10-10 21:20:48.569221517 +0200
-+++ ./build/moz.configure/rust.configure	2023-10-10 21:57:13.730821538 +0200
-@@ -280,8 +280,29 @@
+---
+ build/moz.configure/rust.configure | 40 +++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 6 deletions(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index 7a2fd1ae70..aa81ffbe03 100644
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -280,8 +280,29 @@ def rust_supported_targets(rustc):
      return data
  
  
@@ -43,7 +49,7 @@ Differential Revision: https://phabricator.services.mozilla.com/D28069
  ):
      # Rust's --target options are similar to, but not exactly the same
      # as, the autoconf-derived targets we use.  An example would be that
-@@ -292,6 +313,11 @@
+@@ -292,6 +313,11 @@ def detect_rustc_target(
      # munging to get the correct option to rustc.
      # We correlate the autoconf-derived targets with the list of targets
      # rustc gives us with --print target-list.
@@ -55,7 +61,7 @@ Differential Revision: https://phabricator.services.mozilla.com/D28069
      candidates = rust_supported_targets.get(
          (host_or_target.cpu, host_or_target.endianness, host_or_target.os), []
      )
-@@ -479,15 +505,17 @@
+@@ -479,15 +505,17 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
      rustc_info.host,
      rust_supported_targets,
      arm_target,
@@ -75,7 +81,7 @@ Differential Revision: https://phabricator.services.mozilla.com/D28069
      )
      if rustc_target != rustc_host:
          if host.alias == rustc_target:
-@@ -516,14 +544,14 @@
+@@ -516,14 +544,14 @@ def rust_host_triple(
  
  
  @depends(
