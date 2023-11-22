@@ -4,6 +4,8 @@ Date: Mon, 15 Aug 2022 14:49:40 +0900
 Subject: [PATCH] Remove workaround for old libstdc++ problem, which now causes
  problems with GCC 12 on arm
 
+Upstream-Status: Pending
+
 ---
  intl/icu/source/common/unicode/std_string.h | 5 -----
  intl/icu/source/common/utypeinfo.h          | 3 ---

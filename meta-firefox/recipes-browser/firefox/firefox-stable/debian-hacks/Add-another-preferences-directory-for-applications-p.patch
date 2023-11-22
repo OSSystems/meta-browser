@@ -10,6 +10,7 @@ It was existing in previous versions of iceweasel as a symlink to
 This has the side effect to make these preferences there work again, and
 to disable the "set as default browser" dialog.
 
+Upstream-Status: Inappropriate
 ---
  toolkit/xre/nsXREDirProvider.cpp | 3 +++
  1 file changed, 3 insertions(+)

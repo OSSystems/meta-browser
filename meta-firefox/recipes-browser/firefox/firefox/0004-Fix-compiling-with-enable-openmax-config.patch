@@ -5,6 +5,8 @@ Subject: [PATCH] Fix compiling with --enable-openmax config
 
 Fixes error: no viable conversion from 'OmxDecoderModule *' to 'already_AddRefed<PlatformDecoderModule>'
 
+Upstream-Status: Pending
+
 ---
  dom/media/platforms/omx/OmxDecoderModule.cpp | 4 ++--
  dom/media/platforms/omx/OmxDecoderModule.h   | 2 +-

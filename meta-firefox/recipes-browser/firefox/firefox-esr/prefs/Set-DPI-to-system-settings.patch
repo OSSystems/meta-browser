@@ -2,6 +2,7 @@ From: Mike Hommey <glandium@debian.org>
 Date: Thu, 13 Mar 2008 20:30:19 +0100
 Subject: Set DPI to system settings
 
+Upstream-Status: Inappropriate
 ---
  modules/libpref/init/StaticPrefList.yaml | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

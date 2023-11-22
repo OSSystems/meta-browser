@@ -4,6 +4,8 @@ Date: Sat, 21 Jun 2008 02:48:46 +0200
 Subject: [PATCH] Allow .js preference files to set locked prefs with
  lockPref()
 
+Upstream-Status: Inappropriate
+
 ---
  modules/libpref/parser/src/lib.rs | 20 +++++++++++++-------
  1 file changed, 13 insertions(+), 7 deletions(-)

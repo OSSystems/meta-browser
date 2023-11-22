@@ -6,6 +6,8 @@ Subject: [PATCH] Don't build image/ gtests
 Building them causes an ICE with GCC 4.7. As they are not part of what
 is shipped, and not currently run either, just skip building them.
 
+Upstream-Status: Inappropriate
+
 ---
  image/moz.build | 2 --
  1 file changed, 2 deletions(-)

@@ -2,6 +2,7 @@ From: Mike Hommey <mh@glandium.org>
 Date: Sun, 14 Aug 2022 07:01:33 +0900
 Subject: Work around bz#1775202 to fix FTBFS on ppc64el
 
+Upstream-Status: Pending
 ---
  third_party/libwebrtc/moz.build | 7 +++++++
  1 file changed, 7 insertions(+)

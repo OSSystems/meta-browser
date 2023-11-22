@@ -4,6 +4,8 @@ Date: Wed, 5 Jul 2023 05:25:35 +0900
 Subject: [PATCH] Work around
  https://sourceware.org/bugzilla/show_bug.cgi?id=30578
 
+Upstream-Status: Pending
+
 ---
  media/ffvpx/config_unix64.h | 4 ++++
  1 file changed, 4 insertions(+)

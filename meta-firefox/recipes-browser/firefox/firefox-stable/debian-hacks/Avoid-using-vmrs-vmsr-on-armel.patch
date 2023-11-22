@@ -3,6 +3,7 @@ From: Mike Hommey <mh@glandium.org>
 Date: Tue, 22 May 2018 07:51:56 +0900
 Subject: [PATCH] Avoid using vmrs/vmsr on armel
 
+Upstream-Status: Pending
 ---
  dom/media/webaudio/blink/DenormalDisabler.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

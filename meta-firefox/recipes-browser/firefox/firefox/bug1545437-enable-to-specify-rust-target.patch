@@ -10,6 +10,8 @@ would be better that there is a way to pass it to Mozilla's build system.
 
 Differential Revision: https://phabricator.services.mozilla.com/D28069
 
+Upstream-Status: Pending
+
 ---
  build/moz.configure/rust.configure | 40 +++++++++++++++++++++++++-----
  1 file changed, 34 insertions(+), 6 deletions(-)
