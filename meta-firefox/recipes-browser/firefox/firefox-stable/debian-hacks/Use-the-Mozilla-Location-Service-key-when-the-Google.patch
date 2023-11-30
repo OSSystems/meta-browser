@@ -13,12 +13,15 @@ diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
 index 86bfe71247..b9674823de 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
-@@ -3084,7 +3084,7 @@ pref("network.psl.onUpdate_notify", false);
+@@ -3094,7 +3094,11 @@
  
  // All the Geolocation preferences are here.
  //
--#ifndef EARLY_BETA_OR_EARLIER
-+#if !defined(EARLY_BETA_OR_EARLIER) && defined(GOOGLE_LOCATION_SERVICE_API_KEY)
-   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
- #else
-   // Use MLS on Nightly and early Beta.
++#ifdef GOOGLE_LOCATION_SERVICE_API_KEY
+ pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
++#else
++pref("geo.provider.network.url", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%");
++#endif
+ 
+ // Timeout to wait before sending the location request.
+ pref("geo.provider.network.timeToWaitBeforeSending", 5000);
