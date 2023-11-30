@@ -46,12 +46,72 @@ index 6c6b5e88fc..86afb754e8 100644
  [dev-dependencies]
  expect-test = "1.4"
  hex = "0.4"
-diff --git a/Cargo.toml b/Cargo.toml
-index 4682b976d3..da623f118f 100644
---- a/Cargo.toml
-+++ b/Cargo.toml
-@@ -178,49 +178,92 @@ moz_asserts = { path = "mozglue/static/rust/moz_asserts" }
+--- ./gfx/wgpu_bindings/Cargo.toml	2023-12-19 06:11:16.369347002 +0100
++++ ./gfx/wgpu_bindings/Cargo.toml	2023-12-19 06:39:11.982011583 +0100
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-core"
+ #Note: "replay" shouldn't ideally be needed,
+ # but it allows us to serialize everything across IPC.
+ features = ["replay", "trace", "serial-pass", "strict_asserts", "wgsl"]
+@@ -26,37 +25,31 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx11", "dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/wgpu-hal"
+ 
+ [target.'cfg(windows)'.dependencies.d3d12]
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "3ec547cdcaaa14488327d8f1b5f7736278c4178d"
++path = "../../../wgpu/d3d12"
+ 
+ [target.'cfg(windows)'.dependencies]
+ winapi = "0.3"
+--- a/Cargo.toml	2023-12-18 21:28:49.910340379 +0100
++++ b/Cargo.toml	2023-12-19 07:11:55.780809017 +0100
+@@ -178,53 +178,93 @@
  rure = { path = "third_party/rust/rure" }
+ 
+ # To-be-published changes.
+-cssparser = { git = "https://github.com/servo/rust-cssparser", rev = "aaa966d9d6ae70c4b8a62bb5e3a14c068bb7dff0" }
+-cssparser-macros = { git = "https://github.com/servo/rust-cssparser", rev = "aaa966d9d6ae70c4b8a62bb5e3a14c068bb7dff0" }
++cssparser = { path = "../cssparser" }
++cssparser-macros = { path = "../cssparser/macros" }
  
  # Other overrides
 -chardetng = { git = "https://github.com/hsivonen/chardetng", rev = "3484d3e3ebdc8931493aa5df4d7ee9360a90e76b" }
@@ -109,6 +169,8 @@ index 4682b976d3..da623f118f 100644
 +yoke-derive = { path = "../icu4x/utils/yoke/derive" }
 +zerofrom-derive = { path = "../icu4x/utils/zerofrom/derive" }
 +zerovec-derive = { path = "../icu4x/utils/zerovec/derive" }
++
++metal = { path = "../metal" }
  
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
@@ -164,8 +226,3 @@ index 4682b976d3..da623f118f 100644
 +wgpu-types = { path = "../wgpu/wgpu-types" }
 +wgpu-hal = { path = "../wgpu/wgpu-hal" }
 +
-+[patch."https://github.com/gfx-rs/naga"]
-+naga = { path = "../naga" }
-+
-+[patch."https://github.com/gfx-rs/metal-rs/"]
-+metal = { path = "../metal" }

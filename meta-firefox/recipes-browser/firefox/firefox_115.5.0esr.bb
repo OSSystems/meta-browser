@@ -38,3 +38,15 @@ SRCREV_naga = "b99d58ea435090e561377949f428bce2c18451bb"
 
 SRCREV_FORMAT .= "_uniffi-rs"
 SRCREV_uniffi-rs = "bc7ff8977bf38d0fdd1a458810b14f434d4dc4de"
+
+SRCREV_FORMAT .= "_cssparser"
+SRCREV_cssparser = "45bc47e2bcb846f1efb5aea156be5fe7d18624bf"
+
+SRCREV_FORMAT .= "_wgpu"
+SRCREV_wgpu = "7c6b85756237f77bfe8d6231dfc7a1412ff662b6"
+
+SRCREV_FORMAT .= "_audioipc"
+SRCREV_audioipc = "0b51291d2483a17dce3e300c7784b369e02bee73"
+
+SRCREV_FORMAT .= "_wpf-gpu-raster"
+SRCREV_wpf-gpu-raster = "5ab6fe33d00021325ee920b3c10526dc8301cf46"

@@ -102,14 +102,6 @@ SRCREV_FORMAT .= "_cubeb-pulse"
 SRCREV_cubeb-pulse = "cf48897be5cbe147d051ebbbe1eaf5fd8fb6bbc9"
 SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
-SRCREV_FORMAT .= "_wpf-gpu-raster"
-SRCREV_wpf-gpu-raster = "5ab6fe33d00021325ee920b3c10526dc8301cf46"
-SRCREV_FORMAT .= "_wgpu"
-SRCREV_wgpu = "7c6b85756237f77bfe8d6231dfc7a1412ff662b6"
-SRCREV_FORMAT .= "_audioipc"
-SRCREV_audioipc = "0b51291d2483a17dce3e300c7784b369e02bee73"
-SRCREV_FORMAT .= "_cssparser"
-SRCREV_cssparser = "45bc47e2bcb846f1efb5aea156be5fe7d18624bf"
 
 # Add a config file to enable GPU acceleration by default.
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'gpu', \
@@ -166,7 +158,7 @@ PACKAGECONFIG[system-libvpx] = "--with-system-libvpx,,libvpx,libvpx"
 PACKAGECONFIG[system-png] = "--with-system-png,,libpng,libpng"
 PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
 
-DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", "wasi-sdk-native", d)}'
+DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", " wasi-sdk-native ", d)}'
 
 do_compile:prepend(){
     head -n 38 "${WORKDIR}/cargo_home/config" > "${WORKDIR}/cargo_home/config_tmp"

@@ -1,0 +1,1101 @@
+Fix linking error with RISC-V.
+
+See https://github.com/llvm/llvm-project/issues/64102
+
+Upstream-Status: Pending
+diff --git a/llvm/include/llvm/BinaryFormat/ELFRelocs/RISCV.def b/llvm/include/llvm/BinaryFormat/ELFRelocs/RISCV.def
+index 9a126df01531..c7fd6490041c 100644
+--- a/llvm/include/llvm/BinaryFormat/ELFRelocs/RISCV.def
++++ b/llvm/include/llvm/BinaryFormat/ELFRelocs/RISCV.def
+@@ -55,3 +55,5 @@ ELF_RELOC(R_RISCV_SET32,             56)
+ ELF_RELOC(R_RISCV_32_PCREL,          57)
+ ELF_RELOC(R_RISCV_IRELATIVE,         58)
+ ELF_RELOC(R_RISCV_PLT32,             59)
++ELF_RELOC(R_RISCV_SET_ULEB128,       60)
++ELF_RELOC(R_RISCV_SUB_ULEB128,       61)
+diff --git a/llvm/include/llvm/MC/MCAsmBackend.h b/llvm/include/llvm/MC/MCAsmBackend.h
+index 5e08fb41679b..1fd83f9a7c62 100644
+--- a/llvm/include/llvm/MC/MCAsmBackend.h
++++ b/llvm/include/llvm/MC/MCAsmBackend.h
+@@ -21,6 +21,7 @@ class MCAlignFragment;
+ class MCDwarfCallFrameFragment;
+ class MCDwarfLineAddrFragment;
+ class MCFragment;
++class MCLEBFragment;
+ class MCRelaxableFragment;
+ class MCSymbol;
+ class MCAsmLayout;
+@@ -194,6 +195,13 @@ public:
+     return false;
+   }
+ 
++  // Defined by linker relaxation targets to possibly emit LEB128 relocations
++  // and set Value at the relocated location.
++  virtual bool relaxLEB128(MCLEBFragment &LF, MCAsmLayout &Layout,
++                           int64_t &Value) const {
++    return false;
++  }
++
+   /// @}
+ 
+   /// Returns the minimum size of a nop in bytes on this target. The assembler
+diff --git a/llvm/include/llvm/MC/MCFixup.h b/llvm/include/llvm/MC/MCFixup.h
+index 069ca058310f..7f48a90cb1ec 100644
+--- a/llvm/include/llvm/MC/MCFixup.h
++++ b/llvm/include/llvm/MC/MCFixup.h
+@@ -25,6 +25,7 @@ enum MCFixupKind {
+   FK_Data_4,      ///< A four-byte fixup.
+   FK_Data_8,      ///< A eight-byte fixup.
+   FK_Data_6b,     ///< A six-bits fixup.
++  FK_Data_leb128, ///< A leb128 fixup.
+   FK_PCRel_1,     ///< A one-byte pc relative fixup.
+   FK_PCRel_2,     ///< A two-byte pc relative fixup.
+   FK_PCRel_4,     ///< A four-byte pc relative fixup.
+diff --git a/llvm/include/llvm/MC/MCFragment.h b/llvm/include/llvm/MC/MCFragment.h
+index 7be4792a4521..efe44b0b6917 100644
+--- a/llvm/include/llvm/MC/MCFragment.h
++++ b/llvm/include/llvm/MC/MCFragment.h
+@@ -428,7 +428,7 @@ public:
+   }
+ };
+ 
+-class MCLEBFragment : public MCFragment {
++class MCLEBFragment final : public MCEncodedFragmentWithFixups<10, 1> {
+   /// True if this is a sleb128, false if uleb128.
+   bool IsSigned;
+ 
+@@ -438,18 +438,17 @@ class MCLEBFragment : public MCFragment {
+   SmallString<8> Contents;
+ 
+ public:
+-  MCLEBFragment(const MCExpr &Value_, bool IsSigned_, MCSection *Sec = nullptr)
+-      : MCFragment(FT_LEB, false, Sec), IsSigned(IsSigned_), Value(&Value_) {
++  MCLEBFragment(const MCExpr &Value, bool IsSigned, MCSection *Sec = nullptr)
++      : MCEncodedFragmentWithFixups<10, 1>(FT_LEB, false, Sec),
++        IsSigned(IsSigned), Value(&Value) {
+     Contents.push_back(0);
+   }
+ 
+   const MCExpr &getValue() const { return *Value; }
++  void setValue(const MCExpr *Expr) { Value = Expr; }
+ 
+   bool isSigned() const { return IsSigned; }
+ 
+-  SmallString<8> &getContents() { return Contents; }
+-  const SmallString<8> &getContents() const { return Contents; }
+-
+   /// @}
+ 
+   static bool classof(const MCFragment *F) {
+diff --git a/llvm/lib/MC/MCAsmBackend.cpp b/llvm/lib/MC/MCAsmBackend.cpp
+index 64bbc63719c7..2eef7d363fe7 100644
+--- a/llvm/lib/MC/MCAsmBackend.cpp
++++ b/llvm/lib/MC/MCAsmBackend.cpp
+@@ -89,6 +89,7 @@ const MCFixupKindInfo &MCAsmBackend::getFixupKindInfo(MCFixupKind Kind) const {
+       {"FK_Data_4", 0, 32, 0},
+       {"FK_Data_8", 0, 64, 0},
+       {"FK_Data_6b", 0, 6, 0},
++      {"FK_Data_leb128", 0, 0, 0},
+       {"FK_PCRel_1", 0, 8, MCFixupKindInfo::FKF_IsPCRel},
+       {"FK_PCRel_2", 0, 16, MCFixupKindInfo::FKF_IsPCRel},
+       {"FK_PCRel_4", 0, 32, MCFixupKindInfo::FKF_IsPCRel},
+diff --git a/llvm/lib/MC/MCAssembler.cpp b/llvm/lib/MC/MCAssembler.cpp
+index 55ed1a285cd7..e25bfc044a15 100644
+--- a/llvm/lib/MC/MCAssembler.cpp
++++ b/llvm/lib/MC/MCAssembler.cpp
+@@ -918,6 +918,12 @@ void MCAssembler::layout(MCAsmLayout &Layout) {
+         Contents = DF.getContents();
+         break;
+       }
++      case MCFragment::FT_LEB: {
++        auto &LF = cast<MCLEBFragment>(Frag);
++        Fixups = LF.getFixups();
++        Contents = LF.getContents();
++        break;
++      }
+       case MCFragment::FT_PseudoProbe: {
+         MCPseudoProbeAddrFragment &PF = cast<MCPseudoProbeAddrFragment>(Frag);
+         Fixups = PF.getFixups();
+@@ -1006,12 +1012,27 @@ bool MCAssembler::relaxInstruction(MCAsmLayout &Layout,
+ }
+ 
+ bool MCAssembler::relaxLEB(MCAsmLayout &Layout, MCLEBFragment &LF) {
+-  uint64_t OldSize = LF.getContents().size();
++  const unsigned OldSize = static_cast<unsigned>(LF.getContents().size());
++  unsigned PadTo = OldSize;
+   int64_t Value;
+-  bool Abs = LF.getValue().evaluateKnownAbsolute(Value, Layout);
+-  if (!Abs)
+-    report_fatal_error("sleb128 and uleb128 expressions must be absolute");
+-  SmallString<8> &Data = LF.getContents();
++  SmallVectorImpl<char> &Data = LF.getContents();
++  LF.getFixups().clear();
++  // Use evaluateKnownAbsolute for Mach-O as a hack: .subsections_via_symbols
++  // requires that .uleb128 A-B is foldable where A and B reside in different
++  // fragments. This is used by __gcc_except_table.
++  bool Abs = getSubsectionsViaSymbols()
++                 ? LF.getValue().evaluateKnownAbsolute(Value, Layout)
++                 : LF.getValue().evaluateAsAbsolute(Value, Layout);
++  if (!Abs) {
++    if (!getBackend().relaxLEB128(LF, Layout, Value)) {
++      getContext().reportError(LF.getValue().getLoc(),
++                               Twine(LF.isSigned() ? ".s" : ".u") +
++                                   "leb128 expression is not absolute");
++      LF.setValue(MCConstantExpr::create(0, Context));
++    }
++    uint8_t Tmp[10]; // maximum size: ceil(64/7)
++    PadTo = std::max(PadTo, encodeULEB128(uint64_t(Value), Tmp));
++  }
+   Data.clear();
+   raw_svector_ostream OSE(Data);
+   // The compiler can generate EH table assembly that is impossible to assemble
+@@ -1019,9 +1040,9 @@ bool MCAssembler::relaxLEB(MCAsmLayout &Layout, MCLEBFragment &LF) {
+   // to a later alignment fragment. To accommodate such tables, relaxation can
+   // only increase an LEB fragment size here, not decrease it. See PR35809.
+   if (LF.isSigned())
+-    encodeSLEB128(Value, OSE, OldSize);
++    encodeSLEB128(Value, OSE, PadTo);
+   else
+-    encodeULEB128(Value, OSE, OldSize);
++    encodeULEB128(Value, OSE, PadTo);
+   return OldSize != LF.getContents().size();
+ }
+ 
+diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
+index 0ea1f32e8296..1fab17fa466c 100644
+--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.h
+@@ -100,6 +100,9 @@ public:
+   bool relaxDwarfCFA(MCDwarfCallFrameFragment &DF, MCAsmLayout &Layout,
+                      bool &WasRelaxed) const override;
+ 
++  bool relaxLEB128(MCLEBFragment &LF, MCAsmLayout &Layout,
++                   int64_t &Value) const override;
++
+   bool writeNopData(raw_ostream &OS, uint64_t Count,
+                     const MCSubtargetInfo *STI) const override;
+ 
+diff --git a/llvm/test/MC/ELF/RISCV/gen-dwarf.s b/llvm/test/MC/ELF/RISCV/gen-dwarf.s
+index 2235559d5f35..2fb7b293dbe9 100644
+--- a/llvm/test/MC/ELF/RISCV/gen-dwarf.s
++++ b/llvm/test/MC/ELF/RISCV/gen-dwarf.s
+@@ -51,6 +51,8 @@
+ ## TODO A section needs two relocations.
+ # RELOC:      Section ([[#]]) .rela.debug_rnglists {
+ # RELOC-NEXT:   0xD R_RISCV_64 .text.foo 0x0
++# RELOC-NEXT:   0x15 R_RISCV_SET_ULEB128 <null> 0x0
++# RELOC-NEXT:   0x15 R_RISCV_SUB_ULEB128 .text.foo 0x0
+ # RELOC-NEXT:   0x17 R_RISCV_64 .text.bar 0x0
+ # RELOC-NEXT: }
+ 
+diff --git a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
+index 1b890fbe041a..e1e5d3340918 100644
+--- a/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
++++ b/llvm/lib/Target/RISCV/MCTargetDesc/RISCVAsmBackend.cpp
+@@ -19,6 +19,7 @@
+ #include "llvm/MC/MCObjectWriter.h"
+ #include "llvm/MC/MCSymbol.h"
+ #include "llvm/MC/MCValue.h"
++#include "llvm/Support/CommandLine.h"
+ #include "llvm/Support/Endian.h"
+ #include "llvm/Support/EndianStream.h"
+ #include "llvm/Support/ErrorHandling.h"
+@@ -27,6 +28,13 @@
+ 
+ using namespace llvm;
+ 
++// Temporary workaround for old linkers that do not support ULEB128 relocations,
++// which are abused by DWARF v5 DW_LLE_offset_pair/DW_RLE_offset_pair
++// implemented in Clang/LLVM.
++static cl::opt<bool> ULEB128Reloc(
++    "riscv-uleb128-reloc", cl::init(true), cl::Hidden,
++    cl::desc("Emit R_RISCV_SET_ULEB128/E_RISCV_SUB_ULEB128 if appropriate"));
++
+ std::optional<MCFixupKind> RISCVAsmBackend::getFixupKind(StringRef Name) const {
+   if (STI.getTargetTriple().isOSBinFormatELF()) {
+     unsigned Type;
+@@ -126,6 +134,7 @@ bool RISCVAsmBackend::shouldForceRelocation(const MCAssembler &Asm,
+   case FK_Data_2:
+   case FK_Data_4:
+   case FK_Data_8:
++  case FK_Data_leb128:
+     if (Target.isAbsolute())
+       return false;
+     break;
+@@ -330,6 +339,18 @@ bool RISCVAsmBackend::relaxDwarfCFA(MCDwarfCallFrameFragment &DF,
+   return true;
+ }
+ 
++bool RISCVAsmBackend::relaxLEB128(MCLEBFragment &LF, MCAsmLayout &Layout,
++                                  int64_t &Value) const {
++  if (LF.isSigned())
++    return false;
++  const MCExpr &Expr = LF.getValue();
++  if (ULEB128Reloc) {
++    LF.getFixups().push_back(
++        MCFixup::create(0, &Expr, FK_Data_leb128, Expr.getLoc()));
++  }
++  return Expr.evaluateKnownAbsolute(Value, Layout);
++}
++
+ // Given a compressed control flow instruction this function returns
+ // the expanded instruction.
+ unsigned RISCVAsmBackend::getRelaxedOpcode(unsigned Op) const {
+@@ -416,6 +437,7 @@ static uint64_t adjustFixupValue(const MCFixup &Fixup, uint64_t Value,
+   case FK_Data_4:
+   case FK_Data_8:
+   case FK_Data_6b:
++  case FK_Data_leb128:
+     return Value;
+   case RISCV::fixup_riscv_set_6b:
+     return Value & 0x03;
+@@ -596,6 +618,10 @@ bool RISCVAsmBackend::handleAddSubRelocations(const MCAsmLayout &Layout,
+     TA = ELF::R_RISCV_ADD64;
+     TB = ELF::R_RISCV_SUB64;
+     break;
++  case llvm::FK_Data_leb128:
++    TA = ELF::R_RISCV_SET_ULEB128;
++    TB = ELF::R_RISCV_SUB_ULEB128;
++    break;
+   default:
+     llvm_unreachable("unsupported fixup size");
+   }
+Upstream-Status: Pending
+diff --git a/lld/ELF/Arch/RISCV.cpp b/lld/ELF/Arch/RISCV.cpp
+--- a/lld/ELF/Arch/RISCV.cpp
++++ b/lld/ELF/Arch/RISCV.cpp
+@@ -43,6 +43,8 @@
+                      const uint8_t *loc) const override;
+   void relocate(uint8_t *loc, const Relocation &rel,
+                 uint64_t val) const override;
++  void relocatePair(uint8_t *loc, const Relocation &relA, uint64_t valA,
++                    const Relocation &relB, uint64_t valB) const override;
+   bool relaxOnce(int pass) const override;
+ };
+ 
+@@ -101,6 +103,16 @@
+          (extractBits(imm, 4, 0) << 7);
+ }
+ 
++static void reportULEB128LengthExtend(uint8_t *loc, const RelType type,
++                                      Symbol &setSymbol, Symbol &subSymbol,
++                                      unsigned oldLength, unsigned newLength) {
++  ErrorPlace errPlace = getErrorPlace(loc);
++  error(errPlace.loc + "ULEB128 difference relocation pair overflow: " +
++        Twine(newLength) + " bytes needed but only " + Twine(oldLength) +
++        " bytes allocated; references '" + toString(setSymbol) + "' - '" +
++        toString(subSymbol) + "'");
++}
++
+ RISCV::RISCV() {
+   copyRel = R_RISCV_COPY;
+   pltRel = R_RISCV_JUMP_SLOT;
+@@ -277,6 +289,10 @@
+   case R_RISCV_SUB32:
+   case R_RISCV_SUB64:
+     return R_RISCV_ADD;
++  case R_RISCV_SET_ULEB128:
++    return R_RELOCATE_PAIR_FIRST;
++  case R_RISCV_SUB_ULEB128:
++    return R_RELOCATE_PAIR_SECOND;
+   case R_RISCV_JAL:
+   case R_RISCV_BRANCH:
+   case R_RISCV_PCREL_HI20:
+@@ -313,6 +329,18 @@
+   }
+ }
+ 
++void RISCV::relocatePair(uint8_t *loc, const Relocation &relA, uint64_t valA,
++                         const Relocation &relB, uint64_t valB) const {
++  unsigned oldLength;
++  decodeULEB128(loc, &oldLength);
++  uint64_t newVal = valA - valB;
++  unsigned newLength = getULEB128Size(newVal);
++  if (newLength <= oldLength)
++    encodeULEB128(newVal, loc, /*PadTo*/ oldLength);
++  else
++    reportULEB128LengthExtend(loc, relA.type, *relA.sym, *relB.sym, oldLength,
++                              newLength);
++}
+ void RISCV::relocate(uint8_t *loc, const Relocation &rel, uint64_t val) const {
+   const unsigned bits = config->wordsize * 8;
+ 
+diff --git a/lld/ELF/InputSection.cpp b/lld/ELF/InputSection.cpp
+--- a/lld/ELF/InputSection.cpp
++++ b/lld/ELF/InputSection.cpp
+@@ -635,6 +635,8 @@
+   case R_RELAX_TLS_LD_TO_LE_ABS:
+   case R_RELAX_GOT_PC_NOPIC:
+   case R_RISCV_ADD:
++  case R_RELOCATE_PAIR_FIRST:
++  case R_RELOCATE_PAIR_SECOND:
+     return sym.getVA(a);
+   case R_ADDEND:
+     return a;
+@@ -861,7 +863,7 @@
+       break;
+     }
+ 
+-  for (const RelTy &rel : rels) {
++  for (auto [i, rel] : llvm::enumerate(rels)) {
+     RelType type = rel.getType(config->isMips64EL);
+ 
+     // GCC 8.0 or earlier have a bug that they emit R_386_GOTPC relocations
+@@ -940,6 +942,57 @@
+       continue;
+     }
+ 
++    // Relocation pairs should appear together; we always handle them at the
++    // later one.
++    if (expr == R_RELOCATE_PAIR_FIRST || expr == R_RELOCATE_PAIR_SECOND) {
++      RelExpr expectedOther = expr == R_RELOCATE_PAIR_FIRST
++                                  ? R_RELOCATE_PAIR_SECOND
++                                  : R_RELOCATE_PAIR_FIRST;
++      bool foundPair = false;
++      const RelTy *otherRel = nullptr;
++      RelExpr otherExpr = R_NONE;
++      RelType otherType = R_NONE;
++      Symbol *otherSym = nullptr;
++      bool isSecondOne = false;
++
++      auto getRelInfo = [&](size_t idx) {
++        otherRel = &rels[idx];
++        otherType = otherRel->getType(config->isMips64EL);
++        otherSym = &getFile<ELFT>()->getRelocTargetSym(*otherRel);
++        otherExpr = target.getRelExpr(otherType, *otherSym, bufLoc);
++      };
++
++      // Try to look towards the front.
++      if (i + 1 < rels.size()) {
++        getRelInfo(i + 1);
++        if (expectedOther == otherExpr)
++          foundPair = true;
++      }
++      // Try to look towards the back.
++      if (!foundPair && i >= 1) {
++        getRelInfo(i - 1);
++        if (expectedOther == otherExpr) {
++          foundPair = true;
++          isSecondOne = true;
++        }
++      }
++      if (!foundPair) {
++        std::string msg = getLocation(offset) +
++                          ": found orphan paired relocation " + toString(type) +
++                          " against symbol '" + toString(sym) + "'";
++        error(msg);
++        continue;
++      }
++      if (isSecondOne)
++        target.relocatePair(
++            bufLoc, Relocation{R_NONE, otherType, 0, 0, otherSym},
++            SignExtend64<bits>(otherSym->getVA(addend)),
++            Relocation{R_NONE, type, 0, 0,
++                       &getFile<ELFT>()->getRelocTargetSym(rel)},
++            SignExtend64<bits>(sym.getVA(addend)));
++      continue;
++    }
++
+     std::string msg = getLocation(offset) + ": has non-ABS relocation " +
+                       toString(type) + " against symbol '" + toString(sym) +
+                       "'";
+diff --git a/lld/ELF/Relocations.h b/lld/ELF/Relocations.h
+--- a/lld/ELF/Relocations.h
++++ b/lld/ELF/Relocations.h
+@@ -57,6 +57,8 @@
+   R_RELAX_TLS_IE_TO_LE,
+   R_RELAX_TLS_LD_TO_LE,
+   R_RELAX_TLS_LD_TO_LE_ABS,
++  R_RELOCATE_PAIR_FIRST,
++  R_RELOCATE_PAIR_SECOND,
+   R_SIZE,
+   R_TPREL,
+   R_TPREL_NEG,
+diff --git a/lld/ELF/Target.h b/lld/ELF/Target.h
+--- a/lld/ELF/Target.h
++++ b/lld/ELF/Target.h
+@@ -92,6 +92,9 @@
+     relocate(loc, Relocation{R_NONE, type, 0, 0, nullptr}, val);
+   }
+   virtual void relocateAlloc(InputSectionBase &sec, uint8_t *buf) const;
++  void reportOrphanRelocationPair(uint8_t *loc, const Relocation &rel) const;
++  virtual void relocatePair(uint8_t *loc, const Relocation &relA, uint64_t valA,
++                            const Relocation &relB, uint64_t valB) const;
+ 
+   // Do a linker relaxation pass and return true if we changed something.
+   virtual bool relaxOnce(int pass) const { return false; }
+diff --git a/lld/ELF/Target.cpp b/lld/ELF/Target.cpp
+--- a/lld/ELF/Target.cpp
++++ b/lld/ELF/Target.cpp
+@@ -159,17 +159,57 @@
+   uint64_t secAddr = sec.getOutputSection()->addr;
+   if (auto *s = dyn_cast<InputSection>(&sec))
+     secAddr += s->outSecOff;
+-  for (const Relocation &rel : sec.relocs()) {
++  for (auto [i, rel] : llvm::enumerate(sec.relocs())) {
+     uint8_t *loc = buf + rel.offset;
+     const uint64_t val = SignExtend64(
+         sec.getRelocTargetVA(sec.file, rel.type, rel.addend,
+                              secAddr + rel.offset, *rel.sym, rel.expr),
+         bits);
+-    if (rel.expr != R_RELAX_HINT)
++    switch (rel.expr) {
++    case R_RELAX_HINT:
++      break;
++    case R_RELOCATE_PAIR_FIRST: {
++      if (i + 1 >= sec.relocs().size()) {
++        reportOrphanRelocationPair(loc, rel);
++        break;
++      }
++
++      auto nextRel = sec.relocs()[i + 1];
++      uint64_t nextVal = SignExtend64(
++          sec.getRelocTargetVA(sec.file, nextRel.type, nextRel.addend,
++                               secAddr + nextRel.offset, *nextRel.sym,
++                               nextRel.expr),
++          bits);
++      relocatePair(loc, rel, val, nextRel, nextVal);
++    } break;
++    case R_RELOCATE_PAIR_SECOND:
++      if (i < 1 ||
++          (i > 1 && sec.relocs()[i - 1].expr != R_RELOCATE_PAIR_FIRST)) {
++        reportOrphanRelocationPair(loc, rel);
++      }
++      break;
++    default:
+       relocate(loc, rel, val);
++      break;
++    }
+   }
+ }
+ 
++void TargetInfo::reportOrphanRelocationPair(uint8_t *loc,
++                                            const Relocation &rel) const {
++  ErrorPlace errPlace = getErrorPlace(loc);
++  std::string msg = errPlace.loc + ": found orphan paired relocation " +
++                    toString(rel.type) + " against symbol '" +
++                    toString(*rel.sym) + "'";
++  error(msg);
++}
++
++void TargetInfo::relocatePair(uint8_t *loc, const Relocation &relA,
++                              uint64_t valA, const Relocation &relB,
++                              uint64_t valB) const {
++  llvm_unreachable("Target doesn't support relocatePair.");
++}
++
+ uint64_t TargetInfo::getImageBase() const {
+   // Use --image-base if set. Fall back to the target default if not.
+   if (config->imageBase)
+diff --git a/lld/test/ELF/riscv-bad-uleb128-ext-len-noalloc.s b/lld/test/ELF/riscv-bad-uleb128-ext-len-noalloc.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-ext-len-noalloc.s
+@@ -0,0 +1,83 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: ULEB128 difference relocation pair overflow: 2 bytes needed but only 1 bytes allocated; references '.Lend_start' - '_start' 
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .debug_info
++    Type:            SHT_PROGBITS
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.debug_info
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .debug_info
++    Relocations:
++      - Symbol:          .Lend_start
++        Type:            R_RISCV_SET_ULEB128
++      - Symbol:          _start
++        Type:            R_RISCV_SUB_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .debug_info
++      - Name:            .rela.debug_info
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-bad-uleb128-ext-len.s b/lld/test/ELF/riscv-bad-uleb128-ext-len.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-ext-len.s
+@@ -0,0 +1,86 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: ULEB128 difference relocation pair overflow: 2 bytes needed but only 1 bytes allocated; references '.Lend_start' - '_start' 
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .data
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_WRITE, SHF_ALLOC ]
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.data
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .data
++    Relocations:
++      - Symbol:          .Lend_start
++        Type:            R_RISCV_SET_ULEB128
++      - Symbol:          _start
++        Type:            R_RISCV_SUB_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .data
++      - Name:            .rela.data
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            '$d.1'
++    Section:         .data
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-bad-uleb128-no-pair-1.s b/lld/test/ELF/riscv-bad-uleb128-no-pair-1.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-no-pair-1.s
+@@ -0,0 +1,84 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: found orphan paired relocation R_RISCV_SET_ULEB128 against symbol '.Lend_start'
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .data
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_WRITE, SHF_ALLOC ]
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.data
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .data
++    Relocations:
++      - Symbol:          .Lend_start
++        Type:            R_RISCV_SET_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .data
++      - Name:            .rela.data
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            '$d.1'
++    Section:         .data
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-bad-uleb128-no-pair-2.s b/lld/test/ELF/riscv-bad-uleb128-no-pair-2.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-no-pair-2.s
+@@ -0,0 +1,84 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: found orphan paired relocation R_RISCV_SUB_ULEB128 against symbol '_start'
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .data
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_WRITE, SHF_ALLOC ]
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.data
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .data
++    Relocations:
++      - Symbol:          _start
++        Type:            R_RISCV_SUB_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .data
++      - Name:            .rela.data
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            '$d.1'
++    Section:         .data
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-bad-uleb128-no-pair-3.s b/lld/test/ELF/riscv-bad-uleb128-no-pair-3.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-no-pair-3.s
+@@ -0,0 +1,81 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: found orphan paired relocation R_RISCV_SET_ULEB128 against symbol '.Lend_start'
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .debug_info
++    Type:            SHT_PROGBITS
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.debug_info
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .debug_info
++    Relocations:
++      - Symbol:          .Lend_start
++        Type:            R_RISCV_SET_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .debug_info
++      - Name:            .rela.debug_info
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-bad-uleb128-no-pair-4.s b/lld/test/ELF/riscv-bad-uleb128-no-pair-4.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-bad-uleb128-no-pair-4.s
+@@ -0,0 +1,81 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: yaml2obj a.yml -o a.o
++# RUN: not ld.lld -T lds a.o -o 32c 2>&1 | FileCheck %s
++
++# CHECK: found orphan paired relocation R_RISCV_SUB_ULEB128 against symbol '_start'
++
++#--- a.yml
++
++--- !ELF
++FileHeader:
++  Class:           ELFCLASS32
++  Data:            ELFDATA2LSB
++  Type:            ET_REL
++  Machine:         EM_RISCV
++  Flags:           [ EF_RISCV_RVC, EF_RISCV_FLOAT_ABI_SOFT ]
++  SectionHeaderStringTable: .strtab
++Sections:
++  - Name:            .text
++    Type:            SHT_PROGBITS
++    Flags:           [ SHF_ALLOC, SHF_EXECINSTR ]
++    AddressAlign:    0x2
++    Content:         '01000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010001000100010097000000E78000008280'
++  - Name:            .debug_info
++    Type:            SHT_PROGBITS
++    AddressAlign:    0x1
++    Content:         '0000000000'
++  - Name:            .rela.text
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .text
++    Relocations:
++      - Offset:          0x1FE
++        Symbol:          a
++        Type:            R_RISCV_CALL_PLT
++      - Offset:          0x1FE
++        Type:            R_RISCV_RELAX
++  - Name:            .rela.debug_info
++    Type:            SHT_RELA
++    Flags:           [ SHF_INFO_LINK ]
++    Link:            .symtab
++    AddressAlign:    0x4
++    Info:            .debug_info
++    Relocations:
++      - Symbol:          _start
++        Type:            R_RISCV_SUB_ULEB128
++  - Type:            SectionHeaderTable
++    Sections:
++      - Name:            .strtab
++      - Name:            .text
++      - Name:            .rela.text
++      - Name:            .debug_info
++      - Name:            .rela.debug_info
++      - Name:            .symtab
++Symbols:
++  - Name:            '$x.0'
++    Section:         .text
++  - Name:            a
++    Section:         .text
++    Value:           0x206
++  - Name:            .Lend_start
++    Section:         .text
++    Value:           0x206
++  - Name:            _start
++    Section:         .text
++    Binding:         STB_GLOBAL
++    Size:            0x206
++...
++
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+diff --git a/lld/test/ELF/riscv-relax-uleb128.s b/lld/test/ELF/riscv-relax-uleb128.s
+new file mode 100644
+--- /dev/null
++++ b/lld/test/ELF/riscv-relax-uleb128.s
+@@ -0,0 +1,77 @@
++# REQUIRES: riscv
++## Relax R_RISCV_SET_ULEB128 and R_RISCV_SUB_ULEB128.
++
++# RUN: rm -rf %t && split-file %s %t && cd %t
++
++## RELAX
++# RUN: llvm-mc -filetype=obj -triple=riscv32 -riscv-enable-uleb128 -mattr=+c,+relax a.s -o a.32c.o
++# RUN: ld.lld -T lds a.32c.o -o 32c
++# RUN: llvm-objdump -td -j .text -j .data -M no-aliases 32c | FileCheck %s --check-prefixes=RELAX,RELAX32
++
++# RUN: llvm-mc -filetype=obj -triple=riscv64 -riscv-enable-uleb128 -mattr=+c,+relax a.s -o a.64c.o
++# RUN: ld.lld -T lds a.64c.o -o 64c
++# RUN: llvm-objdump -td -j .text -j .data -M no-aliases 64c | FileCheck %s --check-prefixes=RELAX,RELAX64
++
++## --no-relax disables relaxation.
++# RUN: ld.lld -T lds a.64c.o --no-relax -o 64c.norelax
++# RUN: llvm-objdump -td -j .text -j .data -M no-aliases 64c.norelax | FileCheck %s --check-prefixes=NORELAX
++
++# RELAX32:       00010002 l       .text  00000000 a
++# RELAX32:       00010002 l       .text  00000000 .Lend_start
++# RELAX32:       00010000 g       .text  00000002 _start
++
++# RELAX64:       0000000000010004 l       .text  0000000000000000 a
++# RELAX64:       0000000000010004 l       .text  0000000000000000 .Lend_start
++# RELAX64:       0000000000010000 g       .text  0000000000000004 _start
++
++# RELAX-LABEL:   <_start>:
++# RELAX32-NEXT:    10000: 09 20         c.jal   0x10002 <a>
++# RELAX64-NEXT:    10000: ef 00 40 00   jal     ra, 0x10004 <a>
++# RELAX-EMPTY:
++# RELAX-NEXT:    <a>:
++# RELAX32-NEXT:      10002: 82 80         c.jr    ra
++# RELAX64-NEXT:      10004: 82 80         c.jr    ra
++# RELAX-EMPTY:
++
++# RELAX-LABEL:   <.data>:
++# RELAX32:        20000: 82 80
++# RELAX32-NEXT:   20002: 80 80
++# RELAX32-NEXT:   20004: 00
++# RELAX64:        20000: 84 80
++# RELAX64-NEXT:   20002: 80 80
++# RELAX64-NEXT:   20004: 80 80
++# RELAX64-NEXT:   20006: 80 80
++# RELAX64-NEXT:   20008: 80 00
++# RELAX-EMPTY:
++
++# NORELAX-LABEL: <_start>:
++# NORELAX:           10000:  97 00 00 00   auipc   ra, 0
++# NORELAX-NEXT:              e7 80 80 00   jalr    ra, 8(ra)
++# NORELAX-EMPTY:
++
++# NORELAX-LABEL:   <.data>:
++# NORELAX:           20000: 88 80
++# NORELAX-NEXT:      20002: 80 80
++# NORELAX-NEXT:      20004: 80 80
++# NORELAX-NEXT:      20006: 80 80
++# NORELAX-NEXT:      20008: 80 00
++# NORELAX-EMPTY:
++
++
++#--- a.s
++.global _start
++_start:
++  call a          # rv32c: c.jal; rv64c: jal
++.Lend_start:
++.size _start, . - _start
++
++a:
++  ret
++.data
++.uleb128 .Lend_start-_start
++
++#--- lds
++SECTIONS {
++  .text 0x10000 : { *(.text) }
++  .data 0x20000 : { *(.data) }
++}
+
