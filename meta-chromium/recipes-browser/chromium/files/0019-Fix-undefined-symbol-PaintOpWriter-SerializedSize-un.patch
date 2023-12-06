@@ -19,10 +19,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 8 insertions(+)
 
 diff --git a/cc/paint/paint_op_writer.h b/cc/paint/paint_op_writer.h
-index 70153c0..f47eb93 100644
+index 26bb335..08c1532 100644
 --- a/cc/paint/paint_op_writer.h
 +++ b/cc/paint/paint_op_writer.h
-@@ -122,6 +122,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
+@@ -130,6 +130,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
    static size_t SerializedSize(const PaintRecord& record);
    static size_t SerializedSize(const SkHighContrastConfig& config);
 
@@ -32,7 +32,7 @@ index 70153c0..f47eb93 100644
    // Serialization of raw/smart pointers is not supported by default.
    template <typename T>
    static inline size_t SerializedSize(const T* p);
-@@ -385,6 +388,11 @@ constexpr size_t PaintOpWriter::SerializedSize<SkGainmapInfo>() {
+@@ -462,6 +465,11 @@ constexpr size_t PaintOpWriter::SerializedSize<SkGainmapInfo>() {
           SerializedSizeSimple<uint32_t>();    // fBaseImageType
  }
 

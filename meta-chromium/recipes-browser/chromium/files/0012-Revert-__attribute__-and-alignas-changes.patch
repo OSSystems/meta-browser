@@ -32,10 +32,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  .../third_party/base/compiler_specific.h      |  2 +-
  3 files changed, 37 insertions(+), 19 deletions(-)
 
-diff --git a/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h b/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
-index 8a8095c..188430e 100644
---- a/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
-+++ b/base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h
+diff --git a/base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h b/base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h
+index 30be67c..1788239 100644
+--- a/base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h
++++ b/base/allocator/partition_allocator/src/partition_alloc/partition_alloc_base/compiler_specific.h
 @@ -25,7 +25,7 @@
  // Use like:
  //   NOINLINE void DoStuff() { ... }
