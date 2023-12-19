@@ -1,4 +1,5 @@
 SRC_URI += "crate://crates.io/libloading/0.7.4 \
+           crate://crates.io/oxilangtag/0.1.3 \
            crate://crates.io/packed_simd/0.3.9 \
            crate://crates.io/cfg-if/1.0.0 \
            crate://crates.io/textwrap/0.15.2 \
@@ -892,3 +893,4 @@ SRC_URI[serde-1.0.152.sha256sum] = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccd
 SRC_URI[serde_derive-1.0.152.sha256sum] = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
 SRC_URI[askama-0.11.1.sha256sum] = "fb98f10f371286b177db5eeb9a6e5396609555686a35e1d4f7b9a9c6d8af0139"
 SRC_URI[askama_derive-0.11.2.sha256sum] = "87bf87e6e8b47264efa9bde63d6225c6276a52e05e91bf37eaa8afd0032d6b71"
+SRC_URI[oxilangtag-0.1.3.sha256sum] = "8d91edf4fbb970279443471345a4e8c491bf05bb283b3e6c88e4e606fd8c181b"

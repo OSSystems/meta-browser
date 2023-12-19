@@ -104,3 +104,54 @@ Upstream-Status: Inappropriate
  [source."@REPLACE_NAME@"]
 -directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
 +directory = "../../cargo_home/bitbake"
+--- ./gfx/wgpu_bindings/Cargo.toml.orig	2023-12-19 16:12:09.745686495 +0100
++++ ./gfx/wgpu_bindings/Cargo.toml	2023-12-19 16:14:00.983568703 +0100
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ #Note: "replay" shouldn't ideally be needed,
+ # but it allows us to serialize everything across IPC.
+ features = ["replay", "trace", "serial-pass", "strict_asserts", "wgsl"]
+@@ -26,33 +25,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx11", "dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-hal"
+ 
+ [dependencies]
+ bincode = "1"
