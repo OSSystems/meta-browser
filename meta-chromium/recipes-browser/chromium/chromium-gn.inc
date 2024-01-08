@@ -14,11 +14,12 @@ B = "${S}/${OUTPUT_DIR}"
 SRC_URI += "\
     file://backport/IWYU-for-chrome-browser-ui-views-dark_mode_.patch \
     file://backport/IWYU-for-net-filter-zstd_source_stream.cc.patch \
-    file://backport/Replace-std-ranges-which-is-banned-c-20-fea.patch \
     file://backport/IWYU-for-components-user_education-common-p.patch \
-    file://backport/MiracleParameter-Improve-MiracleParameter-s.patch \
-    file://backport/Replace-std-ranges-with-base-ranges.patch \
     file://backport/atspi-mark-possibly-unused-gn-variables.patch \
+    file://backport/Revert-recent-C-20-usage-in-CFX_FillRenderO.patch \
+    file://backport/IWYU-for-chrome-browser-ui-tabs-organizatio.patch \
+    file://backport/IWYU-for-content-browser-generic_sensor-fra.patch \
+    file://backport/IWYU-for-g-c-service-shared_image-ozone_ima.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
@@ -35,7 +36,7 @@ SRC_URI += "\
     file://0011-Only-default-operator-on-declaration.patch \
     file://0012-Revert-__attribute__-and-alignas-changes.patch \
     file://0013-Add-missing-typename-s.patch \
-    file://0014-Don-t-pass-disable-auto-upgrade-debug-info-to-linker.patch \
+    file://0014-Don-t-pass-unknown-LLVM-options.patch \
     file://0015-Avoid-capturing-structured-bindings.patch \
     file://0016-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
     file://0017-Avoid-parenthesized-initialization-of-aggregates.patch \
@@ -43,6 +44,7 @@ SRC_URI += "\
     file://0019-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
     file://0020-Fix-implicitly-deleted-default-constructor-build-err.patch \
     file://0021-Don-t-delete-CrashKeyWithName-dtor.patch \
+    file://0022-Use-base-ranges-instead-of-std-ranges.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\

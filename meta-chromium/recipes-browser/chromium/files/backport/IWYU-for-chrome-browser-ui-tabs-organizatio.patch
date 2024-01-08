@@ -1,0 +1,27 @@
+From 7ff557e503cb55da83bd2c7cec516663b92b29a6 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 13 Dec 2023 15:06:50 +0000
+Subject: [PATCH] Backport "IWYU for
+ chrome/browser/ui/tabs/organization/trigger_observer.h"
+
+This patch fixes a build error due to a missing include. It will be
+included in upstream's 122 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5116504]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ chrome/browser/ui/tabs/organization/trigger_observer.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/browser/ui/tabs/organization/trigger_observer.h b/chrome/browser/ui/tabs/organization/trigger_observer.h
+index ffa5481..2d8c001 100644
+--- a/chrome/browser/ui/tabs/organization/trigger_observer.h
++++ b/chrome/browser/ui/tabs/organization/trigger_observer.h
+@@ -6,6 +6,7 @@
+ #define CHROME_BROWSER_UI_TABS_ORGANIZATION_TRIGGER_OBSERVER_H_
+
+ #include <memory>
++#include <unordered_map>
+
+ #include "base/functional/callback.h"
+ #include "chrome/browser/ui/browser_list_observer.h"

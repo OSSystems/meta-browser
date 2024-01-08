@@ -9,17 +9,41 @@ versions of clang (probably < 16).
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
+ base/containers/map_util.h                             |  4 ++--
  .../download/bubble/download_bubble_update_service.cc  |  6 +++---
  .../optimization_guide/core/tflite_model_executor.h    | 10 +++++-----
  .../supervised_user/core/browser/proto_fetcher.cc      |  6 +++---
  .../supervised_user/core/browser/proto_fetcher.h       |  4 ++--
  .../browser/web_ui_browser_interface_broker_registry.h |  6 +++---
+ .../blink/renderer/bindings/core/v8/async_iterable.h   |  4 ++--
  .../core/html/parser/html_document_parser_fastpath.cc  |  2 +-
  .../core/paint/object_paint_properties_sparse.h        |  4 ++--
- 7 files changed, 19 insertions(+), 19 deletions(-)
+ 9 files changed, 23 insertions(+), 23 deletions(-)
 
+diff --git a/base/containers/map_util.h b/base/containers/map_util.h
+index 35ce4d7..ecfcfe1 100644
+--- a/base/containers/map_util.h
++++ b/base/containers/map_util.h
+@@ -42,7 +42,7 @@ constexpr internal::MappedType<Map>* FindOrNull(Map& map, const Key& key) {
+ template <typename Map,
+           typename Key,
+           typename MappedElementType =
+-              std::pointer_traits<internal::MappedType<Map>>::element_type>
++              typename std::pointer_traits<internal::MappedType<Map>>::element_type>
+ constexpr const MappedElementType* FindPtrOrNull(const Map& map,
+                                                  const Key& key) {
+   auto it = map.find(key);
+@@ -58,7 +58,7 @@ constexpr const MappedElementType* FindPtrOrNull(const Map& map,
+ template <typename Map,
+           typename Key,
+           typename MappedElementType =
+-              std::pointer_traits<internal::MappedType<Map>>::element_type>
++              typename std::pointer_traits<internal::MappedType<Map>>::element_type>
+ constexpr MappedElementType* FindPtrOrNull(Map& map, const Key& key) {
+   auto it = map.find(key);
+   return it != map.end() ? std::to_address(it->second) : nullptr;
 diff --git a/chrome/browser/download/bubble/download_bubble_update_service.cc b/chrome/browser/download/bubble/download_bubble_update_service.cc
-index b6dfd32..e7bc0ce 100644
+index 3fb1520..7d1723f 100644
 --- a/chrome/browser/download/bubble/download_bubble_update_service.cc
 +++ b/chrome/browser/download/bubble/download_bubble_update_service.cc
 @@ -89,7 +89,7 @@ ItemSortKey GetSortKey(const Item& item) {
@@ -31,7 +55,7 @@ index b6dfd32..e7bc0ce 100644
    CHECK(!cache.empty());
    auto it = cache.end();
    return std::prev(it);
-@@ -1029,9 +1029,9 @@ bool DownloadBubbleUpdateService::CacheManager::RemoveItemFromCacheImpl(
+@@ -1089,9 +1089,9 @@ bool DownloadBubbleUpdateService::CacheManager::RemoveItemFromCacheImpl(
  }
 
  template <typename Id, typename Item>
@@ -93,7 +117,7 @@ index bbb5208..a256a85 100644
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 diff --git a/components/supervised_user/core/browser/proto_fetcher.cc b/components/supervised_user/core/browser/proto_fetcher.cc
-index deb2bc5..71644d4 100644
+index 26a121a..802fb92 100644
 --- a/components/supervised_user/core/browser/proto_fetcher.cc
 +++ b/components/supervised_user/core/browser/proto_fetcher.cc
 @@ -526,7 +526,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
@@ -124,7 +148,7 @@ index deb2bc5..71644d4 100644
    KeyType key = requests_in_flight_.Add(MakeFetcher(request));
    requests_in_flight_.Lookup(key)->Start(
 diff --git a/components/supervised_user/core/browser/proto_fetcher.h b/components/supervised_user/core/browser/proto_fetcher.h
-index 8266c99..9c41978 100644
+index 8266c99d7..9c41978 100644
 --- a/components/supervised_user/core/browser/proto_fetcher.h
 +++ b/components/supervised_user/core/browser/proto_fetcher.h
 @@ -165,10 +165,10 @@ class ParallelFetchManager {
@@ -158,11 +182,33 @@ index 0a419be..7253c96 100644
 
      // WebUIController::GetType() requires an instantiated WebUIController
      // (because it's a virtual method and can't be static). Here we only have
+diff --git a/third_party/blink/renderer/bindings/core/v8/async_iterable.h b/third_party/blink/renderer/bindings/core/v8/async_iterable.h
+index b4f3b0d..4fff750 100644
+--- a/third_party/blink/renderer/bindings/core/v8/async_iterable.h
++++ b/third_party/blink/renderer/bindings/core/v8/async_iterable.h
+@@ -220,7 +220,7 @@ class PairAsyncIterable {
+  private:
+   virtual IterationSource* CreateIterationSource(
+       ScriptState* script_state,
+-      IterationSource::Kind kind,
++      typename IterationSource::Kind kind,
+       ExceptionState& exception_state) = 0;
+ };
+
+@@ -262,7 +262,7 @@ class ValueAsyncIterable {
+  private:
+   virtual IterationSource* CreateIterationSource(
+       ScriptState* script_state,
+-      IterationSource::Kind kind,
++      typename IterationSource::Kind kind,
+       ExceptionState& exception_state) = 0;
+ };
+
 diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
-index 82f34db..70709e1 100644
+index 83ef203e..b211f43 100644
 --- a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 +++ b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
-@@ -169,7 +169,7 @@ class HTMLFastPathParser {
+@@ -172,7 +172,7 @@ class HTMLFastPathParser {
    using Span = base::span<const Char>;
    using USpan = base::span<const UChar>;
    // 32 matches that used by HTMLToken::Attribute.

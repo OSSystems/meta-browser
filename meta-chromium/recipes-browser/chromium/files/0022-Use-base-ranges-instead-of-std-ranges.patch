@@ -1,0 +1,27 @@
+From 3f1219e22675334afb88ab4d6113be0102a325e2 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 12 Dec 2023 11:57:05 +0000
+Subject: [PATCH] Use base::ranges instead of std::ranges
+
+The latter is a C++20 feature, which causes problems on the older
+versions of clang we use.
+
+Upstream-Status: Inappropriate [specific to older versions of clang]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ components/autofill/core/browser/payments/iban_save_manager.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/components/autofill/core/browser/payments/iban_save_manager.cc b/components/autofill/core/browser/payments/iban_save_manager.cc
+index a1a9c8f..830935c 100644
+--- a/components/autofill/core/browser/payments/iban_save_manager.cc
++++ b/components/autofill/core/browser/payments/iban_save_manager.cc
+@@ -123,7 +123,7 @@ bool IbanSaveManager::ShouldOfferUploadSave(
+
+   // Offer server save for this IBAN if it doesn't already match an existing
+   // server IBAN.
+-  return std::ranges::none_of(
++  return base::ranges::none_of(
+       personal_data_manager_->GetServerIbans(),
+       [&iban_import_candidate](const auto& iban) {
+         return iban->MatchesPrefixSuffixAndLength(iban_import_candidate);

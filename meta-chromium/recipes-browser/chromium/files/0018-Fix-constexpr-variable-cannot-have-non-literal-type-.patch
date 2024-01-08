@@ -3,17 +3,47 @@ From: Max Ihlenfeldt <max@igalia.com>
 Date: Thu, 31 Aug 2023 10:27:47 +0000
 Subject: [PATCH] Fix "constexpr variable cannot have non-literal type" errors
 
-Something about Chromium's `base::flat_map` /
-`base::internal::flat_tree` isn't considered a literal type by older
-clang versions, meaning they can't be used in constexpr expressions. We
-need to change them to be const instead.
+Older clang versions don't consider some types to be literal types,
+contrary to the version upstream uses. This means they can't be used in
+constexpr expressions or as return types of constexpr functions. We need
+to change these expressions/functions to be const instead.
 
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- ui/base/wayland/color_manager_util.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../core/browser/data_model/autofill_i18n_api.h      |  4 ++--
+ .../generic_sensor/frame_sensor_provider_proxy.cc    |  2 +-
+ ui/base/wayland/color_manager_util.h                 | 12 ++++++------
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/components/autofill/core/browser/data_model/autofill_i18n_api.h b/components/autofill/core/browser/data_model/autofill_i18n_api.h
+index cf604d5..b7a5f77 100644
+--- a/components/autofill/core/browser/data_model/autofill_i18n_api.h
++++ b/components/autofill/core/browser/data_model/autofill_i18n_api.h
+@@ -15,8 +15,8 @@ namespace autofill::i18n_model_definition {
+ // Country code that represents autofill's legacy address hierarchy model as
+ // stored `kAutofillModelRules`. As a workaround for GCC we declare the
+ // std::string constexpr first.
+-constexpr inline std::string kLegacyHierarchyCountryCodeString{"XX"};
+-constexpr AddressCountryCode kLegacyHierarchyCountryCode =
++const inline std::string kLegacyHierarchyCountryCodeString{"XX"};
++const AddressCountryCode kLegacyHierarchyCountryCode =
+     AddressCountryCode(kLegacyHierarchyCountryCodeString);
+
+ // Creates an instance of the address hierarchy model corresponding to the
+diff --git a/content/browser/generic_sensor/frame_sensor_provider_proxy.cc b/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
+index b8f0b48..e24c144 100644
+--- a/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
++++ b/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
+@@ -20,7 +20,7 @@ namespace content {
+
+ namespace {
+
+-constexpr std::vector<blink::mojom::PermissionsPolicyFeature>
++const std::vector<blink::mojom::PermissionsPolicyFeature>
+ SensorTypeToPermissionsPolicyFeatures(SensorType type) {
+   switch (type) {
+     case SensorType::AMBIENT_LIGHT:
 diff --git a/ui/base/wayland/color_manager_util.h b/ui/base/wayland/color_manager_util.h
 index 2efa825..49ec648 100644
 --- a/ui/base/wayland/color_manager_util.h

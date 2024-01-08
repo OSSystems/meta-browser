@@ -22,16 +22,16 @@ PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and i
 Upstream-Status: Inappropriate [specific to older versions of clang]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- .../partition_allocator/partition_root.cc     |  4 ++
- base/allocator/partition_allocator/tagging.cc | 56 ++++++-------------
- base/allocator/partition_allocator/tagging.h  | 43 +++++++++-----
- .../partition_allocator/tagging_unittest.cc   |  8 +++
- 4 files changed, 60 insertions(+), 51 deletions(-)
+ .../src/partition_alloc/partition_root.cc     |  4 ++
+ .../src/partition_alloc/tagging.cc            |  9 +++-
+ .../src/partition_alloc/tagging.h             | 42 +++++++++++++------
+ .../src/partition_alloc/tagging_unittest.cc   |  8 ++++
+ 4 files changed, 48 insertions(+), 15 deletions(-)
 
-diff --git a/base/allocator/partition_allocator/partition_root.cc b/base/allocator/partition_allocator/partition_root.cc
-index 93bca10..97887ac 100644
---- a/base/allocator/partition_allocator/partition_root.cc
-+++ b/base/allocator/partition_allocator/partition_root.cc
+diff --git a/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc b/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
+index a0e8d36..3d732f8 100644
+--- a/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
++++ b/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
 @@ -963,6 +963,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
        return;
      }
@@ -43,10 +43,10 @@ index 93bca10..97887ac 100644
  #if BUILDFLAG(HAS_64_BIT_POINTERS)
      // Reserve address space for partition alloc.
      internal::PartitionAddressSpace::Init();
-diff --git a/base/allocator/partition_allocator/tagging.cc b/base/allocator/partition_allocator/tagging.cc
-index 07345bf..fb3fcdd 100644
---- a/base/allocator/partition_allocator/tagging.cc
-+++ b/base/allocator/partition_allocator/tagging.cc
+diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging.cc b/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
+index 9b44119..a6589af 100644
+--- a/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
++++ b/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
 @@ -12,9 +12,7 @@
 
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
@@ -130,7 +130,7 @@ index 07345bf..fb3fcdd 100644
 -    __attribute__((ifunc("ResolveTagMemoryRandomly")));
 -void* RemaskPointerInternal(void* ptr)
 -    __attribute__((ifunc("ResolveRemaskPointer")));
--#endif // PA_CONFIG(HAS_MEMORY_TAGGING)
+-#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 +RemaskPtrInternalFn* global_remask_void_ptr_fn = RemaskVoidPtrNoOp;
 +TagMemoryRangeIncrementInternalFn* global_tag_memory_range_increment_fn =
 +    TagRegionIncrementNoOp;
@@ -139,10 +139,10 @@ index 07345bf..fb3fcdd 100644
 
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread() {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
-diff --git a/base/allocator/partition_allocator/tagging.h b/base/allocator/partition_allocator/tagging.h
-index d7c18fd..820d476 100644
---- a/base/allocator/partition_allocator/tagging.h
-+++ b/base/allocator/partition_allocator/tagging.h
+diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging.h b/base/allocator/partition_allocator/src/partition_alloc/tagging.h
+index 12ad5e9..19c904c 100644
+--- a/base/allocator/partition_allocator/src/partition_alloc/tagging.h
++++ b/base/allocator/partition_allocator/src/partition_alloc/tagging.h
 @@ -60,23 +60,39 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
  PA_COMPONENT_EXPORT(PARTITION_ALLOC)
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread();
@@ -212,10 +212,10 @@ index d7c18fd..820d476 100644
  #else
    return ptr;
  #endif
-diff --git a/base/allocator/partition_allocator/tagging_unittest.cc b/base/allocator/partition_allocator/tagging_unittest.cc
-index 5c25a46..fab5db7 100644
---- a/base/allocator/partition_allocator/tagging_unittest.cc
-+++ b/base/allocator/partition_allocator/tagging_unittest.cc
+diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc b/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
+index c0d0f84..07869a8 100644
+--- a/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
++++ b/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
 @@ -16,6 +16,7 @@ namespace partition_alloc::internal {
 
  // Check whether we can call the tagging intrinsics safely on all architectures.
