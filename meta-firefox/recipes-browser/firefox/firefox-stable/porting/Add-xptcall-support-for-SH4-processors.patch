@@ -15,22 +15,6 @@ Upstream-Status: Pending
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
  create mode 100644 xpcom/reflect/xptcall/src/md/unix/xptcstubs_linux_sh.cpp
 
-diff --git a/xpcom/reflect/xptcall/md/unix/moz.build b/xpcom/reflect/xptcall/md/unix/moz.build
-index ab0d1c32ec..afaef11f3f 100644
---- a/xpcom/reflect/xptcall/md/unix/moz.build
-+++ b/xpcom/reflect/xptcall/md/unix/moz.build
-@@ -258,6 +258,11 @@ if CONFIG["OS_ARCH"] == "Linux":
-             CXXFLAGS += [
-                 "-fno-integrated-as",
-             ]
-+    elif CONFIG['OS_TEST'] in ('sh4', 'sh4a'):
-+        SOURCES += [
-+            'xptcinvoke_linux_sh.cpp',
-+            'xptcstubs_linux_sh.cpp',
-+        ]
- 
- if CONFIG["OS_ARCH"] == "Linux" and CONFIG["CPU_ARCH"] == "riscv64":
-     SOURCES += [
 diff --git a/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp b/xpcom/reflect/xptcall/src/md/unix/xptcinvoke_linux_sh.cpp
 new file mode 100644
 index 0000000000..ca4807daca
@@ -517,3 +501,17 @@ index 0000000000..cf9fceabd8
 +}
 +
 +#include "xptcstubsdef.inc"
+--- ./xpcom/reflect/xptcall/md/unix/moz.build	2024-01-23 11:27:30.410588657 +0100
++++ ./xpcom/reflect/xptcall/md/unix/moz.build	2024-01-23 11:28:39.956217488 +0100
+@@ -258,6 +258,11 @@
+             CXXFLAGS += [
+                 "-fno-integrated-as",
+             ]
++    elif CONFIG['OS_TEST'] in ('sh4', 'sh4a'):
++        SOURCES += [
++            'xptcinvoke_linux_sh.cpp',
++            'xptcstubs_linux_sh.cpp',
++        ]
+ 
+ if CONFIG["OS_ARCH"] == "Linux" and CONFIG["TARGET_CPU"] == "riscv64":
+     SOURCES += [

@@ -8,7 +8,9 @@ LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=1b074cb88f7e9794d795
 
 SRC_URI += "git://github.com/hsivonen/packed_simd.git;protocol=https;branch=0_3_9;name=packed-simd;destsuffix=packed_simd \
             git://github.com/gfx-rs/d3d12-rs;protocol=https;branch=master;name=d3d12-rs;destsuffix=d3d12-rs \
-            git://git@github.com/dtolnay/syn.git;protocol=https;branch=master;name=syn;destsuffix=syn"
+            git://git@github.com/dtolnay/syn.git;protocol=https;branch=master;name=syn;destsuffix=syn \
+            git://github.com/glandium/warp.git;protocol=https;branch=pemfile;name=warp;destsuffix=warp \
+            file://debian-hacks/Work-around-bz-1775202-to-fix-FTBFS-on-ppc64el.patch"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-esr:"
 
@@ -50,3 +52,9 @@ SRCREV_audioipc = "0b51291d2483a17dce3e300c7784b369e02bee73"
 
 SRCREV_FORMAT .= "_wpf-gpu-raster"
 SRCREV_wpf-gpu-raster = "5ab6fe33d00021325ee920b3c10526dc8301cf46"
+
+SRCREV_FORMAT .= "_warp"
+SRCREV_warp = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d"
+
+SRCREV_FORMAT .= "_cubeb-pulse"
+SRCREV_cubeb-pulse = "cf48897be5cbe147d051ebbbe1eaf5fd8fb6bbc9"

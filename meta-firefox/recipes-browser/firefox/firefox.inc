@@ -51,7 +51,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://debian-hacks/Remove-workaround-for-old-libstdc-problem-which-now-.patch \
            file://debian-hacks/Use-build-id-as-langpack-version-for-reproducibility.patch \
            file://debian-hacks/Use-the-Mozilla-Location-Service-key-when-the-Google.patch \
-           file://debian-hacks/Work-around-bz-1775202-to-fix-FTBFS-on-ppc64el.patch \
            file://debian-hacks/Work-around-https-sourceware.org-bugzilla-show_bug.c.patch \
            file://fixes/Allow-.js-preference-files-to-set-locked-prefs-with-.patch \
            file://porting/Add-xptcall-support-for-SH4-processors.patch \
@@ -65,7 +64,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/hsivonen/chardetng_c.git;protocol=https;branch=tldquery;name=chardetng_c;destsuffix=chardetng_c \
            git://github.com/chris-zen/coremidi.git;protocol=https;branch=master;name=coremidi;destsuffix=coremidi \
            git://github.com/mozilla/midir.git;protocol=https;branch=firefox-vendoring;name=midir;destsuffix=midir \
-           git://github.com/glandium/warp.git;protocol=https;branch=pemfile;name=warp;destsuffix=warp \
            git://github.com/mozilla-spidermonkey/jsparagus;protocol=https;branch=ci_generated;name=jsparagus;destsuffix=jsparagus \
            git://github.com/FirefoxGraphics/aa-stroke;protocol=https;branch=main;name=aa-stroke;destsuffix=aa-stroke \
            git://github.com/mozilla/cubeb-coreaudio-rs;protocol=https;branch=trailblazer;name=cubeb-coreaudio;destsuffix=cubeb-coreaudio \
@@ -90,16 +88,12 @@ SRCREV_FORMAT .= "_coremidi"
 SRCREV_coremidi = "fc68464b5445caf111e41f643a2e69ccce0b4f83"
 SRCREV_FORMAT .="_midir"
 SRCREV_midir = "519e651241e867af3391db08f9ae6400bc023e18"
-SRCREV_FORMAT .= "_warp"
-SRCREV_warp = "4af45fae95bc98b0eba1ef0db17e1dac471bb23d"
 SRCREV_FORMAT .= "_jsparagus"
 SRCREV_jsparagus = "64ba08e24749616de2344112f226d1ef4ba893ae"
 SRCREV_FORMAT .= "_aa-stroke"
 SRCREV_aa-stroke = "07d3c25322518f294300e96246e09b95e118555d"
 SRCREV_FORMAT .= "_cubeb-coreaudio"
 SRCREV_cubeb-coreaudio = "93b5c01a131f65c83c11aeb317f4583405c5eb79"
-SRCREV_FORMAT .= "_cubeb-pulse"
-SRCREV_cubeb-pulse = "cf48897be5cbe147d051ebbbe1eaf5fd8fb6bbc9"
 SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
 
