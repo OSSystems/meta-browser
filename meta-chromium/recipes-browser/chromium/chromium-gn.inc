@@ -45,6 +45,9 @@ SRC_URI += "\
     file://0020-Fix-implicitly-deleted-default-constructor-build-err.patch \
     file://0021-Don-t-delete-CrashKeyWithName-dtor.patch \
     file://0022-Use-base-ranges-instead-of-std-ranges.patch \
+    file://0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
+    file://0024-Adjust-the-Rust-build-to-our-needs.patch \
+    file://0025-Make-toolchain_supports_rust_thin_lto-configurable.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
@@ -107,9 +110,11 @@ DEPENDS += " \
     pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
+    rust \
+    rust-native \
     virtual/libgl \
 "
-DEPEND:append:runtime-llvm = " compiler-rt-native libcxx-native"
+DEPENDS:append:runtime-llvm = " compiler-rt compiler-rt-native libcxx-native"
 DEPENDS:append:libc-musl = " libexecinfo"
 
 LDFLAGS:append:libc-musl = " -lexecinfo"
@@ -306,19 +311,36 @@ GN_ARGS += ' \
         gold_path="" \
         host_toolchain="//build/toolchain/yocto:yocto_native" \
         is_clang=true \
-        clang_base_path="${@clang_install_path(d)}" \
         clang_use_chrome_plugins=false \
         target_cpu="${@gn_target_arch_name(d)}" \
         v8_snapshot_toolchain="//build/toolchain/yocto:yocto_target" \
+'
+
+# Make sure Chromium is able to find clang libraries. See
+# 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch and the
+# add_clang_symlink and copy_clang_library tasks for more context.
+GN_ARGS += ' \
+        clang_base_path="${@clang_install_path(d)}" \
+        clang_version="latest" \
 '
 
 # This parameter is added by limit-number-of-LTO-jobs.patch with the default value of 8,
 # but we can use whatever user configured in PARALLEL_MAKE
 GN_ARGS += 'max_jobs_per_link="${@oe.utils.parallel_make_argument(d, '%d')}"'
 
-# We haven't figured out how to best support Rust yet, so disable it for now.
-# See the discussion at https://github.com/OSSystems/meta-browser/issues/723.
-GN_ARGS += 'enable_rust=false'
+# Use our own toolchain instead of the one upstream provides. See
+# //build/config/rust.gni for more details.
+# Note: the value of rustc_version doesn't matter, it's only used to ensure all
+# Rust code is rebuilt after updating the Rust toolchain. This is irrelevant for
+# our build setup, but not setting it leads to an error.
+GN_ARGS += ' \
+        rust_sysroot_absolute="${RECIPE_SYSROOT_NATIVE}/usr" \
+        rustc_version="custom" \
+        rust_target_triple_vendor_for_target="${TARGET_VENDOR}" \
+'
+
+# This would require the Rust toolchain to use the same LLVM version as clang.
+GN_ARGS += 'toolchain_supports_rust_thin_lto=false'
 
 # ARM builds need special additional flags (see ${S}/build/config/arm.gni).
 # If we do not pass |arm_arch| and friends to GN, it will deduce a value that
@@ -441,6 +463,42 @@ do_add_nodejs_symlink () {
 	ln -sf "${nodejs_native_path}" "${chromium_node_dir}/node"
 }
 addtask add_nodejs_symlink after do_configure before do_compile
+
+do_add_clang_symlink () {
+    # Creates a `latest` symlink in the native sysroot's /usr/lib/clang
+    # directory that points to /usr/lib/clang/$CLANG_VERSION. Chromium manually
+    # links against libclang_rt.builtins.a and uses the `clang_version` GN
+    # variable to find it. This allows us to set it to the same value for all
+    # Yocto releases.
+    cd "${RECIPE_SYSROOT_NATIVE}/usr/lib/clang"
+    # find the directory containing the library
+    for dir in *; do
+        if [ -n "$(find $dir -name 'libclang_rt.builtins*')" ] ; then
+            ln -sf "$dir" latest
+            break
+        fi
+    done
+}
+addtask add_clang_symlink after do_configure before do_compile
+
+do_copy_clang_library () {
+    # Chromium needs to link against libclang_rt.builtins.a for both host and
+    # target code, and expects to find both libraries in the same directory
+    # (thanks to 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
+    cd "${RECIPE_SYSROOT}"
+    lib_file="$(find usr/lib/clang -name 'libclang_rt.builtins*')"
+    lib_dir="$(dirname $lib_file)"
+    cp "$lib_file" "${RECIPE_SYSROOT_NATIVE}/$lib_dir"
+}
+addtask copy_clang_library after do_configure before do_compile
+
+do_copy_target_rustlibs () {
+    # Chromium needs a single Rust sysroot that contains the rustlibs for both
+    # the host and target, so we copy the target rustlibs to the native sysroot.
+    rustlib_src_dir="${RECIPE_SYSROOT}/usr/lib/rustlib/${TARGET_ARCH}"*
+    cp -r $rustlib_src_dir "${RECIPE_SYSROOT_NATIVE}/usr/lib/rustlib"
+}
+addtask copy_target_rustlibs after do_configure before do_compile
 
 do_configure() {
 	cd ${S}
