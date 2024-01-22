@@ -1,0 +1,211 @@
+From f4f50a5de596d13d18f1f9b80f83e446936a4afb Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 16 Jan 2024 12:29:30 +0000
+Subject: [PATCH] Adjust the Rust build to our needs
+
+1. Set `RUSTC_BOOTSTRAP=1` environment variable when calling rustc, to
+   avoid the need of a nightly Rust toolchain.
+2. Copy the target.json file which rustc needs to compile for OE's
+   custom target triple.
+3. Add a rust_target_triple_vendor_for_target GN arg. OE builds the
+   Rust libraries for the target by using TARGET_VENDOR as the vendor
+   part for the Rust "target triple", but Chromium assumes the vendor to
+   always be "-unknown". This new arg lets us override the default when
+   building target code.
+
+Upstream-Status: Inappropriate [specific to our build setup]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ build/config/rust.gni            | 24 +++++++++++++++++------
+ build/rust/rustc_wrapper.py      |  1 +
+ build/rust/std/BUILD.gn          | 33 ++++++++++++++++++++++++--------
+ build/rust/std/find_std_rlibs.py | 13 ++++++++++---
+ 4 files changed, 54 insertions(+), 17 deletions(-)
+
+diff --git a/build/config/rust.gni b/build/config/rust.gni
+index b82ac38..702353e 100644
+--- a/build/config/rust.gni
++++ b/build/config/rust.gni
+@@ -76,6 +76,11 @@ declare_args() {
+   # a platform. Mostly applicable to Windows, where new versions can handle ANSI
+   # escape sequences but it's not reliable in general.
+   force_rustc_color_output = false
++
++  # Override the vendor part of the Rust target triple (with a leading dash)
++  # used for building target code (not host code). Leave empty to use the
++  # platform default.
++  rust_target_triple_vendor_for_target = ""
+ }
+
+ # Use a separate declare_args so these variables' defaults can depend on the
+@@ -189,12 +194,19 @@ if (enable_rust) {
+ # other toolchains.
+ rust_abi_target = ""
+ if (is_linux || is_chromeos) {
++  vendor = "-unknown"
++
++  is_host = current_toolchain == host_toolchain || toolchain_for_rust_host_build_tools
++  if (!is_host && rust_target_triple_vendor_for_target != "") {
++      vendor = rust_target_triple_vendor_for_target
++  }
++
+   if (current_cpu == "arm64") {
+-    rust_abi_target = "aarch64-unknown-linux-gnu"
++    rust_abi_target = "aarch64" + vendor + "-linux-gnu"
+   } else if (current_cpu == "x86") {
+-    rust_abi_target = "i686-unknown-linux-gnu"
++    rust_abi_target = "i686" + vendor + "-linux-gnu"
+   } else if (current_cpu == "x64") {
+-    rust_abi_target = "x86_64-unknown-linux-gnu"
++    rust_abi_target = "x86_64" + vendor + "-linux-gnu"
+   } else if (current_cpu == "arm") {
+     if (arm_float_abi == "hard") {
+       float_suffix = "hf"
+@@ -203,13 +215,13 @@ if (is_linux || is_chromeos) {
+     }
+     if (arm_arch == "armv7-a" || arm_arch == "armv7") {
+       # No way to inform Rust about the -a suffix.
+-      rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
++      rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
+     } else {
+-      rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
++      rust_abi_target = "arm" + vendor + "-linux-gnueabi" + float_suffix
+     }
+   } else {
+     # Best guess for other future platforms.
+-    rust_abi_target = current_cpu + "-unknown-linux-gnu"
++    rust_abi_target = current_cpu + vendor + "-linux-gnu"
+   }
+ } else if (is_android) {
+   import("//build/config/android/abi.gni")
+diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
+index 1c61e9f..5f9556b 100755
+--- a/build/rust/rustc_wrapper.py
++++ b/build/rust/rustc_wrapper.py
+@@ -158,6 +158,7 @@ def main():
+   rustc_args = remaining_args[:ldflags_separator]
+   ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
+   rustenv = remaining_args[rustenv_separator + 1:sources_separator]
++  rustenv += ["RUSTC_BOOTSTRAP=1"]
+
+   abs_build_root = os.getcwd().replace('\\', '/') + '/'
+   is_windows = sys.platform == 'win32' or args.target_windows
+diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
+index 77f4b8c..8a25798 100644
+--- a/build/rust/std/BUILD.gn
++++ b/build/rust/std/BUILD.gn
+@@ -188,7 +188,8 @@ if (toolchain_has_rust) {
+   # our locally-built std. Both reside in root_out_dir: we must only have one of
+   # each per GN toolchain anyway.
+
+-  sysroot_lib_subdir = "lib/rustlib/$rust_abi_target/lib"
++  sysroot_target_subdir = "lib/rustlib/$rust_abi_target"
++  sysroot_lib_subdir = "$sysroot_target_subdir/lib"
+
+   if (!rust_prebuilt_stdlib) {
+     local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
+@@ -372,12 +373,12 @@ if (toolchain_has_rust) {
+         rust_abi_target,
+       ]
+
+-      outputs = []
++      outputs = [ "$target_out_dir/target.json" ]
+       foreach(lib, all_stdlibs_to_copy) {
+-        outputs += [ "$target_out_dir/lib$lib.rlib" ]
++        outputs += [ "$target_out_dir/lib/lib$lib.rlib" ]
+       }
+       foreach(lib, extra_sysroot_libs) {
+-        outputs += [ "$target_out_dir/$lib" ]
++        outputs += [ "$target_out_dir/lib/$lib" ]
+       }
+
+       visibility = [ ":*" ]
+@@ -390,8 +391,18 @@ if (toolchain_has_rust) {
+                  "enable_rust=false")
+       deps = [ ":find_stdlib" ]
+       sources = get_target_outputs(":find_stdlib")
+-      outputs =
+-          [ "$prebuilt_rustc_sysroot/$sysroot_lib_subdir/{{source_file_part}}" ]
++      sources -= [ "$target_out_dir/target.json" ]
++      outputs = [
++        "$prebuilt_rustc_sysroot/$sysroot_lib_subdir/{{source_file_part}}",
++      ]
++
++      visibility = [ ":*" ]
++    }
++
++    copy("prebuilt_rustc_copy_target_json_to_sysroot") {
++      deps = [ ":find_stdlib" ]
++      sources = [ "$target_out_dir/target.json" ]
++      outputs = [ "$prebuilt_rustc_sysroot/$sysroot_target_subdir/target.json" ]
+
+       visibility = [ ":*" ]
+     }
+@@ -429,7 +440,10 @@ if (toolchain_has_rust) {
+     # Use the sysroot generated by :prebuilt_rustc_copy_to_sysroot.
+     group("stdlib_for_rustc") {
+       all_dependent_configs = [ ":prebuilt_stdlib_sysroot" ]
+-      deps = [ ":prebuilt_rustc_copy_to_sysroot" ]
++      deps = [
++        ":prebuilt_rustc_copy_to_sysroot",
++        ":prebuilt_rustc_copy_target_json_to_sysroot",
++      ]
+     }
+
+     # Links the Rust stdlib. Used by targets for which linking is driven by
+@@ -439,7 +453,10 @@ if (toolchain_has_rust) {
+         ":prebuilt_stdlib_libs",
+         ":stdlib_public_dependent_libs",
+       ]
+-      deps = [ ":prebuilt_rustc_copy_to_sysroot" ]
++      deps = [
++        ":prebuilt_rustc_copy_to_sysroot",
++        ":prebuilt_rustc_copy_target_json_to_sysroot",
++      ]
+
+       # The host builds tools toolchain supports Rust only and does not use
+       # the allocator remapping to point it to PartitionAlloc.
+diff --git a/build/rust/std/find_std_rlibs.py b/build/rust/std/find_std_rlibs.py
+index 386258f..25fdedc 100755
+--- a/build/rust/std/find_std_rlibs.py
++++ b/build/rust/std/find_std_rlibs.py
+@@ -52,6 +52,8 @@ def main():
+     rustc_args.extend(["--target", args.target])
+   rustlib_dir = subprocess.check_output(rustc_args).rstrip().decode()
+
++  lib_output_dir = os.path.join(args.output, 'lib')
++
+   # Copy the rlibs to a predictable location. Whilst we're doing so,
+   # also write a .d file so that ninja knows it doesn't need to do this
+   # again unless the source rlibs change.
+@@ -63,7 +65,7 @@ def main():
+     # output rlibs for that purpose. If any of the input rlibs change, ninja
+     # will run this script again and we'll copy them all afresh.
+     depfile.write(
+-        "%s:" % (os.path.join(args.output, "lib%s.rlib" % args.depfile_target)))
++        "%s:" % (os.path.join(lib_output_dir, "lib%s.rlib" % args.depfile_target)))
+
+     def copy_file(infile, outfile):
+       depfile.write(f" {infile}")
+@@ -117,14 +119,19 @@ def main():
+       output_filename = f"lib{concise_name}.rlib"
+
+       infile = os.path.join(rustlib_dir, f)
+-      outfile = os.path.join(args.output, output_filename)
++      outfile = os.path.join(lib_output_dir, output_filename)
+       copy_file(infile, outfile)
+
+     for f in extra_libs:
+       infile = os.path.join(rustlib_dir, f)
+-      outfile = os.path.join(args.output, f)
++      outfile = os.path.join(lib_output_dir, f)
+       copy_file(infile, outfile)
+
++    f = 'target.json'
++    infile = os.path.join(rustlib_dir, '..', f)
++    outfile = os.path.join(args.output, f)
++    copy_file(infile, outfile)
++
+     depfile.write("\n")
+
+
