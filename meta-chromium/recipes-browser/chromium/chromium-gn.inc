@@ -20,6 +20,7 @@ SRC_URI += "\
     file://backport/IWYU-for-chrome-browser-ui-tabs-organizatio.patch \
     file://backport/IWYU-for-content-browser-generic_sensor-fra.patch \
     file://backport/IWYU-for-g-c-service-shared_image-ozone_ima.patch \
+    file://backport/Make-toolchain_supports_rust_thin_lto-configurable.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
@@ -47,7 +48,6 @@ SRC_URI += "\
     file://0022-Use-base-ranges-instead-of-std-ranges.patch \
     file://0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0024-Adjust-the-Rust-build-to-our-needs.patch \
-    file://0025-Make-toolchain_supports_rust_thin_lto-configurable.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
