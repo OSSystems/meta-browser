@@ -189,11 +189,6 @@ GN_ARGS += "use_system_freetype=false"
 # but a PACKAGECONFIG option should be added when the feature is ready.
 GN_ARGS += "use_qt=false"
 
-# Closure_compile needs to be disabled to avoid pulling in java dependencies,
-# which are typicaly not wanted. It started to happen after https://crrev.com/c/1278470
-# This argument was renamed to enable_js_type_check after https://crrev.com/c/2248564
-GN_ARGS += "enable_js_type_check=false"
-
 # Make sure pkg-config, when used with the host's toolchain to build the
 # binaries we need to run on the host, uses the right pkg-config to avoid
 # passing include directories belonging to the target.
