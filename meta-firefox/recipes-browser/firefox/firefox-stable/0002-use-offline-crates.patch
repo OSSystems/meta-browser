@@ -10,30 +10,9 @@ Upstream-status: Inappropriate
  third_party/rust/suggest/Cargo.toml |  8 +--
  3 files changed, 69 insertions(+), 33 deletions(-)
 
-diff --git a/.cargo/config.in b/.cargo/config.in
-index c1348d778b..4c6d08c6ac 100644
---- a/.cargo/config.in
-+++ b/.cargo/config.in
-@@ -145,4 +145,4 @@ directory = "third_party/rust"
- # cargo will ignore it when it's here verbatim.
- #filter substitution
- [source."@REPLACE_NAME@"]
--directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
-+directory = "../../cargo_home/bitbake"
-diff --git a/third_party/rust/suggest/Cargo.toml b/third_party/rust/suggest/Cargo.toml
-index 6c6b5e88fc..86afb754e8 100644
---- ./Cargo.toml	2024-01-23 08:05:14.893523575 +0100
-+++ ./Cargo.toml	2024-01-23 10:18:46.317643332 +0100
-@@ -147,7 +147,7 @@
- bindgen_0_64 = { package = "bindgen", path = "build/rust/bindgen-0.64" }
- bindgen = { path = "build/rust/bindgen" }
- # 0.69.1 +  https://github.com/rust-lang/rust-bindgen/pull/2689
--bindgen_0_69 = { package = "bindgen", git = "https://github.com/rust-lang/rust-bindgen", rev = "86f3dbe846020e2ba573d6eb38d1434d0cbcbb40" }
-+bindgen_0_69 = { package = "bindgen", path = "../bindgen/bindgen" }
- 
- # Patch nix 0.24 to 0.27
- nix = { path = "build/rust/nix" }
-@@ -185,33 +185,72 @@
+--- ./Cargo.toml	2024-02-19 18:28:30.167362766 +0100
++++ ./Cargo.toml	2024-02-19 18:33:06.431115830 +0100
+@@ -182,33 +182,71 @@
  rure = { path = "third_party/rust/rure" }
  
  # To-be-published changes.
@@ -55,7 +34,7 @@ index 6c6b5e88fc..86afb754e8 100644
  icu_capi = { path = "intl/icu_capi" }
  icu_segmenter_data = { path = "intl/icu_segmenter_data" }
  libudev-sys = { path = "dom/webauthn/libudev-sys" }
--midir = { git = "https://github.com/mozilla/midir.git", rev = "519e651241e867af3391db08f9ae6400bc023e18" }
+-midir = { git = "https://github.com/mozilla/midir.git", rev = "85156e360a37d851734118104619f86bd18e94c6" }
 +midir = { path = "../midir" }
  # warp 0.3.6 + https://github.com/seanmonstar/warp/pull/1069
 -warp = { git = "https://github.com/seanmonstar/warp", rev = "9d081461ae1167eb321585ce424f4fef6cf0092b" }
@@ -65,13 +44,13 @@ index 6c6b5e88fc..86afb754e8 100644
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
  
  # application-services overrides to make updating them all simpler.
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--suggest = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "57ecda94fae3226cf67b3e12ce7d6b504e0e2417" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "63a6260c14847c21c5a1fa3003efaf0114a3e4e5" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
 +sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
 +sync15 = { path = "../application-services/components/sync15", version = "0.1.0" }
@@ -117,11 +96,10 @@ index 6c6b5e88fc..86afb754e8 100644
 +
 +[patch."https://github.com/mozilla/mp4parse-rust"]
 +mp4parse_capi = { path = "../mp4parse/mp4parse_capi", version = "0.17.0" }
-+
  
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
-@@ -219,8 +258,16 @@
+@@ -216,8 +254,16 @@
  path = "third_party/rust/mio-0.6.23"
  
  [patch."https://github.com/mozilla/uniffi-rs.git"]
@@ -143,14 +121,22 @@ index 6c6b5e88fc..86afb754e8 100644
 +wgpu-core = { path = "../wgpu/wgpu-core" }
 +wgpu-types = { path = "../wgpu/wgpu-types" }
 +wgpu-hal = { path = "../wgpu/wgpu-hal" }
---- ./gfx/wgpu_bindings/Cargo.toml	2024-01-23 10:22:12.415468242 +0100
-+++ ./gfx/wgpu_bindings/Cargo.toml	2024-01-23 10:23:31.215018937 +0100
+--- ./.cargo/config.in	2024-02-19 18:37:17.820994705 +0100
++++ ./.cargo/config.in	2024-02-19 18:41:22.292904599 +0100
+@@ -120,4 +120,4 @@
+ # cargo will ignore it when it's here verbatim.
+ #filter substitution
+ [source."@REPLACE_NAME@"]
+-directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
++directory = "../../cargo_home/bitbake"
+--- ./gfx/wgpu_bindings/Cargo.toml	2024-02-19 18:43:52.491821276 +0100
++++ ./gfx/wgpu_bindings/Cargo.toml	2024-02-19 18:47:00.895337611 +0100
 @@ -16,8 +16,7 @@
  
  [dependencies.wgc]
  package = "wgpu-core"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-core"
  #Note: "replay" shouldn't ideally be needed,
  # but it allows us to serialize everything across IPC.
@@ -160,7 +146,7 @@ index 6c6b5e88fc..86afb754e8 100644
  [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
  package = "wgpu-core"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-core"
  features = ["metal"]
  
@@ -168,7 +154,7 @@ index 6c6b5e88fc..86afb754e8 100644
  [target.'cfg(windows)'.dependencies.wgc]
  package = "wgpu-core"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-core"
  features = ["dx12"]
  
@@ -176,39 +162,40 @@ index 6c6b5e88fc..86afb754e8 100644
  [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
  package = "wgpu-core"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-core"
  features = ["vulkan"]
  
  [dependencies.wgt]
  package = "wgpu-types"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-types"
  
  [dependencies.wgh]
  package = "wgpu-hal"
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/wgpu-hal"
  
  [target.'cfg(windows)'.dependencies.d3d12]
 -git = "https://github.com/gfx-rs/wgpu"
--rev = "6dc9ccab8592645fda3204be1cfb5929fd7f924d"
+-rev = "c6eea50b04127abe2340b93141123312baf5414b"
 +path = "../../../wgpu/d3d12"
  
  [target.'cfg(windows)'.dependencies]
  winapi = "0.3"
---- ./third_party/rust/suggest/Cargo.toml	2024-01-23 11:14:56.027733951 +0100
-+++ ./third_party/rust/suggest/Cargo.toml	2024-01-23 11:15:51.729421643 +0100
-@@ -30,8 +30,8 @@
+--- ./third_party/rust/suggest/Cargo.toml	2024-02-19 18:48:05.008009383 +0100
++++ ./third_party/rust/suggest/Cargo.toml	2024-02-19 18:49:15.801679812 +0100
+@@ -29,9 +29,9 @@
+ serde_json = "1"
  thiserror = "1"
  uniffi = "0.25.2"
++interrupt-support = "0.1.0"
++sql-support = "0.1.0"
  
 -[dependencies.interrupt-support]
 -path = "../support/interrupt"
-+interrupt-support = "0.1.0"
-+sql-support = "0.1.0"
  
  [dependencies.remote_settings]
  path = "../remote_settings"
@@ -219,6 +206,6 @@ index 6c6b5e88fc..86afb754e8 100644
 -[dependencies.sql-support]
 -path = "../support/sql"
 -
- [dev-dependencies]
- expect-test = "1.4"
- hex = "0.4"
+ [dependencies.url]
+ version = "2.1"
+ features = ["serde"]
