@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/chrome/browser/ui/tabs/organization/trigger_observer.h b/chrome/browser/ui/tabs/organization/trigger_observer.h
-index ffa5481..2d8c001 100644
+index 41b306b..6a1f010 100644
 --- a/chrome/browser/ui/tabs/organization/trigger_observer.h
 +++ b/chrome/browser/ui/tabs/organization/trigger_observer.h
 @@ -6,6 +6,7 @@

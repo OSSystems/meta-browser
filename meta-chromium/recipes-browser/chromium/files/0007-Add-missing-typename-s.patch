@@ -68,10 +68,10 @@ index 3fb1520..7d1723f 100644
      IterMap<Id, Item>& iter_map) {
    CHECK(iter != cache.end());
 diff --git a/components/optimization_guide/core/tflite_model_executor.h b/components/optimization_guide/core/tflite_model_executor.h
-index bbb5208..a256a85 100644
+index 5c65a65..d629125 100644
 --- a/components/optimization_guide/core/tflite_model_executor.h
 +++ b/components/optimization_guide/core/tflite_model_executor.h
-@@ -240,7 +240,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -241,7 +241,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    void SendForBatchExecution(
        BatchExecutionCallback callback_on_complete,
        base::TimeTicks start_time,
@@ -80,7 +80,7 @@ index bbb5208..a256a85 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -262,7 +262,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -263,7 +263,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // Starts the synchronous execution of the model. Returns model outputs.
    // Model needs to be loaded. Synchronous calls do not load or unload model.
    std::vector<absl::optional<OutputType>> SendForBatchExecutionSync(
@@ -89,7 +89,7 @@ index bbb5208..a256a85 100644
        override {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -417,7 +417,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -421,7 +421,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // executes it on the model execution thread.
    void LoadModelFileAndBatchExecute(
        BatchExecutionCallback callback_on_complete,
@@ -98,7 +98,7 @@ index bbb5208..a256a85 100644
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-@@ -434,7 +434,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -438,7 +438,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
 
    // Batch executes the loaded model for inputs.
    void BatchExecuteLoadedModel(
@@ -107,7 +107,7 @@ index bbb5208..a256a85 100644
        std::vector<absl::optional<OutputType>>* outputs) {
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -494,7 +494,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
+@@ -498,7 +498,7 @@ class TFLiteModelExecutor : public ModelExecutor<OutputType, InputType> {
    // Unloads the model if needed.
    void BatchExecuteLoadedModelAndRunCallback(
        BatchExecutionCallback callback_on_complete,
@@ -117,10 +117,10 @@ index bbb5208..a256a85 100644
      DCHECK(execution_task_runner_->RunsTasksInCurrentSequence());
      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 diff --git a/components/supervised_user/core/browser/proto_fetcher.cc b/components/supervised_user/core/browser/proto_fetcher.cc
-index 26a121a..802fb92 100644
+index e9a7aa7..432cc61 100644
 --- a/components/supervised_user/core/browser/proto_fetcher.cc
 +++ b/components/supervised_user/core/browser/proto_fetcher.cc
-@@ -526,7 +526,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
+@@ -528,7 +528,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
    RetryingFetcherImpl(const RetryingFetcherImpl&) = delete;
    RetryingFetcherImpl& operator=(const RetryingFetcherImpl&) = delete;
 
@@ -129,7 +129,7 @@ index 26a121a..802fb92 100644
      callback_ = std::move(callback);
      Retry();
    }
-@@ -564,7 +564,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
+@@ -566,7 +566,7 @@ class RetryingFetcherImpl final : public DeferredFetcherImpl<Response> {
    }
 
    // Client callback.
@@ -138,7 +138,7 @@ index 26a121a..802fb92 100644
 
    // Retry controls.
    base::OneShotTimer timer_;
-@@ -707,7 +707,7 @@ ParallelFetchManager<Request, Response>::ParallelFetchManager(
+@@ -709,7 +709,7 @@ ParallelFetchManager<Request, Response>::ParallelFetchManager(
  template <typename Request, typename Response>
  void ParallelFetchManager<Request, Response>::Fetch(
      const Request& request,
@@ -148,7 +148,7 @@ index 26a121a..802fb92 100644
    KeyType key = requests_in_flight_.Add(MakeFetcher(request));
    requests_in_flight_.Lookup(key)->Start(
 diff --git a/components/supervised_user/core/browser/proto_fetcher.h b/components/supervised_user/core/browser/proto_fetcher.h
-index 8266c99d7..9c41978 100644
+index 1650e77..ad9832d 100644
 --- a/components/supervised_user/core/browser/proto_fetcher.h
 +++ b/components/supervised_user/core/browser/proto_fetcher.h
 @@ -165,10 +165,10 @@ class ParallelFetchManager {
@@ -205,7 +205,7 @@ index b4f3b0d..4fff750 100644
  };
 
 diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
-index 83ef203e..b211f43 100644
+index 04b38ac..9457bff 100644
 --- a/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 +++ b/third_party/blink/renderer/core/html/parser/html_document_parser_fastpath.cc
 @@ -172,7 +172,7 @@ class HTMLFastPathParser {

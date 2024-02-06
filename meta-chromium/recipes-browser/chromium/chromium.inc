@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "850a85c8d8a01041a07dfaaea8289fa5f8294b4e375e6b77997b61434e0a2f1a"
+SRC_URI[sha256sum] = "9fd6b82e7077ac26ec264bfcfc8ac8e0c2a0240378f035c9c0f34ad467aef09d"
 
 S = "${WORKDIR}/chromium-${PV}"
 
@@ -71,7 +71,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/base/third_party/superfasthash/LICENSE;md5=c66981f8ad23c9f279a5b9e07385128c \
     file://${S}/base/third_party/symbolize/LICENSE;md5=17ae3b22fe8fa438966625593e2eea85 \
     file://${S}/base/third_party/valgrind/LICENSE;md5=b95c9cb2560f157c60ea60ac1aa69469 \
-    file://${S}/base/third_party/xdg_mime/LICENSE;md5=743a91118d40f173467c8ecfd8793c62 \
     file://${S}/base/third_party/xdg_user_dirs/LICENSE;md5=d998f250c491c329a8254dd1ca62c647 \
     file://${S}/chrome/browser/resources/chromeos/accessibility/chromevox/third_party/tamachiyomi/LICENSE;md5=15772cfcf7016e701ce54554516c0688 \
     file://${S}/chrome/installer/mac/third_party/bsdiff/LICENSE;md5=0dbe7a50f028269750631fcbded3846a \
@@ -91,7 +90,6 @@ LIC_FILES_CHKSUM = "\
     file://${S}/ios/third_party/motion_animator_objc/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/ios/third_party/motion_interchange_objc/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
     file://${S}/ios/third_party/motion_transitioning_objc/LICENSE;md5=3b83ef96387f14655fc854ddc3c6bd57 \
-    file://${S}/native_client/LICENSE;md5=cbbd27594afd089daa160d3a16dd515a \
     file://${S}/native_client_sdk/src/libraries/third_party/newlib-extras/README;md5=e944d73ca3817b7ca8656eafb9497fed \
     file://${S}/net/third_party/mozilla_win/LICENSE;md5=9b13a17f35cae227ee726ee0108d72a2 \
     file://${S}/net/third_party/nss/LICENSE;md5=3b1e88e1b9c0b5a4b2881d46cce06a18 \
@@ -312,10 +310,11 @@ LIC_FILES_CHKSUM = "\
     file://${S}/third_party/libwebp/LICENSE;md5=72dceabd78c6f435bb304047aff1745a \
     file://${S}/third_party/libx11/LICENSE;md5=28a27b3e1a66e95206d5645b787dad69 \
     file://${S}/third_party/libxcb-keysyms/LICENSE;md5=5b0382211c6a98f8e4861daa0f3f4322 \
-    file://${S}/third_party/libxml/src/Copyright;md5=2044417e2e5006b65a8b9067b683fcf1 \
+    file://${S}/third_party/libxml/src/Copyright;md5=fec7ecfe714722b2bb0aaff7d200c701 \
     file://${S}/third_party/libxslt/src/Copyright;md5=0cd9a07afbeb24026c9b03aecfeba458 \
     file://${S}/third_party/libyuv/LICENSE;md5=464282cfb405b005b9637f11103a7325 \
     file://${S}/third_party/libzip/LICENSE;md5=6bb2408fd544544b86946e67ec2da9a0 \
+    file://${S}/third_party/lit/LICENSE;md5=4b390b7b932ca7872d1de2c834797cad \
     file://${S}/third_party/lottie/LICENSE;md5=827837648055a0bfb7782b91ab42eed1 \
     file://${S}/third_party/lss/LICENSE;md5=dcd794613f580ae04e9633662024c7a2 \
     file://${S}/third_party/lzma_sdk/LICENSE;md5=eceed1d308734c8051664bc3d1ca175e \

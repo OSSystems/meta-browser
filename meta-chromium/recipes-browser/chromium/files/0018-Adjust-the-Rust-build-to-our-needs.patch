@@ -23,7 +23,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 54 insertions(+), 17 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index b82ac38..702353e 100644
+index 814c455..c6b675d 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -76,6 +76,11 @@ declare_args() {
@@ -38,7 +38,7 @@ index b82ac38..702353e 100644
  }
 
  # Use a separate declare_args so these variables' defaults can depend on the
-@@ -189,12 +194,19 @@ if (enable_rust) {
+@@ -185,12 +190,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -61,7 +61,7 @@ index b82ac38..702353e 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -203,13 +215,13 @@ if (is_linux || is_chromeos) {
+@@ -199,13 +211,13 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.
@@ -79,10 +79,10 @@ index b82ac38..702353e 100644
  } else if (is_android) {
    import("//build/config/android/abi.gni")
 diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
-index 1c61e9f..5f9556b 100755
+index b8e490d..d22cf08 100755
 --- a/build/rust/rustc_wrapper.py
 +++ b/build/rust/rustc_wrapper.py
-@@ -158,6 +158,7 @@ def main():
+@@ -160,6 +160,7 @@ def main():
    rustc_args = remaining_args[:ldflags_separator]
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
    rustenv = remaining_args[rustenv_separator + 1:sources_separator]

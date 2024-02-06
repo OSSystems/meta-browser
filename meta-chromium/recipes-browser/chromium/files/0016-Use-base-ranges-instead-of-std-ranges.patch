@@ -13,15 +13,15 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/components/autofill/core/browser/payments/iban_save_manager.cc b/components/autofill/core/browser/payments/iban_save_manager.cc
-index a1a9c8f..830935c 100644
+index c9840dc..0b9a9bc 100644
 --- a/components/autofill/core/browser/payments/iban_save_manager.cc
 +++ b/components/autofill/core/browser/payments/iban_save_manager.cc
-@@ -123,7 +123,7 @@ bool IbanSaveManager::ShouldOfferUploadSave(
+@@ -118,7 +118,7 @@ bool IbanSaveManager::MatchesExistingLocalIban(
 
-   // Offer server save for this IBAN if it doesn't already match an existing
-   // server IBAN.
--  return std::ranges::none_of(
-+  return base::ranges::none_of(
+ bool IbanSaveManager::MatchesExistingServerIban(
+     const Iban& import_candidate) const {
+-  return std::ranges::any_of(
++  return base::ranges::any_of(
        personal_data_manager_->GetServerIbans(),
-       [&iban_import_candidate](const auto& iban) {
-         return iban->MatchesPrefixSuffixAndLength(iban_import_candidate);
+       [&import_candidate](const auto& iban) {
+         return iban->MatchesPrefixSuffixAndLength(import_candidate);

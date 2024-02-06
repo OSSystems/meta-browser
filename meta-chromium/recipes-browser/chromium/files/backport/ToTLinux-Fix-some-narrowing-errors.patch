@@ -1,0 +1,53 @@
+From b90c3695c7ecb15dd982118a2cc28a46c23c7c2f Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 13 Mar 2024 10:37:53 +0000
+Subject: [PATCH 2/2] Backport "[ToTLinux] Fix some narrowing errors"
+
+This patch error fixes build errors with clang 18. It will be included
+in upstream's 122 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5150303]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ cc/layers/mirror_layer_impl.h                             | 4 +++-
+ components/power_metrics/energy_metrics_provider_linux.cc | 4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/cc/layers/mirror_layer_impl.h b/cc/layers/mirror_layer_impl.h
+index e68b1f6..b1355f8 100644
+--- a/cc/layers/mirror_layer_impl.h
++++ b/cc/layers/mirror_layer_impl.h
+@@ -5,6 +5,7 @@
+ #ifndef CC_LAYERS_MIRROR_LAYER_IMPL_H_
+ #define CC_LAYERS_MIRROR_LAYER_IMPL_H_
+
++#include <cstdint>
+ #include <memory>
+
+ #include "base/memory/ptr_util.h"
+@@ -56,7 +57,8 @@ class CC_EXPORT MirrorLayerImpl : public LayerImpl {
+  private:
+   const char* LayerTypeAsString() const override;
+   viz::CompositorRenderPassId mirrored_layer_render_pass_id() const {
+-    return viz::CompositorRenderPassId{mirrored_layer_id()};
++    return viz::CompositorRenderPassId{
++        static_cast<uint64_t>(mirrored_layer_id())};
+   }
+
+   int mirrored_layer_id_ = 0;
+diff --git a/components/power_metrics/energy_metrics_provider_linux.cc b/components/power_metrics/energy_metrics_provider_linux.cc
+index 0c0b097..e1ae8f8 100644
+--- a/components/power_metrics/energy_metrics_provider_linux.cc
++++ b/components/power_metrics/energy_metrics_provider_linux.cc
+@@ -61,9 +61,9 @@ bool ReadDoubleFromFile(base::FilePath path, double* output) {
+ // value of less than 1. Here, we only consider cpu0. See details in
+ // https://man7.org/linux/man-pages/man2/perf_event_open.2.html.
+ base::ScopedFD OpenPerfEvent(perf_event_attr* perf_attr) {
+-  base::ScopedFD perf_fd{syscall(__NR_perf_event_open, perf_attr, /*pid=*/-1,
++  base::ScopedFD perf_fd(syscall(__NR_perf_event_open, perf_attr, /*pid=*/-1,
+                                  /*cpu=*/0, /*group_fd=*/-1,
+-                                 PERF_FLAG_FD_CLOEXEC)};
++                                 static_cast<int>(PERF_FLAG_FD_CLOEXEC)));
+   return perf_fd;
+ }
+
