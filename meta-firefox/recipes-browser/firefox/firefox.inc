@@ -75,9 +75,7 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/mozilla/neqo;protocol=https;branch=main;name=neqo;destsuffix=neqo \
            git://github.com/gfx-rs/wgpu.git;protocol=https;branch=trunk;name=wgpu;destsuffix=wgpu \
            git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
-           git://github.com/servo/rust-cssparser;protocol=https;branch=master;name=cssparser;destsuffix=cssparser \
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
-           git://github.com/gfx-rs/naga;protocol=https;branch=master;name=naga;destsuffix=naga \
            "
 
 SRCREV_FOMAT .= "_chardetng"
@@ -86,14 +84,6 @@ SRCREV_FORMAT .= "_chardetng_c"
 SRCREV_chardetng_c = "ed8a4c6f900a90d4dbc1d64b856e61490a1c3570"
 SRCREV_FORMAT .= "_coremidi"
 SRCREV_coremidi = "fc68464b5445caf111e41f643a2e69ccce0b4f83"
-SRCREV_FORMAT .="_midir"
-SRCREV_midir = "519e651241e867af3391db08f9ae6400bc023e18"
-SRCREV_FORMAT .= "_jsparagus"
-SRCREV_jsparagus = "64ba08e24749616de2344112f226d1ef4ba893ae"
-SRCREV_FORMAT .= "_aa-stroke"
-SRCREV_aa-stroke = "07d3c25322518f294300e96246e09b95e118555d"
-SRCREV_FORMAT .= "_cubeb-coreaudio"
-SRCREV_cubeb-coreaudio = "93b5c01a131f65c83c11aeb317f4583405c5eb79"
 SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
 

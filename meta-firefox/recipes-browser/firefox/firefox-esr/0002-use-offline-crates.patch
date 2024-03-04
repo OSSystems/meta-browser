@@ -1,7 +1,66 @@
 Upstream-Status: Inappropriate
---- ./Cargo.toml	2023-09-28 05:15:58.000000000 +0200
-+++ ./Cargo.toml	2023-10-17 18:28:10.579673964 +0200
-@@ -159,32 +159,77 @@
+--- ./.cargo/config.in	2023-10-17 18:53:06.226955914 +0200
++++ ./.cargo/config.in	2023-10-17 19:01:16.674613434 +0200
+@@ -125,4 +125,4 @@
+ # cargo will ignore it when it's here verbatim.
+ #filter substitution
+ [source."@REPLACE_NAME@"]
+-directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
++directory = "../../cargo_home/bitbake"
+--- ./gfx/wgpu_bindings/Cargo.toml.orig	2023-12-19 16:12:09.745686495 +0100
++++ ./gfx/wgpu_bindings/Cargo.toml	2023-12-19 16:14:00.983568703 +0100
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ #Note: "replay" shouldn't ideally be needed,
+ # but it allows us to serialize everything across IPC.
+ features = ["replay", "trace", "serial-pass", "strict_asserts", "wgsl"]
+@@ -26,33 +25,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx11", "dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
++path = "../../../wgpu/wgpu-hal"
+ 
+ [dependencies]
+ bincode = "1"
+--- ./Cargo.toml	2024-02-12 21:53:02.000000000 +0100
++++ ./Cargo.toml	2024-03-14 13:33:31.890247372 +0100
+@@ -159,32 +159,75 @@
  cssparser-macros = { path = "third_party/rust/cssparser-macros" }
  
  # Other overrides
@@ -34,8 +93,6 @@ Upstream-Status: Inappropriate
 +tabs = { path = "../application-services/components/tabs", version = "0.1.0" }
 +viaduct = { path = "../application-services/components/viaduct", version = "0.1.0" }
 +webext-storage = { path = "../application-services/components/webext-storage", version = "0.1.0" }
-+
-+# syn = { path = "../syn", version = "2.0.38" }
  
  # Patch mio 0.6 to use winapi 0.3 and miow 0.3, getting rid of winapi 0.2.
  # There is not going to be new version of mio 0.6, mio now being >= 0.7.11.
@@ -96,62 +153,3 @@ Upstream-Status: Inappropriate
 +
 +[patch."https://github.com/gfx-rs/d3d12-rs"]
 +d3d12 = { path = "../d3d12-rs" }
---- ./.cargo/config.in	2023-10-17 18:53:06.226955914 +0200
-+++ ./.cargo/config.in	2023-10-17 19:01:16.674613434 +0200
-@@ -125,4 +125,4 @@
- # cargo will ignore it when it's here verbatim.
- #filter substitution
- [source."@REPLACE_NAME@"]
--directory = "@top_srcdir@/@VENDORED_DIRECTORY@"
-+directory = "../../cargo_home/bitbake"
---- ./gfx/wgpu_bindings/Cargo.toml.orig	2023-12-19 16:12:09.745686495 +0100
-+++ ./gfx/wgpu_bindings/Cargo.toml	2023-12-19 16:14:00.983568703 +0100
-@@ -16,8 +16,7 @@
- 
- [dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-core"
- #Note: "replay" shouldn't ideally be needed,
- # but it allows us to serialize everything across IPC.
- features = ["replay", "trace", "serial-pass", "strict_asserts", "wgsl"]
-@@ -26,33 +25,28 @@
- # (We should consider also enabling "vulkan" for Vulkan Portability.)
- [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-core"
- features = ["metal"]
- 
- # We want the wgpu-core Direct3D backends on Windows.
- [target.'cfg(windows)'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-core"
- features = ["dx11", "dx12"]
- 
- # We want the wgpu-core Vulkan backend on Linux and Windows.
- [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-core"
- features = ["vulkan"]
- 
- [dependencies.wgt]
- package = "wgpu-types"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-types"
- 
- [dependencies.wgh]
- package = "wgpu-hal"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "f71a1bc736fde37509262ca03e91d8f56a13aeb5"
-+path = "../../../wgpu/wgpu-hal"
- 
- [dependencies]
- bincode = "1"
