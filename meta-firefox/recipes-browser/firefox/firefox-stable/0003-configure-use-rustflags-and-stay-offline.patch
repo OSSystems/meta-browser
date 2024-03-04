@@ -1,0 +1,75 @@
+From 33384697ce300a6bd5120ab410615ae1fc4e874a Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Tue, 30 May 2023 22:17:51 +0200
+Subject: [PATCH] update firefox
+
+This patch does the following:
+1 - ./build/RunCbindgen.py - cargo is trying to update Cargo.lock, which changes due to
+the offline crates this layer is using. It can't be updated with offline flag.
+
+2 - ./build/moz.configure/rust.configure - try to find the targets supported by Yocto,
+and make sure that in case it is compiled for target, add the relevant rustflags (cross-linker, etc)
+
+Upstream-Status: Inappropriate
+
+---
+ build/RunCbindgen.py               | 2 +-
+ build/moz.configure/rust.configure | 7 +++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index e32c2f347c..5a5fb0814f 100644
+--- a/build/moz.configure/rust.configure
++++ b/build/moz.configure/rust.configure
+@@ -450,7 +450,7 @@ def detect_rustc_target(
+ @imports(_from="tempfile", _import="mkstemp")
+ @imports(_from="textwrap", _import="dedent")
+ @imports(_from="mozbuild.configure.util", _import="LineIO")
+-def assert_rust_compile(host_or_target, rustc_target, rustc):
++def assert_rust_compile(host_or_target, rustc_target, rustc, is_target = False):
+     # Check to see whether our rustc has a reasonably functional stdlib
+     # for our chosen target.
+     target_arg = "--target=" + rustc_target
+@@ -476,6 +476,9 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
+             in_path,
+         ]
+ 
++        if is_target:
++            cmd.extend(os.environ["RUSTFLAGS"].split())
++
+         def failed():
+             die(
+                 dedent(
+@@ -554,7 +557,7 @@ def rust_target_triple(
+     rustc_target = detect_rustc_target(
+         target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
+     )
+-    assert_rust_compile(target, rustc_target, rustc)
++    assert_rust_compile(target, rustc_target, rustc, True)
+     return rustc_target
+ 
+ 
+--- ./build/RunCbindgen.py.orig	2024-03-18 18:23:08.669204654 +0100
++++ ./build/RunCbindgen.py	2024-03-18 18:24:30.613892912 +0100
+@@ -44,6 +44,7 @@
+     args = [
+         buildconfig.substs["CARGO"],
+         "metadata",
++        "--offline",
+         "--all-features",
+         "--format-version",
+         "1",
+@@ -51,13 +52,6 @@
+         CARGO_TOML,
+     ]
+ 
+-    # The Spidermonkey library can be built from a package tarball outside the
+-    # tree, so we want to let Cargo create lock files in this case. When built
+-    # within a tree, the Rust dependencies have been vendored in so Cargo won't
+-    # touch the lock file.
+-    if not buildconfig.substs.get("JS_STANDALONE"):
+-        args.append("--frozen")
+-
+     stdout, returncode = _run_process(args)
+ 
+     if returncode != 0:
