@@ -1,0 +1,72 @@
+Make sure that Firefox can be compiled with clang-18. Using the original
+bindgen crate, the compilation tripped on the following llvm commit:
+
+https://github.com/llvm/llvm-project/commit/7091ca1ae3a87479b6febdf1c3a324d707c633d9
+
+Upstream-Status: Inappropriate
+--- ./build/workspace-hack/Cargo.toml	2024-04-23 11:07:32.693320001 +0200
++++ ./build/workspace-hack/Cargo.toml	2024-04-23 11:07:45.550114940 +0200
+@@ -33,7 +33,7 @@
+ serde_derive = { features = ["default", "deserialize_in_place"], version = "1.0.66" }
+ quote = { features = ["default", "proc-macro"], version = "1.0" }
+ libc = { features = ["default", "std", "use_std"], version = "0.2" }
+-bindgen = { default-features = false, features = ["runtime"], version = "0.64" }
++bindgen = { default-features = false, features = ["runtime"], version = "0.69.4" }
+ 
+ [target."cfg(windows)".dependencies.winapi]
+ version = "0.3.6"
+--- ./netwerk/test/http3server/Cargo.toml	2024-04-23 11:11:53.996152320 +0200
++++ ./netwerk/test/http3server/Cargo.toml	2024-04-23 11:12:11.952865917 +0200
+@@ -27,7 +27,7 @@
+ 
+ # Make sure to use bindgen's runtime-loading of libclang, as it allows for a wider range of clang versions to be used
+ [build-dependencies]
+-bindgen = {version = "0.64", default-features = false, features = ["runtime"] }
++bindgen = {version = "0.69.4", default-features = false, features = ["runtime"] }
+ 
+ [[bin]]
+ name = "http3server"
+--- ./security/manager/ssl/builtins/Cargo.toml	2024-04-23 11:15:47.877422002 +0200
++++ ./security/manager/ssl/builtins/Cargo.toml	2024-04-23 11:15:56.513284263 +0200
+@@ -10,7 +10,7 @@
+ smallvec = { version = "1.9.0", features = ["const_new"] }
+ 
+ [build-dependencies]
+-bindgen = { default-features = false, features = ["runtime"], version = "0.64" }
++bindgen = { default-features = false, features = ["runtime"], version = "0.69.4" }
+ nom = "7.1.1"
+ 
+ [lib]
+--- ./tools/profiler/rust-api/Cargo.toml	2024-04-23 11:20:03.246319871 +0200
++++ ./tools/profiler/rust-api/Cargo.toml	2024-04-23 11:20:10.969195339 +0200
+@@ -14,7 +14,7 @@
+ 
+ [build-dependencies]
+ lazy_static = "1"
+-bindgen = {version = "0.64", default-features = false}
++bindgen = {version = "0.69.4", default-features = false}
+ mozbuild = "0.1"
+ 
+ [features]
+--- ./build/rust/bindgen/Cargo.toml	2024-04-23 11:29:11.516478991 +0200
++++ ./build/rust/bindgen/Cargo.toml	2024-04-23 11:29:19.829344946 +0200
+@@ -8,7 +8,7 @@
+ path = "lib.rs"
+ 
+ [dependencies.bindgen]
+-version = "0.64.0"
++version = "0.69.4"
+ default-features = false
+ 
+ [features]
+--- ./servo/components/style/Cargo.toml	2024-04-23 11:33:46.418046192 +0200
++++ ./servo/components/style/Cargo.toml	2024-04-23 11:34:00.513820782 +0200
+@@ -83,7 +83,7 @@
+ [build-dependencies]
+ lazy_static = "1"
+ log = { version = "0.4", features = ["std"] }
+-bindgen = {version = "0.64", optional = true, default-features = false}
++bindgen = {version = "0.69.4", optional = true, default-features = false}
+ regex = {version = "1.0", optional = true, default-features = false, features = ["perf", "std"]}
+ walkdir = "2.1.4"
+ toml = {version = "0.5", optional = true, default-features = false}
