@@ -42,6 +42,7 @@ SRC_URI += "\
     file://0016-Use-base-ranges-instead-of-std-ranges.patch \
     file://0017-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0018-Adjust-the-Rust-build-to-our-needs.patch \
+    file://0019-Don-t-require-profiler_builtins.rlib.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
