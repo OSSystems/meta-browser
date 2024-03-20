@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/components/autofill/core/browser/data_model/autofill_i18n_api.h b/components/autofill/core/browser/data_model/autofill_i18n_api.h
-index fa577620509c8..f2bd0d075b846 100644
+index fa57762..f2bd0d0 100644
 --- a/components/autofill/core/browser/data_model/autofill_i18n_api.h
 +++ b/components/autofill/core/browser/data_model/autofill_i18n_api.h
 @@ -16,8 +16,8 @@ namespace autofill::i18n_model_definition {

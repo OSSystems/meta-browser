@@ -29,10 +29,10 @@ index 52504f4..40425d6 100644
                                            "root_out_dir") +
                                 "/v8_context_snapshot_generator",
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index f0976f9..99304bb 100644
+index bc087fd..f5b0f48 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -2162,6 +2162,7 @@ template("run_torque") {
+@@ -2169,6 +2169,7 @@ template("run_torque") {
      }
 
      args = [
@@ -40,7 +40,7 @@ index f0976f9..99304bb 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -2319,6 +2320,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2326,6 +2327,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -48,7 +48,7 @@ index f0976f9..99304bb 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -2358,6 +2360,7 @@ template("run_mksnapshot") {
+@@ -2365,6 +2367,7 @@ template("run_mksnapshot") {
      data = []
 
      args = [
@@ -56,7 +56,7 @@ index f0976f9..99304bb 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -7097,6 +7100,7 @@ if (v8_enable_i18n_support) {
+@@ -7134,6 +7137,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
 
      args = [
