@@ -29,7 +29,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 48 insertions(+), 15 deletions(-)
 
 diff --git a/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc b/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
-index a0e8d36..3d732f8 100644
+index 5943a76..c1081d9 100644
 --- a/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
 +++ b/base/allocator/partition_allocator/src/partition_alloc/partition_root.cc
 @@ -963,6 +963,10 @@ void PartitionRoot::Init(PartitionOptions opts) {
@@ -44,7 +44,7 @@ index a0e8d36..3d732f8 100644
      // Reserve address space for partition alloc.
      internal::PartitionAddressSpace::Init();
 diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging.cc b/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
-index 9b44119..a6589af 100644
+index 7590ba0..5edcb7b 100644
 --- a/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
 +++ b/base/allocator/partition_allocator/src/partition_alloc/tagging.cc
 @@ -12,9 +12,7 @@
@@ -140,7 +140,7 @@ index 9b44119..a6589af 100644
  TagViolationReportingMode GetMemoryTaggingModeForCurrentThread() {
  #if PA_CONFIG(HAS_MEMORY_TAGGING)
 diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging.h b/base/allocator/partition_allocator/src/partition_alloc/tagging.h
-index 12ad5e9..19c904c 100644
+index 5e261fa..5c5669c 100644
 --- a/base/allocator/partition_allocator/src/partition_alloc/tagging.h
 +++ b/base/allocator/partition_allocator/src/partition_alloc/tagging.h
 @@ -60,23 +60,39 @@ void ChangeMemoryTaggingModeForAllThreadsPerProcess(TagViolationReportingMode);
@@ -213,7 +213,7 @@ index 12ad5e9..19c904c 100644
    return ptr;
  #endif
 diff --git a/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc b/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
-index c0d0f84..07869a8 100644
+index 7aa5b9b..8bdd138 100644
 --- a/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
 +++ b/base/allocator/partition_allocator/src/partition_alloc/tagging_unittest.cc
 @@ -16,6 +16,7 @@ namespace partition_alloc::internal {

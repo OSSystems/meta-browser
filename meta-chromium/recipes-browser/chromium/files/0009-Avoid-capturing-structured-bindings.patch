@@ -16,10 +16,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  3 files changed, 12 insertions(+), 7 deletions(-)
 
 diff --git a/content/browser/service_worker/service_worker_context_wrapper.cc b/content/browser/service_worker/service_worker_context_wrapper.cc
-index 36e307e..2bdbb60 100644
+index 630b04c..8f2b834 100644
 --- a/content/browser/service_worker/service_worker_context_wrapper.cc
 +++ b/content/browser/service_worker/service_worker_context_wrapper.cc
-@@ -1456,9 +1456,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
+@@ -1473,9 +1473,10 @@ void ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest() {
    auto [document_url, key, callback] = std::move(*request);
 
    DCHECK(document_url.is_valid());
@@ -32,7 +32,7 @@ index 36e307e..2bdbb60 100644
    context_core_->registry()->FindRegistrationForClientUrl(
        ServiceWorkerRegistry::Purpose::kNotForNavigation,
 diff --git a/media/base/cdm_promise_adapter.cc b/media/base/cdm_promise_adapter.cc
-index f013809a..144809b 100644
+index f013809..144809b 100644
 --- a/media/base/cdm_promise_adapter.cc
 +++ b/media/base/cdm_promise_adapter.cc
 @@ -94,12 +94,12 @@ void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
@@ -53,13 +53,13 @@ index f013809a..144809b 100644
    promises_.clear();
  }
 diff --git a/third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.cc b/third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.cc
-index 6091eade..95db975 100644
+index 33deaeb..3b283c6 100644
 --- a/third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.cc
 +++ b/third_party/blink/renderer/core/layout/grid/grid_layout_algorithm.cc
-@@ -3447,7 +3447,9 @@ void GridLayoutAlgorithm::PlaceGridItems(
+@@ -3527,7 +3527,9 @@ void GridLayoutAlgorithm::PlaceGridItems(
    DCHECK(out_row_break_between);
 
-   const auto& container_space = ConstraintSpace();
+   const auto& container_space = GetConstraintSpace();
 -  const auto& [grid_items, layout_data, tree_size] = sizing_tree.TreeRootData();
 +  const auto& grid_items = sizing_tree.TreeRootData().grid_items;
 +  const auto& layout_data = sizing_tree.TreeRootData().layout_data;
@@ -67,10 +67,10 @@ index 6091eade..95db975 100644
 
    const auto* cached_layout_subtree = container_space.GetGridLayoutSubtree();
    const auto container_writing_direction =
-@@ -3611,7 +3613,9 @@ void GridLayoutAlgorithm::PlaceGridItemsForFragmentation(
+@@ -3691,7 +3693,9 @@ void GridLayoutAlgorithm::PlaceGridItemsForFragmentation(
 
    // TODO(ikilpatrick): Update |SetHasSeenAllChildren| and early exit if true.
-   const auto& constraint_space = ConstraintSpace();
+   const auto& constraint_space = GetConstraintSpace();
 -  const auto& [grid_items, layout_data, tree_size] = sizing_tree.TreeRootData();
 +  const auto& grid_items = sizing_tree.TreeRootData().grid_items;
 +  const auto& layout_data = sizing_tree.TreeRootData().layout_data;

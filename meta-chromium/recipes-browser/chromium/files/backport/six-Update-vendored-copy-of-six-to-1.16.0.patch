@@ -1,0 +1,168 @@
+From 37c29d37b43c7c15705c2ec82c6af1c0ae56b669 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Wed, 14 Feb 2024 12:36:56 +0000
+Subject: [PATCH] Backport "[six] Update vendored copy of six to 1.16.0."
+
+This is needed to fix the build with Python 3.12, which OE master
+already uses. The patch will be included in upstream's 122 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5092950]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ third_party/catapult/third_party/six/CHANGES   | 10 ++++++++--
+ third_party/catapult/third_party/six/PKG-INFO  |  2 +-
+ third_party/catapult/third_party/six/README    | 17 ++++-------------
+ .../catapult/third_party/six/README.chromium   |  4 ++--
+ .../third_party/six/six.egg-info/PKG-INFO      |  2 +-
+ third_party/catapult/third_party/six/six.py    | 18 +++++++++++++++++-
+ 6 files changed, 33 insertions(+), 20 deletions(-)
+
+diff --git a/third_party/catapult/third_party/six/CHANGES b/third_party/catapult/third_party/six/CHANGES
+index ad4cbaa..f3bf6a4 100644
+--- a/third_party/catapult/third_party/six/CHANGES
++++ b/third_party/catapult/third_party/six/CHANGES
+@@ -3,6 +3,12 @@ Changelog for six
+
+ This file lists the changes in each six version.
+
++1.16.0
++------
++
++- Pull request #343, issue #341, pull request #349: Port _SixMetaPathImporter to
++  Python 3.10.
++
+ 1.15.0
+ ------
+
+@@ -100,7 +106,7 @@ This file lists the changes in each six version.
+
+ - Issue #98: Fix `six.moves` race condition in multi-threaded code.
+
+-- Pull request #51: Add `six.view(keys|values|itmes)`, which provide dictionary
++- Pull request #51: Add `six.view(keys|values|items)`, which provide dictionary
+   views on Python 2.7+.
+
+ - Issue #112: `six.moves.reload_module` now uses the importlib module on
+@@ -227,7 +233,7 @@ This file lists the changes in each six version.
+ - Issue #40: Add import mapping for the Python 2 gdbm module.
+
+ - Issue #35: On Python versions less than 2.7, print_ now encodes unicode
+-  strings when outputing to standard streams. (Python 2.7 handles this
++  strings when outputting to standard streams. (Python 2.7 handles this
+   automatically.)
+
+ 1.4.1
+diff --git a/third_party/catapult/third_party/six/PKG-INFO b/third_party/catapult/third_party/six/PKG-INFO
+index 75aba67..1e57620 100644
+--- a/third_party/catapult/third_party/six/PKG-INFO
++++ b/third_party/catapult/third_party/six/PKG-INFO
+@@ -1,6 +1,6 @@
+ Metadata-Version: 1.2
+ Name: six
+-Version: 1.15.0
++Version: 1.16.0
+ Summary: Python 2 and 3 compatibility utilities
+ Home-page: https://github.com/benjaminp/six
+ Author: Benjamin Peterson
+diff --git a/third_party/catapult/third_party/six/README b/third_party/catapult/third_party/six/README
+index ee628a9..560a773 100644
+--- a/third_party/catapult/third_party/six/README
++++ b/third_party/catapult/third_party/six/README
+@@ -1,16 +1,7 @@
+-Six is a Python 2 and 3 compatibility library.  It provides utility functions
+-for smoothing over the differences between the Python versions with the goal of
+-writing Python code that is compatible on both Python versions.  See the
+-documentation for more information on what is provided.
++Six is a Python 2 and 3 compatibility library. It provides utility functions for smoothing over the differences between the Python versions with the goal of writing Python code that is compatible on both Python versions. See the documentation for more information on what is provided.
+
+-Six supports every Python version since 2.6.  It is contained in only one Python
+-file, so it can be easily copied into your project. (The copyright and license
+-notice must be retained.)
++Six supports Python 2.7 and 3.3+. It is contained in only one Python file, so it can be easily copied into your project. (The copyright and license notice must be retained.)
+
+-Online documentation is at https://pythonhosted.org/six/.
++Online documentation is at https://six.readthedocs.io/.
+
+-Bugs can be reported to https://bitbucket.org/gutworth/six.  The code can also
+-be found there.
+-
+-For questions about six or porting in general, email the python-porting mailing
+-list: https://mail.python.org/mailman/listinfo/python-porting
++Bugs can be reported to https://github.com/benjaminp/six. The code can also be found there.
+\ No newline at end of file
+diff --git a/third_party/catapult/third_party/six/README.chromium b/third_party/catapult/third_party/six/README.chromium
+index 6f7a9cb..3021912 100644
+--- a/third_party/catapult/third_party/six/README.chromium
++++ b/third_party/catapult/third_party/six/README.chromium
+@@ -1,7 +1,7 @@
+ Name: six
+ URL: https://pypi.org/project/six/
+-Version: 1.15.0
+-Date: 2021-03-02
++Version: 1.16.0
++Date: 2021-05-05
+ License: MIT
+ License File: LICENSE
+ Security Critical: no
+diff --git a/third_party/catapult/third_party/six/six.egg-info/PKG-INFO b/third_party/catapult/third_party/six/six.egg-info/PKG-INFO
+index 75aba67..1e57620 100644
+--- a/third_party/catapult/third_party/six/six.egg-info/PKG-INFO
++++ b/third_party/catapult/third_party/six/six.egg-info/PKG-INFO
+@@ -1,6 +1,6 @@
+ Metadata-Version: 1.2
+ Name: six
+-Version: 1.15.0
++Version: 1.16.0
+ Summary: Python 2 and 3 compatibility utilities
+ Home-page: https://github.com/benjaminp/six
+ Author: Benjamin Peterson
+diff --git a/third_party/catapult/third_party/six/six.py b/third_party/catapult/third_party/six/six.py
+index 83f6978..4e15675 100644
+--- a/third_party/catapult/third_party/six/six.py
++++ b/third_party/catapult/third_party/six/six.py
+@@ -29,7 +29,7 @@ import sys
+ import types
+
+ __author__ = "Benjamin Peterson <benjamin@python.org>"
+-__version__ = "1.15.0"
++__version__ = "1.16.0"
+
+
+ # Useful for very coarse version differentiation.
+@@ -71,6 +71,11 @@ else:
+             MAXSIZE = int((1 << 63) - 1)
+         del X
+
++if PY34:
++    from importlib.util import spec_from_loader
++else:
++    spec_from_loader = None
++
+
+ def _add_doc(func, doc):
+     """Add documentation to a function."""
+@@ -186,6 +191,11 @@ class _SixMetaPathImporter(object):
+             return self
+         return None
+
++    def find_spec(self, fullname, path, target=None):
++        if fullname in self.known_modules:
++            return spec_from_loader(fullname, self)
++        return None
++
+     def __get_module(self, fullname):
+         try:
+             return self.known_modules[fullname]
+@@ -223,6 +233,12 @@ class _SixMetaPathImporter(object):
+         return None
+     get_source = get_code  # same as get_code
+
++    def create_module(self, spec):
++        return self.load_module(spec.name)
++
++    def exec_module(self, module):
++        pass
++
+ _importer = _SixMetaPathImporter(__name__)
+
+

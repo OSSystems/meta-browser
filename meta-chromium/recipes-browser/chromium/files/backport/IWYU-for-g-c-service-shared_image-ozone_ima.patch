@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/gpu/command_buffer/service/shared_image/ozone_image_gl_textures_holder.h b/gpu/command_buffer/service/shared_image/ozone_image_gl_textures_holder.h
-index bb82853..a49b666 100644
+index d44037e..ca94e99 100644
 --- a/gpu/command_buffer/service/shared_image/ozone_image_gl_textures_holder.h
 +++ b/gpu/command_buffer/service/shared_image/ozone_image_gl_textures_holder.h
 @@ -6,6 +6,7 @@

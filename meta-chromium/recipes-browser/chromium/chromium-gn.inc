@@ -12,15 +12,13 @@ B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
 SRC_URI += "\
-    file://backport/IWYU-for-chrome-browser-ui-views-dark_mode_.patch \
-    file://backport/IWYU-for-net-filter-zstd_source_stream.cc.patch \
-    file://backport/IWYU-for-components-user_education-common-p.patch \
-    file://backport/atspi-mark-possibly-unused-gn-variables.patch \
-    file://backport/Revert-recent-C-20-usage-in-CFX_FillRenderO.patch \
     file://backport/IWYU-for-chrome-browser-ui-tabs-organizatio.patch \
     file://backport/IWYU-for-content-browser-generic_sensor-fra.patch \
     file://backport/IWYU-for-g-c-service-shared_image-ozone_ima.patch \
     file://backport/Make-toolchain_supports_rust_thin_lto-configurable.patch \
+    file://backport/six-Update-vendored-copy-of-six-to-1.16.0.patch \
+    file://backport/ToTLinux-Fix-some-narrowing-errors.patch \
+    file://backport/Update-LegacyStatsCollector-to-conform-with.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
@@ -42,14 +40,14 @@ SRC_URI += "\
     file://0016-Use-base-ranges-instead-of-std-ranges.patch \
     file://0017-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0018-Adjust-the-Rust-build-to-our-needs.patch \
+    file://0019-Don-t-require-profiler_builtins.rlib.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
     file://arm/0001-BUILD-do-not-specify-march-on-arm.patch \
-    file://arm/0002-Fix-ARM-build-with-recent-glibc.patch \
-    file://arm/0003-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
+    file://arm/0002-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
 "
-SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0004-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0003-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
 # musl-specific patches.
 SRC_URI:append:libc-musl = "\

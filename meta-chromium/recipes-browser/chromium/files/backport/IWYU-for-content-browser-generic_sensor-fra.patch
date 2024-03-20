@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 2 insertions(+)
 
 diff --git a/content/browser/generic_sensor/frame_sensor_provider_proxy.cc b/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
-index b8f0b48..3387e2f 100644
+index e24c144..dfb417a 100644
 --- a/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
 +++ b/content/browser/generic_sensor/frame_sensor_provider_proxy.cc
 @@ -4,6 +4,8 @@

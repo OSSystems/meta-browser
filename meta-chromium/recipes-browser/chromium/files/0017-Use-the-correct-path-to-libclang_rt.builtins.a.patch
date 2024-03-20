@@ -21,10 +21,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/build/config/clang/BUILD.gn b/build/config/clang/BUILD.gn
-index 46f4de0..ad3bfc4 100644
+index d4de2e0..0dd4d3b 100644
 --- a/build/config/clang/BUILD.gn
 +++ b/build/config/clang/BUILD.gn
-@@ -122,14 +122,15 @@ template("clang_lib") {
+@@ -128,14 +128,15 @@ template("clang_lib") {
        } else if (is_apple) {
          _dir = "darwin"
        } else if (is_linux || is_chromeos) {

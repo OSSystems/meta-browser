@@ -18,10 +18,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 24f2397..b716e48 100644
+index 3d538b3..a7f353b 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1105,7 +1105,9 @@ component("base") {
+@@ -1098,7 +1098,9 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.

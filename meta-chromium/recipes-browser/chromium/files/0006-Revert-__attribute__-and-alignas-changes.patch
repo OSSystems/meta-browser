@@ -86,7 +86,7 @@ index 30be67c..1788239 100644
  #endif
 
 diff --git a/base/compiler_specific.h b/base/compiler_specific.h
-index 26bf04f..105abd3 100644
+index 6e45f97..31cffde 100644
 --- a/base/compiler_specific.h
 +++ b/base/compiler_specific.h
 @@ -42,7 +42,7 @@
@@ -98,7 +98,7 @@ index 26bf04f..105abd3 100644
  #elif defined(COMPILER_GCC) && HAS_ATTRIBUTE(noinline)
  #define NOINLINE __attribute__((noinline))
  #elif defined(COMPILER_MSVC)
-@@ -52,7 +52,7 @@
+@@ -61,7 +61,7 @@
  #endif
 
  #if defined(__clang__) && defined(NDEBUG) && HAS_ATTRIBUTE(always_inline)
@@ -107,7 +107,7 @@ index 26bf04f..105abd3 100644
  #elif defined(COMPILER_GCC) && defined(NDEBUG) && HAS_ATTRIBUTE(always_inline)
  #define ALWAYS_INLINE inline __attribute__((__always_inline__))
  #elif defined(COMPILER_MSVC) && defined(NDEBUG)
-@@ -82,14 +82,23 @@
+@@ -91,14 +91,23 @@
  //
  // In most places you can use the C++11 keyword "alignas", which is preferred.
  //

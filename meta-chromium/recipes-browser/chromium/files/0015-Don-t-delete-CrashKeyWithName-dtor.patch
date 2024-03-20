@@ -19,7 +19,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/chrome/common/crash_keys.cc b/chrome/common/crash_keys.cc
-index 680c8ec..a8e4bcc 100644
+index 2f69ae8..64d0e38 100644
 --- a/chrome/common/crash_keys.cc
 +++ b/chrome/common/crash_keys.cc
 @@ -45,7 +45,7 @@ class CrashKeyWithName {

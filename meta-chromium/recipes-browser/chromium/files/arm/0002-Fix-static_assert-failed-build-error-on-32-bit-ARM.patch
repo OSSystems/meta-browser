@@ -22,7 +22,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/v8/src/maglev/maglev-code-generator.cc b/v8/src/maglev/maglev-code-generator.cc
-index 138eba4..2571b89 100644
+index f30f8ae..d43f661 100644
 --- a/v8/src/maglev/maglev-code-generator.cc
 +++ b/v8/src/maglev/maglev-code-generator.cc
 @@ -420,7 +420,7 @@ class ParallelMoveResolver {
