@@ -47,7 +47,7 @@ Chromium browser.
 
 This recipe provides a package for the Chromium web browser. It strives to
 always follow the latest stable Linux release as listed in
-https://omahaproxy.appspot.com
+https://chromiumdash.appspot.com/releases?platform=Linux
 
 We refer to the web browser as Chromium, not Chrome, because "Chrome" is
 Google's version of the web browser with proprietary content on top of the
@@ -71,22 +71,6 @@ host. clang-native from the meta-clang layer is used to build those binaries.
 
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
-
-### dunfell-specific requirements
-
-The dunfell OE/Yocto branch is an LTS release, which is often at odds with
-Chromium's release model because it often requires recent versions of certain
-recipes to build correctly.
-
-This is particularly a problem for the toolchain (i.e. LLVM) and, at times,
-node.js. As such, dunfell users **must** ensure the following:
-* Chromium needs clang >= 12 and for that, meta-clang's **dunfell-clang12**
-  branch needs to be used.
-* Since Chromium 112, at least Nodejs 14 is required for parts of the build.
-  meta-oe needs to be at least a commit
-  116bfe8d5e5851e7fc5424f40da8691a19c5b5ee ("nodejs: make 14.18.1 available but
-  not default") and `PREFERRED_VERSION_nodejs-native = "14.%"` needs to be
-  added to `conf/local.conf`.
 
 ## PACKAGECONFIG knobs
 
