@@ -27,20 +27,11 @@ SRC_URI += "\
     file://0003-wrapper-extra-flags.patch \
     file://0004-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0006-Revert-__attribute__-and-alignas-changes.patch \
-    file://0007-Add-missing-typename-s.patch \
-    file://0008-Don-t-pass-unknown-LLVM-options.patch \
-    file://0009-Avoid-capturing-structured-bindings.patch \
-    file://0010-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
-    file://0011-Avoid-parenthesized-initialization-of-aggregates.patch \
-    file://0012-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
-    file://0013-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
-    file://0014-Fix-implicitly-deleted-default-constructor-build-err.patch \
-    file://0015-Don-t-delete-CrashKeyWithName-dtor.patch \
-    file://0016-Use-base-ranges-instead-of-std-ranges.patch \
-    file://0017-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
-    file://0018-Adjust-the-Rust-build-to-our-needs.patch \
-    file://0019-Don-t-require-profiler_builtins.rlib.patch \
+    file://0006-Don-t-pass-unknown-LLVM-options.patch \
+    file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
+    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
+    file://0009-Adjust-the-Rust-build-to-our-needs.patch \
+    file://0010-Don-t-require-profiler_builtins.rlib.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
