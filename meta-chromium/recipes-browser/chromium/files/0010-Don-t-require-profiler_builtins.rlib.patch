@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 77f4b8c..3078de8 100644
+index 8a25798..2d284e6 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
 @@ -100,7 +100,6 @@ if (toolchain_has_rust) {

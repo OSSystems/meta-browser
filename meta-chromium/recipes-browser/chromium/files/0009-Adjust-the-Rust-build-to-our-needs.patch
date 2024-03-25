@@ -23,10 +23,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 54 insertions(+), 17 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 814c455..c6b675d 100644
+index e98d913..6213b72 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -76,6 +76,11 @@ declare_args() {
+@@ -87,6 +87,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -38,7 +38,7 @@ index 814c455..c6b675d 100644
  }
 
  # Use a separate declare_args so these variables' defaults can depend on the
-@@ -185,12 +190,19 @@ if (enable_rust) {
+@@ -196,12 +201,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -61,7 +61,7 @@ index 814c455..c6b675d 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -199,13 +211,13 @@ if (is_linux || is_chromeos) {
+@@ -210,13 +222,13 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.

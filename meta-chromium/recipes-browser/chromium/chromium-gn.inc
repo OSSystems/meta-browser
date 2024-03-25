@@ -12,13 +12,7 @@ B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
 SRC_URI += "\
-    file://backport/IWYU-for-chrome-browser-ui-tabs-organizatio.patch \
-    file://backport/IWYU-for-content-browser-generic_sensor-fra.patch \
-    file://backport/IWYU-for-g-c-service-shared_image-ozone_ima.patch \
     file://backport/Make-toolchain_supports_rust_thin_lto-configurable.patch \
-    file://backport/six-Update-vendored-copy-of-six-to-1.16.0.patch \
-    file://backport/ToTLinux-Fix-some-narrowing-errors.patch \
-    file://backport/Update-LegacyStatsCollector-to-conform-with.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
@@ -36,9 +30,8 @@ SRC_URI += "\
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
     file://arm/0001-BUILD-do-not-specify-march-on-arm.patch \
-    file://arm/0002-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
 "
-SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0003-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0002-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
 # musl-specific patches.
 SRC_URI:append:libc-musl = "\
