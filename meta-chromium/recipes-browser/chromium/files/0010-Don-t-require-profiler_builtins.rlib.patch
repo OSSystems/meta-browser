@@ -14,10 +14,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 8a25798..2d284e6 100644
+index 9c3db1e..8824200 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -100,7 +100,6 @@ if (toolchain_has_rust) {
+@@ -90,7 +90,6 @@ if (toolchain_has_rust) {
    # don't need to pass to the C++ linker because they're used for specialized
    # purposes.
    skip_stdlib_files = [
