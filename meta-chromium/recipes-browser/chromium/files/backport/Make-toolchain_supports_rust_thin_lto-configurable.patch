@@ -14,10 +14,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 72088cf..59a1880 100644
+index f18ea0a..118e379 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1008,7 +1008,7 @@ config("compiler") {
+@@ -1014,7 +1014,7 @@ config("compiler") {
    if (rust_abi_target != "") {
      rustflags += [ "--target=$rust_abi_target" ]
    }
@@ -27,10 +27,10 @@ index 72088cf..59a1880 100644
      rustflags += [ "-Cembed-bitcode=no" ]
    }
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index c6b675d..a20524d 100644
+index 6213b72..b2866b3 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -55,6 +55,17 @@ declare_args() {
+@@ -66,6 +66,17 @@ declare_args() {
    # you can specify whether it supports nacl here.
    rust_toolchain_supports_nacl = false
 
@@ -48,7 +48,7 @@ index c6b675d..a20524d 100644
    # Any extra std rlibs in your Rust toolchain, relative to the standard
    # Rust toolchain. Typically used with 'rust_sysroot_absolute'
    added_rust_stdlib_libs = []
-@@ -150,17 +161,6 @@ if (enable_rust) {
+@@ -161,17 +172,6 @@ if (enable_rust) {
  # for gtests from the `//testing/test:test` template.
  can_build_rust_unit_tests = toolchain_has_rust && !is_android
 
