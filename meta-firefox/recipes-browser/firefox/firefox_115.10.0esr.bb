@@ -13,6 +13,9 @@ SRC_URI += "git://github.com/hsivonen/packed_simd.git;protocol=https;branch=0_3_
             file://debian-hacks/Work-around-bz-1775202-to-fix-FTBFS-on-ppc64el.patch \
             file://0004-fix-compilation-with-clang18.patch"
 
+SRC_URI += "${@ 'file://0005-non-constant-expression-cannot-be-narrowed-from.patch' \
+                 if 'arm' in d.getVar('TARGET_ARCH') else '' }"
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-esr:"
 
 SRC_URI[sha256sum] = "0afd3c733d95f7047f258d1a9768d06d856217fe736d85bfb370db9dd926eef2"
