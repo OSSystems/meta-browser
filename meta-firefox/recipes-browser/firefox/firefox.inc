@@ -131,7 +131,7 @@ PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries
 # nspr and nss dependencies are handled separately, due to requiring
 # different versions depending on Yocto version and CPU capabilities.
 PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
-PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.94,nss-3.94"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.99,nss-3.99"
 PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
 PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
 PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"
