@@ -1,0 +1,13 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/latest.yml
+    - meta-firefox/kas/repos/scarthgap.yml
+    - meta-firefox/kas/repos/rpi.yml
+    - meta-firefox/kas/common.yml
+
+machine: raspberrypi3
+
+repos:
+  meta-rpi:
+    refspec: "1879cb831f4ea3e532cb5ce9fa0f32be917e8fa3"

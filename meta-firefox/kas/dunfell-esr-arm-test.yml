@@ -1,0 +1,13 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/esr.yml
+    - meta-firefox/kas/repos/dunfell.yml
+    - meta-firefox/kas/repos/rpi.yml
+    - meta-firefox/kas/common.yml
+
+machine: raspberrypi3
+
+repos:
+  meta-rpi:
+    refspec: dunfell

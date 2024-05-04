@@ -1,0 +1,20 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/repos/common-repos.yml
+    - meta-firefox/kas/repos/rust.yml
+
+repos:
+  meta-oe:
+    refspec: dunfell
+  poky:
+    refspec: dunfell
+  meta-clang:
+    refspec: dunfell-clang12
+  meta-rust:
+    # last revision that supports Dunfell, along with the CMake version shipped with poky
+    refspec: "d42984ff9a9fad9ced37d95a89af1b2b84f957e9"
+
+local_conf_header:
+  meta-firefox-dunfell: |
+    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust/"

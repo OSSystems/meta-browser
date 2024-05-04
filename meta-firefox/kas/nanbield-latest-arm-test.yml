@@ -1,0 +1,24 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/latest.yml
+    - meta-firefox/kas/repos/nanbield.yml
+    - meta-firefox/kas/repos/rpi.yml
+    - meta-firefox/kas/common.yml
+
+machine: raspberrypi3
+
+repos:
+  meta-rpi:
+    refspec: nanbield
+
+# use rust version shipped with meta-firefox
+
+local_conf_header:
+  nanbield-latest-arm: |
+    PREFERRED_VERSION_rust = "1.75.0"
+    PREFERRED_VERSION_rust-native = "1.75.0"
+    PREFERRED_VERSION_libstd-rs = "1.75.0"
+    PREFERRED_VERSION_cargo = "1.75.0"
+    PREFERRED_VERSION_cargo-native = "1.75.0"
+    PREFERRED_VERSION_rust-llvm = "1.75.0"

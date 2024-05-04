@@ -1,13 +1,18 @@
-Note from OldManYellsAtCloud
-============
-
 This is an updated version of meta-firefox layer, with a newer version of Firefox.
-
-Currently supports Dunfell, Kirkstone, Mickledore and  Nanbield version of Yocto.
 
 Plan to upstream this in the near future. If you want to help in, feel free to solve an issue or open a new one.
 
-Make sure to add `RUST_PANIC_STRATEGY = "abort"` to local.conf before compiling Rust.
+Current build status:
+
+| Yocto-FF version / Arch | arm (32-bit) | aarch64 | x86_64 | risc-v |
+| ----------------------- | ------------ | ------- | ------ | ------ |
+| Dunfell - 115.10.0esr   | ![dunfell-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/dunfell-arm-v115.10.0esr.yml/badge.svg) | ![dunfell-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/dunfell-aarch64-v115.10.0esr.yml/badge.svg) | ![dunfell-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/dunfell-x86_64-v115.10.0esr.yml/badge.svg) | - |
+| Kirkstone - 115.10.0esr | ![kirkstone-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-arm-v115.10.0esr.yml/badge.svg) | ![kirkstone-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-aarch64-v115.10.0esr.yml/badge.svg) | ![kirkstone-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-x86_64-v115.10.0esr.yml/badge.svg) | - |
+| Kirkstone - 125.0.3     | ![kirkstone-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-arm-v125.0.3.yml/badge.svg) | ![kirkstone-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-aarch64-v125.0.3.yml/badge.svg) | ![kirkstone-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-x86_64-v125.0.3.yml/badge.svg) | - |
+| Nanbield - 115.10.0esr  | ![nanbield-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-arm-v115.10.0esr.yml/badge.svg) | ![nanbield-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-aarch64-v115.10.0esr.yml/badge.svg) | ![nanbield-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-x86_64-v115.10.0esr.yml/badge.svg) | ![nanbield-riscv-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-riscv-v115.10.0esr.yml/badge.svg) |
+| Nanbield - 125.0.3      | ![nanbield-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-arm-v125.0.3.yml/badge.svg) | ![nanbield-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-aarch64-v125.0.3.yml/badge.svg) | ![nanbield-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-x86_64-v125.0.3.yml/badge.svg) | ![nanbield-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/nanbield-riscv-v125.0.3.yml/badge.svg)
+| Scarthgap - 115.10.0esr | ![scarthgap-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-arm-v115.10.0esr.yml/badge.svg) | ![scarthgap-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-aarch64-v115.10.0esr.yml/badge.svg) | ![scarthgap-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-x86_64-v115.10.0esr.yml/badge.svg) | ![scarthgap-riscv-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-riscv-v115.10.0esr.yml/badge.svg) |
+| Scarthgap - 125.0.3     | ![scarthgap-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-arm-v125.0.3.yml/badge.svg) | ![scarthgap-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-aarch64-v125.0.3.yml/badge.svg) | ![scarthgap-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-x86_64-v125.0.3.yml/badge.svg) | ![scarthgap-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-riscv-v125.0.3.yml/badge.svg) |
 
 OpenEmbedded/Yocto BSP layer for Firefox Browser
 ================================================
@@ -15,25 +20,21 @@ OpenEmbedded/Yocto BSP layer for Firefox Browser
 This layer provides web browser recipes for use with OpenEmbedded
 and/or Yocto.
 
-This layer depends on:
+##Dependencies
 
-Firefox can be successfully compiled with the following dependencies and branches/revisions:
+This layer depends on poky, meta-oe, and meta-rust (only for Kirkstone and Dunfell). To see the tested revision/release
+combinations, see the contents of the `kas` folder - that contains all the branch/revision information used for
+testing.
 
-| Yocto Version | meta-oe    | poky    | meta-clang | meta-rust |
-| ------------- | ---------- | ------- | ---------- | --------- |
-| Dunfell       | [Dunfell](https://github.com/openembedded/meta-openembedded/commit/300be975359fdb3a3b2bf7c6fe15dea7acac575d) | [Dunfell](https://git.yoctoproject.org/poky/commit/?h=dunfell&id=aeac1034661725b5c83e79f76238429fb236b090)        | [Dunfell](https://github.com/kraj/meta-clang/commit/67ac939d47b3dfc383fec7244e4a0ff85ca4340f)           | [Master](https://github.com/meta-rust/meta-rust/commit/e3082dc0728023b121d648da4c5c856943b5e425) |
-| Kirkstone     | [Kirkstone](https://github.com/openembedded/meta-openembedded/commit/529620141e773080a6a7be4615fb7993204af883)  | [Kirkstone](https://git.yoctoproject.org/poky/commit/?h=kirkstone&id=75239ddd8d67c00139c6e88c1c2a790b471b12c5) | [Kirkstone](https://github.com/kraj/meta-clang/commit/2d08d6bf376a1e06c53164fd6283b03ec2309da4) | [Master](https://github.com/meta-rust/meta-rust/commit/e3082dc0728023b121d648da4c5c856943b5e425) |
-| Nanbield      | [Nanbield](https://github.com/openembedded/meta-openembedded/commit/278c3f75e32f38f71bb52d161fe06bcb6f6bdd2f) | [Nanbield](https://git.yoctoproject.org/poky/commit/?h=nanbield&id=0e351df0425968fd58983e445391012e64f7f4ad)  | [Master](https://github.com/kraj/meta-clang/commit/869df95b61ba44a7ad6bc57da8a31e459eec5059) | N/A       |
-| Scarthgap     | [master-next](https://github.com/openembedded/meta-openembedded/commit/a64b63c0a1ae74199043cf699cf93a171364980d) | [Scarthgap](https://git.yoctoproject.org/poky/commit/?h=scarthgap&id=b5624ee5643d881afa004571a096a189ab5389b5) | [Nanbield](https://github.com/kraj/meta-clang/commit/5170ec9cdfe215fcef146fa9142521bfad1d7d6c) | N/A       |
+Note: this layer ships recipes for rust 1.75, taken from Scarthgap (used only for building the latest Firefox on Nanbield).
+If this is not something that makes you happy (because you want to use another rust, for example), then just add 
+`BBMASK += "meta-browser/meta-firefox/recipes-devtools/rust/"` line to local.conf in order to eliminate it.
 
-Nanbield and Scarthgap work with the Rust recipes included in poky.
+Note: Make sure to add `RUST_PANIC_STRATEGY = "abort"` to local.conf before compiling Rust.
 
-Kirkstone however has a too old Rust version, and Dunfell has no Rust.
-These versions require the meta-rust layer also. For Kirkstone make sure to set the 
-`PREFERRED_VERSION` for rust (&co) to the versions in the meta-rust layer.
-
-The revisions in the table are indicative only. If there are newer commits in the
-branch, they are expected to be compatible.
+Note: On Dunfell currently only the ESR version of Firefox is supported. (Latest version requires a version of rust that is way too new
+for this release). Possibly version 115 will be the latest supported version on that release due to this issue, unless
+a newer version of rust toolchain becomes available. 
 
 Contributing
 ------------
@@ -43,7 +44,7 @@ report problems in GitHub's issue tracker.
 
 Maintainers
 -----------
-* OldManYellsAtCloud <skandigraun@gmail.com>
+* OldManYellsAtCloud/Gyorgy Sarvari <skandigraun@gmail.com>
 
 Recipes
 -------
@@ -136,11 +137,6 @@ PACKAGECONFIG knobs
 
 * system-webp: (off by default)
   Use system libwebp.
-
-Runtime options
----------------
-* The enviromental variable `GDK_BACKEND=wayland` is needed to run Firefox with
-  the wayland backend.
 
 Source for "magic" commits
 ========================

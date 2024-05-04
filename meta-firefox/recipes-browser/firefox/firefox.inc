@@ -110,8 +110,6 @@ AS = "${CC}"
 
 DISABLE_STATIC=""
 
-ARM_INSTRUCTION_SET:armv5 = "arm"
-
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
                    ${@bb.utils.contains_any("TARGET_ARCH", "x86_64 arm aarch64", "webrtc", "", d)} \

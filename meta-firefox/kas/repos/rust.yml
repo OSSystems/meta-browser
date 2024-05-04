@@ -1,0 +1,8 @@
+header:
+  version: 11
+
+repos:
+  meta-rust:
+    url: https://github.com/meta-rust/meta-rust.git
+    layers:
+      .:
