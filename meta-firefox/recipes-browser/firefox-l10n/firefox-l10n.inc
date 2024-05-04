@@ -21,7 +21,8 @@ inherit allarch
 
 def get_language_name(package):
     lang = package.replace('firefox-l10n-', '')
-    if lang.find('-') != -1:
+    # ca-valencia uses a special naming convention, it shouldn't be changed
+    if lang.find('-') != -1 and 'valencia' not in lang:
         lang = lang.split('-')
         lang[1] = lang[1].upper()
         lang = '-'.join(lang)

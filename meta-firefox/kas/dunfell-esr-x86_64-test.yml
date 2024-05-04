@@ -1,0 +1,8 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/esr.yml
+    - meta-firefox/kas/repos/dunfell.yml
+    - meta-firefox/kas/common.yml
+
+machine: qemux86-64

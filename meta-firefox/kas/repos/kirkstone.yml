@@ -1,0 +1,19 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/repos/common-repos.yml
+    - meta-firefox/kas/repos/rust.yml
+
+repos:
+  meta-oe:
+    refspec: kirkstone
+  poky:
+    refspec: kirkstone
+  meta-clang:
+    refspec: kirkstone
+  meta-rust:
+    refspec: "9611b42d73c7546c3d845da380943a0a4f4205f0"
+
+local_conf_header:
+  meta-firefox-kirkstone: |
+    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust"

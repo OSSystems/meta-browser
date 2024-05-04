@@ -1,0 +1,9 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/latest.yml
+    - meta-firefox/kas/repos/scarthgap.yml
+    - meta-firefox/kas/repos/riscv.yml
+    - meta-firefox/kas/common.yml
+
+machine: star64
