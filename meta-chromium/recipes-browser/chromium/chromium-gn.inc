@@ -72,6 +72,7 @@ DEPENDS += " \
     jpeg \
     libdrm \
     libffi \
+    libstd-rs \
     libwebp \
     libxkbcommon \
     libxslt \
@@ -86,7 +87,6 @@ DEPENDS += " \
     pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
-    rust \
     rust-native \
     virtual/libgl \
 "
