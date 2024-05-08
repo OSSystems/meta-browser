@@ -16,6 +16,7 @@ B = "${S}/out_bootstrap"
 
 SRC_URI += " \
         file://0001-Pass-no-static-libstdc-to-gen.py.patch \
+        file://gn-bootstrap-Don-t-pass-removed-dupbuild-ninja-optio.patch \
 "
 
 # The build system expects the linker to be invoked via the compiler. If we use
