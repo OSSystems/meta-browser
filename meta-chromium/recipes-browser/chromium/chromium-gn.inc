@@ -305,7 +305,7 @@ GN_ARGS += 'max_jobs_per_link="${@oe.utils.parallel_make_argument(d, '%d')}"'
 # Rust code is rebuilt after updating the Rust toolchain. This is irrelevant for
 # our build setup, but not setting it leads to an error.
 GN_ARGS += ' \
-        rust_sysroot_absolute="${RECIPE_SYSROOT_NATIVE}/usr" \
+        rust_sysroot_absolute="${STAGING_DIR_NATIVE}/usr" \
         rustc_version="custom" \
         rust_target_triple_vendor_for_target="${TARGET_VENDOR}" \
 '
@@ -441,7 +441,7 @@ do_add_clang_symlink () {
     # links against libclang_rt.builtins.a and uses the `clang_version` GN
     # variable to find it. This allows us to set it to the same value for all
     # Yocto releases.
-    cd "${RECIPE_SYSROOT_NATIVE}/usr/lib/clang"
+    cd "${STAGING_LIBDIR_NATIVE}/clang"
     # find the directory containing the library
     for dir in *; do
         if [ -n "$(find $dir -name 'libclang_rt.builtins*')" ] ; then
@@ -456,18 +456,18 @@ do_copy_clang_library () {
     # Chromium needs to link against libclang_rt.builtins.a for both host and
     # target code, and expects to find both libraries in the same directory
     # (thanks to 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${RECIPE_SYSROOT}"
-    lib_file="$(find usr/lib/clang -name 'libclang_rt.builtins*')"
+    cd "${STAGING_LIBDIR}"
+    lib_file="$(find clang -name 'libclang_rt.builtins*')"
     lib_dir="$(dirname $lib_file)"
-    cp "$lib_file" "${RECIPE_SYSROOT_NATIVE}/$lib_dir"
+    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/$lib_dir"
 }
 addtask copy_clang_library after do_configure before do_compile
 
 do_copy_target_rustlibs () {
     # Chromium needs a single Rust sysroot that contains the rustlibs for both
     # the host and target, so we copy the target rustlibs to the native sysroot.
-    rustlib_src_dir="${RECIPE_SYSROOT}/usr/lib/rustlib/${TARGET_ARCH}"*
-    cp -r $rustlib_src_dir "${RECIPE_SYSROOT_NATIVE}/usr/lib/rustlib"
+    rustlib_src_dir="${STAGING_LIBDIR}/rustlib/${TARGET_ARCH}"*
+    cp -r $rustlib_src_dir "${STAGING_LIBDIR_NATIVE}/rustlib"
 }
 addtask copy_target_rustlibs after do_configure before do_compile
 
