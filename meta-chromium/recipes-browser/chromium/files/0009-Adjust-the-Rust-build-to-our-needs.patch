@@ -19,8 +19,8 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  build/config/rust.gni            | 24 +++++++++++++++++------
  build/rust/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 33 ++++++++++++++++++++++++--------
- build/rust/std/find_std_rlibs.py | 17 +++++++++++-----
- 4 files changed, 56 insertions(+), 19 deletions(-)
+ build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
+ 4 files changed, 55 insertions(+), 19 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
 index e98d913..6213b72 100644
@@ -205,7 +205,7 @@ index 386258f..3bb6a41 100755
 
        # Use the number of times we've seen this name to disambiguate the output
        # filenames. Since we sort the input filenames including the metadata,
-@@ -117,14 +119,19 @@ def main():
+@@ -117,14 +119,18 @@ def main():
        output_filename = f"lib{concise_name}.rlib"
 
        infile = os.path.join(rustlib_dir, f)
@@ -219,9 +219,8 @@ index 386258f..3bb6a41 100755
 +      outfile = os.path.join(lib_output_dir, f)
        copy_file(infile, outfile)
 
-+    f = 'target.json'
-+    infile = os.path.join(rustlib_dir, '..', f)
-+    outfile = os.path.join(args.output, f)
++    infile = os.path.join(os.environ['RUST_TARGET_PATH'], f'{args.target}.json')
++    outfile = os.path.join(args.output, 'target.json')
 +    copy_file(infile, outfile)
 +
      depfile.write("\n")
