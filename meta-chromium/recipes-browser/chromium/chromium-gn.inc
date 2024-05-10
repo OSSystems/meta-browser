@@ -13,6 +13,7 @@ B = "${S}/${OUTPUT_DIR}"
 # Backported patches.
 SRC_URI += "\
     file://backport/Make-toolchain_supports_rust_thin_lto-configurable.patch \
+    file://backport/Add-missing-components-enterprise-buildflag.patch \
 "
 # Non-specific patches.
 SRC_URI += "\
