@@ -7,7 +7,7 @@ DEPENDS:append = "pulseaudio cbindgen-native clang-native \
 DEPENDS:x86-64:append = " nasm-native "
 DEPENDS:x86:append = " nasm-native "
 
-RDEPENDS:${PN} = "libva"
+RDEPENDS:${PN} = "libva libpci"
 RDEPENDS:${PN}-dev = "dbus"
 
 # Use system's nss in case the CPU has no native crypto support (e.g. armv7)
