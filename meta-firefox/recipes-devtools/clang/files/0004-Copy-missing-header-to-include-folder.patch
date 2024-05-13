@@ -1,0 +1,31 @@
+From 1c6fa8c7c7cd64e1c0214b49f95d16b4d6e88c54 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Tue, 14 May 2024 21:52:57 +0200
+Subject: [PATCH] Copy missing header to include folder
+
+Copy the missing arm_neon_sve_bridge.h header to the final include
+folder.
+
+Fixes compilation error with Firefox 126 using Clang 14 on Kirkstone:
+
+In file included from [SSNNIIPP]/firefox-126.0/media/libvpx/libvpx/vp9/encoder/arm/neon/vp9_error_sve.c:17:
+[SSNNIIPP]/firefox-126.0/media/libvpx/libvpx/vpx_dsp/arm/vpx_neon_sve_bridge.h:16:10: fatal error: 'arm_neon_sve_bridge.h' file not found
+---
+ clang/lib/Headers/CMakeLists.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/clang/lib/Headers/CMakeLists.txt b/clang/lib/Headers/CMakeLists.txt
+index 078988980c52..7f558db2b43d 100644
+--- a/clang/lib/Headers/CMakeLists.txt
++++ b/clang/lib/Headers/CMakeLists.txt
+@@ -223,6 +223,7 @@ if(ARM IN_LIST LLVM_TARGETS_TO_BUILD OR AArch64 IN_LIST LLVM_TARGETS_TO_BUILD)
+   copy_header_to_output_dir(${CMAKE_CURRENT_SOURCE_DIR}
+     arm_neon_sve_bridge.h
+   )
++  list(APPEND files arm_neon_sve_bridge.h)
+ endif()
+ if(RISCV IN_LIST LLVM_TARGETS_TO_BUILD)
+   # Generate riscv_vector.h
+-- 
+2.45.0
+

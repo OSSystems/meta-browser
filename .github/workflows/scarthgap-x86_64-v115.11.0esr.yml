@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'meta-browser/meta-firefox/**'
+      - 'meta-firefox/**'
 
 jobs:
   build-scarthgap-x86_64-esr:
