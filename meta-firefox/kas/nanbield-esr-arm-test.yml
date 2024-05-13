@@ -16,9 +16,9 @@ repos:
 
 local_conf_header:
   nanbield-esr-arm: |
-    PREFERRED_VERSION_rust = "1.70.0"
-    PREFERRED_VERSION_rust-native = "1.70.0"
-    PREFERRED_VERSION_libstd-rs = "1.70.0"
-    PREFERRED_VERSION_cargo = "1.70.0"
-    PREFERRED_VERSION_cargo-native = "1.70.0"
-    PREFERRED_VERSION_rust-llvm = "1.70.0"
+    REQUIRED_VERSION_rust = "1.70.0"
+    REQUIRED_VERSION_rust-native = "1.70.0"
+    REQUIRED_VERSION_libstd-rs = "1.70.0"
+    REQUIRED_VERSION_cargo = "1.70.0"
+    REQUIRED_VERSION_cargo-native = "1.70.0"
+    REQUIRED_VERSION_rust-llvm = "1.70.0"
