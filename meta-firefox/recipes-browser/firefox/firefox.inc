@@ -78,7 +78,7 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
            "
 
-SRCREV_FOMAT .= "_chardetng"
+SRCREV_FORMAT .= "_chardetng"
 SRCREV_chardetng = "3484d3e3ebdc8931493aa5df4d7ee9360a90e76b"
 SRCREV_FORMAT .= "_chardetng_c"
 SRCREV_chardetng_c = "ed8a4c6f900a90d4dbc1d64b856e61490a1c3570"

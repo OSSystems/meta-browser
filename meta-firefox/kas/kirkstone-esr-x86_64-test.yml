@@ -10,10 +10,10 @@ machine: qemux86-64
 local_conf_header:
 # use rust version from meta-rust layer
   kirkstone-esr-x86_64: |
-    PREFERRED_VERSION_rust = "1.75.0"
-    PREFERRED_VERSION_rust-native = "1.75.0"
-    PREFERRED_VERSION_libstd-rs = "1.75.0"
-    PREFERRED_VERSION_cargo = "1.75.0"
-    PREFERRED_VERSION_cargo-native = "1.75.0"
-    PREFERRED_VERSION_rust-llvm = "1.75.0"
-    PREFERRED_VERSION_rust-llvm-native = "1.75.0"
+    REQUIRED_VERSION_rust = "1.75.0"
+    REQUIRED_VERSION_rust-native = "1.75.0"
+    REQUIRED_VERSION_libstd-rs = "1.75.0"
+    REQUIRED_VERSION_cargo = "1.75.0"
+    REQUIRED_VERSION_cargo-native = "1.75.0"
+    REQUIRED_VERSION_rust-llvm = "1.75.0"
+    REQUIRED_VERSION_rust-llvm-native = "1.75.0"

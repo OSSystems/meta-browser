@@ -16,9 +16,9 @@ repos:
 
 local_conf_header:
   scarthgap-esr-arm: |
-    PREFERRED_VERSION_rust = "1.75.0"
-    PREFERRED_VERSION_rust-native = "1.75.0"
-    PREFERRED_VERSION_libstd-rs = "1.75.0"
-    PREFERRED_VERSION_cargo = "1.75.0"
-    PREFERRED_VERSION_cargo-native = "1.75.0"
-    PREFERRED_VERSION_rust-llvm = "1.75.0"
+    REQUIRED_VERSION_rust = "1.75.0"
+    REQUIRED_VERSION_rust-native = "1.75.0"
+    REQUIRED_VERSION_libstd-rs = "1.75.0"
+    REQUIRED_VERSION_cargo = "1.75.0"
+    REQUIRED_VERSION_cargo-native = "1.75.0"
+    REQUIRED_VERSION_rust-llvm = "1.75.0"
