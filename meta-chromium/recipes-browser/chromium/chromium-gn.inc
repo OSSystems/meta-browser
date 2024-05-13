@@ -4,7 +4,7 @@ require gn-utils.inc
 
 GTKIC_VERSION = "${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '4', '3',d)}"
 
-inherit features_check gtk-icon-cache qemu
+inherit features_check gtk-icon-cache qemu rust-common
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
@@ -73,6 +73,7 @@ DEPENDS += " \
     jpeg \
     libdrm \
     libffi \
+    libstd-rs \
     libwebp \
     libxkbcommon \
     libxslt \
@@ -87,7 +88,6 @@ DEPENDS += " \
     pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
-    rust \
     rust-native \
     virtual/libgl \
 "
