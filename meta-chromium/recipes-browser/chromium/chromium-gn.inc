@@ -289,8 +289,8 @@ GN_ARGS += ' \
 '
 
 # Make sure Chromium is able to find clang libraries. See
-# 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch and the
-# add_clang_symlink and copy_clang_library tasks for more context.
+# 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch and the
+# add_clang_latest and copy_clang_library tasks for more context.
 GN_ARGS += ' \
         clang_base_path="${@clang_install_path(d)}" \
         clang_version="latest" \
@@ -436,33 +436,36 @@ do_add_nodejs_symlink () {
 }
 addtask add_nodejs_symlink after do_configure before do_compile
 
-do_add_clang_symlink () {
-    # Creates a `latest` symlink in the native sysroot's /usr/lib/clang
-    # directory that points to /usr/lib/clang/$CLANG_VERSION. Chromium manually
-    # links against libclang_rt.builtins.a and uses the `clang_version` GN
-    # variable to find it. This allows us to set it to the same value for all
+do_add_clang_latest () {
+    # Creates a `latest` directory in the native sysroot's /usr/lib/clang
+    # directory that is a copy of /usr/lib/clang/$CLANG_VERSION. Chromium
+    # manually links against libclang_rt.builtins.a and uses the `clang_version`
+    # GN variable to find it. This allows us to set it to the same value for all
     # Yocto releases.
     cd "${STAGING_LIBDIR_NATIVE}/clang"
+    rm -rf latest
     # find the directory containing the library
     for dir in *; do
         if [ -n "$(find $dir -name 'libclang_rt.builtins*')" ] ; then
-            ln -sf "$dir" latest
+            cp -r "$dir" latest
             break
         fi
     done
 }
-addtask add_clang_symlink after do_configure before do_compile
+addtask add_clang_latest after do_configure before do_compile
 
 do_copy_clang_library () {
     # Chromium needs to link against libclang_rt.builtins.a for both host and
     # target code, and expects to find both libraries in the same directory
-    # (thanks to 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${STAGING_LIBDIR}"
-    lib_file="$(find clang -name 'libclang_rt.builtins*')"
-    lib_dir="$(dirname $lib_file)"
-    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/$lib_dir"
+    # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
+    cd "${STAGING_LIBDIR}/clang"
+    # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
+    lib_file="$(find . -name 'libclang_rt.builtins*')"
+    # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
+    stripped_lib_file="${lib_file#*/*/}"
+    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
 }
-addtask copy_clang_library after do_configure before do_compile
+addtask copy_clang_library after do_add_clang_latest before do_compile
 
 do_copy_target_rustlibs () {
     # Chromium needs a single Rust sysroot that contains the rustlibs for both
