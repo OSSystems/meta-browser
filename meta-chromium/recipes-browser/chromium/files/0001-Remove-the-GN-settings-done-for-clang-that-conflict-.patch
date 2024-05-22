@@ -21,7 +21,7 @@ Rebased-by: Randy MacLeod <randy.macleod@windriver.com>
  1 file changed, 38 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 89b4755..f7ba313 100644
+index 3c7b4d8..19ea87a 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
 @@ -1174,11 +1174,6 @@ config("compiler_cpu_abi") {
