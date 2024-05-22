@@ -14,10 +14,10 @@ Signed-off-by: Daniel Semkowicz <dse@thaumatec.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/chrome/browser/resources/new_tab_page/BUILD.gn b/chrome/browser/resources/new_tab_page/BUILD.gn
-index 83736b4..64b5a0b 100644
+index c7949e8..369e078 100644
 --- a/chrome/browser/resources/new_tab_page/BUILD.gn
 +++ b/chrome/browser/resources/new_tab_page/BUILD.gn
-@@ -104,6 +104,7 @@ build_webui("build") {
+@@ -101,6 +101,7 @@ build_webui("build") {
      "//ui/webui/resources/cr_components/color_change_listener:build_ts",
      "//ui/webui/resources/cr_components/customize_themes:build_ts",
      "//ui/webui/resources/cr_components/help_bubble:build_ts",

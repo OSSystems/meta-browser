@@ -17,7 +17,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  3 files changed, 3 insertions(+)
 
 diff --git a/chrome/browser/devtools/BUILD.gn b/chrome/browser/devtools/BUILD.gn
-index 47aad96..6833680 100644
+index bf03e44..a85a30f 100644
 --- a/chrome/browser/devtools/BUILD.gn
 +++ b/chrome/browser/devtools/BUILD.gn
 @@ -113,6 +113,7 @@ static_library("devtools") {
@@ -29,10 +29,10 @@ index 47aad96..6833680 100644
      "//content/public/browser",
      "//net",
 diff --git a/chrome/browser/extensions/BUILD.gn b/chrome/browser/extensions/BUILD.gn
-index 2f5e88a..4b5bfff 100644
+index e488b14..32d0981 100644
 --- a/chrome/browser/extensions/BUILD.gn
 +++ b/chrome/browser/extensions/BUILD.gn
-@@ -854,6 +854,7 @@ static_library("extensions") {
+@@ -862,6 +862,7 @@ static_library("extensions") {
      "//components/embedder_support",
      "//components/embedder_support:browser_util",
      "//components/enterprise",
@@ -41,7 +41,7 @@ index 2f5e88a..4b5bfff 100644
      "//components/feedback",
      "//components/gcm_driver",
 diff --git a/chrome/browser/safe_browsing/BUILD.gn b/chrome/browser/safe_browsing/BUILD.gn
-index df78bff..52848f3 100644
+index 3c300d1..66e8f05 100644
 --- a/chrome/browser/safe_browsing/BUILD.gn
 +++ b/chrome/browser/safe_browsing/BUILD.gn
 @@ -31,6 +31,7 @@ static_library("safe_browsing") {
