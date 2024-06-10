@@ -28,6 +28,7 @@ SRC_URI += "\
     file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
+    file://0011-Track-Wayland-seats-other-than-primary.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:arm = "\
