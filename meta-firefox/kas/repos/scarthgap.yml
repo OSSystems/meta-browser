@@ -10,7 +10,3 @@ repos:
     refspec: scarthgap
   meta-clang:
     refspec: "989ff6a4e7db59f01d511727135610006124ead2"
-
-local_conf_header:
-  meta-firefox-scarthgap: |
-    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust/"

@@ -11,3 +11,14 @@ machine: raspberrypi3
 repos:
   meta-rpi:
     refspec: "1879cb831f4ea3e532cb5ce9fa0f32be917e8fa3"
+
+local_conf_header:
+  scarthgap-latest-arm: |
+    REQUIRED_VERSION_rust = "1.76.0"
+    REQUIRED_VERSION_rust-native = "1.76.0"
+    REQUIRED_VERSION_libstd-rs = "1.76.0"
+    REQUIRED_VERSION_cargo = "1.76.0"
+    REQUIRED_VERSION_cargo-native = "1.76.0"
+    REQUIRED_VERSION_rust-llvm = "1.76.0"
+    REQUIRED_VERSION_rust-llvm-native = "1.76.0"
+    BBMASK += "poky/meta/recipes-devtools/rust"

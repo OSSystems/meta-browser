@@ -6,3 +6,14 @@ header:
     - meta-firefox/kas/common.yml
 
 machine: qemux86-64
+
+local_conf_header:
+  scarthgap-latest-x86-64: |
+    REQUIRED_VERSION_rust = "1.76.0"
+    REQUIRED_VERSION_rust-native = "1.76.0"
+    REQUIRED_VERSION_libstd-rs = "1.76.0"
+    REQUIRED_VERSION_cargo = "1.76.0"
+    REQUIRED_VERSION_cargo-native = "1.76.0"
+    REQUIRED_VERSION_rust-llvm = "1.76.0"
+    REQUIRED_VERSION_rust-llvm-native = "1.76.0"
+    BBMASK += "poky/meta/recipes-devtools/rust"
