@@ -13,6 +13,5 @@ local_conf_header:
     PACKAGECONFIG:append:pn-qemu:class-nativesdk = " sdl "
     PACKAGECONFIG:append:pn-qemu-system-native = " sdl "
     DL_DIR = "/home/gyuri/yocto_dl"
-    SSTATE_DIR = "/home/gyuri/yocto_sstate"
     SOURCE_MIRROR_URL = "http://192.168.1.130:8888/common"
     EXTRA_IMAGE_FEATURES:append = " debug-tweaks "

@@ -1,7 +1,7 @@
 SUMMARY = "Rust compiler and runtime libaries (cross-canadian for ${TARGET_ARCH} target)"
 PN = "rust-cross-canadian-${TRANSLATED_TARGET_ARCH}"
 
-inherit rust-target-config
+require rust-target-config.inc
 inherit rust-common
 
 LICENSE = "MIT"

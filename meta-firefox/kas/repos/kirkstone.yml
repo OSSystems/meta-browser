@@ -12,8 +12,10 @@ repos:
   meta-clang:
     refspec: kirkstone
   meta-rust:
-    refspec: "9611b42d73c7546c3d845da380943a0a4f4205f0"
+    refspec: "81d0fbfc023e987068ea1c035e33d6f0ad175cd1"
 
 local_conf_header:
-  meta-firefox-kirkstone: |
-    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust"
+  kirkstone: |
+    BBMASK += "poky/meta/recipes-devtools/rust"
+    DATA_LAYOUT[arm-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
+    DATA_LAYOUT[armv7-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"

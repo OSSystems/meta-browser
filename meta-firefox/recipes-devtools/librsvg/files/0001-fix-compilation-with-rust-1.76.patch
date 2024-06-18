@@ -1,0 +1,127 @@
+From 4c69f585018439b82c69bfa5b0f0480925816632 Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Sun, 16 Jun 2024 18:38:32 +0200
+Subject: [PATCH] Fix compilation with Rust 1.76
+
+librsvg 2.52.10 fails to compile with Rust 1.76:
+error: casting references to a bigger memory layout than the backing allocation is undefined behavior, even if the reference is unused
+
+This patch backports https://gitlab.gnome.org/GNOME/librsvg/-/commit/b285f46daac898692fa754662e4c420b7dd9d56f which
+supposed to fix this issue also.
+
+Upstream-Status: Backport
+diff --git a/Cargo.lock b/Cargo.lock
+index 236fc41d9..74def2da0 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -881,6 +881,7 @@ version = "2.52.10"
+ dependencies = [
+  "anyhow",
+  "assert_cmd",
++ "byteorder",
+  "cairo-rs",
+  "cast 0.3.0",
+  "chrono",
+diff --git a/Cargo.toml b/Cargo.toml
+index a8bb8a9dc..f6448dbb1 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -41,6 +41,7 @@ crate-type = [ "staticlib", "rlib" ]
+ [dependencies]
+ # Keep these in sync with respect to the cairo-rs version:
+ #   src/lib.rs - toplevel example in the docs
++byteorder = "1.4"
+ cairo-rs = { version="0.14.0", features=["v1_16", "png", "pdf", "ps", "svg"] }
+ cast = "0.3.0"
+ chrono = "0.4.0" # rsvg-convert
+diff --git a/src/filters/lighting.rs b/src/filters/lighting.rs
+index 2fe9d45..f1e94be 100644
+--- a/src/filters/lighting.rs
++++ b/src/filters/lighting.rs
+@@ -497,7 +497,7 @@ macro_rules! impl_lighting_filter {
+                     let output_slice = &mut *output_data;
+ 
+                     let compute_output_pixel =
+-                        |mut output_slice: &mut [u8], base_y, x, y, normal: Normal| {
++                        |output_slice: &mut [u8], base_y, x, y, normal: Normal| {
+                             let pixel = input_surface.get_pixel(x, y);
+ 
+                             let scaled_x = f64::from(x) * ox;
+diff --git a/src/surface_utils/mod.rs b/src/surface_utils/mod.rs
+index e95e5dc..7fcd1b5 100644
+--- a/src/surface_utils/mod.rs
++++ b/src/surface_utils/mod.rs
+@@ -1,7 +1,6 @@
+ //! Various utilities for working with Cairo image surfaces.
+ 
+ use std::mem;
+-use std::ops::DerefMut;
+ use std::slice;
+ 
+ pub mod iterators;
+@@ -142,18 +141,9 @@ impl ToCairoARGB for Pixel {
+ }
+ 
+ /// Extension methods for `cairo::ImageSurfaceData`.
+-pub trait ImageSurfaceDataExt: DerefMut<Target = [u8]> {
++pub trait ImageSurfaceDataExt {
+     /// Sets the pixel at the given coordinates. Assumes the `ARgb32` format.
+-    #[inline]
+-    fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32) {
+-        let value = pixel.to_u32();
+-
+-        #[allow(clippy::cast_ptr_alignment)]
+-        unsafe {
+-            let p: *mut u8 = &mut self[y as usize * stride + x as usize * 4];
+-            *(p as *mut u32) = value;
+-        }
+-    }
++    fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32);
+ }
+ 
+ /// A pixel consisting of R, G, B and A values.
+@@ -257,8 +247,39 @@ impl PixelOps for Pixel {
+     }
+ }
+ 
+-impl<'a> ImageSurfaceDataExt for cairo::ImageSurfaceData<'a> {}
+-impl<'a> ImageSurfaceDataExt for &'a mut [u8] {}
++impl<'a> ImageSurfaceDataExt for cairo::ImageSurfaceData<'a> {
++    #[inline]
++    fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32) {
++        let this: &mut [u8] = &mut *self;
++        // SAFETY: this code assumes that cairo image surface data is correctly
++        // aligned for u32. This assumption is justified by the Cairo docs,
++        // which say this:
++        //
++        // https://cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create-for-data
++        //
++        // > This pointer must be suitably aligned for any kind of variable,
++        // > (for example, a pointer returned by malloc).
++        #[allow(clippy::cast_ptr_alignment)]
++        let this: &mut [u32] =
++            unsafe { slice::from_raw_parts_mut(this.as_mut_ptr() as *mut u32, this.len() / 4) };
++        this.set_pixel(stride, pixel, x, y);
++    }
++}
++impl<'a> ImageSurfaceDataExt for [u8] {
++    #[inline]
++    fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32) {
++        use byteorder::{NativeEndian, WriteBytesExt};
++        let mut this = &mut self[y as usize * stride + x as usize * 4..];
++        this.write_u32::<NativeEndian>(pixel.to_u32())
++            .expect("out of bounds pixel access on [u8]");
++    }
++}
++impl<'a> ImageSurfaceDataExt for [u32] {
++    #[inline]
++    fn set_pixel(&mut self, stride: usize, pixel: Pixel, x: u32, y: u32) {
++        self[(y as usize * stride + x as usize * 4) / 4] = pixel.to_u32();
++    }
++}
+ 
+ #[cfg(test)]
+ mod tests {
+-- 
+2.39.2
+
