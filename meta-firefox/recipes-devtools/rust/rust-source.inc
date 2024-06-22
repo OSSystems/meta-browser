@@ -6,7 +6,10 @@ SRC_URI += "https://static.rust-lang.org/dist/rustc-${RUST_VERSION}-src.tar.xz;n
 "
 SRC_URI[rust.sha256sum] = "805482b436442a6786d270cacbab8f00529e06141b27b7fb01909b97ce4f3464"
 
-RUSTSRC = "${WORKDIR}/rustc-${RUST_VERSION}-src"
+RUSTSRC_BASEDIR = '${@ "${WORKDIR}" if d.getVar("UNPACKDIR") == None \
+                   else d.getVar("UNPACKDIR")}'
+
+RUSTSRC = "${RUSTSRC_BASEDIR}/rustc-${RUST_VERSION}-src"
 
 UPSTREAM_CHECK_URI = "https://forge.rust-lang.org/infra/other-installation-methods.html"
 UPSTREAM_CHECK_REGEX = "rustc-(?P<pver>\d+(\.\d+)+)-src"

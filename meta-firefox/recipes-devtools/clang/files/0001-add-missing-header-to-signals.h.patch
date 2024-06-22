@@ -1,0 +1,31 @@
+From dfc3bb36b799b64e2d99bca0c13c636b9548a36b Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Wed, 19 Jun 2024 21:54:42 +0200
+Subject: [PATCH] add missing header to signals.h
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+To avoid compilation error when compiling on Fedora 39:
+
+| /home/gyuri/stuff/dunfell/build/tmp/work-shared/llvm-project-source-12.0.0-r0/git/llvm/include/llvm/Support/Signals.h:119:24: error: ‘uintptr_t’ was not declared in this scope
+|   119 |   void CleanupOnSignal(uintptr_t Context);
+---
+ llvm/include/llvm/Support/Signals.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/llvm/include/llvm/Support/Signals.h b/llvm/include/llvm/Support/Signals.h
+index 44f5a750ff5c..ccb429bddd84 100644
+--- a/llvm/include/llvm/Support/Signals.h
++++ b/llvm/include/llvm/Support/Signals.h
+@@ -15,6 +15,7 @@
+ #define LLVM_SUPPORT_SIGNALS_H
+ 
+ #include <string>
++#include <cstdint>
+ 
+ namespace llvm {
+ class StringRef;
+-- 
+2.45.1
+

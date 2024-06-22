@@ -4,11 +4,7 @@ header:
 repos:
   meta-riscv:
     url: https://github.com/riscv/meta-riscv.git
-    refspec: "3c98940f3b69b7fa99dd1f11930dbe38eea93f34"
-    patches:
-      properties:
-        repo: meta-browser
-        path: meta-firefox/kas/patches
+    refspec: "d330dfe4011a873d379cdf6228fa1f243cf5a6db"
     layers:
       .:
 

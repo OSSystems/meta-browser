@@ -23,8 +23,6 @@ export WASI_SYSROOT="${STAGING_DATADIR_NATIVE}/wasi-sysroot"
 export WASM_CC="${WASI_SYSROOT}/bin/clang -target wasm32-wasi "
 export WASM_CXX="${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
 
-#export WASM_CXXFLAGS=" -Xclang -target-feature -Xclang -bulk-memory "
-
 export BUILD_VERBOSE_LOG="1"
 
 mozilla_run_mach() {
@@ -48,7 +46,7 @@ mozilla_run_mach() {
 }
 
 do_configure:append() {
-	install -D -m 0644 ${WORKDIR}/mozconfig ${MOZCONFIG}
+	install -D -m 0644 ${FF_BASEDIR}/mozconfig ${MOZCONFIG}
 	if [ ! -z "${EXTRA_OECONF}" ] ; then
 		for f in ${EXTRA_OECONF}
 		do

@@ -22,7 +22,11 @@ LICENSE = "MPL-2.0"
 
 CVE_PRODUCT = "mozilla:firefox"
 
-S = "${WORKDIR}/firefox-${MOZ_APP_BASE_VERSION}"
+
+FF_BASEDIR = '${@ "${WORKDIR}" if d.getVar("UNPACKDIR") == None \
+                 else d.getVar("UNPACKDIR")}'
+
+S = "${FF_BASEDIR}/firefox-${MOZ_APP_BASE_VERSION}"
 
 MOZ_APP_BASE_VERSION = "${@'${PV}'.replace('esr', '')}"
 
@@ -142,28 +146,28 @@ PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
 DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", " wasi-sdk-native ", d)}'
 
 do_compile:prepend(){
-    head -n 38 "${WORKDIR}/cargo_home/config" > "${WORKDIR}/cargo_home/config_tmp"
-    mv "${WORKDIR}/cargo_home/config_tmp" "${WORKDIR}/cargo_home/config"
+    head -n 38 "${FF_BASEDIR}/cargo_home/config" > "${FF_BASEDIR}/cargo_home/config_tmp"
+    mv "${FF_BASEDIR}/cargo_home/config_tmp" "${FF_BASEDIR}/cargo_home/config"
 }
 
 do_install:append() {
     install -d ${D}${datadir}/applications
     install -d ${D}${datadir}/pixmaps
 
-    install -m 0644 ${WORKDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/
-    install -m 0644 ${WORKDIR}/mozilla-firefox.png ${D}${datadir}/pixmaps/
-    install -m 0644 ${WORKDIR}/prefs/vendor.js ${D}${libdir}/${PN}/defaults/pref/
+    install -m 0644 ${FF_BASEDIR}/mozilla-firefox.desktop ${D}${datadir}/applications/
+    install -m 0644 ${FF_BASEDIR}/mozilla-firefox.png ${D}${datadir}/pixmaps/
+    install -m 0644 ${FF_BASEDIR}/prefs/vendor.js ${D}${libdir}/${PN}/defaults/pref/
     if [ -n "${@bb.utils.contains_any('PACKAGECONFIG', 'gpu', '1', '', d)}" ]; then
-        install -m 0644 ${WORKDIR}/prefs/gpu.js ${D}${libdir}/${PN}/defaults/pref/
+        install -m 0644 ${FF_BASEDIR}/prefs/gpu.js ${D}${libdir}/${PN}/defaults/pref/
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'openmax', '1', '', d)}" ]; then
-        install -m 0644 ${WORKDIR}/prefs/openmax.js ${D}${libdir}/${PN}/defaults/pref/
+        install -m 0644 ${FF_BASEDIR}/prefs/openmax.js ${D}${libdir}/${PN}/defaults/pref/
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'webgl', '1', '', d)}" ]; then
-        install -m 0644 ${WORKDIR}/prefs/webgl.js ${D}${libdir}/${PN}/defaults/pref/
+        install -m 0644 ${FF_BASEDIR}/prefs/webgl.js ${D}${libdir}/${PN}/defaults/pref/
     fi
     if [ -n "${@bb.utils.contains('PACKAGECONFIG', 'forbit-multiple-compositors', '1', '', d)}" ]; then
-        install -m 0644 ${WORKDIR}/prefs/single-compositor.js ${D}${libdir}/${PN}/defaults/pref/
+        install -m 0644 ${FF_BASEDIR}/prefs/single-compositor.js ${D}${libdir}/${PN}/defaults/pref/
     fi
 
     # Fix ownership of files
