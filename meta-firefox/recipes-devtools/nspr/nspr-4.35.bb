@@ -32,7 +32,10 @@ SRC_URI[sha256sum] = "7ea3297ea5969b5d25a5dd8d47f2443cda88e9ee746301f6e1e1426f8a
 
 CVE_PRODUCT = "netscape_portable_runtime"
 
-S = "${WORKDIR}/nspr-${PV}/nspr"
+NSPR_BASEDIR = '${@ "${WORKDIR}" if d.getVar("UNPACKDIR") == None \
+                 else d.getVar("UNPACKDIR")}'
+
+S = "${NSPR_BASEDIR}/nspr-${PV}/nspr"
 
 RDEPENDS:${PN}-dev += "perl"
 TARGET_CC_ARCH += "${LDFLAGS}"
@@ -175,7 +178,7 @@ do_compile:append() {
 }
 
 do_install:append() {
-    install -D ${WORKDIR}/nspr.pc.in ${D}${libdir}/pkgconfig/nspr.pc
+    install -D ${NSPR_BASEDIR}/nspr.pc.in ${D}${libdir}/pkgconfig/nspr.pc
     sed -i  \
     -e 's:NSPRVERSION:${PV}:g' \
     -e 's:OEPREFIX:${prefix}:g' \

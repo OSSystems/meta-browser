@@ -1,0 +1,12 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/esr.yml
+    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/common.yml
+
+machine: qemux86-64
+
+local_conf_header:
+  styhead-esr-x86_64: |
+    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust/"

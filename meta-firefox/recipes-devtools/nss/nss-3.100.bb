@@ -24,6 +24,9 @@ VERSION_DIR = "${@d.getVar('BP').upper().replace('-', '_').replace('.', '_') + '
 
 PV = "3.100"
 
+NSS_BASEDIR = '${@ "${WORKDIR}" if d.getVar("UNPACKDIR") == None \
+                 else d.getVar("UNPACKDIR")}'
+
 SRC_URI = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_100_RTM/src/nss-3.100.tar.gz \
            file://nss.pc.in \
            file://0001-nss-fix-support-cross-compiling.patch \
@@ -45,6 +48,7 @@ UPSTREAM_CHECK_REGEX = "NSS_(?P<pver>.+)_release_notes"
 inherit siteinfo
 
 S = "${WORKDIR}/nss-3.100"
+
 TD = "${S}/tentative-dist"
 TDS = "${S}/tentative-dist-staging"
 
@@ -229,7 +233,7 @@ do_install:append() {
     done
 
     install -d ${D}${libdir}/pkgconfig/
-    sed 's/%NSS_VERSION%/${PV}/' ${WORKDIR}/nss.pc.in | sed 's/%NSPR_VERSION%/4.9.2/' > ${D}${libdir}/pkgconfig/nss.pc
+    sed 's/%NSS_VERSION%/${PV}/' ${NSS_BASEDIR}/nss.pc.in | sed 's/%NSPR_VERSION%/4.9.2/' > ${D}${libdir}/pkgconfig/nss.pc
     sed -i s:OEPREFIX:${prefix}:g ${D}${libdir}/pkgconfig/nss.pc
     sed -i s:OEEXECPREFIX:${exec_prefix}:g ${D}${libdir}/pkgconfig/nss.pc
     sed -i s:OELIBDIR:${libdir}:g ${D}${libdir}/pkgconfig/nss.pc
@@ -244,9 +248,9 @@ do_install:append:class-target() {
     # databases by:
     # certutil -N -d sql:/database/path/ --empty-password
     install -d ${D}${sysconfdir}/pki/nssdb/
-    install -m 0644 ${WORKDIR}/blank-cert9.db ${D}${sysconfdir}/pki/nssdb/cert9.db
-    install -m 0644 ${WORKDIR}/blank-key4.db ${D}${sysconfdir}/pki/nssdb/key4.db
-    install -m 0644 ${WORKDIR}/system-pkcs11.txt ${D}${sysconfdir}/pki/nssdb/pkcs11.txt
+    install -m 0644 ${NSS_BASEDIR}/blank-cert9.db ${D}${sysconfdir}/pki/nssdb/cert9.db
+    install -m 0644 ${NSS_BASEDIR}/blank-key4.db ${D}${sysconfdir}/pki/nssdb/key4.db
+    install -m 0644 ${NSS_BASEDIR}/system-pkcs11.txt ${D}${sysconfdir}/pki/nssdb/pkcs11.txt
 }
 
 PACKAGE_WRITE_DEPS += "nss-3.100-native"

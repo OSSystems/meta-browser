@@ -1,0 +1,25 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/esr.yml
+    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/repos/rpi.yml
+    - meta-firefox/kas/common.yml
+
+machine: raspberrypi3
+
+repos:
+  meta-rpi:
+    refspec: "eb8ffc4e63e5e2f729d90d0cd95b8cffed12ece1"
+
+# use rust version shipped with poky
+
+local_conf_header:
+  styhead-esr-arm: |
+    REQUIRED_VERSION_rust = "1.75.0"
+    REQUIRED_VERSION_rust-native = "1.75.0"
+    REQUIRED_VERSION_libstd-rs = "1.75.0"
+    REQUIRED_VERSION_cargo = "1.75.0"
+    REQUIRED_VERSION_cargo-native = "1.75.0"
+    REQUIRED_VERSION_rust-llvm = "1.75.0"
+    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust/"

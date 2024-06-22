@@ -1,6 +1,7 @@
-WASM2C used by Firfox does not support bulk-memory operations, and WASI doesn't support exceptions.
+WASM2C used by Firefox does not support bulk-memory operations, and WASI doesn't support exceptions.
 
 This patch disabled these, and fixes "unexpected opcode: 0xfc 0xa" error while compiling Firefox
+Upstream-Status: Inappropriate [OE-specific]
 diff --git a/Makefile b/Makefile
 index 8608289..f46077b 100644
 --- a/Makefile

@@ -1,0 +1,12 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/repos/common-repos.yml
+
+repos:
+  meta-oe:
+    refspec: master
+  poky:
+    refspec: master
+  meta-clang:
+    refspec: "49b031747859cc20238c07628f1b550fcf759de9"

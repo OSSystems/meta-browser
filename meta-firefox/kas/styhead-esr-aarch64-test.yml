@@ -1,0 +1,17 @@
+header:
+  version: 11
+  includes:
+    - meta-firefox/kas/ff/esr.yml
+    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/repos/rpi.yml
+    - meta-firefox/kas/common.yml
+
+machine: raspberrypi3-64
+
+repos:
+  meta-rpi:
+    refspec: "eb8ffc4e63e5e2f729d90d0cd95b8cffed12ece1"
+
+local_conf_header:
+  styhead-esr-aarch64: |
+    BBMASK = "meta-browser/meta-firefox/recipes-devtools/rust/"

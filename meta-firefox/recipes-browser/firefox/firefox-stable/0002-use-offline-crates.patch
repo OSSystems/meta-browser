@@ -3,7 +3,7 @@ From: skandigraun <skandigraun@gmail.com>
 Date: Tue, 30 May 2023 22:17:51 +0200
 Subject: [PATCH] update firefox
 
-Upstream-status: Inappropriate
+Upstream-Status: Inappropriate [oe specific]
 ---
  .cargo/config.in                    |  2 +-
  Cargo.toml                          | 92 +++++++++++++++++++++--------

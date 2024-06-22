@@ -48,26 +48,26 @@ setup_cargo_environment () {
 require rust-target-config.inc
 
 do_rust_setup_snapshot () {
-    for installer in "${WORKDIR}/rust-snapshot-components/"*"/install.sh"; do
-        "${installer}" --prefix="${WORKDIR}/rust-snapshot" --disable-ldconfig
+    for installer in "${RUSTSRC_BASEDIR}/rust-snapshot-components/"*"/install.sh"; do
+        "${installer}" --prefix="${RUSTSRC_BASEDIR}/rust-snapshot" --disable-ldconfig
     done
 
     # Some versions of rust (e.g. 1.18.0) tries to find cargo in stage0/bin/cargo
     # and fail without it there.
     mkdir -p ${RUSTSRC}/build/${BUILD_SYS}
-    ln -sf ${WORKDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
+    ln -sf ${RUSTSRC_BASEDIR}/rust-snapshot/ ${RUSTSRC}/build/${BUILD_SYS}/stage0
 
     # Need to use uninative's loader if enabled/present since the library paths
     # are used internally by rust and result in symbol mismatches if we don't
     if [ ! -z "${UNINATIVE_LOADER}" -a -e "${UNINATIVE_LOADER}" ]; then
         for bin in cargo rustc rustdoc; do
-            patchelf-uninative ${WORKDIR}/rust-snapshot/bin/$bin --set-interpreter ${UNINATIVE_LOADER}
+            patchelf-uninative ${RUSTSRC_BASEDIR}/rust-snapshot/bin/$bin --set-interpreter ${UNINATIVE_LOADER}
         done
     fi
 }
 addtask rust_setup_snapshot after do_unpack before do_configure
 addtask do_test_compile after do_configure do_rust_gen_targets
-do_rust_setup_snapshot[dirs] += "${WORKDIR}/rust-snapshot"
+do_rust_setup_snapshot[dirs] += "${RUSTSRC_BASEDIR}/rust-snapshot"
 do_rust_setup_snapshot[vardepsexclude] += "UNINATIVE_LOADER"
 
 python do_configure() {
@@ -143,10 +143,10 @@ python do_configure() {
     config.set("build", "docs", e(False))
     config.set("build", "tools", ["rust-demangler",])
 
-    rustc = d.expand("${WORKDIR}/rust-snapshot/bin/rustc")
+    rustc = d.expand("${RUSTSRC_BASEDIR}/rust-snapshot/bin/rustc")
     config.set("build", "rustc", e(rustc))
 
-    cargo = d.expand("${WORKDIR}/rust-snapshot/bin/cargo")
+    cargo = d.expand("${RUSTSRC_BASEDIR}/rust-snapshot/bin/cargo")
     config.set("build", "cargo", e(cargo))
 
     config.set("build", "vendor", e(True))
@@ -281,7 +281,7 @@ rust_do_install:class-target() {
     done
 
     install -d ${D}${libdir}/rustlib/${RUST_HOST_SYS}
-    install -m 0644 ${WORKDIR}/rust-targets/${RUST_HOST_SYS}.json ${D}${libdir}/rustlib/${RUST_HOST_SYS}/target.json
+    install -m 0644 ${RUSTSRC_BASEDIR}/rust-targets/${RUST_HOST_SYS}.json ${D}${libdir}/rustlib/${RUST_HOST_SYS}/target.json
 
     chown root:root ${D}/ -R
     rm ${D}${libdir}/rustlib/uninstall.sh
