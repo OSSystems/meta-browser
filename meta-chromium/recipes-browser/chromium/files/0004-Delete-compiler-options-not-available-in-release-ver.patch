@@ -13,10 +13,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index bd7dd25..c1183ff 100644
+index 973d8bc..0f2b8f6 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1872,6 +1872,11 @@ config("default_warnings") {
+@@ -1893,6 +1893,11 @@ config("default_warnings") {
        }
 
        cflags += [
@@ -25,6 +25,6 @@ index bd7dd25..c1183ff 100644
 +        # chromium uses.
 +        "-Wno-unknown-warning-option",
 +
-         # Ignore warnings about MSVC optimization pragmas.
-         # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
-         "-Wno-ignored-pragma-optimize",
+         # TODO(crbug.com/330524456): -Wcast-function-type is under -Wextra now.
+         "-Wno-cast-function-type",
+

@@ -15,10 +15,10 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/third_party/boringssl/BUILD.gn b/third_party/boringssl/BUILD.gn
-index feaef4b..a68973e 100644
+index f1b4a1a..7c972fe 100644
 --- a/third_party/boringssl/BUILD.gn
 +++ b/third_party/boringssl/BUILD.gn
-@@ -110,7 +110,7 @@ if (enable_rust) {
+@@ -106,7 +106,7 @@ if (enable_rust) {
    }
  }
 

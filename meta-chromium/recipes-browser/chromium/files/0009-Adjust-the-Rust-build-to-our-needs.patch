@@ -23,10 +23,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 51 insertions(+), 18 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 23d713b..7a10f5b 100644
+index 59fa144..a6131a6 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -98,6 +98,11 @@ declare_args() {
+@@ -93,6 +93,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -38,7 +38,7 @@ index 23d713b..7a10f5b 100644
  }
 
  # Use a separate declare_args so these variables' defaults can depend on the
-@@ -193,12 +198,19 @@ if (enable_rust) {
+@@ -188,12 +193,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -61,7 +61,7 @@ index 23d713b..7a10f5b 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -207,13 +219,13 @@ if (is_linux || is_chromeos) {
+@@ -202,13 +214,13 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.
@@ -91,10 +91,10 @@ index b8e490d..d22cf08 100755
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 9c3db1e..6d9b684 100644
+index b6d570d..7b7b213 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -178,7 +178,8 @@ if (toolchain_has_rust) {
+@@ -179,7 +179,8 @@ if (toolchain_has_rust) {
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
 
@@ -104,7 +104,7 @@ index 9c3db1e..6d9b684 100644
 
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -358,12 +359,12 @@ if (toolchain_has_rust) {
+@@ -359,12 +360,12 @@ if (toolchain_has_rust) {
          rust_abi_target,
        ]
 
@@ -120,7 +120,7 @@ index 9c3db1e..6d9b684 100644
        }
 
        visibility = [ ":*" ]
-@@ -376,8 +377,18 @@ if (toolchain_has_rust) {
+@@ -377,8 +378,18 @@ if (toolchain_has_rust) {
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -141,7 +141,7 @@ index 9c3db1e..6d9b684 100644
 
        visibility = [ ":*" ]
      }
-@@ -417,7 +428,10 @@ if (toolchain_has_rust) {
+@@ -418,7 +429,10 @@ if (toolchain_has_rust) {
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
