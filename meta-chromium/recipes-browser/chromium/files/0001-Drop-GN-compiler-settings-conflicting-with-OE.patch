@@ -1,45 +1,46 @@
-From 7eb6877c15ab9d73c9a7cf3a8a17a1a23f7396f9 Mon Sep 17 00:00:00 2001
-From: Khem Raj <raj.khem@gmail.com>
-Date: Mon, 29 Apr 2019 12:00:19 +0300
-Subject: [PATCH] Remove the GN settings done for clang that conflict with OE
+From b49388c4ee899f7a424a1f1df52868eed1e9c83f Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 25 Jun 2024 11:06:19 +0000
+Subject: [PATCH] Drop GN compiler settings conflicting with OE
 
-clang cross compiler that is build with meta-clang has lot of these
-settings built-in and specifying them here confuses the compiler
-
---target option and -no-canonical-prefixes options result in clang
-
-finding the headers in target sysroot
+The clang cross compiler built with meta-clang has lots of these
+settings built-in and specifying them with GN confuses the compiler:
+* The --target and -no-canonical-prefixes options result in clang
+  finding the headers in target sysroot.
+* GN tries to guess the right values for march/mtune/float-abi, but the
+  OE config machinary has computed these values already and fed it via
+  compiler cmdline to the Chromium build.
 
 Upstream-Status: Inappropriate [OE-Specific]
-
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
-Rebased-by: Maksim Sisov <msisov@igalia.com>
-Rebased-by: Randy MacLeod <randy.macleod@windriver.com>
-
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- build/config/compiler/BUILD.gn | 38 ----------------------------------
- 1 file changed, 38 deletions(-)
+ build/config/compiler/BUILD.gn | 48 ----------------------------------
+ 1 file changed, 48 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 973d8bc..8165472 100644
+index 973d8bc..f0ffab2 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1198,11 +1198,6 @@ config("compiler_cpu_abi") {
+@@ -1197,27 +1197,6 @@ config("compiler_cpu_abi") {
+           "-msse3",
          ]
        }
-     } else if (current_cpu == "arm") {
+-    } else if (current_cpu == "arm") {
 -      if (is_clang && !is_android && !is_nacl &&
 -          !(is_chromeos_lacros && is_chromeos_device)) {
 -        cflags += [ "--target=arm-linux-gnueabihf" ]
 -        ldflags += [ "--target=arm-linux-gnueabihf" ]
 -      }
-       if (!is_nacl) {
-         cflags += [
-           "-march=$arm_arch",
-@@ -1212,12 +1207,6 @@ config("compiler_cpu_abi") {
-       if (arm_tune != "") {
-         cflags += [ "-mtune=$arm_tune" ]
-       }
+-      if (!is_nacl) {
+-        cflags += [
+-          "-march=$arm_arch",
+-          "-mfloat-abi=$arm_float_abi",
+-        ]
+-      }
+-      if (arm_tune != "") {
+-        cflags += [ "-mtune=$arm_tune" ]
+-      }
 -    } else if (current_cpu == "arm64") {
 -      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
 -          !(is_chromeos_lacros && is_chromeos_device)) {
@@ -49,7 +50,7 @@ index 973d8bc..8165472 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1225,9 +1214,6 @@ config("compiler_cpu_abi") {
+@@ -1225,9 +1204,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +60,7 @@ index 973d8bc..8165472 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1307,8 +1293,6 @@ config("compiler_cpu_abi") {
+@@ -1307,8 +1283,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +69,7 @@ index 973d8bc..8165472 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1356,9 +1340,6 @@ config("compiler_cpu_abi") {
+@@ -1356,9 +1330,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -78,7 +79,7 @@ index 973d8bc..8165472 100644
            }
          } else {
            cflags += [
-@@ -1416,8 +1397,6 @@ config("compiler_cpu_abi") {
+@@ -1416,8 +1387,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -87,7 +88,7 @@ index 973d8bc..8165472 100644
          } else {
            cflags += [
              "-EB",
-@@ -1580,23 +1559,6 @@ config("compiler_deterministic") {
+@@ -1580,23 +1549,6 @@ config("compiler_deterministic") {
        }
      }
    }

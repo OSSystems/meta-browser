@@ -17,7 +17,7 @@ SRC_URI += "\
 
 # Non-specific patches.
 SRC_URI += "\
-    file://0001-Remove-the-GN-settings-done-for-clang-that-conflict-.patch \
+    file://0001-Drop-GN-compiler-settings-conflicting-with-OE.patch \
     file://0002-v8-qemu-wrapper.patch \
     file://0003-wrapper-extra-flags.patch \
     file://0004-Delete-compiler-options-not-available-in-release-ver.patch \
@@ -29,10 +29,7 @@ SRC_URI += "\
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
 "
 # ARM/AArch64-specific patches.
-SRC_URI:append:arm = "\
-    file://arm/0001-BUILD-do-not-specify-march-on-arm.patch \
-"
-SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0002-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
 # musl-specific patches.
 SRC_URI:append:libc-musl = "\
