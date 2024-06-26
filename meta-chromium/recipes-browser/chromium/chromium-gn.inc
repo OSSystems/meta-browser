@@ -11,9 +11,7 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
-SRC_URI += "\
-    file://backport/Add-missing-components-enterprise-buildflag.patch \
-"
+# (none, currently \o/)
 
 # Non-specific patches.
 SRC_URI += "\

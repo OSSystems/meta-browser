@@ -23,7 +23,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 51 insertions(+), 18 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 59fa144..a6131a6 100644
+index e99d7d0..784a845 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -93,6 +93,11 @@ declare_args() {
@@ -91,7 +91,7 @@ index b8e490d..d22cf08 100755
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index b6d570d..7b7b213 100644
+index 86fb3da..d20af89 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
 @@ -179,7 +179,8 @@ if (toolchain_has_rust) {
