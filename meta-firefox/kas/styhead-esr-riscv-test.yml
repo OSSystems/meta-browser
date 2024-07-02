@@ -11,6 +11,8 @@ machine: star64
 repos:
   meta-riscv:
     refspec: "93bf841830f632da1bb538e03a3c719f02a0860b"
+  poky:
+    refspec: "e2bdb0d5294edd922db55aa974649192b0cc0e12"
 
 local_conf_header:
   styhead-esr-riscv: |

@@ -9,10 +9,10 @@ machine: qemux86-64
 
 local_conf_header:
   kirkstone-esr-x86_64: |
-    REQUIRED_VERSION_rust = "1.75.0"
-    REQUIRED_VERSION_rust-native = "1.75.0"
-    REQUIRED_VERSION_libstd-rs = "1.75.0"
-    REQUIRED_VERSION_cargo = "1.75.0"
-    REQUIRED_VERSION_cargo-native = "1.75.0"
-    REQUIRED_VERSION_rust-llvm = "1.75.0"
-    REQUIRED_VERSION_rust-llvm-native = "1.75.0"
+    REQUIRED_VERSION_rust = "1.78.0"
+    REQUIRED_VERSION_rust-native = "1.78.0"
+    REQUIRED_VERSION_libstd-rs = "1.78.0"
+    REQUIRED_VERSION_cargo = "1.78.0"
+    REQUIRED_VERSION_cargo-native = "1.78.0"
+    REQUIRED_VERSION_rust-llvm = "1.78.0"
+    REQUIRED_VERSION_rust-llvm-native = "1.78.0"
