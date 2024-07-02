@@ -41,7 +41,7 @@ jobs:
                   firefox-l10n-gn           firefox-l10n-lv     firefox-l10n-sl     firefox-l10n-el     firefox-l10n-gu-in \
                   firefox-l10n-mk           firefox-l10n-son    firefox-l10n-en-ca  firefox-l10n-he     firefox-l10n-mr \
                   firefox-l10n-sq"
-         kas shell ./meta-browser/meta-firefox/kas/scarthgap-esr-arm-test.yml -c "bitbake -c clean rust rust-native cargo cargo-native libstd-rs"
+         kas shell ./meta-browser/meta-firefox/kas/scarthgap-esr-arm-test.yml -c "bitbake -c clean rust-native cargo cargo-native libstd-rs rust-llvm-native"
          kas build ./meta-browser/meta-firefox/kas/scarthgap-esr-arm-test.yml
          if [ ! -e ~/test-images/scarthgap-arm-esr.wic.bz2 ]; then
            mv build/tmp/deploy/images/raspberrypi3/firefox-test-image-raspberrypi3.rootfs-*.wic.bz2 ~/test-images/scarthgap-arm-esr.wic.bz2

@@ -23,6 +23,7 @@ IMAGE_INSTALL += "firefox-l10n-ach          firefox-l10n-en-gb  firefox-l10n-hi-
                   firefox-l10n-mk           firefox-l10n-son    firefox-l10n-en-ca  firefox-l10n-he     firefox-l10n-mr \
                   firefox-l10n-sq"
 
-IMAGE_INSTALL += "connman-client"
+IMAGE_INSTALL += "connman-client strace"
 
-IMAGE_INSTALL:append:star64 = " visionfive2-pvr-graphics strace "
+IMAGE_INSTALL:append:star64 = " visionfive2-pvr-graphics "
+IMAGE_INSTALL:remove = " l3afpad pcmanfm gtk-play "
