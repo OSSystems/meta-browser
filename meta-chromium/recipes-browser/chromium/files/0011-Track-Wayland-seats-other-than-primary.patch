@@ -1,0 +1,94 @@
+From 370939548fd5980186dea4530618cbd71420686c Mon Sep 17 00:00:00 2001
+From: Lachlan Frawley <lachfrawley@gmail.com>
+Date: Mon, 10 Jun 2024 01:28:22 +0000
+Subject: [PATCH] Track Wayland seats other than primary
+
+---
+ .../wayland/host/wayland_connection.cc        |  7 ++++++
+ .../wayland/host/wayland_connection.h         |  1 +
+ .../platform/wayland/host/wayland_seat.cc     | 25 ++++++++++++++-----
+ 3 files changed, 27 insertions(+), 6 deletions(-)
+
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.cc b/ui/ozone/platform/wayland/host/wayland_connection.cc
+index 07f0dfa..3a28534 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.cc
++++ b/ui/ozone/platform/wayland/host/wayland_connection.cc
+@@ -559,12 +559,19 @@ void WaylandConnection::OnGlobalRemove(void* data,
+                                        uint32_t name) {
+   auto* self = static_cast<WaylandConnection*>(data);
+ 
++  // We track the names of seats locally
++  auto extra_seat_it = self->extra_seats_.find(name);
++  if(extra_seat_it != self->extra_seats_.end()) {
++    self->extra_seats_.erase(extra_seat_it);
++  }
++
+   if (self->zaura_output_manager_v2_) {
+     // Removal will be handled by the aura output manager and the end of the
+     // output-change transaction.
+     self->zaura_output_manager_v2_->ScheduleRemoveWaylandOutput(name);
+     return;
+   }
++
+   // The Wayland protocol distinguishes global objects by unique numeric names,
+   // which the WaylandOutputManager uses as unique output ids. But, it is only
+   // possible to figure out, what global object is going to be removed on the
+diff --git a/ui/ozone/platform/wayland/host/wayland_connection.h b/ui/ozone/platform/wayland/host/wayland_connection.h
+index 3da02a0..60efb5a 100644
+--- a/ui/ozone/platform/wayland/host/wayland_connection.h
++++ b/ui/ozone/platform/wayland/host/wayland_connection.h
+@@ -509,6 +509,7 @@ class WaylandConnection {
+       zwp_relative_pointer_manager_;
+   std::unique_ptr<WaylandZwpPointerGestures> zwp_pointer_gestures_;
+   std::unique_ptr<WaylandSeat> seat_;
++  base::flat_map<uint32_t, std::unique_ptr<WaylandSeat>> extra_seats_;
+   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
+   std::unique_ptr<XdgActivation> xdg_activation_;
+   std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
+diff --git a/ui/ozone/platform/wayland/host/wayland_seat.cc b/ui/ozone/platform/wayland/host/wayland_seat.cc
+index a552bfb..73c65a1 100644
+--- a/ui/ozone/platform/wayland/host/wayland_seat.cc
++++ b/ui/ozone/platform/wayland/host/wayland_seat.cc
+@@ -28,8 +28,9 @@ void WaylandSeat::Instantiate(WaylandConnection* connection,
+   CHECK_EQ(interface, kInterfaceName) << "Expected \"" << kInterfaceName
+                                       << "\" but got \"" << interface << "\"";
+ 
+-  if (connection->seat_ ||
+-      !wl::CanBind(interface, version, kMinVersion, kMaxVersion)) {
++  // Only check if we can bind the interface
++  if (!wl::CanBind(interface, version, kMinVersion, kMaxVersion)) {
++    LOG(ERROR) << "Cannot bind wl_seat";
+     return;
+   }
+ 
+@@ -38,11 +39,23 @@ void WaylandSeat::Instantiate(WaylandConnection* connection,
+     LOG(ERROR) << "Failed to bind to wl_seat global";
+     return;
+   }
+-  connection->seat_ = std::make_unique<WaylandSeat>(seat.release(), connection);
+ 
+-  // The seat is one of objects needed for data exchange.  Notify the connection
+-  // so it might set up the rest if all other parts are in place.
+-  connection->CreateDataObjectsIfReady();
++
++  // If we have no "primary" seat, then assume whatever seat we get first is
++  // meant to be the primary seat
++  if (!connection->seat_) {
++    connection->seat_ = std::make_unique<WaylandSeat>(seat.release(), connection);
++
++    // The seat is one of objects needed for data exchange.  Notify the connection
++    // so it might set up the rest if all other parts are in place.
++    connection->CreateDataObjectsIfReady();
++  } else {
++    if(connection->extra_seats_.find(name) != connection->extra_seats_.end()) {
++      LOG(ERROR) << "Seat with name already exists";
++      return;
++    }
++    connection->extra_seats_.emplace(name, std::make_unique<WaylandSeat>(seat.release(), connection));
++  }
+ }
+ 
+ WaylandSeat::WaylandSeat(wl_seat* seat, WaylandConnection* connection)
+-- 
+2.34.1
+
