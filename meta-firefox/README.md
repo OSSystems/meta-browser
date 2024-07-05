@@ -1,6 +1,14 @@
 OpenEmbedded/Yocto BSP layer for Firefox Browser
 ================================================
 
+This layer wasn't updated for couple years and firefox here
+is so old that nobody should use it. If you're looking for
+newer firefox recipes, then look at this fork:
+https://github.com/webdino/meta-browser
+I haven't tried it and I have no idea why they never sent
+any PR back, but at least it has newer version and higher
+chance that it will actually build than the firefox-68 here.
+
 This layer provides web browser recipes for use with OpenEmbedded
 and/or Yocto.
 
