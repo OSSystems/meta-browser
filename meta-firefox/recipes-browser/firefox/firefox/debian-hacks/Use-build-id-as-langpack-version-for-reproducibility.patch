@@ -10,11 +10,11 @@ Upstream-Status: Pending
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/python/mozbuild/mozbuild/action/langpack_manifest.py b/python/mozbuild/mozbuild/action/langpack_manifest.py
-index c79539cbce..919208f96d 100644
+index d06fad7..71929ae 100644
 --- a/python/mozbuild/mozbuild/action/langpack_manifest.py
 +++ b/python/mozbuild/mozbuild/action/langpack_manifest.py
-@@ -116,7 +116,7 @@ def get_timestamp_for_locale(path):
-         dt = get_dt_from_hg(path)
+@@ -126,7 +126,7 @@ def get_timestamp_for_locale(path):
+                 raise se
  
      if dt is None:
 -        dt = get_build_date()
