@@ -6,11 +6,11 @@ header:
 
 repos:
   meta-oe:
-    refspec: dunfell
+    refspec: "bf0da59a92e9b9b10ec5e9de4f21daab7499dbd8"
   poky:
-    refspec: dunfell
+    refspec: "63d05fc061006bf1a88630d6d91cdc76ea33fbf2"
   meta-clang:
-    refspec: dunfell-clang12
+    refspec: "e8a5e806b48a36046ef78a95f4d4cd428e8ea4c2"
   meta-rust:
     # last revision that supports Dunfell, along with the CMake version shipped with poky
     refspec: "d42984ff9a9fad9ced37d95a89af1b2b84f957e9"

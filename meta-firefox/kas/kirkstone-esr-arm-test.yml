@@ -10,7 +10,7 @@ machine: raspberrypi3
 
 repos:
   meta-rpi:
-    refspec: kirkstone
+    refspec: "d7544f35756d87834e8b4bf3e3e733c771d380ae"
 
 local_conf_header:
   kirkstone-esr-arm: |
