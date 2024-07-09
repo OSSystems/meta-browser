@@ -6,11 +6,11 @@ header:
 
 repos:
   meta-oe:
-    refspec: kirkstone
+    refspec: "4052c97dc83d0c88fc277d6fc1815e0699020daa"
   poky:
-    refspec: kirkstone
+    refspec: "6bd3969d32730538608e680653e032e66958fe84"
   meta-clang:
-    refspec: kirkstone
+    refspec: "2ed384c64e206016c628451672c688e59944381b"
   meta-rust:
     refspec: "a5136be2ba408af1cc8afcde1c8e3d787dadd934"
 
