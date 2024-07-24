@@ -457,7 +457,7 @@ do_copy_clang_library () {
     # Chromium needs to link against libclang_rt.builtins.a for both host and
     # target code, and expects to find both libraries in the same directory
     # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${STAGING_LIBDIR}/clang"
+    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
     # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
     lib_file="$(find . -name 'libclang_rt.builtins*')"
     # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
