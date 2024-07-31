@@ -1,0 +1,58 @@
+From 41056baa85fead6431c1ed2edec545394bdf0463 Mon Sep 17 00:00:00 2001
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 6 Aug 2024 10:33:04 +0000
+Subject: [PATCH] [m127] side_panel: Add missing deps
+
+side_panel code includes some generated headers without actually
+depending on the targets responsible for generating them. This can lead
+to build errors, depending on the exact order and timing of the build
+steps. This patch fixes this by adding the missing dependencies.
+
+NOTE: This will be fixed in m128 by https://crrev.com/c/5719690 and
+https://crrev.com/c/5727139, but these are too difficult to backport.
+
+Upstream-Status: Inappropriate [already fixed in latest upstream]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ chrome/browser/ui/views/side_panel/BUILD.gn | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/chrome/browser/ui/views/side_panel/BUILD.gn b/chrome/browser/ui/views/side_panel/BUILD.gn
+index 5baeb55..d0b68c1 100644
+--- a/chrome/browser/ui/views/side_panel/BUILD.gn
++++ b/chrome/browser/ui/views/side_panel/BUILD.gn
+@@ -172,6 +172,7 @@ static_library("side_panel") {
+     "//chrome/app:generated_resources",
+     "//chrome/app:generated_resources_grit",
+     "//chrome/app/vector_icons",
++    "//chrome/browser/cart:mojo_bindings",
+     "//chrome/browser/companion/core",
+     "//chrome/browser/favicon",
+     "//chrome/browser/lens/region_search",
+@@ -181,8 +182,11 @@ static_library("side_panel") {
+     "//chrome/browser/search_engines",
+     "//chrome/browser/themes",
+     "//chrome/browser/ui:browser_element_identifiers",
++    "//chrome/browser/ui:webui_name_variants",
+     "//chrome/browser/ui/actions",
+     "//chrome/browser/ui/browser_window",
++    "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings",
++    "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings",
+     "//chrome/common",
+     "//chrome/common:constants",
+     "//chrome/common/extensions/api",
+@@ -198,6 +202,7 @@ static_library("side_panel") {
+     "//components/lens:features",
+     "//components/omnibox/browser:vector_icons",
+     "//components/optimization_guide/core:features",
++    "//components/page_image_service/mojom:mojo_bindings",
+     "//components/performance_manager",
+     "//components/pref_registry",
+     "//components/search",
+@@ -222,5 +227,6 @@ static_library("side_panel") {
+     "//ui/gfx:color_utils",
+     "//ui/gfx/geometry:geometry_skia",
+     "//ui/webui",
++    "//ui/webui/resources/cr_components/help_bubble:mojo_bindings",
+   ]
+ }

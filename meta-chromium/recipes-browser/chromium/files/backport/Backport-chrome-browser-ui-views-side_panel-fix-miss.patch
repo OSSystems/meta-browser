@@ -1,0 +1,27 @@
+From 0c7ad5925e2eaddb65032e1836ab5f29af932931 Mon Sep 17 00:00:00 2001
+From: Takuto Ikuta <tikuta@chromium.org>
+Date: Fri, 26 Jul 2024 09:41:32 +0000
+Subject: [PATCH] Backport "chrome/browser/ui/views/side_panel: fix missing
+ deps"
+
+This fixes a build race condition due to a missing dependency. The patch
+will be included in upstream's 129 release.
+
+Upstream-Status: Backport [https://crrev.com/c/5740584]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+---
+ chrome/browser/ui/views/side_panel/BUILD.gn | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/chrome/browser/ui/views/side_panel/BUILD.gn b/chrome/browser/ui/views/side_panel/BUILD.gn
+index 5baeb55..6159cff 100644
+--- a/chrome/browser/ui/views/side_panel/BUILD.gn
++++ b/chrome/browser/ui/views/side_panel/BUILD.gn
+@@ -142,6 +142,7 @@ static_library("side_panel") {
+   public_deps = [
+     "//base",
+     "//chrome/browser/companion/core/mojom:mojo_bindings",
++    "//chrome/browser/companion/visual_query",
+     "//chrome/browser/profiles:profile",
+     "//chrome/browser/ui/actions:actions_headers",
+     "//chrome/browser/ui/color:color_headers",
