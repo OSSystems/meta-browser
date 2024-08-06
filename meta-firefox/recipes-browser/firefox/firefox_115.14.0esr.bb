@@ -66,3 +66,6 @@ SRCREV_aa-stroke = "07d3c25322518f294300e96246e09b95e118555d"
 
 SRCREV_FORMAT .= "_jsparagus"
 SRCREV_jsparagus = "64ba08e24749616de2344112f226d1ef4ba893ae"
+
+SRCREV_FORMAT .= "_mapped_hyph"
+SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"

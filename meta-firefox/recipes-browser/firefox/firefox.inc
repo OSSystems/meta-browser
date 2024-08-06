@@ -77,8 +77,8 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/FirefoxGraphics/wpf-gpu-raster;protocol=https;branch=rust-only;name=wpf-gpu-raster;destsuffix=wpf-gpu-raster \
            git://github.com/mozilla/neqo;protocol=https;branch=main;name=neqo;destsuffix=neqo \
            git://github.com/gfx-rs/wgpu.git;protocol=https;branch=trunk;name=wgpu;destsuffix=wgpu \
-           git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
+           git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
            "
 
 SRCREV_FORMAT .= "_chardetng"
@@ -131,7 +131,7 @@ PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries
 # nspr and nss dependencies are handled separately, due to requiring
 # different versions depending on Yocto version and CPU capabilities.
 PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
-PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.101,nss-3.101"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.103,nss-3.103"
 PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
 PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
 PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"

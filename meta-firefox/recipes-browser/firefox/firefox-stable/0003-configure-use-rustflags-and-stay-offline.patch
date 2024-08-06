@@ -17,20 +17,18 @@ Upstream-Status: Inappropriate
  build/moz.configure/rust.configure | 7 +++++--
  2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
-index e32c2f347c..5a5fb0814f 100644
---- a/build/moz.configure/rust.configure
-+++ b/build/moz.configure/rust.configure
-@@ -450,7 +450,7 @@ def detect_rustc_target(
- @imports(_from="tempfile", _import="mkstemp")
+--- a/build/moz.configure/rust.configure	2024-08-09 15:58:25.804181897 +0200
++++ b/build/moz.configure/rust.configure	2024-08-09 15:59:45.883158679 +0200
+@@ -450,7 +450,7 @@
  @imports(_from="textwrap", _import="dedent")
  @imports(_from="mozbuild.configure.util", _import="LineIO")
+ @imports(_from="__builtin__", _import="open")
 -def assert_rust_compile(host_or_target, rustc_target, rustc):
 +def assert_rust_compile(host_or_target, rustc_target, rustc, is_target = False):
      # Check to see whether our rustc has a reasonably functional stdlib
      # for our chosen target.
      target_arg = "--target=" + rustc_target
-@@ -476,6 +476,9 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
+@@ -475,6 +475,9 @@
              in_path,
          ]
  
@@ -40,7 +38,7 @@ index e32c2f347c..5a5fb0814f 100644
          def failed():
              die(
                  dedent(
-@@ -554,7 +557,7 @@ def rust_target_triple(
+@@ -550,7 +553,7 @@
      rustc_target = detect_rustc_target(
          target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
      )
@@ -49,9 +47,9 @@ index e32c2f347c..5a5fb0814f 100644
      return rustc_target
  
  
---- ./build/RunCbindgen.py.orig	2024-03-18 18:23:08.669204654 +0100
-+++ ./build/RunCbindgen.py	2024-03-18 18:24:30.613892912 +0100
-@@ -44,6 +44,7 @@
+--- a/build/RunCbindgen.py	2024-08-09 16:01:20.700947135 +0200
++++ b/build/RunCbindgen.py	2024-08-09 16:02:13.462272971 +0200
+@@ -43,6 +43,7 @@
      args = [
          buildconfig.substs["CARGO"],
          "metadata",
@@ -59,7 +57,7 @@ index e32c2f347c..5a5fb0814f 100644
          "--all-features",
          "--format-version",
          "1",
-@@ -51,13 +52,6 @@
+@@ -50,13 +51,6 @@
          CARGO_TOML,
      ]
  
