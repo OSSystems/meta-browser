@@ -24,3 +24,4 @@ local_conf_header:
     REQUIRED_VERSION_rust-llvm = "1.76.0"
     REQUIRED_VERSION_rust-llvm-native = "1.76.0"
     BBMASK += "poky/meta/recipes-devtools/rust"
+    do_install:prepend:pn-u-boot-starfive = "cp ${B}/../${UBOOT_ENV_BINARY} ${B}; "
