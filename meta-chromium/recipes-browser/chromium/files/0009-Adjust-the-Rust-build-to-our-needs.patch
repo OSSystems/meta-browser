@@ -16,17 +16,17 @@ Subject: [PATCH] Adjust the Rust build to our needs
 Upstream-Status: Inappropriate [specific to our build setup]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- build/config/rust.gni            | 24 ++++++++++++++++++------
+ build/config/rust.gni            | 26 +++++++++++++++++++-------
  build/rust/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 28 +++++++++++++++++++++-------
  build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
- 4 files changed, 51 insertions(+), 18 deletions(-)
+ 4 files changed, 52 insertions(+), 19 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index e99d7d0..784a845 100644
+index 97e788a..5b5ff86 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -93,6 +93,11 @@ declare_args() {
+@@ -97,6 +97,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -38,7 +38,7 @@ index e99d7d0..784a845 100644
  }
 
  # Use a separate declare_args so these variables' defaults can depend on the
-@@ -188,12 +193,19 @@ if (enable_rust) {
+@@ -184,12 +189,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -61,7 +61,7 @@ index e99d7d0..784a845 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -202,13 +214,13 @@ if (is_linux || is_chromeos) {
+@@ -198,15 +210,15 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.
@@ -71,6 +71,9 @@ index e99d7d0..784a845 100644
 -      rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
 +      rust_abi_target = "arm" + vendor + "-linux-gnueabi" + float_suffix
      }
+   } else if (current_cpu == "riscv64") {
+-    rust_abi_target = "riscv64gc-unknown-linux-gnu"
++    rust_abi_target = "riscv64gc" + vendor + "-linux-gnu"
    } else {
      # Best guess for other future platforms.
 -    rust_abi_target = current_cpu + "-unknown-linux-gnu"

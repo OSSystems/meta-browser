@@ -15,10 +15,10 @@ Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/installer/linux/common/wrapper b/chrome/installer/linux/common/wrapper
-index 20c6e8f..d92a60b 100755
+index aaa46bf..7d8c8dd 100755
 --- a/chrome/installer/linux/common/wrapper
 +++ b/chrome/installer/linux/common/wrapper
-@@ -45,5 +45,7 @@ exec < /dev/null
+@@ -36,5 +36,7 @@ exec < /dev/null
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
 

@@ -57,7 +57,7 @@ def find_chromium_licenses(chromium_root):
     # Make sure the main Chromium LICENSE file is always present.
     license_files = set([os.path.join(chromium_root, 'LICENSE')])
 
-    for d in licenses.FindThirdPartyDirs(licenses.PRUNE_PATHS, chromium_root):
+    for d in licenses.FindThirdPartyDirs(chromium_root):
         if d in SKIPPED_DIRECTORIES:
             continue
 
