@@ -14,12 +14,12 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/chrome/browser/ui/views/side_panel/BUILD.gn b/chrome/browser/ui/views/side_panel/BUILD.gn
-index 5baeb55..6159cff 100644
+index 9ceabe8..c1d4066 100644
 --- a/chrome/browser/ui/views/side_panel/BUILD.gn
 +++ b/chrome/browser/ui/views/side_panel/BUILD.gn
-@@ -142,6 +142,7 @@ static_library("side_panel") {
-   public_deps = [
+@@ -114,6 +114,7 @@ source_set("side_panel") {
      "//base",
+     "//chrome/browser:browser_public_dependencies",
      "//chrome/browser/companion/core/mojom:mojo_bindings",
 +    "//chrome/browser/companion/visual_query",
      "//chrome/browser/profiles:profile",

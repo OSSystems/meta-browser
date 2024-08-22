@@ -18,7 +18,7 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 4ae52e5..dc763a7 100644
+index 59f1502..2cd90ee 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
 @@ -1119,7 +1119,9 @@ component("base") {
