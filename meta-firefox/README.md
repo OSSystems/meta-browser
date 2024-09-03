@@ -172,41 +172,6 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 
 | Firefox version | Dependency | Used commit | Source / Comment |
 | --------------- | ---------- | -------------- | ---------------- |
-<<<<<<< HEAD
-| 115.14.0esr | application-services | 86c84c217036c12283d19368867323a66bf35883 | This involves a collection of crates developed by Mozilla. These are specified in the top level Cargo.toml, by explicit hash. (interrupt-support, sql-support, sync15, tabs, viaduct, webext-storage) |
-| 115.14.0esr | packed-simd | e588ceb568878e1a3156ea9ce551d5b63ef0cdc4 | Specified in top level Cargo.toml, by explicit hash. |
-| 115.14.0esr | d3d12-rs | b940b1d71ab7083ae80eec697872672dc1f2bd32 | This commit is required explicitly by `third_party/rust/wgpu-hal/Cargo.toml`. |
-| 115.14.0esr | neqo | 80db3a01f3273c7e742ba560fa99246fc8b30c4f | This commit corresponds to version 0.6.4, which is required by `netwerk/socket/neqo_glue/Cargo.toml` |
-| 115.14.0esr | mp4parse | cf8b0e04de9c60f38f7f057f9f29c74d19336d0c | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 115.14.0esr | wgpu | f71a1bc736fde37509262ca03e91d8f56a13aeb5 | This commit is required explicitly by `gfx/wgpu_bindings/Cargo.toml` |
-| 115.14.0esr | naga | b99d58ea435090e561377949f428bce2c18451bb | This commit is required explicitly by `third_party/rust/wgpu-hal/Cargo.toml` |
-| 115.14.0esr | uniffi-rs | bc7ff8977bf38d0fdd1a458810b14f434d4dc4de | This commit corresponds to version 0.23.0, which is specified by the top level Cargo.toml |
-| 115.14.0esr | audioipc | 0b51291d2483a17dce3e300c7784b369e02bee73 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 115.14.0esr | wpf-gpu-raster | 5ab6fe33d00021325ee920b3c10526dc8301cf46 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 115.14.0esr | warp | 4af45fae95bc98b0eba1ef0db17e1dac471bb23d | This commit is required explicitly by the top level Cargo.toml |
-| 115.14.0esr | cubeb-pulse | cf48897be5cbe147d051ebbbe1eaf5fd8fb6bbc9 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 115.14.0esr | midir | 519e651241e867af3391db08f9ae6400bc023e18 | This commit is required explicitly by the top level Cargo.toml |
-| 115.14.0esr | cubeb-coreaudio | 93b5c01a131f65c83c11aeb317f4583405c5eb79 | Required explicitly by `./toolkit/library/rust/shared/Cargo.toml`. |
-| 115.14.0esr | aa-stroke | 07d3c25322518f294300e96246e09b95e118555d | Required explicitly by `./toolkit/library/rust/shared/Cargo.toml`. |
-| 115.14.0esr | jsparagus | 64ba08e24749616de2344112f226d1ef4ba893ae | Required explicitly by `js/src/frontend/smoosh/Cargo.toml`. |
-| 129.0.2 | application-services | 46acbeb2cee2fb7f024b6ff5943bdfdb6cc53151 | This involves a collection of crates developed by Mozilla. These are specified in the top level Cargo.toml, by explicit hash. (interrupt-support, sql-support, sync15, tabs, viaduct, webext-storage, suggest, relevancy) |
-| 129.0.2 | cose-rust | 43c22248d136c8b38fe42ea709d08da6355cf04b | This commit is required explicitly by the top level Cargo.toml |
-| 129.0.2 | mp4parse | a138e40ec1c603615873e524b5b22e11c0ec4820 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 129.0.2 | neqo | 121fe683ae4b39a5b694f671abfd397cbd9b4322 | This commit corresponds to v0.7.9, which is required by `netwerk/socket/neqo_glue/Cargo.toml` |
-| 129.0.2 | wgpu | 82210e1cdc63cbd5e53f43788f9956bb0d4a2c6a | This commit is required explicitly by `gfx/wgpu_bindings/Cargo.toml` |
-| 129.0.2 | audioipc | e1071472c55193032aa4c1403317844005f9d0fc | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 129.0.2 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 129.0.2 | warp | 9d081461ae1167eb321585ce424f4fef6cf0092b | This commit is required explicitly by the top level Cargo.toml |
-| 129.0.2 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | This commit is required explicitly by `toolkit/library/rust/shared/Cargo.toml` |
-| 129.0.2 | cubeb-coreaudio | 8bce3b333a920999055397a397e59c2b81a93b9a | Required explicitly by `./toolkit/library/rust/shared/Cargo.toml`. |
-| 129.0.2 | midir | 85156e360a37d851734118104619f86bd18e94c6 | This commit is required explicitly by the top level Cargo.toml |
-| 129.0.2 | aa-stroke | d94278ed9c7020f50232689a26d1277eb0eb74d2 | Required explicitly by `./toolkit/library/rust/shared/Cargo.toml`. |
-| 129.0.2 | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required explicitly by `js/src/frontend/smoosh/Cargo.toml`.|
-| 129.0.2 | mio | 9a2ef335c366044ffe73b1c4acabe50a1daefe05 | This commit is required explicitly by the top level Cargo.toml |
-| 129.0.2 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Specified in top level Cargo.toml, by explicit hash. |
-| 129.0.2 | gpu-descriptor | 7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d | Specified in top level Cargo.toml, by explicit hash. |
-| 129.0.2 | any-all-workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Specified in top level Cargo.toml, by explicit hash. |
-=======
 | 115.15.0esr | application-services | 86c84c217036c12283d19368867323a66bf35883 | This involves a collection of crates developed by Mozilla. These are specified in the top level Cargo.toml, by explicit hash. (interrupt-support, sql-support, sync15, tabs, viaduct, webext-storage) |
 | 115.15.0esr | packed-simd | e588ceb568878e1a3156ea9ce551d5b63ef0cdc4 | Specified in top level Cargo.toml, by explicit hash. |
 | 115.15.0esr | d3d12-rs | b940b1d71ab7083ae80eec697872672dc1f2bd32 | This commit is required explicitly by `third_party/rust/wgpu-hal/Cargo.toml`. |
@@ -240,7 +205,6 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 | 130.0.1 | gpu-descriptor | 7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d | Specified in top level Cargo.toml, by explicit hash. |
 | 130.0.1 | any-all-workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Specified in top level Cargo.toml, by explicit hash. |
 | 130.0.1 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required explicitly by `./toolkit/library/rust/shared/Cargo.toml`. |
->>>>>>> ed1fb399 (firefox: update 129.0.2 -> 130.0.1)
 | common | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | This commit is required explicitly by the top level Cargo.toml |
 | common | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | This commit is required explicitly by the top level Cargo.toml |
 | common | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | This commit is required explicitly by the top level Cargo.toml |
