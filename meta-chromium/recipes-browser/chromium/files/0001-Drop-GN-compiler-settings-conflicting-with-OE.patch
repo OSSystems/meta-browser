@@ -19,10 +19,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 48 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index f598fd1..1188401 100644
+index 5898b8c..340960f 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1194,27 +1194,6 @@ config("compiler_cpu_abi") {
+@@ -1196,27 +1196,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }
@@ -50,7 +50,7 @@ index f598fd1..1188401 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1222,9 +1201,6 @@ config("compiler_cpu_abi") {
+@@ -1224,9 +1203,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -60,7 +60,7 @@ index f598fd1..1188401 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1304,8 +1280,6 @@ config("compiler_cpu_abi") {
+@@ -1306,8 +1282,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -69,7 +69,7 @@ index f598fd1..1188401 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1353,9 +1327,6 @@ config("compiler_cpu_abi") {
+@@ -1355,9 +1329,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
@@ -79,7 +79,7 @@ index f598fd1..1188401 100644
            }
          } else {
            cflags += [
-@@ -1413,8 +1384,6 @@ config("compiler_cpu_abi") {
+@@ -1415,8 +1386,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -88,7 +88,7 @@ index f598fd1..1188401 100644
          } else {
            cflags += [
              "-EB",
-@@ -1577,23 +1546,6 @@ config("compiler_deterministic") {
+@@ -1585,23 +1554,6 @@ config("compiler_deterministic") {
        }
      }
    }
