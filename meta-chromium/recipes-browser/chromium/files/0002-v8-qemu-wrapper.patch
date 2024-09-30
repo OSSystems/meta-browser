@@ -17,7 +17,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 5 insertions(+)
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index 80d4b3d..5666cdf 100644
+index f46bec2..5438365 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -45,6 +45,7 @@ if (use_v8_context_snapshot) {
@@ -29,10 +29,10 @@ index 80d4b3d..5666cdf 100644
                                            "root_out_dir") +
                                 "/v8_context_snapshot_generator",
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 92e8541..6343c8e 100644
+index 19e0d2b..85d40c8 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -2223,6 +2223,7 @@ template("run_torque") {
+@@ -2256,6 +2256,7 @@ template("run_torque") {
      }
 
      args = [
@@ -40,7 +40,7 @@ index 92e8541..6343c8e 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -2386,6 +2387,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2419,6 +2420,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -48,7 +48,7 @@ index 92e8541..6343c8e 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -2431,6 +2433,7 @@ template("run_mksnapshot") {
+@@ -2473,6 +2475,7 @@ template("run_mksnapshot") {
      }
 
      args = [
@@ -56,7 +56,7 @@ index 92e8541..6343c8e 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -7370,6 +7373,7 @@ if (v8_enable_i18n_support) {
+@@ -7452,6 +7455,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
 
      args = [

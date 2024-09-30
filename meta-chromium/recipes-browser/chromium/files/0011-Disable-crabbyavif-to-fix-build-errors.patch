@@ -47,7 +47,7 @@ index 687033e..4006422 100644
  }
 
 diff --git a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
-index 198c107..a792151 100644
+index f208b65..4fb788f 100644
 --- a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 +++ b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 @@ -36,7 +36,6 @@
@@ -77,7 +77,7 @@ index 198c107..a792151 100644
      return "image/avif";
    }
  #endif
-@@ -305,15 +301,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
+@@ -309,15 +305,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
                                                  max_decoded_bytes);
  #if BUILDFLAG(ENABLE_AV1_DECODER)
    } else if (mime_type == "image/avif") {

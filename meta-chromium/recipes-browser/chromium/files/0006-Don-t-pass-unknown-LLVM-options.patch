@@ -17,10 +17,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 18 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 0efc6f8..5e13f0c 100644
+index 16f5b23..0dc5b57 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -579,24 +579,6 @@ config("compiler") {
+@@ -581,24 +581,6 @@ config("compiler") {
        }
      }
 

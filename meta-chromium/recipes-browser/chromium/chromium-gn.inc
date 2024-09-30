@@ -11,9 +11,7 @@ OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
-SRC_URI += "\
-    file://backport/Backport-chrome-browser-ui-views-side_panel-fix-miss.patch \
-"
+# None currently \o/
 
 # Non-specific patches.
 SRC_URI += "\
