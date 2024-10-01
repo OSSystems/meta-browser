@@ -18,11 +18,35 @@ Upstream-Status: Pending
 
 diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
 index 7a2fd1ae70..aa81ffbe03 100644
---- a/build/moz.configure/rust.configure
-+++ b/build/moz.configure/rust.configure
-@@ -280,8 +280,29 @@ def rust_supported_targets(rustc):
-     return data
+--- a/build/RunCbindgen.py      2024-08-09 16:01:20.700947135 +0200
++++ b/build/RunCbindgen.py      2024-08-09 16:02:13.462272971 +0200
+@@ -43,6 +43,7 @@
+     args = [
+         buildconfig.substs["CARGO"],
+         "metadata",
++        "--offline",
+         "--all-features",
+         "--format-version",
+         "1",
+@@ -50,13 +51,6 @@
+         CARGO_TOML,
+     ]
  
+-    # The Spidermonkey library can be built from a package tarball outside the
+-    # tree, so we want to let Cargo create lock files in this case. When built
+-    # within a tree, the Rust dependencies have been vendored in so Cargo won't
+-    # touch the lock file.
+-    if not buildconfig.substs.get("JS_STANDALONE"):
+-        args.append("--frozen")
+-
+     stdout, returncode = _run_process(args)
+ 
+     if returncode != 0:
+--- ./build/moz.configure/rust.configure	2024-10-01 12:27:04.584195384 +0200
++++ ./build/moz.configure/rust.configure	2024-10-01 13:14:06.735772311 +0200
+@@ -279,9 +279,32 @@
+         data.setdefault(key, []).append(namespace(rust_target=t, target=info))
+     return data
  
 +option(env='RUST_HOST',
 +       nargs=1,
@@ -45,16 +69,20 @@ index 7a2fd1ae70..aa81ffbe03 100644
 +    if value:
 +        return value[0]
 +
++
++
+ 
  def detect_rustc_target(
 -    host_or_target, compiler_info, arm_target, rust_supported_targets
 +    host_or_target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, host_or_target_str
  ):
      # Rust's --target options are similar to, but not exactly the same
      # as, the autoconf-derived targets we use.  An example would be that
-@@ -292,6 +313,11 @@ def detect_rustc_target(
+@@ -292,6 +315,12 @@
      # munging to get the correct option to rustc.
      # We correlate the autoconf-derived targets with the list of targets
      # rustc gives us with --print target-list.
++
 +    specified_targets = {"host": rust_host_env, "target": rust_target_env}
 +    specified_target = specified_targets[host_or_target_str]
 +    if (specified_target):
@@ -63,7 +91,26 @@ index 7a2fd1ae70..aa81ffbe03 100644
      candidates = rust_supported_targets.get(
          (host_or_target.cpu, host_or_target.endianness, host_or_target.os), []
      )
-@@ -479,15 +505,17 @@ def assert_rust_compile(host_or_target, rustc_target, rustc):
+@@ -423,7 +452,7 @@
+ @imports(_from="tempfile", _import="mkstemp")
+ @imports(_from="textwrap", _import="dedent")
+ @imports(_from="mozbuild.configure.util", _import="LineIO")
+-def assert_rust_compile(host_or_target, rustc_target, rustc):
++def assert_rust_compile(host_or_target, rustc_target, rustc, is_target = False):
+     # Check to see whether our rustc has a reasonably functional stdlib
+     # for our chosen target.
+     target_arg = "--target=" + rustc_target
+@@ -449,6 +478,9 @@
+             in_path,
+         ]
+ 
++        if is_target:
++            cmd.extend(os.environ["RUSTFLAGS"].split())
++
+         def failed():
+             die(
+                 dedent(
+@@ -479,15 +511,17 @@
      rustc_info.host,
      rust_supported_targets,
      arm_target,
@@ -83,7 +130,7 @@ index 7a2fd1ae70..aa81ffbe03 100644
      )
      if rustc_target != rustc_host:
          if host.alias == rustc_target:
-@@ -516,14 +544,14 @@ def rust_host_triple(
+@@ -516,16 +550,16 @@
  
  
  @depends(
@@ -99,5 +146,8 @@ index 7a2fd1ae70..aa81ffbe03 100644
 -        target, compiler_info, arm_target, rust_supported_targets
 +        target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
      )
-     assert_rust_compile(target, rustc_target, rustc)
+-    assert_rust_compile(target, rustc_target, rustc)
++    assert_rust_compile(target, rustc_target, rustc, True)
      return rustc_target
+ 
+ 

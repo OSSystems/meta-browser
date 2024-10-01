@@ -46,7 +46,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0001-make-build-reproducible-by-removing-TMPDIR.patch \
            file://0001-trust-yocto-rust-binary.patch \
            file://0002-use-offline-crates.patch \
-           file://0003-configure-use-rustflags-and-stay-offline.patch \
            file://0004-Fix-compiling-with-enable-openmax-config.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
@@ -78,7 +77,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/mozilla/neqo;protocol=https;branch=main;name=neqo;destsuffix=neqo \
            git://github.com/gfx-rs/wgpu.git;protocol=https;branch=trunk;name=wgpu;destsuffix=wgpu \
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
-           git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
            "
 
 SRCREV_FORMAT .= "_chardetng"
@@ -141,6 +139,11 @@ PACKAGECONFIG[system-libevent] = "--with-system-libevent,,libevent,libevent"
 PACKAGECONFIG[system-libvpx] = "--with-system-libvpx,,libvpx,libvpx"
 PACKAGECONFIG[system-png] = "--with-system-png,,libpng,libpng"
 PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
+PACKAGECONFIG[x11-only] = "--enable-default-toolkit=cairo-gtk3-x11-only,,,,,wayland-only"
+PACKAGECONFIG[wayland-only] = "--enable-default-toolkit=cairo-gtk3-wayland-only,,virtual/egl,,,x11-only"
+PACKAGECONFIG[disable-gecko-profiler] = "--disable-gecko-profiler,,,"
+
+PACKAGECONFIG:append = " disable-gecko-profiler "
 
 DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", " wasi-sdk-native ", d)}'
 
@@ -172,6 +175,19 @@ do_install:append() {
     # Fix ownership of files
     chown root:root -R ${D}${datadir}
     chown root:root -R ${D}${libdir}
+}
+
+do_configure:append(){
+    wayland_only='${@bb.utils.contains("PACKAGECONFIG", "wayland-only", "true", "false", d)}'
+    x11_only='${@bb.utils.contains("PACKAGECONFIG", "x11-only", "true", "false", d)}'
+
+    if $x11_only; then
+        sed -i '/ac_add_options --enable-default-toolkit=cairo-gtk3$/d' ${MOZCONFIG}
+    fi
+
+    if $wayland_only; then
+        sed -i '/ac_add_options --enable-default-toolkit=cairo-gtk3-wayland$/d' ${MOZCONFIG}
+    fi
 }
 
 FILES:${PN} = "${bindir}/${PN} \
