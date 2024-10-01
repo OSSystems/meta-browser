@@ -77,6 +77,10 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/mozilla/neqo;protocol=https;branch=main;name=neqo;destsuffix=neqo \
            git://github.com/gfx-rs/wgpu.git;protocol=https;branch=trunk;name=wgpu;destsuffix=wgpu \
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
+           git://github.com/hsivonen/any_all_workaround;protocol=https;branch=simdsplit;name=any-all-workaround;destsuffix=any-all-workaround \
+           git://github.com/franziskuskiefer/cose-rust;protocol=https;branch=master;name=cose-rust;destsuffix=cose-rust \
+           git://github.com/zakarumych/gpu-descriptor;protocol=https;branch=master;name=gpu-descriptor;destsuffix=gpu-descriptor \
+           git://github.com/servo/unicode-bidi;protocol=https;branch=main;name=unicode-bidi;destsuffix=unicode-bidi \
            "
 
 SRCREV_FORMAT .= "_chardetng"
@@ -87,6 +91,26 @@ SRCREV_FORMAT .= "_coremidi"
 SRCREV_coremidi = "fc68464b5445caf111e41f643a2e69ccce0b4f83"
 SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
+SRCREV_FORMAT .= "_any-all-woraround"
+SRCREV_any-all-workaround = "7fb1b7034c9f172aade21ee1c8554e8d8a48af80"
+SRCREV_FORMAT .= "_cose-rust"
+SRCREV_cose-rust = "43c22248d136c8b38fe42ea709d08da6355cf04b"
+SRCREV_FORMAT .="_midir"
+SRCREV_midir = "85156e360a37d851734118104619f86bd18e94c6"
+SRCREV_FORMAT .= "_mp4parse"
+SRCREV_mp4parse = "a138e40ec1c603615873e524b5b22e11c0ec4820"
+SRCREV_FORMAT .= "_gpu-descriptor"
+SRCREV_gpu-descriptor = "7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d"
+SRCREV_FORMAT .= "_cubeb-pulse"
+SRCREV_cubeb-pulse = "8678dcab1c287de79c4c184ccc2e065bc62b70e2"
+SRCREV_FORMAT .= "_wpf-gpu-raster"
+SRCREV_wpf-gpu-raster = "99979da091fd58fba8477e7fcdf5ec0727102916"
+SRCREV_FORMAT .= "_aa-stroke"
+SRCREV_aa-stroke = "d94278ed9c7020f50232689a26d1277eb0eb74d2"
+SRCREV_FORMAT .= "_jsparagus"
+SRCREV_jsparagus = "61f399c53a641ebd3077c1f39f054f6d396a633c"
+SRCREV_FORMAT .= "_unicode-bidi"
+SRCREV_unicode-bidi = "ca612daf1c08c53abe07327cb3e6ef6e0a760f0c"
 
 # Add a config file to enable GPU acceleration by default.
 SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'gpu', \
@@ -129,7 +153,7 @@ PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries
 # nspr and nss dependencies are handled separately, due to requiring
 # different versions depending on Yocto version and CPU capabilities.
 PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
-PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.103,nss-3.103"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.104,nss-3.104"
 PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
 PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
 PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"
