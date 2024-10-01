@@ -1,0 +1,150 @@
+From f991ffad1f34fe341e008172bd19ca5782660c0c Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@clear-code.com>
+Date: Thu, 18 Apr 2019 23:15:16 +0900
+Subject: [PATCH] Bug 1545437 - Add options to specify Rust target name
+
+ r?glandium
+
+Certain build systems such as Yocto know more suitable Rust target name, so it
+would be better that there is a way to pass it to Mozilla's build system.
+
+Differential Revision: https://phabricator.services.mozilla.com/D28069
+
+Upstream-Status: Pending
+
+---
+ build/moz.configure/rust.configure | 40 +++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 6 deletions(-)
+
+diff --git a/build/moz.configure/rust.configure b/build/moz.configure/rust.configure
+index 7a2fd1ae70..aa81ffbe03 100644
+--- a/build/RunCbindgen.py      2024-08-09 16:01:20.700947135 +0200
++++ b/build/RunCbindgen.py      2024-08-09 16:02:13.462272971 +0200
+@@ -43,6 +43,7 @@
+     args = [
+         buildconfig.substs["CARGO"],
+         "metadata",
++        "--offline",
+         "--all-features",
+         "--format-version",
+         "1",
+@@ -50,13 +51,6 @@
+         CARGO_TOML,
+     ]
+ 
+-    # The Spidermonkey library can be built from a package tarball outside the
+-    # tree, so we want to let Cargo create lock files in this case. When built
+-    # within a tree, the Rust dependencies have been vendored in so Cargo won't
+-    # touch the lock file.
+-    if not buildconfig.substs.get("JS_STANDALONE"):
+-        args.append("--frozen")
+-
+     stdout, returncode = _run_process(args)
+ 
+     if returncode != 0:
+--- a/build/moz.configure/rust.configure	2024-10-01 12:27:04.584195384 +0200
++++ b/build/moz.configure/rust.configure	2024-10-01 13:14:06.735772311 +0200
+@@ -279,9 +279,29 @@
+         data.setdefault(key, []).append(namespace(rust_target=t, target=info))
+     return data
+ 
++option(env='RUST_HOST',
++       nargs=1,
++       help='Define the system type for Rust performing the build')
++
++@depends('RUST_HOST')
++@checking('rust host', lambda host: host)
++def rust_host_env(value):
++    if value:
++        return value[0]
++
++
++option(env='RUST_TARGET',
++       nargs=1,
++       help='Define the system type for Rust where the resulting executables will be used')
++
++@depends('RUST_TARGET')
++@checking('rust target', lambda target: target)
++def rust_target_env(value):
++    if value:
++        return value[0]
+ 
+ def detect_rustc_target(
+-    host_or_target, compiler_info, arm_target, rust_supported_targets
++    host_or_target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, host_or_target_str
+ ):
+     # Rust's --target options are similar to, but not exactly the same
+     # as, the autoconf-derived targets we use.  An example would be that
+@@ -292,6 +312,12 @@
+     # munging to get the correct option to rustc.
+     # We correlate the autoconf-derived targets with the list of targets
+     # rustc gives us with --print target-list.
++
++    specified_targets = {"host": rust_host_env, "target": rust_target_env}
++    specified_target = specified_targets[host_or_target_str]
++    if (specified_target):
++        return specified_target
++
+     candidates = rust_supported_targets.get(
+         (host_or_target.cpu, host_or_target.endianness, host_or_target.os), []
+     )
+@@ -423,7 +449,7 @@
+ @imports(_from="textwrap", _import="dedent")
+ @imports(_from="mozbuild.configure.util", _import="LineIO")
+ @imports(_from="__builtin__", _import="open")
+-def assert_rust_compile(host_or_target, rustc_target, rustc):
++def assert_rust_compile(host_or_target, rustc_target, rustc, is_target = False):
+     # Check to see whether our rustc has a reasonably functional stdlib
+     # for our chosen target.
+     target_arg = "--target=" + rustc_target
+@@ -448,6 +474,9 @@
+             in_path,
+         ]
+ 
++        if is_target:
++            cmd.extend(os.environ["RUSTFLAGS"].split())
++
+         def failed():
+             die(
+                 dedent(
+@@ -475,15 +504,17 @@
+     rustc_info.host,
+     rust_supported_targets,
+     arm_target,
++    rust_host_env,
++    rust_target_env,
+     when=rust_compiler,
+ )
+ @checking("for rust host triplet")
+ @imports(_from="textwrap", _import="dedent")
+ def rust_host_triple(
+-    rustc, host, compiler_info, rustc_host, rust_supported_targets, arm_target
++    rustc, host, compiler_info, rustc_host, rust_supported_targets, arm_target, rust_host_env, rust_target_env
+ ):
+     rustc_target = detect_rustc_target(
+-        host, compiler_info, arm_target, rust_supported_targets
++        host, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "host"
+     )
+     if rustc_target != rustc_host:
+         if host.alias == rustc_target:
+@@ -512,16 +543,16 @@
+ 
+ 
+ @depends(
+-    rustc, target, c_compiler, rust_supported_targets, arm_target, when=rust_compiler
++    rustc, target, c_compiler, rust_supported_targets, arm_target, rust_host_env, rust_target_env, when=rust_compiler
+ )
+ @checking("for rust target triplet")
+ def rust_target_triple(
+-    rustc, target, compiler_info, rust_supported_targets, arm_target
++    rustc, target, compiler_info, rust_supported_targets, arm_target, rust_host_env, rust_target_env
+ ):
+     rustc_target = detect_rustc_target(
+-        target, compiler_info, arm_target, rust_supported_targets
++        target, compiler_info, arm_target, rust_supported_targets, rust_host_env, rust_target_env, "target"
+     )
+-    assert_rust_compile(target, rustc_target, rustc)
++    assert_rust_compile(target, rustc_target, rustc, True)
+     return rustc_target
+ 
+ 
