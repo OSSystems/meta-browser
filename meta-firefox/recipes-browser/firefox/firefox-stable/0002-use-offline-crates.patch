@@ -48,9 +48,60 @@ Upstream-Status: Inappropriate [oe specific]
  [dependencies.tempfile]
  version = "3.2.0"
  optional = true
---- a/Cargo.toml	2024-10-01 20:20:53.695131653 +0200
-+++ b/Cargo.toml	2024-10-01 20:36:45.632459686 +0200
-@@ -192,33 +192,76 @@
+--- a/gfx/wgpu_bindings/Cargo.toml	2024-10-01 20:39:01.772929608 +0200
++++ b/gfx/wgpu_bindings/Cargo.toml	2024-10-01 20:40:10.625661528 +0200
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-core"
+ # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
+ features = ["serde", "replay", "trace", "strict_asserts", "wgsl", "api_log_info"]
+ 
+@@ -25,33 +24,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
++path = "../../../wgpu/wgpu-hal"
+ features = ["oom_panic", "device_lost_panic", "internal_error_panic"]
+ 
+ [target.'cfg(windows)'.dependencies]
+--- ./Cargo.toml	2024-10-15 07:04:56.755587291 +0200
++++ ./Cargo.toml	2024-10-15 07:07:37.576750401 +0200
+@@ -192,36 +192,43 @@
  plist = { path = "third_party/rust/plist" }
  
  # To-be-published changes.
@@ -107,15 +158,13 @@ Upstream-Status: Inappropriate [oe specific]
 +
 +[patch."https://github.com/mozilla-spidermonkey/jsparagus"]
 +jsparagus = { path = "../jsparagus" }
-+
-+[patch."https://github.com/mozilla/neqo"]
-+neqo-bin = { path = "../neqo/neqo-bin", version = "0.8.2" }
-+neqo-http3 = { path = "../neqo/neqo-http3", version = "0.8.2" }
-+neqo-common = { path = "../neqo/neqo-common", version = "0.8.2" }
-+neqo-transport = { path = "../neqo/neqo-transport", version = "0.8.2" }
-+neqo-qpack = { path = "../neqo/neqo-qpack", version = "0.8.2" }
-+neqo-crypto = { path = "../neqo/neqo-crypto", version = "0.8.2" }
-+neqo-udp = { path = "../neqo/neqo-udp", version = "0.8.2" }
+ 
+ [patch."https://github.com/mozilla/neqo"]
+ neqo-bin = { path = "third_party/rust/neqo-bin" }
+@@ -231,3 +238,30 @@
+ neqo-qpack = { path = "third_party/rust/neqo-qpack" }
+ neqo-transport = { path = "third_party/rust/neqo-transport" }
+ neqo-udp = { path = "third_party/rust/neqo-udp" }
 +
 +[patch."https://github.com/FirefoxGraphics/aa-stroke"]
 +aa-stroke = { path = "../aa-stroke"}
@@ -143,54 +192,3 @@ Upstream-Status: Inappropriate [oe specific]
 +wgpu-core = { path = "../wgpu/wgpu-core" }
 +wgpu-types = { path = "../wgpu/wgpu-types" }
 +wgpu-hal = { path = "../wgpu/wgpu-hal" }
---- a/gfx/wgpu_bindings/Cargo.toml	2024-10-01 20:39:01.772929608 +0200
-+++ b/gfx/wgpu_bindings/Cargo.toml	2024-10-01 20:40:10.625661528 +0200
-@@ -16,8 +16,7 @@
- 
- [dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-core"
- # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
- features = ["serde", "replay", "trace", "strict_asserts", "wgsl", "api_log_info"]
- 
-@@ -25,33 +24,28 @@
- # (We should consider also enabling "vulkan" for Vulkan Portability.)
- [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-core"
- features = ["metal"]
- 
- # We want the wgpu-core Direct3D backends on Windows.
- [target.'cfg(windows)'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-core"
- features = ["dx12"]
- 
- # We want the wgpu-core Vulkan backend on Linux and Windows.
- [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-core"
- features = ["vulkan"]
- 
- [dependencies.wgt]
- package = "wgpu-types"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-types"
- 
- [dependencies.wgh]
- package = "wgpu-hal"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "bbdbafdf8a947b563b46f632a778632b906d9eb4"
-+path = "../../../wgpu/wgpu-hal"
- features = ["oom_panic", "device_lost_panic", "internal_error_panic"]
- 
- [target.'cfg(windows)'.dependencies]
