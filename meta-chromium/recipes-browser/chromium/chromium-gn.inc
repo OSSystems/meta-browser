@@ -26,6 +26,7 @@ SRC_URI += "\
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-Disable-crabbyavif-to-fix-build-errors.patch \
+    file://0012-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
 "
 # ARM/AArch64-specific patches.
 SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"

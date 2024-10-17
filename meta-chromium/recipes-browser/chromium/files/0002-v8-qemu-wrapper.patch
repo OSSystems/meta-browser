@@ -29,10 +29,10 @@ index f46bec2..5438365 100644
                                            "root_out_dir") +
                                 "/v8_context_snapshot_generator",
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 19e0d2b..85d40c8 100644
+index 87b2129..384ca1c 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -2256,6 +2256,7 @@ template("run_torque") {
+@@ -2237,6 +2237,7 @@ template("run_torque") {
      }
 
      args = [
@@ -40,7 +40,7 @@ index 19e0d2b..85d40c8 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -2419,6 +2420,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2400,6 +2401,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -48,15 +48,15 @@ index 19e0d2b..85d40c8 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -2473,6 +2475,7 @@ template("run_mksnapshot") {
+@@ -2472,6 +2474,7 @@ template("run_mksnapshot") {
      }
 
-     args = [
+     args += [
 +      "./v8-qemu-wrapper.sh",
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -7452,6 +7455,7 @@ if (v8_enable_i18n_support) {
+@@ -7436,6 +7439,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
 
      args = [
