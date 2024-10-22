@@ -1,4 +1,4 @@
-From f4f50a5de596d13d18f1f9b80f83e446936a4afb Mon Sep 17 00:00:00 2001
+From 04beeabae402f02203a668b55a08a47ace41f8f4 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 16 Jan 2024 12:29:30 +0000
 Subject: [PATCH] Adjust the Rust build to our needs
@@ -19,11 +19,11 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  build/config/rust.gni            | 26 +++++++++++++++++++-------
  build/rust/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 28 +++++++++++++++++++++-------
- build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
- 4 files changed, 52 insertions(+), 19 deletions(-)
+ build/rust/std/find_std_rlibs.py | 17 ++++++++++++-----
+ 4 files changed, 53 insertions(+), 19 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index fd4c683..25fcb4e 100644
+index fd4c683442..25fcb4e147 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -97,6 +97,11 @@ declare_args() {
@@ -82,7 +82,7 @@ index fd4c683..25fcb4e 100644
  } else if (is_android) {
    import("//build/config/android/abi.gni")
 diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
-index b8e490d..d22cf08 100755
+index b8e490da27..d22cf08aad 100755
 --- a/build/rust/rustc_wrapper.py
 +++ b/build/rust/rustc_wrapper.py
 @@ -160,6 +160,7 @@ def main():
@@ -94,7 +94,7 @@ index b8e490d..d22cf08 100755
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index b9500ee..3acbdf7 100644
+index b9500eeabb..3acbdf7f94 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
 @@ -189,7 +189,8 @@ if (toolchain_has_rust) {
@@ -157,7 +157,7 @@ index b9500ee..3acbdf7 100644
        # The host builds tools toolchain supports Rust only and does not use
        # the allocator remapping to point it to PartitionAlloc.
 diff --git a/build/rust/std/find_std_rlibs.py b/build/rust/std/find_std_rlibs.py
-index 386258f..e8fdaa9 100755
+index 386258f890..3bb6a41a40 100755
 --- a/build/rust/std/find_std_rlibs.py
 +++ b/build/rust/std/find_std_rlibs.py
 @@ -17,7 +17,7 @@ import re
@@ -196,7 +196,7 @@ index 386258f..e8fdaa9 100755
 
        # Use the number of times we've seen this name to disambiguate the output
        # filenames. Since we sort the input filenames including the metadata,
-@@ -117,14 +119,18 @@ def main():
+@@ -117,14 +119,19 @@ def main():
        output_filename = f"lib{concise_name}.rlib"
 
        infile = os.path.join(rustlib_dir, f)
@@ -210,8 +210,9 @@ index 386258f..e8fdaa9 100755
 +      outfile = os.path.join(lib_output_dir, f)
        copy_file(infile, outfile)
 
-+    infile = os.path.join(os.environ['RUST_TARGET_PATH'], f'{args.target}.json')
-+    outfile = os.path.join(args.output, 'target.json')
++    f = 'target.json'
++    infile = os.path.join(rustlib_dir, '..', f)
++    outfile = os.path.join(args.output, f)
 +    copy_file(infile, outfile)
 +
      depfile.write("\n")
