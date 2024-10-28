@@ -10,18 +10,21 @@ machine: star64
 
 repos:
   meta-riscv:
-    refspec: "93bf841830f632da1bb538e03a3c719f02a0860b"
+    refspec: "dfd5001e76439234b32d2db34b34246b3f0be2af"
+    patches:
+      properties:
+        repo: meta-browser
+        path: meta-firefox/kas/riscv-patches
 
 local_conf_header:
   styhead-latest-riscv: |
     SRC_URI:star64:append:pn-u-boot-starfive = " file://0002-net-rtl8169-Fix-compile-warning-in-rtl8169.patch file://0003-video-dw_hdmi-Fix-compiler-warnings-with-gcc-14.patch "
     SRC_URI:star64:pn-linux-starfive-dev = "git://github.com/${FORK}/${REPO}.git;protocol=https;${BRANCH} file://0001-riscv-disable-generation-of-unwind-tables.patch file://0001-gcc-plugins-Rename-last_stmt-for-GCC-14.patch file://visionfive2-graphics.cfg file://modules.cfg "
-    REQUIRED_VERSION_rust = "1.76.0"
-    REQUIRED_VERSION_rust-native = "1.76.0"
-    REQUIRED_VERSION_libstd-rs = "1.76.0"
-    REQUIRED_VERSION_cargo = "1.76.0"
-    REQUIRED_VERSION_cargo-native = "1.76.0"
-    REQUIRED_VERSION_rust-llvm = "1.76.0"
-    REQUIRED_VERSION_rust-llvm-native = "1.76.0"
-    BBMASK += "poky/meta/recipes-devtools/rust"
+    REQUIRED_VERSION_rust = "1.79.0"
+    REQUIRED_VERSION_rust-native = "1.79.0"
+    REQUIRED_VERSION_libstd-rs = "1.79.0"
+    REQUIRED_VERSION_cargo = "1.79.0"
+    REQUIRED_VERSION_cargo-native = "1.79.0"
+    REQUIRED_VERSION_rust-llvm = "1.79.0"
+    REQUIRED_VERSION_rust-llvm-native = "1.79.0"
     do_install:prepend:pn-u-boot-starfive = "cp ${B}/../${UBOOT_ENV_BINARY} ${B}; "

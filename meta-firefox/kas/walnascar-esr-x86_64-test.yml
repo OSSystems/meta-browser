@@ -2,13 +2,13 @@ header:
   version: 11
   includes:
     - meta-firefox/kas/ff/esr.yml
-    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/repos/walnascar.yml
     - meta-firefox/kas/common.yml
 
 machine: qemux86-64
 
 local_conf_header:
-  styhead-esr-x86_64: |
+  walnascar-esr-x86_64: |
     REQUIRED_VERSION_rust = "1.79.0"
     REQUIRED_VERSION_rust-native = "1.79.0"
     REQUIRED_VERSION_libstd-rs = "1.79.0"

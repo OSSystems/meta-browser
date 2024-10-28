@@ -2,13 +2,19 @@ header:
   version: 11
   includes:
     - meta-firefox/kas/ff/esr.yml
-    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/repos/walnascar.yml
+    - meta-firefox/kas/repos/rpi.yml
     - meta-firefox/kas/common.yml
 
-machine: qemux86-64
+machine: raspberrypi3
 
+repos:
+  meta-rpi:
+    refspec: "d5ffe135c73ab940148e595c6fb010d50ddcfc60"
+
+# use rust version shipped with poky
 local_conf_header:
-  styhead-esr-x86_64: |
+  walnascar-esr-arm: |
     REQUIRED_VERSION_rust = "1.79.0"
     REQUIRED_VERSION_rust-native = "1.79.0"
     REQUIRED_VERSION_libstd-rs = "1.79.0"

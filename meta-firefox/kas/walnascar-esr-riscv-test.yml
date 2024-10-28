@@ -2,7 +2,7 @@ header:
   version: 11
   includes:
     - meta-firefox/kas/ff/esr.yml
-    - meta-firefox/kas/repos/styhead.yml
+    - meta-firefox/kas/repos/walnascar.yml
     - meta-firefox/kas/repos/riscv.yml
     - meta-firefox/kas/common.yml
 
@@ -10,14 +10,14 @@ machine: star64
 
 repos:
   meta-riscv:
-    refspec: "dfd5001e76439234b32d2db34b34246b3f0be2af"
+    refspec: "4b779658548197083a17269e25554ce6bddc8563"
     patches:
       properties:
         repo: meta-browser
         path: meta-firefox/kas/riscv-patches
 
 local_conf_header:
-  styhead-esr-riscv: |
+  walnascar-esr-riscv: |
     SRC_URI:star64:append:pn-u-boot-starfive = " file://0002-net-rtl8169-Fix-compile-warning-in-rtl8169.patch file://0003-video-dw_hdmi-Fix-compiler-warnings-with-gcc-14.patch "
     SRC_URI:star64:pn-linux-starfive-dev = "git://github.com/${FORK}/${REPO}.git;protocol=https;${BRANCH} file://0001-riscv-disable-generation-of-unwind-tables.patch file://0001-gcc-plugins-Rename-last_stmt-for-GCC-14.patch file://visionfive2-graphics.cfg file://modules.cfg "
     do_install:prepend:pn-u-boot-starfive = "cp ${B}/../${UBOOT_ENV_BINARY} ${B}; "
