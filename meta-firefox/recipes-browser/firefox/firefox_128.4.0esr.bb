@@ -12,7 +12,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-esr:"
 SRC_URI += "git://github.com/seanmonstar/warp;protocol=https;branch=master;name=warp;destsuffix=warp \
             git://github.com/glandium/mio;protocol=https;branch=windows-sys;name=mio;destsuffix=mio \
             git://github.com/mozilla/application-services.git;protocol=https;branch=release-v128-desktop;name=application-services;destsuffix=application-services \
-            git://github.com/mozilla/audioipc;protocol=https;branch=cherry-pick-firefox-128-129;name=audioipc;destsuffix=audioipc"
+            git://github.com/mozilla/audioipc;protocol=https;branch=cherry-pick-firefox-128-129;name=audioipc;destsuffix=audioipc \
+            git://github.com/zakarumych/gpu-descriptor;protocol=https;branch=master;name=gpu-descriptor;destsuffix=gpu-descriptor"
 
 SRC_URI[sha256sum] = "074014e1c26144e10707b12a271176a4b6b67021e91444b613edae38d188febc"
 
@@ -37,3 +38,9 @@ SRCREV_cubeb-coreaudio = "8bce3b333a920999055397a397e59c2b81a93b9a"
 
 SRCREV_FORMAT .= "_mapped_hyph"
 SRCREV_mapped_hyph = "c7651a0cffff41996ad13c44f689bd9cd2192c01"
+
+SRCREV_FORMAT .= "_aa-stroke"
+SRCREV_aa-stroke = "d94278ed9c7020f50232689a26d1277eb0eb74d2"
+
+SRCREV_FORMAT .= "_gpu-descriptor"
+SRCREV_gpu-descriptor = "7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d"

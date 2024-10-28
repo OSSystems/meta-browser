@@ -79,7 +79,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/mozilla/mp4parse-rust;protocol=https;branch=master;name=mp4parse;destsuffix=mp4parse \
            git://github.com/hsivonen/any_all_workaround;protocol=https;branch=simdsplit;name=any-all-workaround;destsuffix=any-all-workaround \
            git://github.com/franziskuskiefer/cose-rust;protocol=https;branch=master;name=cose-rust;destsuffix=cose-rust \
-           git://github.com/zakarumych/gpu-descriptor;protocol=https;branch=master;name=gpu-descriptor;destsuffix=gpu-descriptor \
            git://github.com/servo/unicode-bidi;protocol=https;branch=main;name=unicode-bidi;destsuffix=unicode-bidi \
            "
 
@@ -99,14 +98,10 @@ SRCREV_FORMAT .="_midir"
 SRCREV_midir = "85156e360a37d851734118104619f86bd18e94c6"
 SRCREV_FORMAT .= "_mp4parse"
 SRCREV_mp4parse = "a138e40ec1c603615873e524b5b22e11c0ec4820"
-SRCREV_FORMAT .= "_gpu-descriptor"
-SRCREV_gpu-descriptor = "7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d"
 SRCREV_FORMAT .= "_cubeb-pulse"
 SRCREV_cubeb-pulse = "8678dcab1c287de79c4c184ccc2e065bc62b70e2"
 SRCREV_FORMAT .= "_wpf-gpu-raster"
 SRCREV_wpf-gpu-raster = "99979da091fd58fba8477e7fcdf5ec0727102916"
-SRCREV_FORMAT .= "_aa-stroke"
-SRCREV_aa-stroke = "d94278ed9c7020f50232689a26d1277eb0eb74d2"
 SRCREV_FORMAT .= "_jsparagus"
 SRCREV_jsparagus = "61f399c53a641ebd3077c1f39f054f6d396a633c"
 SRCREV_FORMAT .= "_unicode-bidi"
@@ -153,7 +148,7 @@ PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries
 # nspr and nss dependencies are handled separately, due to requiring
 # different versions depending on Yocto version and CPU capabilities.
 PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
-PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.104,nss-3.104"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.105,nss-3.105"
 PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
 PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
 PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"
