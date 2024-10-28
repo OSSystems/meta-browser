@@ -14,6 +14,10 @@ SRC_URI += "git://github.com/mozilla/application-services.git;protocol=https;bra
             git://github.com/jamienicol/glutin;protocol=https;branch=wr;name=glutin;destsuffix=glutin \
             git://github.com/trifectatechfoundation/zlib-rs;protocol=https;branch=main;name=zlib;destsuffix=zlib"
 
+SRC_URI += '${@bb.utils.contains("LAYERSERIES_CORENAMES", "walnascar", \
+            "file://0001-fix-compiling-with-python-3.13.patch", \
+            "", d)}'
+
 SRC_URI[sha256sum] = "8908b144895b354460c6975291b75ea804b07bf9bb0ee386eafeaf3c82c55c7e"
 
 SRCREV_FORMAT .= "_application-services"

@@ -1,0 +1,26 @@
+From 29789aca5711ff097919edc19c12bd6e4fba05a5 Mon Sep 17 00:00:00 2001
+From: skandigraun <skandigraun@gmail.com>
+Date: Thu, 31 Oct 2024 17:33:33 +0100
+Subject: [PATCH] fix u-boot installation for star64
+
+---
+ recipes-bsp/u-boot/u-boot-starfive_v2021.10.bb | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/recipes-bsp/u-boot/u-boot-starfive_v2021.10.bb b/recipes-bsp/u-boot/u-boot-starfive_v2021.10.bb
+index 38c6314..1a3be15 100644
+--- a/recipes-bsp/u-boot/u-boot-starfive_v2021.10.bb
++++ b/recipes-bsp/u-boot/u-boot-starfive_v2021.10.bb
+@@ -62,6 +62,9 @@ do_deploy:append:star64() {
+     ln -sf ${SPL_IMAGE}.normal.out ${DEPLOYDIR}/${SPL_SYMLINK}.normal.out
+ }
+ 
++do_install:prepend:star64() {
++    cp ${B}/boot.scr.uimg ${B}/../
++}
+ 
+ COMPATIBLE_MACHINE = "jh7110"
+ 
+-- 
+2.39.5
+

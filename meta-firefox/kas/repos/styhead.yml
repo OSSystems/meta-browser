@@ -3,15 +3,10 @@ header:
   includes:
     - meta-firefox/kas/repos/common-repos.yml
 
-# poky is pinned to a commit, for now:
-# this is the last commit with binutils 2.42
-# The next commit bumps binutils, and ffmpeg fails to
-# compile with it.
-
 repos:
   meta-oe:
-    refspec: master
+    refspec: styhead
   poky:
-    refspec: "a1c5e16c62f26401be8f5c0673efebfa18ed5abd"
+    refspec: styhead
   meta-clang:
-    refspec: "49b031747859cc20238c07628f1b550fcf759de9"
+    refspec: "e78217ad139fc2cc4e8a3b0c9b3651f4eafdf2b6"
