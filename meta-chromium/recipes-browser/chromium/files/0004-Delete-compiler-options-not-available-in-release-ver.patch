@@ -13,10 +13,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index dfbb2ab..16f5b23 100644
+index 19b7912..6b15c5b 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1891,6 +1891,11 @@ config("default_warnings") {
+@@ -1902,6 +1902,11 @@ config("default_warnings") {
        }
 
        cflags += [

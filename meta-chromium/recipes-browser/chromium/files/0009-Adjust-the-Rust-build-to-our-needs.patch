@@ -23,7 +23,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 52 insertions(+), 19 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index fd4c683..25fcb4e 100644
+index b7e3c88..d0abc26 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -97,6 +97,11 @@ declare_args() {
@@ -38,7 +38,7 @@ index fd4c683..25fcb4e 100644
  }
 
  # Use a separate declare_args so these variables' defaults can depend on the
-@@ -184,12 +189,19 @@ if (enable_rust) {
+@@ -191,12 +196,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -61,7 +61,7 @@ index fd4c683..25fcb4e 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -198,15 +210,15 @@ if (is_linux || is_chromeos) {
+@@ -205,15 +217,15 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.

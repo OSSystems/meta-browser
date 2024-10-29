@@ -18,10 +18,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 5 insertions(+), 21 deletions(-)
 
 diff --git a/third_party/blink/renderer/platform/image-decoders/BUILD.gn b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-index 687033e..4006422 100644
+index 6668b18..761c5fe 100644
 --- a/third_party/blink/renderer/platform/image-decoders/BUILD.gn
 +++ b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-@@ -74,12 +74,9 @@ component("image_decoders") {
+@@ -76,12 +76,9 @@ component("image_decoders") {
      sources += [
        "avif/avif_image_decoder.cc",
        "avif/avif_image_decoder.h",
@@ -34,7 +34,7 @@ index 687033e..4006422 100644
        "//third_party/libavif",
        "//third_party/libavifinfo",
      ]
-@@ -121,10 +118,7 @@ source_set("unit_tests") {
+@@ -123,9 +120,6 @@ source_set("unit_tests") {
    }
 
    if (enable_av1_decoder) {
@@ -45,7 +45,6 @@ index 687033e..4006422 100644
 +    sources += [ "avif/avif_image_decoder_test.cc" ]
    }
  }
-
 diff --git a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 index f208b65..4fb788f 100644
 --- a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
