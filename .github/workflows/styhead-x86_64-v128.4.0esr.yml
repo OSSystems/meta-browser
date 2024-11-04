@@ -41,7 +41,6 @@ jobs:
                   firefox-l10n-gn           firefox-l10n-lv     firefox-l10n-sl     firefox-l10n-el     firefox-l10n-gu-in \
                   firefox-l10n-mk           firefox-l10n-son    firefox-l10n-en-ca  firefox-l10n-he     firefox-l10n-mr \
                   firefox-l10n-sq"
-         kas shell ./meta-browser/meta-firefox/kas/styhead-esr-x86_64-test.yml -c "bitbake -c clean rust rust-native cargo cargo-native libstd-rs"
          kas build ./meta-browser/meta-firefox/kas/styhead-esr-x86_64-test.yml
          rm -rf build/tmp/deploy/images/esr
          cp -r build/tmp/deploy/images/qemux86-64 build/tmp/deploy/images/esr
