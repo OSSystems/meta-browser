@@ -357,7 +357,7 @@ GN_ARGS:append:armv6 = ' arm_use_neon=false'
 GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_partition_alloc_as_malloc=false enable_backup_ref_ptr_support=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
-        ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-angle=gles-egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
 "
