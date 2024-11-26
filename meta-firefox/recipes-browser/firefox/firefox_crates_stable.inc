@@ -99,6 +99,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/crash-context/0.6.1 \
             crate://crates.io/crc32fast/1.4.2 \
             crate://crates.io/criterion/0.5.1 \
+            crate://crates.io/critical-section/1.1.3 \
             crate://crates.io/crossbeam-channel/0.5.13 \
             crate://crates.io/crossbeam-deque/0.8.2 \
             crate://crates.io/crossbeam-epoch/0.9.14 \
@@ -144,7 +145,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/either/1.9.0 \
             crate://crates.io/encoding_c_mem/0.2.6 \
             crate://crates.io/encoding_c/0.9.8 \
-            crate://crates.io/encoding_rs/0.8.34 \
+            crate://crates.io/encoding_rs/0.8.35 \
             crate://crates.io/embed-manifest/1.4.0 \
             crate://crates.io/enum-map/2.7.3 \
             crate://crates.io/enum-map-derive/0.17.0 \
@@ -339,7 +340,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/objc/0.2.7 \
             crate://crates.io/object/0.36.5 \
             crate://crates.io/ohttp/0.5.3 \
-            crate://crates.io/once_cell/1.19.0 \
+            crate://crates.io/once_cell/1.20.2 \
             crate://crates.io/oneshot-uniffi/0.1.6 \
             crate://crates.io/ordered-float/3.4.0 \
             crate://crates.io/origin-trial-token/0.1.1 \
@@ -367,6 +368,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/plain/0.2.3 \
             crate://crates.io/plane-split/0.18.0 \
             crate://crates.io/plist/1.3.1 \
+            crate://crates.io/portable-atomic/1.8.0 \
             crate://crates.io/postcard/1.0.1 \
             crate://crates.io/powerfmt/0.2.0 \
             crate://crates.io/ppv-lite86/0.2.17 \
@@ -431,7 +433,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/scopeguard/1.1.0 \
             crate://crates.io/scroll_derive/0.12.0 \
             crate://crates.io/scroll/0.12.0 \
-            crate://crates.io/selectors/0.25.0 \
+            crate://crates.io/selectors/0.26.0 \
             crate://crates.io/self_cell/0.10.2 \
             crate://crates.io/semver/1.0.16 \
             crate://crates.io/serde_bytes/0.11.9 \
@@ -474,13 +476,14 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/syn/1.0.109 \
             crate://crates.io/syn/2.0.68 \
             crate://crates.io/synstructure/0.13.1 \
+            crate://crates.io/sys-locale/0.3.1 \
             crate://crates.io/tempfile/3.9.0 \
             crate://crates.io/termcolor/1.4.1 \
             crate://crates.io/terminal_size/0.2.1 \
             crate://crates.io/textwrap/0.16.1 \
             crate://crates.io/thin-vec/0.2.12 \
-            crate://crates.io/thiserror-impl/1.0.63 \
-            crate://crates.io/thiserror/1.0.63 \
+            crate://crates.io/thiserror-impl/1.0.64 \
+            crate://crates.io/thiserror/1.0.64 \
             crate://crates.io/threadbound/0.1.5 \
             crate://crates.io/time-core/0.1.2 \
             crate://crates.io/time-macros/0.2.18 \
@@ -519,16 +522,16 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/unicode-linebreak/0.1.5 \
             crate://crates.io/unicode-normalization/0.1.22 \
             crate://crates.io/unicode-width/0.1.10 \
-            crate://crates.io/unicode-xid/0.2.5 \
-            crate://crates.io/uniffi_bindgen/0.28.1 \
-            crate://crates.io/uniffi_build/0.28.1 \
-            crate://crates.io/uniffi_checksum_derive/0.28.1 \
-            crate://crates.io/uniffi_core/0.28.1 \
-            crate://crates.io/uniffi_macros/0.28.1 \
-            crate://crates.io/uniffi_meta/0.28.1 \
-            crate://crates.io/uniffi_testing/0.28.1 \
-            crate://crates.io/uniffi_udl/0.28.1 \
-            crate://crates.io/uniffi/0.28.0 \
+            crate://crates.io/unicode-xid/0.2.6 \
+            crate://crates.io/uniffi_bindgen/0.28.2 \
+            crate://crates.io/uniffi_build/0.28.2 \
+            crate://crates.io/uniffi_checksum_derive/0.28.2 \
+            crate://crates.io/uniffi_core/0.28.2 \
+            crate://crates.io/uniffi_macros/0.28.2 \
+            crate://crates.io/uniffi_meta/0.28.2 \
+            crate://crates.io/uniffi_testing/0.28.2 \
+            crate://crates.io/uniffi_udl/0.28.2 \
+            crate://crates.io/uniffi/0.28.2 \
             crate://crates.io/unix_path/1.0.1 \
             crate://crates.io/unix_str/1.0.0 \
             crate://crates.io/url/2.5.1 \
@@ -546,7 +549,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/wasmparser/0.216.0 \
             crate://crates.io/wast/214.0.0 \
             crate://crates.io/wat/1.214.0 \
-            crate://crates.io/webrtc-sdp/0.3.11 \
+            crate://crates.io/webrtc-sdp/0.3.13 \
             crate://crates.io/weedle2/5.0.0 \
             crate://crates.io/wgpu-core/22.0.0 \
             crate://crates.io/wgpu-hal/22.0.0 \
@@ -688,6 +691,7 @@ SRC_URI[cpufeatures-0.2.8.sha256sum] = "03e69e28e9f7f77debdedbaafa2866e1de9ba56d
 SRC_URI[crash-context-0.6.1.sha256sum] = "b85cef661eeca0c6675116310936972c520ebb0a33ddef16fd7efc957f4c1288"
 SRC_URI[crc32fast-1.4.2.sha256sum] = "a97769d94ddab943e4510d138150169a2758b5ef3eb191a9ee688de3e23ef7b3"
 SRC_URI[criterion-0.5.1.sha256sum] = "f2b12d017a929603d80db1831cd3a24082f8137ce19c69e6447f54f5fc8d692f"
+SRC_URI[critical-section-1.1.3.sha256sum] = "f64009896348fc5af4222e9cf7d7d82a95a256c634ebcf61c53e4ea461422242"
 SRC_URI[crossbeam-channel-0.5.13.sha256sum] = "33480d6946193aa8033910124896ca395333cae7e2d1113d1fef6c3272217df2"
 SRC_URI[crossbeam-deque-0.8.2.sha256sum] = "715e8152b692bba2d374b53d4875445368fdf21a94751410af607a5ac677d1fc"
 SRC_URI[crossbeam-epoch-0.9.14.sha256sum] = "46bd5f3f85273295a9d14aedfb86f6aadbff6d8f5295c4a9edb08e819dcf5695"
@@ -734,7 +738,7 @@ SRC_URI[either-1.9.0.sha256sum] = "a26ae43d7bcc3b814de94796a5e736d4029efb0ee900c
 SRC_URI[embed-manifest-1.4.0.sha256sum] = "41cd446c890d6bed1d8b53acef5f240069ebef91d6fae7c5f52efe61fe8b5eae"
 SRC_URI[encoding_c_mem-0.2.6.sha256sum] = "3a80a16821fe8c7cab96e0c67b57cd7090e021e9615e6ce6ab0cf866c44ed1f0"
 SRC_URI[encoding_c-0.9.8.sha256sum] = "9af727805f3b0d79956bde5b35732669fb5c5d45a94893798e7b7e70cfbf9cc1"
-SRC_URI[encoding_rs-0.8.34.sha256sum] = "b45de904aa0b010bce2ab45264d0631681847fa7b6f2eaa7dab7619943bc4f59"
+SRC_URI[encoding_rs-0.8.35.sha256sum] = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
 SRC_URI[enum-map-2.7.3.sha256sum] = "6866f3bfdf8207509a033af1a75a7b08abda06bbaaeae6669323fd5a097df2e9"
 SRC_URI[enum-map-derive-0.17.0.sha256sum] = "f282cfdfe92516eb26c2af8589c274c7c17681f5ecc03c18255fe741c6aa64eb"
 SRC_URI[enum-primitive-derive-0.2.2.sha256sum] = "c375b9c5eadb68d0a6efee2999fef292f45854c3444c86f09d8ab086ba942b0e"
@@ -928,7 +932,7 @@ SRC_URI[num-traits-0.2.19.sha256sum] = "071dfc062690e90b734c0b2273ce72ad0ffa95f0
 SRC_URI[objc-0.2.7.sha256sum] = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
 SRC_URI[object-0.36.5.sha256sum] = "aedf0a2d09c573ed1d8d85b30c119153926a2b36dce0ab28322c09a117a4683e"
 SRC_URI[ohttp-0.5.3.sha256sum] = "4ea87785aa505c77b1447f9092b1bd583402bc5d986f8f36c7963df17eef9c8f"
-SRC_URI[once_cell-1.19.0.sha256sum] = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+SRC_URI[once_cell-1.20.2.sha256sum] = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 SRC_URI[oneshot-uniffi-0.1.6.sha256sum] = "6c548d5c78976f6955d72d0ced18c48ca07030f7a1d4024529fedd7c1c01b29c"
 SRC_URI[ordered-float-3.4.0.sha256sum] = "d84eb1409416d254e4a9c8fa56cc24701755025b458f0fcd8e59e1f5f40c23bf"
 SRC_URI[origin-trial-token-0.1.1.sha256sum] = "94cb60fca11d2efd72ab0e0ad0298089307a15b14313178416a96476dbea4550"
@@ -956,6 +960,7 @@ SRC_URI[pkg-config-0.3.26.sha256sum] = "6ac9a59f73473f1b8d852421e59e64809f025994
 SRC_URI[plain-0.2.3.sha256sum] = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 SRC_URI[plane-split-0.18.0.sha256sum] = "8c1f7d82649829ecdef8e258790b0587acf0a8403f0ce963473d8e918acc1643"
 SRC_URI[plist-1.3.1.sha256sum] = "bd39bc6cdc9355ad1dc5eeedefee696bb35c34caf21768741e81826c0bbd7225"
+SRC_URI[portable-atomic-1.8.0.sha256sum] = "d30538d42559de6b034bc76fd6dd4c38961b1ee5c6c56e3808c50128fdbc22ce"
 SRC_URI[postcard-1.0.1.sha256sum] = "41f5465c5e5a38e04552d8fb53ebcf4f58124ab3bbd0c02add043b33f82792e5"
 SRC_URI[powerfmt-0.2.0.sha256sum] = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
 SRC_URI[ppv-lite86-0.2.17.sha256sum] = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
@@ -1019,7 +1024,7 @@ SRC_URI[scoped-tls-1.0.1.sha256sum] = "e1cf6437eb19a8f4a6cc0f7dca544973b0b78843a
 SRC_URI[scopeguard-1.1.0.sha256sum] = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 SRC_URI[scroll_derive-0.12.0.sha256sum] = "7f81c2fde025af7e69b1d1420531c8a8811ca898919db177141a85313b1cb932"
 SRC_URI[scroll-0.12.0.sha256sum] = "6ab8598aa408498679922eff7fa985c25d58a90771bd6be794434c5277eab1a6"
-SRC_URI[selectors-0.25.0.sha256sum] = "4eb30575f3638fc8f6815f448d50cb1a2e255b0897985c8c59f4d37b72a07b06"
+SRC_URI[selectors-0.26.0.sha256sum] = "fd568a4c9bb598e291a08244a5c1f5a8a6650bee243b5b0f8dbb3d9cc1d87fe8"
 SRC_URI[self_cell-0.10.2.sha256sum] = "1ef965a420fe14fdac7dd018862966a4c14094f900e1650bbc71ddd7d580c8af"
 SRC_URI[semver-1.0.16.sha256sum] = "58bc9567378fc7690d6b2addae4e60ac2eeea07becb2c64b9f218b53865cba2a"
 SRC_URI[serde_bytes-0.11.9.sha256sum] = "416bda436f9aab92e02c8e10d49a15ddd339cea90b6e340fe51ed97abb548294"
@@ -1062,13 +1067,14 @@ SRC_URI[svg_fmt-0.4.1.sha256sum] = "8fb1df15f412ee2e9dfc1c504260fa695c1c3f10fe9f
 SRC_URI[synstructure-0.13.1.sha256sum] = "c8af7666ab7b6390ab78131fb5b0fce11d6b7a6951602017c35fa82800708971"
 SRC_URI[syn-1.0.109.sha256sum] = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
 SRC_URI[syn-2.0.68.sha256sum] = "901fa70d88b9d6c98022e23b4136f9f3e54e4662c3bc1bd1d84a42a9a0f0c1e9"
+SRC_URI[sys-locale-0.3.1.sha256sum] = "e801cf239ecd6ccd71f03d270d67dd53d13e90aab208bf4b8fe4ad957ea949b0"
 SRC_URI[tempfile-3.9.0.sha256sum] = "01ce4141aa927a6d1bd34a041795abd0db1cccba5d5f24b009f694bdf3a1f3fa"
 SRC_URI[termcolor-1.4.1.sha256sum] = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 SRC_URI[terminal_size-0.2.1.sha256sum] = "8440c860cf79def6164e4a0a983bcc2305d82419177a0e0c71930d049e3ac5a1"
 SRC_URI[textwrap-0.16.1.sha256sum] = "23d434d3f8967a09480fb04132ebe0a3e088c173e6d0ee7897abbdf4eab0f8b9"
 SRC_URI[thin-vec-0.2.12.sha256sum] = "aac81b6fd6beb5884b0cf3321b8117e6e5d47ecb6fc89f414cfdcca8b2fe2dd8"
-SRC_URI[thiserror-impl-1.0.63.sha256sum] = "a4558b58466b9ad7ca0f102865eccc95938dca1a74a856f2b57b6629050da261"
-SRC_URI[thiserror-1.0.63.sha256sum] = "c0342370b38b6a11b6cc11d6a805569958d54cfa061a29969c3b5ce2ea405724"
+SRC_URI[thiserror-impl-1.0.64.sha256sum] = "08904e7672f5eb876eaaf87e0ce17857500934f4981c4a0ab2b4aa98baac7fc3"
+SRC_URI[thiserror-1.0.64.sha256sum] = "d50af8abc119fb8bb6dbabcfa89656f46f84aa0ac7688088608076ad2b459a84"
 SRC_URI[threadbound-0.1.5.sha256sum] = "06638f039e6c49cd649d92e0e792f665d088bece8eba4c99c6fdfc2776b4ddb0"
 SRC_URI[time-core-0.1.2.sha256sum] = "ef927ca75afb808a4d64dd374f00a2adf8d0fcff8e7b184af886c3c87ec4a3f3"
 SRC_URI[time-macros-0.2.18.sha256sum] = "3f252a68540fde3a3877aeea552b832b40ab9a69e318efd078774a01ddee1ccf"
@@ -1107,16 +1113,16 @@ SRC_URI[unicode-ident-1.0.6.sha256sum] = "84a22b9f218b40614adcb3f4ff08b703773ad4
 SRC_URI[unicode-linebreak-0.1.5.sha256sum] = "3b09c83c3c29d37506a3e260c08c03743a6bb66a9cd432c6934ab501a190571f"
 SRC_URI[unicode-normalization-0.1.22.sha256sum] = "5c5713f0fc4b5db668a2ac63cdb7bb4469d8c9fed047b1d0292cc7b0ce2ba921"
 SRC_URI[unicode-width-0.1.10.sha256sum] = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
-SRC_URI[unicode-xid-0.2.5.sha256sum] = "229730647fbc343e3a80e463c1db7f78f3855d3f3739bee0dda773c9a037c90a"
-SRC_URI[uniffi_bindgen-0.28.1.sha256sum] = "7a112599c9556d1581e4a3d72019a74c2c3e122cc27f4af12577a429c4d5e614"
-SRC_URI[uniffi_build-0.28.1.sha256sum] = "e2b12684401d2a8508ca9c72a95bbc45906417e42fc80942abaf033bbf01aa33"
-SRC_URI[uniffi_checksum_derive-0.28.1.sha256sum] = "a22dbe67c1c957ac6e7611bdf605a6218aa86b0eebeb8be58b70ae85ad7d73dc"
-SRC_URI[uniffi_core-0.28.1.sha256sum] = "5a0c35aaad30e3a9e6d4fe34e358d64dbc92ee09045b48591b05fc9f12e0905b"
-SRC_URI[uniffi_macros-0.28.1.sha256sum] = "db66474c5c61b0f7afc3b4995fecf9b72b340daa5ca0ef3da7778d75eb5482ea"
-SRC_URI[uniffi_meta-0.28.1.sha256sum] = "d898893f102e0e39b8bcb7e3d2188f4156ba280db32db9e8af1f122d057e9526"
-SRC_URI[uniffi_testing-0.28.1.sha256sum] = "2c6aa4f0cf9d12172d84fc00a35a6c1f3522b526daad05ae739f709f6941b9b6"
-SRC_URI[uniffi_udl-0.28.1.sha256sum] = "6b044e9c519e0bb51e516ab6f6d8f4f4dcf900ce30d5ad07c03f924e2824f28e"
-SRC_URI[uniffi-0.28.0.sha256sum] = "f31bff6daf87277a9014bcdefbc2842b0553392919d1096843c5aad899ca4588"
+SRC_URI[unicode-xid-0.2.6.sha256sum] = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+SRC_URI[uniffi_bindgen-0.28.2.sha256sum] = "5e9f25730c9db2e878521d606f54e921edb719cdd94d735e7f97705d6796d024"
+SRC_URI[uniffi_build-0.28.2.sha256sum] = "88dba57ac699bd8ec53d6a352c8dd0e479b33f698c5659831bb1e4ce468c07bd"
+SRC_URI[uniffi_checksum_derive-0.28.2.sha256sum] = "d2c801f0f05b06df456a2da4c41b9c2c4fdccc6b9916643c6c67275c4c9e4d07"
+SRC_URI[uniffi_core-0.28.2.sha256sum] = "61049e4db6212d0ede80982adf0e1d6fa224e6118387324c5cfbe3083dfb2252"
+SRC_URI[uniffi_macros-0.28.2.sha256sum] = "b40fd2249e0c5dcbd2bfa3c263db1ec981f7273dca7f4132bf06a272359a586c"
+SRC_URI[uniffi_meta-0.28.2.sha256sum] = "c9ad57039b4fafdbf77428d74fff40e0908e5a1731e023c19cfe538f6d4a8ed6"
+SRC_URI[uniffi_testing-0.28.2.sha256sum] = "21fa171d4d258dc51bbd01893cc9608c1b62273d2f9ea55fb64f639e77824567"
+SRC_URI[uniffi_udl-0.28.2.sha256sum] = "f52299e247419e7e2934bef2f94d7cccb0e6566f3248b1d48b160d8f369a2668"
+SRC_URI[uniffi-0.28.2.sha256sum] = "51ce6280c581045879e11b400bae14686a819df22b97171215d15549efa04ddb"
 SRC_URI[unix_path-1.0.1.sha256sum] = "af8e291873ae77c4c8d9c9b34d0bee68a35b048fb39c263a5155e0e353783eaf"
 SRC_URI[unix_str-1.0.0.sha256sum] = "2ace0b4755d0a2959962769239d56267f8a024fef2d9b32666b3dcd0946b0906"
 SRC_URI[url-2.5.1.sha256sum] = "f7c25da092f0a868cdf09e8674cd3b7ef3a7d92a24253e663a2fb85e2496de56"
@@ -1134,7 +1140,7 @@ SRC_URI[wasm-smith-0.214.0.sha256sum] = "ffe5856b6e06e8d37dad11167111e49339a5b01
 SRC_URI[wasmparser-0.216.0.sha256sum] = "bcdee6bea3619d311fb4b299721e89a986c3470f804b6d534340e412589028e3"
 SRC_URI[wast-214.0.0.sha256sum] = "694bcdb24c49c8709bd8713768b71301a11e823923eee355d530f1d8d0a7f8e9"
 SRC_URI[wat-1.214.0.sha256sum] = "347249eb56773fa728df2656cfe3a8c19437ded61a922a0b5e0839d9790e278e"
-SRC_URI[webrtc-sdp-0.3.11.sha256sum] = "c7351fba122c7f6566779efdef49d2213e842f69fa1c654eef1fd9301f425064"
+SRC_URI[webrtc-sdp-0.3.13.sha256sum] = "a87d58624aae43577604ea137de9dcaf92793eccc4d816efad482001c2e055ca"
 SRC_URI[weedle2-5.0.0.sha256sum] = "998d2c24ec099a87daf9467808859f9d82b61f1d9c9701251aea037f514eae0e"
 SRC_URI[wgpu-core-22.0.0.sha256sum] = "e0f191908a21968991463fcf3b42cb6c9648c0fb7fa301b8fc733bc21a9ed9bd"
 SRC_URI[wgpu-hal-22.0.0.sha256sum] = "f6bbf4b4de8b2a83c0401d9e5ae0080a2792055f25859a02bf9be97952bbed4f"
