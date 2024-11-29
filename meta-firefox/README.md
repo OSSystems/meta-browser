@@ -38,12 +38,12 @@ Due to this, Rust 1.76 recipes are also shipped as part of this layer (original 
 
 Unfortunately this needs some caution when it comes to the Rust version used, and its provider. Testing is performed using the following combinations:
 
-| Yocto/FF version | ESR | Latest |
-| ---------------- | ---- | ----- |
-| Kirkstone | Rust 1.78 from meta-rust (along with adding rust from oe-core to BBMASK) | Rust 1.78 from meta-rust (along with adding rust from oe-core to BBMASK) |
-| Scarthgap | Rust 1.76 shipped with this layer (along with adding rust oe-core to BBMASK) | Rust 1.76 shipped with this layer (along with adding rust oe-core to BBMASK) |
-| Styhead | Rust 1.79 from oe-core | Rust 1.79 from oe-core |
-| Walnascar | Rust 1.79 from oe-core | Rust 1.79 from oe-core |
+| Yocto version | Rust version |
+| ---------------- | ----- |
+| Kirkstone | Rust 1.78 from meta-rust (along with adding rust from oe-core to BBMASK) |
+| Scarthgap | Rust 1.76 shipped with this layer (along with adding rust oe-core to BBMASK) |
+| Styhead | Rust 1.79 from oe-core |
+| Walnascar | Rust 1.80.1 from oe-core |
 
 Based on my testing, some datalayouts has changed in Rust 1.76, which also made it necessary to change them for Arm achitectures, by adding the following to local.conf:
 
