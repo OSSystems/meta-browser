@@ -9,15 +9,22 @@ on:
 
 jobs:
   build-walnascar-riscv-latest:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
     environment: ff-build-env
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: workspace/walnascar/meta-browser
-          ref: ${{ github.ref }}
       - run: |
-         cd workspace/walnascar
+         if [ -e /yocto/test-images/walnascar-riscv-latest.wic.gz ]; then
+           exit 0
+         fi
+         mkdir -p /yocto/walnascar
+         cd /yocto/walnascar
+         rm -rf meta-browser
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
          kas checkout --update ./meta-browser/meta-firefox/kas/walnascar-latest-riscv-test.yml
          kas shell ./meta-browser/meta-firefox/kas/walnascar-latest-riscv-test.yml -c "bitbake -c clean firefox firefox-test-image \
                   firefox-l10n-ach          firefox-l10n-en-gb  firefox-l10n-hi-in  firefox-l10n-ms     firefox-l10n-sr \
@@ -42,7 +49,5 @@ jobs:
                   firefox-l10n-mk           firefox-l10n-son    firefox-l10n-en-ca  firefox-l10n-he     firefox-l10n-mr \
                   firefox-l10n-sq"
          kas build ./meta-browser/meta-firefox/kas/walnascar-latest-riscv-test.yml
-         if [ ! -e ~/test-images/walnascar-riscv-latest.wic.gz ]; then
-           mv build/tmp/deploy/images/star64/firefox-test-image-star64.rootfs-*.wic.gz ~/test-images/walnascar-riscv-latest.wic.gz
-           mv build/tmp/deploy/images/star64/firefox-test-image-star64.rootfs-*.wic.bmap ~/test-images/walnascar-riscv-latest.wic.bmap
-         fi
+         mv build/tmp/deploy/images/star64/firefox-test-image-star64.rootfs-*.wic.gz /yocto/test-images/walnascar-riscv-latest.wic.gz
+         mv build/tmp/deploy/images/star64/firefox-test-image-star64.rootfs-*.wic.bmap /yocto/test-images/walnascar-riscv-latest.wic.bmap

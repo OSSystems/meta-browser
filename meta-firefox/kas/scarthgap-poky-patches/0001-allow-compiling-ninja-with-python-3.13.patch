@@ -1,0 +1,69 @@
+From 5868f36f5896d2f04290946396c9c2bbc78f8997 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Fri, 29 Nov 2024 19:10:35 +0100
+Subject: [PATCH] allow compiling ninja with python 3.13
+
+---
+ ...001-allow-compiling-with-python-3.13.patch | 35 +++++++++++++++++++
+ meta/recipes-devtools/ninja/ninja_1.11.1.bb   |  3 +-
+ 2 files changed, 37 insertions(+), 1 deletion(-)
+ create mode 100644 meta/recipes-devtools/ninja/files/0001-allow-compiling-with-python-3.13.patch
+
+diff --git a/meta/recipes-devtools/ninja/files/0001-allow-compiling-with-python-3.13.patch b/meta/recipes-devtools/ninja/files/0001-allow-compiling-with-python-3.13.patch
+new file mode 100644
+index 0000000000..93e0c3afe6
+--- /dev/null
++++ b/meta/recipes-devtools/ninja/files/0001-allow-compiling-with-python-3.13.patch
+@@ -0,0 +1,35 @@
++From 2e039436877d3a91d798d862c0bcc8ecb872aadf Mon Sep 17 00:00:00 2001
++From: Gyorgy Sarvari <skandigraun@gmail.com>
++Date: Fri, 29 Nov 2024 19:07:10 +0100
++Subject: [PATCH] allow compiling with python 3.13
++
++Upstream-Status: Inappropriate
++---
++ configure.py | 4 ++--
++ 1 file changed, 2 insertions(+), 2 deletions(-)
++
++diff --git a/configure.py b/configure.py
++index 43904349..c80a43b6 100755
++--- a/configure.py
+++++ b/configure.py
++@@ -23,7 +23,7 @@ from __future__ import print_function
++ 
++ from optparse import OptionParser
++ import os
++-import pipes
+++import shlex
++ import string
++ import subprocess
++ import sys
++@@ -264,7 +264,7 @@ n.variable('configure_args', ' '.join(configure_args))
++ env_keys = set(['CXX', 'AR', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS'])
++ configure_env = dict((k, os.environ[k]) for k in os.environ if k in env_keys)
++ if configure_env:
++-    config_str = ' '.join([k + '=' + pipes.quote(configure_env[k])
+++    config_str = ' '.join([k + '=' + shlex.quote(configure_env[k])
++                            for k in configure_env])
++     n.variable('configure_env', config_str + '$ ')
++ n.newline()
++-- 
++2.47.1
++
+diff --git a/meta/recipes-devtools/ninja/ninja_1.11.1.bb b/meta/recipes-devtools/ninja/ninja_1.11.1.bb
+index 8e297ec4d4..1f7df0952b 100644
+--- a/meta/recipes-devtools/ninja/ninja_1.11.1.bb
++++ b/meta/recipes-devtools/ninja/ninja_1.11.1.bb
+@@ -8,7 +8,8 @@ DEPENDS = "re2c-native ninja-native"
+ 
+ SRCREV = "a524bf3f6bacd1b4ad85d719eed2737d8562f27a"
+ 
+-SRC_URI = "git://github.com/ninja-build/ninja.git;branch=release;protocol=https"
++SRC_URI = "git://github.com/ninja-build/ninja.git;branch=release;protocol=https \
++           file://0001-allow-compiling-with-python-3.13.patch"
+ UPSTREAM_CHECK_GITTAGREGEX = "v(?P<pver>.*)"
+ 
+ S = "${WORKDIR}/git"
+-- 
+2.47.1
+

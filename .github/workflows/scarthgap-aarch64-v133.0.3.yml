@@ -9,15 +9,22 @@ on:
 
 jobs:
   build-scarthgap-aarch64-latest:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
     environment: ff-build-env
     steps:
-      - uses: actions/checkout@v4
-        with:
-          path: workspace/scarthgap/meta-browser
-          ref: ${{ github.ref }}
       - run: |
-         cd workspace/scarthgap
+         if [ -e /yocto/test-images/scarthgap-aarch64-latest.wic.bz2 ]; then
+           exit 0
+         fi
+         mkdir -p /yocto/scarthgap
+         cd /yocto/scarthgap
+         rm -rf meta-browser
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
          kas checkout --update ./meta-browser/meta-firefox/kas/scarthgap-latest-aarch64-test.yml
          kas shell ./meta-browser/meta-firefox/kas/scarthgap-latest-aarch64-test.yml -c "bitbake -c clean firefox firefox-test-image \
                   firefox-l10n-ach          firefox-l10n-en-gb  firefox-l10n-hi-in  firefox-l10n-ms     firefox-l10n-sr \
@@ -43,7 +50,5 @@ jobs:
                   firefox-l10n-sq"
          kas shell ./meta-browser/meta-firefox/kas/scarthgap-latest-aarch64-test.yml -c "bitbake -c clean rust-native cargo cargo-native libstd-rs rust-llvm-native"
          kas build ./meta-browser/meta-firefox/kas/scarthgap-latest-aarch64-test.yml
-         if [ ! -e ~/test-images/scarthgap-aarch64-latest.wic.bz2 ]; then
-           mv build/tmp/deploy/images/raspberrypi3-64/firefox-test-image-raspberrypi3-64.rootfs-*.wic.bz2 ~/test-images/scarthgap-aarch64-latest.wic.bz2
-           mv build/tmp/deploy/images/raspberrypi3-64/firefox-test-image-raspberrypi3-64.rootfs-*.wic.bmap ~/test-images/scarthgap-aarch64-latest.wic.bmap
-         fi
+         mv build/tmp/deploy/images/raspberrypi3-64/firefox-test-image-raspberrypi3-64.rootfs-*.wic.bz2 /yocto/test-images/scarthgap-aarch64-latest.wic.bz2
+         mv build/tmp/deploy/images/raspberrypi3-64/firefox-test-image-raspberrypi3-64.rootfs-*.wic.bmap /yocto/test-images/scarthgap-aarch64-latest.wic.bmap

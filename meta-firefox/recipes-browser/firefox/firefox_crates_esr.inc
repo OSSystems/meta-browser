@@ -445,7 +445,7 @@ SRC_URI += "crate://crates.io/adler/1.0.2 \
             crate://crates.io/yaml-rust/0.4.5 \
             crate://crates.io/zeitstempel/0.1.1 \
             crate://crates.io/zerofrom/0.1.3 \
-            crate://crates.op/zerovec/0.10.4 \
+            crate://crates.io/zerovec/0.10.4 \
             crate://crates.io/zerovec-derive/0.10.2 \
             crate://crates.io/zip/0.6.4 \
            "
