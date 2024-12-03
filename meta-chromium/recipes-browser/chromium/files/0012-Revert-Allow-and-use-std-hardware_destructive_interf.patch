@@ -43,7 +43,7 @@ index 18fd272..20dc7d9 100644
        std::initializer_list<Entry> data_;
    bool is_sorted_;
 diff --git a/styleguide/c++/c++-features.md b/styleguide/c++/c++-features.md
-index 50da4b1..020666f 100644
+index bb61898..f4cd91a 100644
 --- a/styleguide/c++/c++-features.md
 +++ b/styleguide/c++/c++-features.md
 @@ -574,6 +574,35 @@ Overlaps with utilities in `base/strings/string_number_conversions.h`, which are
