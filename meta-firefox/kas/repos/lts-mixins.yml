@@ -1,0 +1,8 @@
+header:
+  version: 11
+
+repos:
+  meta-lts-mixins:
+    url: https://git.yoctoproject.org/git/meta-lts-mixins
+    layers:
+      .:

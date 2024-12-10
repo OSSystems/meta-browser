@@ -22,26 +22,35 @@ OpenEmbedded/Yocto BSP layer for Firefox Browser
 This layer provides web browser recipes for use with OpenEmbedded
 and/or Yocto.
 
-##Dependencies
+## Dependencies
 
-This layer depends on poky, meta-oe, meta-clang and meta-rust (only for Kirkstone). To see the tested revision/release
-combinations, see the contents of the `kas` folder - that contains all the branch/revision information used for
-testing.
+This layer depends on oe-core (poky), meta-oe and meta-clang. Additionally, the Rust version
+shipped with Kirkstone and Scarthgap oe-core is out of date, which can be remediated by other
+third-party layers: when using Kirkstone either meta-rust or meta-lts-mixins (kirkstone/rust
+branch) is required, and when using Scarthgap, meta-lts-mixins (scarthgap/rust branch) is
+recommended. (The Rust-providing layers are not enforced currently, since there are multiple
+actively maintained layers. Use the one that works the best for the rest of your project.)
 
-`meta-clang` layer requires `libstdc++` to be installed on the build machine - make sure to install it, in case it is missing 
-(e.g. on Debian based systems install `libstdc++-dev` or on Fedora install `libstdc++-devel`)
+For the tested revision/release combinations, see the contents of the `kas` folder - that 
+contains all the branch/revision information used for testing.
+
+`meta-clang` layer requires `libstdc++` to be installed on the build machine - make sure to 
+install it, in case it is missing  (e.g. on Debian based systems install `libstdc++-dev` or
+on Fedora install `libstdc++-devel`)
 
 Note: Make sure to add `RUST_PANIC_STRATEGY = "abort"` to local.conf before compiling Rust.
 
-Note: Firefox requires at least Rust 1.76 starting from version 127. meta-rust layer provides 1.78, however this layer is not compatible with Scarthgap (nor newer).
-Due to this, Rust 1.76 recipes are also shipped as part of this layer (original Scarthgap recipes for Rust 1.75 adapted for the newer version). 
+Note: Firefox requires at least Rust 1.76 starting from version 127. meta-rust layer provides
+1.78, however this layer is not compatible with Scarthgap (nor newer). Fortunately lately a
+meta-lts-mixins layer has been created with a more up to date version of Rust, for Scarthgap.
 
-Unfortunately this needs some caution when it comes to the Rust version used, and its provider. Testing is performed using the following combinations:
+The state of Rust needs some caution when it comes to the the version used, and its provider.
+Testing is performed using the following combinations:
 
 | Yocto version | Rust version |
 | ---------------- | ----- |
-| Kirkstone | Rust 1.78 from meta-rust (along with adding rust from oe-core to BBMASK) |
-| Scarthgap | Rust 1.76 shipped with this layer (along with adding rust oe-core to BBMASK) |
+| Kirkstone | Rust 1.78 from meta-rust |
+| Scarthgap | Rust 1.80.1 from meta-lts-mixins (scarthgap/rust branch) |
 | Styhead | Rust 1.79 from oe-core |
 | Walnascar | Rust 1.80.1 from oe-core |
 
