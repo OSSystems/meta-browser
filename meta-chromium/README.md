@@ -30,7 +30,7 @@ post to the list). Please cc the maintainers if you send your patches.
 ## Maintainers
 
 * Fabio Berton <fabio.berton@ossystems.com.br>
-* Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+* Raphael Kubo da Costa <kubo@igalia.com>
 * Khem Raj <raj.khem@gmail.com>
 * Otavio Salvador <otavio@ossystems.com.br>
 * Max Ihlenfeldt <max@igalia.com>

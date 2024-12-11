@@ -1,5 +1,5 @@
 From 733559e6f2c26ccbce97354a2341b14c63563dab Mon Sep 17 00:00:00 2001
-From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+From: Raphael Kubo da Costa <kubo@igalia.com>
 Date: Tue, 7 Nov 2017 15:24:32 +0100
 Subject: [PATCH] v8: qemu wrapper
 
@@ -8,7 +8,7 @@ QEMU, as they are built for the target.
 
 Upstream-Status: Inappropriate [embedder specific]
 
-Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Signed-off-by: Raphael Kubo da Costa <kubo@igalia.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 
 ---

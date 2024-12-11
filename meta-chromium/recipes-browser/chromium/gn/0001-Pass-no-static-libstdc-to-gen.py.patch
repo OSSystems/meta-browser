@@ -8,7 +8,7 @@ Upstream-Status: Inappropriate
 GN requires libstdc++.a to be installed on host systems by default,
 which is often not very common, for no particular reason.
 
-Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Signed-off-by: Raphael Kubo da Costa <kubo@igalia.com>
 Signed-off-by: Maksim Sisov <msisov@igalia.com>
 ---
  tools/gn/bootstrap/bootstrap.py | 1 +

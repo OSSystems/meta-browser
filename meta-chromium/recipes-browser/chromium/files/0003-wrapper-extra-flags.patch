@@ -1,5 +1,5 @@
 From 1d75677445177bc9c16bb7d0fae607d0c5e82c0a Mon Sep 17 00:00:00 2001
-From: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+From: Raphael Kubo da Costa <kubo@igalia.com>
 Date: Wed, 8 Nov 2017 16:43:47 +0100
 Subject: [PATCH] wrapper: extra flags
 
@@ -8,7 +8,7 @@ extra flags to it by default.
 
 Upstream-Status: Inappropriate [embedder specific]
 
-Signed-off-by: Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+Signed-off-by: Raphael Kubo da Costa <kubo@igalia.com>
 
 ---
  chrome/installer/linux/common/wrapper | 4 +++-
