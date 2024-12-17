@@ -60,6 +60,16 @@ peculiarities:
 - Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
   built for the target, for which we use QEMU.
 
+## Supported OE/Yocto releases
+
+We only support the master branch and the current LTS releases of OE/Yocto,
+using this repo's master branch for the former and separate branches for the
+latter.
+
+Recent non-LTS releases should still work with our master branch, and we'll
+create branches capturing the last buildable version once they stop working with
+the latest version.
+
 ## Build requirements
 
 This recipe requires clang, and GCC is not supported. Upstream Chromium has not
@@ -71,6 +81,21 @@ host. clang-native from the meta-clang layer is used to build those binaries.
 
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
+
+### scarthgap-specific requirements
+
+The scarthgap OE/Yocto branch is an LTS release, which is often at odds with
+Chromium's release model because it often requires recent versions of certain
+recipes to build correctly.
+
+This is particularly a problem for the toolchain (i.e. LLVM/clang and Rust).
+Chromium needs a more recent version of Rust than OE Core provides for
+scarthgap, which is why we depend on meta-lts-mixins' `scarthgap/rust` branch.
+
+**Side note: For now, clang 18 provided by meta-clang is recent enough, but at
+some point during scarthgap's LTS lifetime Chromium won't be compilable with
+that version, and we'll have to create e.g. a scarthgap-clang20 branch for
+meta-clang and use that.**
 
 ## PACKAGECONFIG knobs
 
