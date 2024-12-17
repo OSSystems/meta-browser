@@ -60,6 +60,16 @@ peculiarities:
 - Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
   built for the target, for which we use QEMU.
 
+## Supported OE/Yocto releases
+
+We only support the master branch and the current LTS releases of OE/Yocto,
+using this repo's master branch for the former and separate branches for the
+latter.
+
+Recent non-LTS releases should still work with our master branch, and we'll
+create branches capturing the last buildable version once they stop working with
+the latest version.
+
 ## Build requirements
 
 This recipe requires clang, and GCC is not supported. Upstream Chromium has not
