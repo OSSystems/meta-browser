@@ -13,18 +13,18 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index beeb116..c19ac04 100644
+index 356a8d4..e348888 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1817,6 +1817,11 @@ config("default_warnings") {
-       cflags += [
-         "-Wenum-compare-conditional",
+@@ -1902,6 +1902,11 @@ config("default_warnings") {
+       }
 
+       cflags += [
 +        # Disable unknown warnings, since system clang may not have
 +        # backported newer warning yet unlike internal clang that
 +        # chromium uses.
 +        "-Wno-unknown-warning-option",
 +
-         # Ignore warnings about MSVC optimization pragmas.
-         # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
-         "-Wno-ignored-pragma-optimize",
+         # TODO(crbug.com/330524456): -Wcast-function-type is under -Wextra now.
+         "-Wno-cast-function-type",
+
