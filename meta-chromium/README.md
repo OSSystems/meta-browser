@@ -30,7 +30,7 @@ post to the list). Please cc the maintainers if you send your patches.
 ## Maintainers
 
 * Fabio Berton <fabio.berton@ossystems.com.br>
-* Raphael Kubo da Costa <raphael.kubo.da.costa@intel.com>
+* Raphael Kubo da Costa <kubo@igalia.com>
 * Khem Raj <raj.khem@gmail.com>
 * Otavio Salvador <otavio@ossystems.com.br>
 * Max Ihlenfeldt <max@igalia.com>
@@ -47,7 +47,7 @@ Chromium browser.
 
 This recipe provides a package for the Chromium web browser. It strives to
 always follow the latest stable Linux release as listed in
-https://omahaproxy.appspot.com
+https://chromiumdash.appspot.com/releases?platform=Linux
 
 We refer to the web browser as Chromium, not Chrome, because "Chrome" is
 Google's version of the web browser with proprietary content on top of the
@@ -59,6 +59,16 @@ peculiarities:
   copies of some packages (flac, libjpeg and others) with system-wide ones.
 - Parts of the V8 (Chromium's JavaScript engine) build need to run binaries
   built for the target, for which we use QEMU.
+
+## Supported OE/Yocto releases
+
+We only support the master branch and the current LTS releases of OE/Yocto,
+using this repo's master branch for the former and separate branches for the
+latter.
+
+Recent non-LTS releases should still work with our master branch, and we'll
+create branches capturing the last buildable version once they stop working with
+the latest version.
 
 ## Build requirements
 
@@ -79,13 +89,12 @@ Chromium's release model because it often requires recent versions of certain
 recipes to build correctly.
 
 This is particularly a problem for the toolchain (i.e. LLVM/clang and Rust).
-Because meta-clang's kirkstone branch currently only provides clang 14, we are
-unable to support Chromium versions higher than 120 due to those versions
-requiring a more recent clang version. Also, kirkstone users **must** ensure the
-following:
-* Chromium needs a somewhat recent version of Rust, and for that
-  meta-lts-mixins' **kirkstone/rust-1.68** or **kirkstone/rust-1.70** branch
-  needs to be used.
+
+* Chromium needs a more recent version of Rust than OE Core provides for
+  kirkstone, which is why we depend on meta-lts-mixins' `kirkstone/rust` branch.
+
+* Chromium needs at least clang 18, but meta-clang's kirkstone branch provides
+  clang 14. Thus, we depend on meta-clang's `kirkstone-clang18` branch.
 
 ## PACKAGECONFIG knobs
 
