@@ -4,54 +4,32 @@ require gn-utils.inc
 
 GTKIC_VERSION = "${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '4', '3',d)}"
 
-inherit features_check gtk-icon-cache qemu
+inherit features_check gtk-icon-cache qemu rust-common
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
 # Backported patches.
-SRC_URI += "\
-    file://backport/IWYU-for-chrome-browser-ui-views-dark_mode_.patch \
-    file://backport/IWYU-for-net-filter-zstd_source_stream.cc.patch \
-    file://backport/IWYU-for-components-user_education-common-p.patch \
-    file://backport/atspi-mark-possibly-unused-gn-variables.patch \
-    file://backport/Revert-recent-C-20-usage-in-CFX_FillRenderO.patch \
-    file://backport/IWYU-for-chrome-browser-ui-tabs-organizatio.patch \
-    file://backport/IWYU-for-content-browser-generic_sensor-fra.patch \
-    file://backport/IWYU-for-g-c-service-shared_image-ozone_ima.patch \
-    file://backport/Make-toolchain_supports_rust_thin_lto-configurable.patch \
-    file://backport/NewTabPage-Add-missing-dep-to-cr_components.patch \
-"
+# None currently \o/
+
 # Non-specific patches.
 SRC_URI += "\
-    file://0001-Remove-the-GN-settings-done-for-clang-that-conflict-.patch \
+    file://0001-Drop-GN-compiler-settings-conflicting-with-OE.patch \
     file://0002-v8-qemu-wrapper.patch \
     file://0003-wrapper-extra-flags.patch \
     file://0004-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0006-Revert-__attribute__-and-alignas-changes.patch \
-    file://0007-Add-missing-typename-s.patch \
-    file://0008-Don-t-pass-unknown-LLVM-options.patch \
-    file://0009-Avoid-capturing-structured-bindings.patch \
-    file://0010-Revert-Reland-Reland-mte-refactor-the-tagging-functi.patch \
-    file://0011-Avoid-parenthesized-initialization-of-aggregates.patch \
-    file://0012-Fix-constexpr-variable-cannot-have-non-literal-type-.patch \
-    file://0013-Fix-undefined-symbol-PaintOpWriter-SerializedSize-un.patch \
-    file://0014-Fix-implicitly-deleted-default-constructor-build-err.patch \
-    file://0015-Don-t-delete-CrashKeyWithName-dtor.patch \
-    file://0016-Use-base-ranges-instead-of-std-ranges.patch \
-    file://0017-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
-    file://0018-Adjust-the-Rust-build-to-our-needs.patch \
-    file://0019-Don-t-require-profiler_builtins.rlib.patch \
+    file://0006-Don-t-pass-unknown-LLVM-options.patch \
+    file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
+    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
+    file://0009-Adjust-the-Rust-build-to-our-needs.patch \
+    file://0010-Don-t-require-profiler_builtins.rlib.patch \
+    file://0011-Disable-crabbyavif-to-fix-build-errors.patch \
+    file://0012-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
 "
 # ARM/AArch64-specific patches.
-SRC_URI:append:arm = "\
-    file://arm/0001-BUILD-do-not-specify-march-on-arm.patch \
-    file://arm/0002-Fix-ARM-build-with-recent-glibc.patch \
-    file://arm/0003-Fix-static_assert-failed-build-error-on-32-bit-ARM.patch \
-"
-SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0004-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
+SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
 # musl-specific patches.
 SRC_URI:append:libc-musl = "\
@@ -92,6 +70,7 @@ DEPENDS += " \
     jpeg \
     libdrm \
     libffi \
+    libstd-rs \
     libwebp \
     libxkbcommon \
     libxslt \
@@ -106,7 +85,6 @@ DEPENDS += " \
     pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
-    rust \
     rust-native \
     virtual/libgl \
 "
@@ -308,8 +286,8 @@ GN_ARGS += ' \
 '
 
 # Make sure Chromium is able to find clang libraries. See
-# 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch and the
-# add_clang_symlink and copy_clang_library tasks for more context.
+# 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch and the
+# add_clang_latest and copy_clang_library tasks for more context.
 GN_ARGS += ' \
         clang_base_path="${@clang_install_path(d)}" \
         clang_version="latest" \
@@ -325,7 +303,7 @@ GN_ARGS += 'max_jobs_per_link="${@oe.utils.parallel_make_argument(d, '%d')}"'
 # Rust code is rebuilt after updating the Rust toolchain. This is irrelevant for
 # our build setup, but not setting it leads to an error.
 GN_ARGS += ' \
-        rust_sysroot_absolute="${RECIPE_SYSROOT_NATIVE}/usr" \
+        rust_sysroot_absolute="${STAGING_DIR_NATIVE}/usr" \
         rustc_version="custom" \
         rust_target_triple_vendor_for_target="${TARGET_VENDOR}" \
 '
@@ -379,7 +357,7 @@ GN_ARGS:append:armv6 = ' arm_use_neon=false'
 GN_ARGS:append:libc-musl = ' use_allocator_shim=false use_partition_alloc_as_malloc=false enable_backup_ref_ptr_support=false'
 
 CHROMIUM_EXTRA_ARGS ?= " \
-        ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-gl=egl', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-angle=gles-egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
 "
@@ -455,39 +433,42 @@ do_add_nodejs_symlink () {
 }
 addtask add_nodejs_symlink after do_configure before do_compile
 
-do_add_clang_symlink () {
-    # Creates a `latest` symlink in the native sysroot's /usr/lib/clang
-    # directory that points to /usr/lib/clang/$CLANG_VERSION. Chromium manually
-    # links against libclang_rt.builtins.a and uses the `clang_version` GN
-    # variable to find it. This allows us to set it to the same value for all
+do_add_clang_latest () {
+    # Creates a `latest` directory in the native sysroot's /usr/lib/clang
+    # directory that is a copy of /usr/lib/clang/$CLANG_VERSION. Chromium
+    # manually links against libclang_rt.builtins.a and uses the `clang_version`
+    # GN variable to find it. This allows us to set it to the same value for all
     # Yocto releases.
-    cd "${RECIPE_SYSROOT_NATIVE}/usr/lib/clang"
+    cd "${STAGING_LIBDIR_NATIVE}/clang"
+    rm -rf latest
     # find the directory containing the library
     for dir in *; do
         if [ -n "$(find $dir -name 'libclang_rt.builtins*')" ] ; then
-            ln -sf "$dir" latest
+            cp -r "$dir" latest
             break
         fi
     done
 }
-addtask add_clang_symlink after do_configure before do_compile
+addtask add_clang_latest after do_configure before do_compile
 
 do_copy_clang_library () {
     # Chromium needs to link against libclang_rt.builtins.a for both host and
     # target code, and expects to find both libraries in the same directory
-    # (thanks to 0023-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${RECIPE_SYSROOT}"
-    lib_file="$(find usr/lib/clang -name 'libclang_rt.builtins*')"
-    lib_dir="$(dirname $lib_file)"
-    cp "$lib_file" "${RECIPE_SYSROOT_NATIVE}/$lib_dir"
+    # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
+    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
+    # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
+    lib_file="$(find . -name 'libclang_rt.builtins*')"
+    # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
+    stripped_lib_file="${lib_file#*/*/}"
+    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
 }
-addtask copy_clang_library after do_configure before do_compile
+addtask copy_clang_library after do_add_clang_latest before do_compile
 
 do_copy_target_rustlibs () {
     # Chromium needs a single Rust sysroot that contains the rustlibs for both
     # the host and target, so we copy the target rustlibs to the native sysroot.
-    rustlib_src_dir="${RECIPE_SYSROOT}/usr/lib/rustlib/${TARGET_ARCH}"*
-    cp -r $rustlib_src_dir "${RECIPE_SYSROOT_NATIVE}/usr/lib/rustlib"
+    rustlib_src_dir="${STAGING_LIBDIR}/rustlib/${TARGET_ARCH}"*
+    cp -r $rustlib_src_dir "${STAGING_LIBDIR_NATIVE}/rustlib"
 }
 addtask copy_target_rustlibs after do_configure before do_compile
 
