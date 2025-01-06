@@ -1,8 +1,0 @@
-header:
-  version: 11
-
-repos:
-  meta-rpi:
-    url: https://github.com/agherzan/meta-raspberrypi.git
-    layers:
-      .:
