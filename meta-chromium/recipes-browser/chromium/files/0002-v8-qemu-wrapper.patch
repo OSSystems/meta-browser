@@ -1,4 +1,4 @@
-From 733559e6f2c26ccbce97354a2341b14c63563dab Mon Sep 17 00:00:00 2001
+From 60233d0570b4c9c9a9827616b224c9c93cbf6254 Mon Sep 17 00:00:00 2001
 From: Raphael Kubo da Costa <kubo@igalia.com>
 Date: Tue, 7 Nov 2017 15:24:32 +0100
 Subject: [PATCH] v8: qemu wrapper
@@ -17,7 +17,7 @@ Signed-off-by: Maksim Sisov <msisov@igalia.com>
  2 files changed, 5 insertions(+)
 
 diff --git a/tools/v8_context_snapshot/BUILD.gn b/tools/v8_context_snapshot/BUILD.gn
-index f46bec2..5438365 100644
+index f46bec2eb5..54383655c0 100644
 --- a/tools/v8_context_snapshot/BUILD.gn
 +++ b/tools/v8_context_snapshot/BUILD.gn
 @@ -45,6 +45,7 @@ if (use_v8_context_snapshot) {
@@ -29,10 +29,10 @@ index f46bec2..5438365 100644
                                            "root_out_dir") +
                                 "/v8_context_snapshot_generator",
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
-index 38a9a9a..367c354 100644
+index 0c559713ea..c8c95eb3a9 100644
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -2265,6 +2265,7 @@ template("run_torque") {
+@@ -2274,6 +2274,7 @@ template("run_torque") {
      }
 
      args = [
@@ -40,7 +40,7 @@ index 38a9a9a..367c354 100644
        "./" + rebase_path(
                get_label_info(":torque($toolchain)", "root_out_dir") + "/torque",
                root_build_dir),
-@@ -2428,6 +2429,7 @@ action("generate_bytecode_builtins_list") {
+@@ -2437,6 +2438,7 @@ action("generate_bytecode_builtins_list") {
    outputs = [ "$target_gen_dir/builtins-generated/bytecodes-builtins-list.h" ]
    deps = [ ":bytecode_builtins_list_generator($v8_generator_toolchain)" ]
    args = [
@@ -48,7 +48,7 @@ index 38a9a9a..367c354 100644
      "./" + rebase_path(
              get_label_info(
                      ":bytecode_builtins_list_generator($v8_generator_toolchain)",
-@@ -2500,6 +2502,7 @@ template("run_mksnapshot") {
+@@ -2509,6 +2511,7 @@ template("run_mksnapshot") {
      }
 
      args += [
@@ -56,7 +56,7 @@ index 38a9a9a..367c354 100644
        "./" + rebase_path(get_label_info(":mksnapshot($v8_snapshot_toolchain)",
                                          "root_out_dir") + "/mksnapshot",
                           root_build_dir),
-@@ -7446,6 +7449,7 @@ if (v8_enable_i18n_support) {
+@@ -7451,6 +7454,7 @@ if (v8_enable_i18n_support) {
      outputs = [ output_file ]
 
      args = [

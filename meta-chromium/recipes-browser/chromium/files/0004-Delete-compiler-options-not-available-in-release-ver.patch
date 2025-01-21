@@ -1,4 +1,4 @@
-From 2b487585ebe8986ada07afb9c917564c9b0dfd16 Mon Sep 17 00:00:00 2001
+From 75b620ad19491a1f8b8e9ec891d242d017016972 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 4 Dec 2019 19:06:54 -0800
 Subject: [PATCH] Delete compiler options not available in release versions of
@@ -13,10 +13,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 356a8d4..e348888 100644
+index 309c3078a2..8951f6006c 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1902,6 +1902,11 @@ config("default_warnings") {
+@@ -1924,6 +1924,11 @@ config("default_warnings") {
        }
 
        cflags += [
