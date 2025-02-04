@@ -132,6 +132,7 @@ DISABLE_STATIC=""
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
                    ${@bb.utils.contains_any("TARGET_ARCH", "x86_64 arm aarch64", "webrtc", "", d)} \
+                   rust-simd \
 "
 
 PACKAGECONFIG:append = "${@ ' system-nss system-nspr ' if ${ARM_AND_NO_HW_CRYPTO} else '' }"
@@ -144,6 +145,7 @@ PACKAGECONFIG[webgl] = ",,,"
 PACKAGECONFIG[webrtc] = "--enable-webrtc,--disable-webrtc,,"
 PACKAGECONFIG[forbid-multiple-compositors] = ",,,"
 PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries,,,"
+PACKAGECONFIG[rust-simd] = "--enable-rust-simd,,"
 
 # nspr and nss dependencies are handled separately, due to requiring
 # different versions depending on Yocto version and CPU capabilities.

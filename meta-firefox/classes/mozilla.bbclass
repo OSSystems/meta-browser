@@ -19,13 +19,13 @@ export MOZCONFIG = "${B}/mozconfig"
 export MOZ_OBJDIR = "${S}/firefox-build-dir"
 export MOZBUILD_STATE_PATH = "${S}/mozbuild_state"
 
-export OUT_DIR="${S}/build/target/release/deps"
-export WASI_SYSROOT="${STAGING_DATADIR_NATIVE}/wasi-sysroot"
+export OUT_DIR = "${S}/build/target/release/deps"
+export WASI_SYSROOT = "${STAGING_DATADIR_NATIVE}/wasi-sysroot"
 
-export WASM_CC="${WASI_SYSROOT}/bin/clang -target wasm32-wasi "
-export WASM_CXX="${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
+export WASM_CC = "${WASI_SYSROOT}/bin/clang -target wasm32-wasi "
+export WASM_CXX = "${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
 
-export BUILD_VERBOSE_LOG="1"
+export BUILD_VERBOSE_LOG = "1"
 
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
@@ -34,8 +34,8 @@ mozilla_run_mach() {
 	# For Kirkstone meta-rust layer is required, however
 	# that seems to set different target/host triplets compared
 	# to the rust used in poky (in later releases)
-	export RUST_HOST='${@bb.utils.contains_any("LAYERSERIES_CORENAMES", "dunfell kirkstone", "${BUILD_SYS}", "${RUST_BUILD_SYS}", d)}'
-	export RUST_TARGET='${@bb.utils.contains_any("LAYERSERIES_CORENAMES", "dunfell kirkstone", "${TARGET_SYS}", "${RUST_HOST_SYS}", d)}'
+	export RUST_HOST="${RUST_BUILD_SYS}"
+	export RUST_TARGET="${RUST_HOST_SYS}"
 
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
 	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
