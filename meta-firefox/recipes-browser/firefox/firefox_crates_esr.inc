@@ -364,6 +364,7 @@ SRC_URI += "crate://crates.io/adler/1.0.2 \
             crate://crates.io/syn/1.0.107 \
             crate://crates.io/syn/2.0.38 \
             crate://crates.io/synstructure/0.12.6 \
+            crate://crates.io/sys-locale/0.3.1 \
             crate://crates.io/tempfile/3.3.0 \
             crate://crates.io/termcolor/1.2.0 \
             crate://crates.io/terminal_size/0.1.17 \
@@ -817,6 +818,7 @@ SRC_URI[svg_fmt-0.4.1.sha256sum] = "8fb1df15f412ee2e9dfc1c504260fa695c1c3f10fe9f
 SRC_URI[syn-1.0.107.sha256sum] = "1f4064b5b16e03ae50984a5a8ed5d4f8803e6bc1fd170a3cda91a1be4b18e3f5"
 SRC_URI[syn-2.0.38.sha256sum] = "e96b79aaa137db8f61e26363a0c9b47d8b4ec75da28b7d1d614c2303e232408b"
 SRC_URI[synstructure-0.12.6.sha256sum] = "f36bdaa60a83aca3921b5259d5400cbf5e90fc51931376a9bd4a0eb79aa7210f"
+SRC_URI[sys-locale-0.3.1.sha256sum] = "e801cf239ecd6ccd71f03d270d67dd53d13e90aab208bf4b8fe4ad957ea949b0"
 SRC_URI[tempfile-3.3.0.sha256sum] = "5cdb1ef4eaeeaddc8fbd371e5017057064af0911902ef36b39801f67cc6d79e4"
 SRC_URI[termcolor-1.2.0.sha256sum] = "be55cf8942feac5c765c2c993422806843c9a9a45d4d5c407ad6dd2ea95eb9b6"
 SRC_URI[terminal_size-0.1.17.sha256sum] = "633c1a546cee861a1a6d0dc69ebeca693bf4296661ba7852b9d21d159e0506df"
