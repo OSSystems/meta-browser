@@ -1,0 +1,46 @@
+name: styhead-aarch64-135.0.1
+run-name: Build latest Firefox for 64-bit ARM architecture with Styhead
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build-styhead-aarch64-latest:
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    environment: ff-build-env
+    steps:
+      - run: |
+         mkdir -p /yocto/styhead  
+         cd /yocto/styhead  
+         rm -rf meta-browser meta-firefox-test
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
+         # clone the test repo
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         ./meta-firefox-test/scripts/build.sh styhead aarch64 latest
+  test-styhead-aarch64-latest:
+    runs-on: [self-hosted, desktop]
+    needs: build-styhead-aarch64-latest
+    steps:
+      - run: |
+         cd /yocto/styhead
+         ./meta-firefox-test/scripts/test.sh styhead aarch64 latest
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          path: meta-firefox/test-results/*.xml
+          reporter: java-junit
+          name: Test Results - styhead aarch64 latest
+          working-directory: /yocto/styhead/meta-browser
