@@ -1,0 +1,33 @@
+From 128528a95740381046e75657ed73dc2994691540 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Tue, 18 Feb 2025 17:36:34 +0100
+Subject: [PATCH] rust - don't abort on panic
+
+The Rust in Yocto needs to be compiled in a special way (with RUST_PANIC_STRATEGY = "abort"
+in local.conf) to make abort-on-panic work. Otherwise it fails with the following error:
+
+error: the crate `panic_abort` does not have the panic strategy `abort`
+
+Upstream-Status: Inappropriate [oe-specific]
+---
+ Cargo.toml | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 29942b6..2158c9d 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -74,13 +74,11 @@ opt-level = 1
+ rpath = false
+ lto = false
+ debug-assertions = true
+-panic = "abort"
+ 
+ [profile.release]
+ opt-level = 2
+ rpath = false
+ debug-assertions = false
+-panic = "abort"
+ 
+ # Optimize build dependencies, because bindgen and proc macros / style
+ # compilation take more to run than to build otherwise.
