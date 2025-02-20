@@ -1,4 +1,4 @@
-From 334f64aafb062324a9124a13855128dfe733c0c2 Mon Sep 17 00:00:00 2001
+From b9b4dffd99fd57dc3acbce7304284c26a10e695e Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 19 Dec 2023 12:14:05 +0000
 Subject: [PATCH] Use the correct path to libclang_rt.builtins.a
@@ -21,10 +21,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/build/config/clang/BUILD.gn b/build/config/clang/BUILD.gn
-index 890bf91..ed90f6e 100644
+index 44bd202d2b..6789beccdc 100644
 --- a/build/config/clang/BUILD.gn
 +++ b/build/config/clang/BUILD.gn
-@@ -163,14 +163,15 @@ template("clang_lib") {
+@@ -166,14 +166,15 @@ template("clang_lib") {
        } else if (is_apple) {
          _dir = "darwin"
        } else if (is_linux || is_chromeos) {
