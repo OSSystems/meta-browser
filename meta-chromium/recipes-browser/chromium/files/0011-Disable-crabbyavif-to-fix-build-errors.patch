@@ -1,4 +1,4 @@
-From 71b62beb9ca61c0578508dea85e5db094ee05abc Mon Sep 17 00:00:00 2001
+From a51bea5534076916587c4bebc2299d7881d6fad7 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Mon, 5 Aug 2024 09:33:42 +0000
 Subject: [PATCH] Disable crabbyavif to fix build errors
@@ -18,10 +18,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  2 files changed, 5 insertions(+), 21 deletions(-)
 
 diff --git a/third_party/blink/renderer/platform/image-decoders/BUILD.gn b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-index 6668b18..761c5fe 100644
+index 6dbddaa2e3..2b5f660196 100644
 --- a/third_party/blink/renderer/platform/image-decoders/BUILD.gn
 +++ b/third_party/blink/renderer/platform/image-decoders/BUILD.gn
-@@ -76,12 +76,9 @@ component("image_decoders") {
+@@ -82,12 +82,9 @@ component("image_decoders") {
      sources += [
        "avif/avif_image_decoder.cc",
        "avif/avif_image_decoder.h",
@@ -32,9 +32,9 @@ index 6668b18..761c5fe 100644
      deps += [
 -      "//third_party/crabbyavif",
        "//third_party/libavif",
-       "//third_party/libavifinfo",
      ]
-@@ -123,9 +120,6 @@ source_set("unit_tests") {
+   }
+@@ -136,9 +133,6 @@ source_set("unit_tests") {
    }
 
    if (enable_av1_decoder) {
@@ -46,10 +46,10 @@ index 6668b18..761c5fe 100644
    }
  }
 diff --git a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
-index f208b65..4fb788f 100644
+index bdbbe08142..8b08f320cd 100644
 --- a/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
 +++ b/third_party/blink/renderer/platform/image-decoders/image_decoder.cc
-@@ -36,7 +36,6 @@
+@@ -37,7 +37,6 @@
  #include "media/media_buildflags.h"
  #include "skia/ext/cicp.h"
  #include "third_party/blink/public/common/buildflags.h"
@@ -57,7 +57,7 @@ index f208b65..4fb788f 100644
  #include "third_party/blink/public/platform/platform.h"
  #include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
  #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
-@@ -52,7 +51,6 @@
+@@ -53,7 +52,6 @@
 
  #if BUILDFLAG(ENABLE_AV1_DECODER)
  #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
@@ -65,7 +65,7 @@ index f208b65..4fb788f 100644
  #endif
 
  namespace blink {
-@@ -197,9 +195,7 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
+@@ -198,9 +196,7 @@ String SniffMimeTypeInternal(scoped_refptr<SegmentReader> reader) {
      return "image/bmp";
    }
  #if BUILDFLAG(ENABLE_AV1_DECODER)
@@ -76,22 +76,22 @@ index f208b65..4fb788f 100644
      return "image/avif";
    }
  #endif
-@@ -309,15 +305,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
+@@ -310,15 +306,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::CreateByMimeType(
                                                  max_decoded_bytes);
  #if BUILDFLAG(ENABLE_AV1_DECODER)
    } else if (mime_type == "image/avif") {
 -    if (base::FeatureList::IsEnabled(blink::features::kCrabbyAvif)) {
 -      decoder = std::make_unique<CrabbyAVIFImageDecoder>(
 -          alpha_option, high_bit_depth_decoding_option, color_behavior,
--          max_decoded_bytes, animation_option);
+-          aux_image, max_decoded_bytes, animation_option);
 -    } else {
 -      decoder = std::make_unique<AVIFImageDecoder>(
 -          alpha_option, high_bit_depth_decoding_option, color_behavior,
--          max_decoded_bytes, animation_option);
+-          aux_image, max_decoded_bytes, animation_option);
 -    }
 +    decoder = std::make_unique<AVIFImageDecoder>(
 +        alpha_option, high_bit_depth_decoding_option, color_behavior,
-+        max_decoded_bytes, animation_option);
++        aux_image, max_decoded_bytes, animation_option);
  #endif
    }
 
