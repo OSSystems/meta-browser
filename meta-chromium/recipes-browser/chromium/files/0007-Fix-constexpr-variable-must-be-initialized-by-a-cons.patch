@@ -1,4 +1,4 @@
-From 4316b426cf10afb28ce42c250fbde66266ac5114 Mon Sep 17 00:00:00 2001
+From 5a28cb783a33391476839a5b904f0eab7fb9b13d Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Fri, 22 Mar 2024 10:43:47 +0000
 Subject: [PATCH] Fix "constexpr variable must be initialized by a constant
@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/components/autofill/core/browser/data_model/autofill_i18n_api.h b/components/autofill/core/browser/data_model/autofill_i18n_api.h
-index fa1a06b..8e1fe01 100644
+index fa1a06bdad..8e1fe01bfc 100644
 --- a/components/autofill/core/browser/data_model/autofill_i18n_api.h
 +++ b/components/autofill/core/browser/data_model/autofill_i18n_api.h
 @@ -16,8 +16,8 @@ namespace autofill::i18n_model_definition {

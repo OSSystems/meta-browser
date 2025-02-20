@@ -1,0 +1,488 @@
+From a8d282ffd65a8de353a446485d730b27ccd5cd67 Mon Sep 17 00:00:00 2001
+From: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
+Date: Fri, 1 Nov 2024 08:48:02 -0300
+Subject: [PATCH] Revert "Connect the Rust log crate to the //base logging
+ implementation"
+
+This reverts chromium commit 7ea0a5e831dd5 ("Connect the Rust log crate
+to the //base logging implementation".
+
+The above commit enabled bindgen for the Rust logger. Similar to patch
+0011-Disable-crabbyavif-to-fix-build-errors.patch added in commit [0],
+this fixes a build error that's most likely because the way upstream
+configures bindgen makes it incompatible with our cross-architecture
+builds.
+
+```
+| FAILED: gen/base/logging_rust_log_integration_bindgen_generator/bindings.rs
+| [...]
+| panicked at bindgen-cli/main.rs:52:36:
+| Unable to generate bindings: ClangDiagnostic("error: unsupported option '-mbranch-protection=' for target 'x86_64-unknown-linux-gnu'\n")
+```
+
+[0] meta-browser commit fd347dc ("chromium: Update to 127.0.6533.99")
+
+Upstream-Status: Inappropriate [specific to our build setup]
+Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
+---
+ base/BUILD.gn                                 | 42 ----------
+ base/logging.cc                               |  9 ---
+ base/logging/rust_log_integration.cc          | 24 ------
+ base/logging/rust_log_integration.h           | 29 -------
+ base/logging/rust_log_integration_unittest.cc | 76 -------------------
+ base/logging/rust_logger.rs                   | 74 ------------------
+ base/test/BUILD.gn                            | 13 ----
+ .../test/logging/test_rust_logger_consumer.rs | 41 ----------
+ .../rust/chromium_crates_io/gnrt_config.toml  |  1 +
+ third_party/rust/log/v0_4/BUILD.gn            |  2 +
+ 10 files changed, 3 insertions(+), 308 deletions(-)
+ delete mode 100644 base/logging/rust_log_integration.cc
+ delete mode 100644 base/logging/rust_log_integration.h
+ delete mode 100644 base/logging/rust_log_integration_unittest.cc
+ delete mode 100644 base/logging/rust_logger.rs
+ delete mode 100644 base/test/logging/test_rust_logger_consumer.rs
+
+diff --git a/base/BUILD.gn b/base/BUILD.gn
+index bc3e57164a010..ba0a6cad17477 100644
+--- a/base/BUILD.gn
++++ b/base/BUILD.gn
+@@ -38,8 +38,6 @@ import("//build/config/sanitizers/sanitizers.gni")
+ import("//build/config/sysroot.gni")
+ import("//build/config/ui.gni")
+ import("//build/nocompile.gni")
+-import("//build/rust/rust_bindgen.gni")
+-import("//build/rust/rust_static_library.gni")
+ import("//build/timestamp.gni")
+ import("//build/util/process_version.gni")
+ import("//build_overrides/build.gni")
+@@ -1022,9 +1020,7 @@ component("base") {
+     # Used by metrics/crc32, except on NaCl builds.
+     deps += [ "//third_party/zlib" ]
+
+-    # NaCl does not support Rust.
+     deps += [
+-      ":rust_logger",
+       "//third_party/rust/serde_json_lenient/v0_2/wrapper",
+     ]
+   }
+@@ -1545,8 +1541,6 @@ component("base") {
+       "files/scoped_temp_file.h",
+       "json/json_file_value_serializer.cc",
+       "json/json_file_value_serializer.h",
+-      "logging/rust_log_integration.cc",
+-      "logging/rust_log_integration.h",
+       "memory/discardable_memory.cc",
+       "memory/discardable_memory.h",
+       "memory/discardable_memory_allocator.cc",
+@@ -2449,41 +2443,6 @@ component("base") {
+   }
+ }
+
+-rust_bindgen("logging_log_severity_bindgen") {
+-  # TODO(danakj): Maybe combine all base bindgen targets, or all base/logging
+-  # ones even) into a single GN target? But the GN rule needs to handle multiple
+-  # headers then.
+-  header = "logging/log_severity.h"
+-  cpp = true
+-  visibility = [ ":*" ]
+-
+-  # Transitive generated header dependency.
+-  deps = [ ":debugging_buildflags" ]
+-}
+-
+-rust_bindgen("logging_rust_log_integration_bindgen") {
+-  header = "logging/rust_log_integration.h"
+-  cpp = true
+-  visibility = [ ":*" ]
+-
+-  # Transitive generated header dependency.
+-  deps = [ ":debugging_buildflags" ]
+-}
+-
+-rust_static_library("rust_logger") {
+-  allow_unsafe = true  # Unsafe needed for FFI.
+-  deps = [
+-    ":logging_log_severity_bindgen",
+-    ":logging_rust_log_integration_bindgen",
+-    "//third_party/rust/log/v0_4:lib",
+-  ]
+-  visibility = [ ":base" ]
+-  sources = [ "logging/rust_logger.rs" ]
+-  crate_root = "logging/rust_logger.rs"
+-
+-  cxx_bindings = [ "logging/rust_logger.rs" ]
+-}
+-
+ if (is_linux || is_chromeos) {
+   # Split out as a separate target for two reasons:
+   # - the line number reader is 2x slower in debug builds if not optimized,
+@@ -3287,7 +3246,6 @@ test("base_unittests") {
+     "json/string_escape_unittest.cc",
+     "json/values_util_unittest.cc",
+     "lazy_instance_unittest.cc",
+-    "logging/rust_log_integration_unittest.cc",
+     "logging_unittest.cc",
+     "memory/aligned_memory_unittest.cc",
+     "memory/discardable_memory_backing_field_trial_unittest.cc",
+diff --git a/base/logging.cc b/base/logging.cc
+index 508ce135131aa..d296b81fa6d36 100644
+--- a/base/logging.cc
++++ b/base/logging.cc
+@@ -126,10 +126,6 @@ typedef FILE* FileHandle;
+ #include "base/fuchsia/scoped_fx_logger.h"
+ #endif
+
+-#if !BUILDFLAG(IS_NACL)
+-#include "base/logging/rust_logger.rs.h"
+-#endif
+-
+ namespace logging {
+
+ namespace {
+@@ -526,11 +522,6 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
+   }
+ #endif
+
+-#if !BUILDFLAG(IS_NACL)
+-  // Connects Rust logging with the //base logging functionality.
+-  internal::init_rust_log_crate();
+-#endif
+-
+   // Ignore file options unless logging to file is set.
+   if ((g_logging_destination & LOG_TO_FILE) == 0)
+     return true;
+diff --git a/base/logging/rust_log_integration.cc b/base/logging/rust_log_integration.cc
+deleted file mode 100644
+index 1dba55d18a64a..0000000000000
+--- a/base/logging/rust_log_integration.cc
++++ /dev/null
+@@ -1,24 +0,0 @@
+-// Copyright 2024 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#include "base/logging/rust_log_integration.h"
+-
+-#include "base/logging.h"
+-#include "base/logging/log_severity.h"
+-
+-namespace logging {
+-namespace internal {
+-
+-BASE_EXPORT void print_rust_log(const char* msg,
+-                                const char* file,
+-                                int line,
+-                                LogSeverity severity,
+-                                bool verbose) {
+-  // TODO(danakj): If `verbose` make the log equivalent to VLOG instead of LOG.
+-  logging::LogMessage log_message(file, line, severity);
+-  log_message.stream() << msg;
+-}
+-
+-}  // namespace internal
+-}  // namespace logging
+diff --git a/base/logging/rust_log_integration.h b/base/logging/rust_log_integration.h
+deleted file mode 100644
+index 1795950e18557..0000000000000
+--- a/base/logging/rust_log_integration.h
++++ /dev/null
+@@ -1,29 +0,0 @@
+-// Copyright 2024 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#ifndef BASE_LOGGING_RUST_LOG_INTEGRATION_H_
+-#define BASE_LOGGING_RUST_LOG_INTEGRATION_H_
+-
+-#include "base/base_export.h"
+-#include "base/logging/log_severity.h"
+-
+-namespace logging {
+-namespace internal {
+-
+-// Receives a log line from Rust and forwards it to base logging, because
+-// logging::LogMessage is not accessible from Rust yet with our current interop
+-// tools.
+-//
+-// TODO(danakj): Should this helper function be replaced with C-like apis next
+-// to logging::LogMessage that Rust uses more directly?
+-void BASE_EXPORT print_rust_log(const char* msg,
+-                                const char* file,
+-                                int line,
+-                                LogSeverity severity,
+-                                bool verbose);
+-
+-}  // namespace internal
+-}  // namespace logging
+-
+-#endif  // BASE_LOGGING_RUST_LOG_INTEGRATION_H_
+diff --git a/base/logging/rust_log_integration_unittest.cc b/base/logging/rust_log_integration_unittest.cc
+deleted file mode 100644
+index 8fc0fec7e1350..0000000000000
+--- a/base/logging/rust_log_integration_unittest.cc
++++ /dev/null
+@@ -1,76 +0,0 @@
+-// Copyright 2024 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-#include "base/logging.h"
+-#include "base/test/logging/test_rust_logger_consumer.rs.h"
+-#include "base/test/mock_log.h"
+-
+-using testing::_;
+-
+-namespace logging {
+-namespace {
+-
+-class RustLogIntegrationTest : public testing::Test {
+- public:
+-  void SetUp() override { log_.StartCapturingLogs(); }
+-
+-  void TearDown() override { log_.StopCapturingLogs(); }
+-
+-  base::test::MockLog log_;
+-};
+-
+-// TODO(crbug.com/374023535): Logging does not work in component builds.
+-#if defined(COMPONENT_BUILD)
+-#define MAYBE_CheckAllSeverity DISABLED_CheckAllSeverity
+-#else
+-#define MAYBE_CheckAllSeverity CheckAllSeverity
+-#endif
+-TEST_F(RustLogIntegrationTest, MAYBE_CheckAllSeverity) {
+-#if DCHECK_IS_ON()
+-  // Debug and Trace logs from Rust are discarded when DCHECK_IS_ON() is false;
+-  // otherwise, they are logged as info.
+-  EXPECT_CALL(log_,
+-              Log(LOGGING_INFO, _, _, _, testing::HasSubstr("test trace log")))
+-      .WillOnce(testing::Return(true));
+-
+-  EXPECT_CALL(log_,
+-              Log(LOGGING_INFO, _, _, _, testing::HasSubstr("test debug log")))
+-      .WillOnce(testing::Return(true));
+-#endif
+-
+-  EXPECT_CALL(log_,
+-              Log(LOGGING_INFO, _, _, _, testing::HasSubstr("test info log")))
+-      .WillOnce(testing::Return(true));
+-
+-  EXPECT_CALL(log_, Log(LOGGING_WARNING, _, _, _,
+-                        testing::HasSubstr("test warning log")))
+-      .WillOnce(testing::Return(true));
+-
+-  EXPECT_CALL(log_,
+-              Log(LOGGING_ERROR, _, _, _, testing::HasSubstr("test error log")))
+-      .WillOnce(testing::Return(true));
+-
+-  base::test::print_test_trace_log();
+-  base::test::print_test_debug_log();
+-  base::test::print_test_info_log();
+-  base::test::print_test_warning_log();
+-  base::test::print_test_error_log();
+-}
+-
+-// TODO(crbug.com/374023535): Logging does not work in component builds.
+-#if defined(COMPONENT_BUILD)
+-#define MAYBE_Placeholders DISABLED_Placeholders
+-#else
+-#define MAYBE_Placeholders Placeholders
+-#endif
+-TEST_F(RustLogIntegrationTest, MAYBE_Placeholders) {
+-  EXPECT_CALL(log_, Log(LOGGING_ERROR, _, _, _,
+-                        testing::HasSubstr("test log with placeholder 2")))
+-      .WillOnce(testing::Return(true));
+-
+-  base::test::print_test_error_log_with_placeholder(2);
+-}
+-
+-}  // namespace
+-}  // namespace logging
+diff --git a/base/logging/rust_logger.rs b/base/logging/rust_logger.rs
+deleted file mode 100644
+index 918c1ce0f58bd..0000000000000
+--- a/base/logging/rust_logger.rs
++++ /dev/null
+@@ -1,74 +0,0 @@
+-// Copyright 2024 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-chromium::import! {
+-    "//base:logging_log_severity_bindgen" as log_severity;
+-    "//base:logging_rust_log_integration_bindgen" as rust_log_integration;
+-}
+-
+-use log::Level::{Debug, Error, Info, Trace, Warn};
+-use log::{LevelFilter, Metadata, Record};
+-use log_severity::logging::{LOGGING_ERROR, LOGGING_INFO, LOGGING_WARNING};
+-use rust_log_integration::logging::internal::print_rust_log;
+-use std::ffi::CString;
+-
+-struct RustLogger;
+-
+-impl log::Log for RustLogger {
+-    fn enabled(&self, _metadata: &Metadata) -> bool {
+-        // Always enabled, as it's controlled by command line flags managed by the C++
+-        // implementation.
+-        true
+-    }
+-
+-    fn log(&self, record: &Record) {
+-        // TODO(thiruak1024@gmail.com): Rather than using heap allocation to pass |msg|
+-        // and |file|, we should return a pointer and size object to leverage the
+-        // string_view object in C++. https://crbug.com/371112531
+-        let msg = match record.args().as_str() {
+-            Some(s) => CString::new(s),
+-            None => CString::new(&*record.args().to_string()),
+-        }
+-        .expect("CString::new failed to create the log message!");
+-        let file = CString::new(record.file().unwrap())
+-            .expect("CString::new failed to create the log file name!");
+-        unsafe {
+-            print_rust_log(
+-                msg.as_ptr(),
+-                file.as_ptr(),
+-                record.line().unwrap() as i32,
+-                match record.metadata().level() {
+-                    Error => LOGGING_ERROR,
+-                    Warn => LOGGING_WARNING,
+-                    Info => LOGGING_INFO,
+-                    // Note that Debug and Trace level logs are dropped at
+-                    // compile time at the macro call-site when DCHECK_IS_ON()
+-                    // is false. This is done through a Cargo feature.
+-                    Debug | Trace => LOGGING_INFO,
+-                },
+-                record.metadata().level() == Trace,
+-            )
+-        }
+-    }
+-    fn flush(&self) {}
+-}
+-
+-static RUST_LOGGER: RustLogger = RustLogger;
+-
+-#[cxx::bridge(namespace = "logging::internal")]
+-mod ffi {
+-    extern "Rust" {
+-        fn init_rust_log_crate();
+-    }
+-}
+-
+-pub fn init_rust_log_crate() {
+-    // An error may occur if set_logger has already been called, which can happen
+-    // during unit tests. In that case, return from the method without executing the
+-    // subsequent code.
+-    if let Err(_) = log::set_logger(&RUST_LOGGER) {
+-        return;
+-    };
+-    log::set_max_level(LevelFilter::Trace);
+-}
+diff --git a/base/test/BUILD.gn b/base/test/BUILD.gn
+index ddf58b1d496e0..77b571c31a31c 100644
+--- a/base/test/BUILD.gn
++++ b/base/test/BUILD.gn
+@@ -7,7 +7,6 @@ import("//build/config/chromeos/ui_mode.gni")
+ import("//build/config/features.gni")
+ import("//build/config/nacl/config.gni")
+ import("//build/config/ui.gni")
+-import("//build/rust/rust_static_library.gni")
+ import("//build_overrides/build.gni")
+ import("//third_party/protobuf/proto_library.gni")
+
+@@ -39,17 +38,6 @@ static_library("test_config") {
+   ]
+ }
+
+-rust_static_library("test_rust_logger_consumer") {
+-  allow_unsafe = true  # Unsafe needed for FFI
+-  testonly = true
+-  deps = [ "//third_party/rust/log/v0_4:lib" ]
+-  sources = [ "logging/test_rust_logger_consumer.rs" ]
+-
+-  crate_root = "logging/test_rust_logger_consumer.rs"
+-
+-  cxx_bindings = [ "logging/test_rust_logger_consumer.rs" ]
+-}
+-
+ static_library("test_support") {
+   testonly = true
+   sources = [
+@@ -189,7 +177,6 @@ static_library("test_support") {
+
+   public_deps = [
+     ":test_config",
+-    ":test_rust_logger_consumer",
+     "//base",
+     "//base:base_static",
+     "//base:i18n",
+diff --git a/base/test/logging/test_rust_logger_consumer.rs b/base/test/logging/test_rust_logger_consumer.rs
+deleted file mode 100644
+index dc8adc6b85f22..0000000000000
+--- a/base/test/logging/test_rust_logger_consumer.rs
++++ /dev/null
+@@ -1,41 +0,0 @@
+-// Copyright 2024 The Chromium Authors
+-// Use of this source code is governed by a BSD-style license that can be
+-// found in the LICENSE file.
+-
+-use log::{debug, error, info, trace, warn};
+-
+-#[cxx::bridge(namespace = "base::test")]
+-mod ffi {
+-    extern "Rust" {
+-        fn print_test_info_log();
+-        fn print_test_warning_log();
+-        fn print_test_error_log();
+-        fn print_test_debug_log();
+-        fn print_test_trace_log();
+-        fn print_test_error_log_with_placeholder(i: i32);
+-    }
+-}
+-
+-pub fn print_test_info_log() {
+-    info!("test info log");
+-}
+-
+-pub fn print_test_warning_log() {
+-    warn!("test warning log");
+-}
+-
+-pub fn print_test_error_log() {
+-    error!("test error log");
+-}
+-
+-pub fn print_test_debug_log() {
+-    debug!("test debug log");
+-}
+-
+-pub fn print_test_trace_log() {
+-    trace!("test trace log");
+-}
+-
+-fn print_test_error_log_with_placeholder(i: i32) {
+-    error!("test log with placeholder {}", i);
+-}
+diff --git a/third_party/rust/chromium_crates_io/gnrt_config.toml b/third_party/rust/chromium_crates_io/gnrt_config.toml
+index 9f36dd0efc3d3..828786f06ff8c 100644
+--- a/third_party/rust/chromium_crates_io/gnrt_config.toml
++++ b/third_party/rust/chromium_crates_io/gnrt_config.toml
+@@ -163,6 +163,7 @@ ban_features = [
+ ]
+
+ [crate.log]
++group = 'test'
+
+ [crate.nom]
+ remove_deps = ['minimal-lexical']
+diff --git a/third_party/rust/log/v0_4/BUILD.gn b/third_party/rust/log/v0_4/BUILD.gn
+index 6db643f2c446b..6e871e1b71808 100644
+--- a/third_party/rust/log/v0_4/BUILD.gn
++++ b/third_party/rust/log/v0_4/BUILD.gn
+@@ -43,4 +43,6 @@ cargo_crate("lib") {
+     "release_max_level_info",
+     "std",
+   ]
++
++  testonly = true
+ }

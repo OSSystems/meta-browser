@@ -1,4 +1,4 @@
-From 7f9a0877029aa3492fd381313886d9c80efbb752 Mon Sep 17 00:00:00 2001
+From d6862d22d64ddb3e1b85c086eb8c14e69450ceb0 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Wed, 7 Feb 2024 11:58:30 +0000
 Subject: [PATCH] Don't require profiler_builtins.rlib
@@ -14,7 +14,7 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 38e5ab7..b5f5291 100644
+index 38e5ab7645..b5f5291283 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
 @@ -100,7 +100,6 @@ if (toolchain_has_rust) {
