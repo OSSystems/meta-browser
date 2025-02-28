@@ -23,10 +23,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  4 files changed, 52 insertions(+), 19 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 5b7807a..2a7802f 100644
+index 60856e609d..4baeaecb9c 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -97,6 +97,11 @@ declare_args() {
+@@ -102,6 +102,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -37,8 +37,8 @@ index 5b7807a..2a7802f 100644
 +  rust_target_triple_vendor_for_target = ""
  }
 
- # Use a separate declare_args so these variables' defaults can depend on the
-@@ -197,14 +202,21 @@ if (enable_rust) {
+ # Use the Rust toolchain built in-tree. When false, we use the prebuilt Rust
+@@ -174,14 +179,21 @@ if (enable_rust) {
  # https://issues.chromium.org/u/1/issues/372512092#comment5 for an example.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -63,7 +63,7 @@ index 5b7807a..2a7802f 100644
      cargo_target_abi = ""
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
-@@ -214,18 +226,18 @@ if (is_linux || is_chromeos) {
+@@ -191,18 +203,18 @@ if (is_linux || is_chromeos) {
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
        # No way to inform Rust about the -a suffix.
@@ -87,7 +87,7 @@ index 5b7807a..2a7802f 100644
    }
  } else if (is_android) {
 diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
-index 8f2096d..de43d44 100755
+index 8f2096dfe5..de43d44eed 100755
 --- a/build/rust/rustc_wrapper.py
 +++ b/build/rust/rustc_wrapper.py
 @@ -160,6 +160,7 @@ def main():
@@ -99,10 +99,10 @@ index 8f2096d..de43d44 100755
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 38e5ab7..136d06b 100644
+index b5f5291283..9619dccc45 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -192,7 +192,8 @@ if (toolchain_has_rust) {
+@@ -191,7 +191,8 @@ if (toolchain_has_rust) {
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
 
@@ -112,7 +112,7 @@ index 38e5ab7..136d06b 100644
 
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -321,12 +322,12 @@ if (toolchain_has_rust) {
+@@ -320,12 +321,12 @@ if (toolchain_has_rust) {
          rust_abi_target,
        ]
 
@@ -128,7 +128,7 @@ index 38e5ab7..136d06b 100644
        }
 
        visibility = [ ":*" ]
-@@ -339,8 +340,18 @@ if (toolchain_has_rust) {
+@@ -338,8 +339,18 @@ if (toolchain_has_rust) {
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -149,7 +149,7 @@ index 38e5ab7..136d06b 100644
 
        visibility = [ ":*" ]
      }
-@@ -380,7 +391,10 @@ if (toolchain_has_rust) {
+@@ -379,7 +390,10 @@ if (toolchain_has_rust) {
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
@@ -162,7 +162,7 @@ index 38e5ab7..136d06b 100644
        # The host builds tools toolchain supports Rust only and does not use
        # the allocator remapping to point it to PartitionAlloc.
 diff --git a/build/rust/std/find_std_rlibs.py b/build/rust/std/find_std_rlibs.py
-index 386258f..e8fdaa9 100755
+index 386258f890..e8fdaa904a 100755
 --- a/build/rust/std/find_std_rlibs.py
 +++ b/build/rust/std/find_std_rlibs.py
 @@ -17,7 +17,7 @@ import re

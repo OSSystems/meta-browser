@@ -1,22 +1,45 @@
-From 2b487585ebe8986ada07afb9c917564c9b0dfd16 Mon Sep 17 00:00:00 2001
+From fc3a1af7d8d6ed6bc54d096e72cbf3d35ff4fa97 Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 4 Dec 2019 19:06:54 -0800
 Subject: [PATCH] Delete compiler options not available in release versions of
  clang _yet_
 
+* CREL feature is not supported on the current clang toolchain version,
+  which causes build to fail with the following error:
+
+| clang++: error: unsupported argument '--crel' to option '-Wa,'
+| clang++: error: unsupported argument '--allow-experimental-crel'
+  to option '-Wa,'
+
 Upstream-Status: Inappropriate [ clang/master already supports them ]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
+Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
 
 ---
- build/config/compiler/BUILD.gn | 5 +++++
- 1 file changed, 5 insertions(+)
+ build/config/compiler/BUILD.gn | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 356a8d4..e348888 100644
+index 309c3078a2647..5eeb241fc9038 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1902,6 +1902,11 @@ config("default_warnings") {
+@@ -615,14 +615,6 @@ config("compiler") {
+     } else {
+       cflags += [ "-ffp-contract=off" ]
+     }
+-
+-    # Enable ELF CREL (see crbug.com/357878242) for all platforms that use ELF
+-    # (excluding toolchains that use an older version of LLVM).
+-    # TODO(crbug.com/376278218): This causes segfault on Linux ARM builds.
+-    if (is_linux && !llvm_android_mainline && current_cpu != "arm" &&
+-        default_toolchain != "//build/toolchain/cros:target") {
+-      cflags += [ "-Wa,--crel,--allow-experimental-crel" ]
+-    }
+   }
+
+   # C11/C++11 compiler flags setup.
+@@ -1924,6 +1916,11 @@ config("default_warnings") {
        }
 
        cflags += [

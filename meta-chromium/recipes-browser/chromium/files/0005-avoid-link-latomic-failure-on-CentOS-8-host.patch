@@ -1,4 +1,4 @@
-From 0dcae7668b878b7db5da83643a8dfd7709865d3b Mon Sep 17 00:00:00 2001
+From c68f4f68490005e1576ca2339b1124dca5f83867 Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 22 Jan 2021 00:02:25 +0800
 Subject: [PATCH] avoid link latomic failure on CentOS 8 host
@@ -18,10 +18,10 @@ Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 4c0e464..1cf04ea 100644
+index 5dee8a9226..bc3e57164a 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1097,7 +1097,9 @@ component("base") {
+@@ -1077,7 +1077,9 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -32,7 +32,7 @@ index 4c0e464..1cf04ea 100644
      libs += [ "atomic" ]
    }
 diff --git a/build/config/linux/BUILD.gn b/build/config/linux/BUILD.gn
-index 131bb71..20f918a 100644
+index 131bb71d1d..20f918ab82 100644
 --- a/build/config/linux/BUILD.gn
 +++ b/build/config/linux/BUILD.gn
 @@ -40,7 +40,9 @@ config("runtime_library") {
