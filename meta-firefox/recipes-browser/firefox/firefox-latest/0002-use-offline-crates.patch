@@ -48,60 +48,9 @@ Upstream-Status: Inappropriate [oe specific]
  [dependencies.tempfile]
  version = "3.2.0"
  optional = true
---- ./gfx/wgpu_bindings/Cargo.toml	2025-02-04 12:16:43.519572548 +0100
-+++ ./gfx/wgpu_bindings/Cargo.toml	2025-02-04 12:18:20.688793714 +0100
-@@ -16,8 +16,7 @@
- 
- [dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-core"
- # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
- features = ["serde", "replay", "trace", "strict_asserts", "wgsl", "api_log_info", "indirect-validation"]
- 
-@@ -25,33 +24,28 @@
- # (We should consider also enabling "vulkan" for Vulkan Portability.)
- [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-core"
- features = ["metal"]
- 
- # We want the wgpu-core Direct3D backends on Windows.
- [target.'cfg(windows)'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-core"
- features = ["dx12"]
- 
- # We want the wgpu-core Vulkan backend on Linux and Windows.
- [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-core"
- features = ["vulkan"]
- 
- [dependencies.wgt]
- package = "wgpu-types"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-types"
- 
- [dependencies.wgh]
- package = "wgpu-hal"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "5543961a71cc8e5399b696fae3f6aae82c019717"
-+path = "../../../wgpu/wgpu-hal"
- features = ["oom_panic", "device_lost_panic", "internal_error_panic"]
- 
- [target.'cfg(windows)'.dependencies]
---- ./Cargo.toml	2025-02-04 12:09:13.746413709 +0100
-+++ ./Cargo.toml	2025-02-04 12:46:31.229151168 +0100
-@@ -199,32 +199,85 @@
+--- ./Cargo.toml	2025-03-03 15:55:13.285802213 +0100
++++ ./Cargo.toml	2025-03-03 16:11:46.808709129 +0100
+@@ -202,35 +202,88 @@
  plist = { path = "third_party/rust/plist" }
  
  # To-be-published changes.
@@ -131,15 +80,19 @@ Upstream-Status: Inappropriate [oe specific]
  # in order to build standalone.
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
  
+ # objc 0.2.7 + fa7ca43b862861dd1cd000d7ad01e6e0266cda13
+-objc = { git = "https://github.com/glandium/rust-objc", rev = "4de89f5aa9851ceca4d40e7ac1e2759410c04324" }
++objc = { path = "../objc" }
+ 
  # application-services overrides to make updating them all simpler.
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--relevancy = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--suggest = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "03cf4a362408b9caffa6848aae2fcf472a789460" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-relevancy = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "25934715ecc08fc922c80797c637dea64ee742d1" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
 +relevancy = { path = "../application-services/components/relevancy", version = "0.1.0"}
 +sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
@@ -203,3 +156,54 @@ Upstream-Status: Inappropriate [oe specific]
 +
 +[patch."https://github.com/beurdouche/mls-platform-api"]
 +mls-platform-api = { path = "../mls-platform-api" }
+--- ./gfx/wgpu_bindings/Cargo.toml	2025-03-03 16:13:57.663691349 +0100
++++ ./gfx/wgpu_bindings/Cargo.toml	2025-03-03 16:14:45.598447870 +0100
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-core"
+ # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
+ features = ["serde", "replay", "trace", "strict_asserts", "wgsl", "api_log_info", "indirect-validation"]
+ 
+@@ -25,33 +24,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
++path = "../../../wgpu/wgpu-hal"
+ features = ["oom_panic", "device_lost_panic", "internal_error_panic"]
+ 
+ [target.'cfg(windows)'.dependencies]

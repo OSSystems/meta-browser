@@ -1,0 +1,46 @@
+name: walnascar-arm-136.0.1
+run-name: Build latest Firefox for 32-bit ARM architecture with Walnascar
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build-walnascar-arm-latest:
+    runs-on: [self-hosted, desktop]
+    environment: ff-build-env
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    steps:
+      - run: |
+         mkdir -p /yocto/walnascar
+         cd /yocto/walnascar
+         rm -rf meta-browser meta-firefox-test
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
+         # clone the test repo
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         ./meta-firefox-test/scripts/build.sh walnascar arm latest
+  test-walnascar-arm-latest:
+    runs-on: [self-hosted, desktop]
+    needs: build-walnascar-arm-latest
+    steps:
+      - run: |
+         cd /yocto/walnascar
+         ./meta-firefox-test/scripts/test.sh walnascar arm latest
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          path: meta-firefox/test-results/*.xml
+          reporter: java-junit
+          name: Test Results - walnascar arm latest
+          working-directory: /yocto/walnascar/meta-browser

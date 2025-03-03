@@ -7,13 +7,13 @@ Current build status:
 | Yocto-FF version / Arch | arm (32-bit) | aarch64 | x86_64 | risc-v |
 | ----------------------- | ------------ | ------- | ------ | ------ |
 | Kirkstone - 128.8.0esr | ![kirkstone-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-arm-v128.8.0esr.yml/badge.svg) | ![kirkstone-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-aarch64-v128.8.0esr.yml/badge.svg) | ![kirkstone-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-x86_64-v128.8.0esr.yml/badge.svg) | - |
-| Kirkstone - 135.0.1    | ![kirkstone-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-arm-v135.0.1.yml/badge.svg)  | ![kirkstone-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-aarch64-v135.0.1.yml/badge.svg)  | ![kirkstone-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-x86_64-v135.0.1.yml/badge.svg) | - |
+| Kirkstone - 136.0.1    | ![kirkstone-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-arm-v136.0.1.yml/badge.svg)  | ![kirkstone-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-aarch64-v136.0.1.yml/badge.svg)  | ![kirkstone-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/kirkstone-x86_64-v136.0.1.yml/badge.svg) | - |
 | Scarthgap - 128.8.0esr | ![scarthgap-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-arm-v128.8.0esr.yml/badge.svg) | ![scarthgap-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-aarch64-v128.8.0esr.yml/badge.svg) | ![scarthgap-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-x86_64-v128.8.0esr.yml/badge.svg) | ![scarthgap-riscv-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-riscv-v128.8.0esr.yml/badge.svg) |
-| Scarthgap - 135.0.1    | ![scarthgap-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-arm-v135.0.1.yml/badge.svg)  | ![scarthgap-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-aarch64-v135.0.1.yml/badge.svg)  | ![scarthgap-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-x86_64-v135.0.1.yml/badge.svg) | ![scarthgap-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-riscv-v135.0.1.yml/badge.svg) |
+| Scarthgap - 136.0.1    | ![scarthgap-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-arm-v136.0.1.yml/badge.svg)  | ![scarthgap-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-aarch64-v136.0.1.yml/badge.svg)  | ![scarthgap-x86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-x86_64-v136.0.1.yml/badge.svg) | ![scarthgap-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/scarthgap-riscv-v136.0.1.yml/badge.svg) |
 | Styhead - 128.8.0esr   | ![styhead-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-arm-v128.8.0esr.yml/badge.svg)     | ![styhead-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-aarch64-v128.8.0esr.yml/badge.svg)     | ![styhead-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-x86_64-v128.8.0esr.yml/badge.svg) | ![styhead-riscv-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-riscv-v128.8.0esr.yml/badge.svg) |
-| Styhead - 135.0.1      | ![styhead-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-arm-v135.0.1.yml/badge.svg)      | ![styhead-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-aarch64-v135.0.1.yml/badge.svg)      | ![styhead-86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-x86_64-v135.0.1.yml/badge.svg) | ![styhead-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-riscv-v135.0.1.yml/badge.svg) |
+| Styhead - 136.0.1      | ![styhead-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-arm-v136.0.1.yml/badge.svg)      | ![styhead-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-aarch64-v136.0.1.yml/badge.svg)      | ![styhead-86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-x86_64-v136.0.1.yml/badge.svg) | ![styhead-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/styhead-riscv-v136.0.1.yml/badge.svg) |
 | Walnascar - 128.8.0esr | ![walnascar-arm-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-arm-v128.8.0esr.yml/badge.svg)     | ![walnascar-aarch64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-aarch64-v128.8.0esr.yml/badge.svg)     | ![walnascar-x86_64-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-x86_64-v128.8.0esr.yml/badge.svg) | ![walnascar-riscv-esr](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-riscv-v128.8.0esr.yml/badge.svg) |
-| Walnascar - 135.0.1    | ![walnascar-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-arm-v135.0.1.yml/badge.svg)      | ![walnascar-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-aarch64-v135.0.1.yml/badge.svg)      | ![walnascar-86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-x86_64-v135.0.1.yml/badge.svg) | ![walnascar-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-riscv-v135.0.1.yml/badge.svg) |
+| Walnascar - 136.0.1    | ![walnascar-arm-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-arm-v136.0.1.yml/badge.svg)      | ![walnascar-aarch64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-aarch64-v136.0.1.yml/badge.svg)      | ![walnascar-86_64-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-x86_64-v136.0.1.yml/badge.svg) | ![walnascar-riscv-latest](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/walnascar-riscv-v136.0.1.yml/badge.svg) |
 
 
 OpenEmbedded/Yocto BSP layer for Firefox Browser
@@ -49,7 +49,7 @@ Testing is performed using the following combinations:
 | Kirkstone | Rust 1.80.1 from meta-lts-mixins (kirkstone/rust branch) |
 | Scarthgap | Rust 1.81.0 from meta-lts-mixins (scarthgap/rust branch) |
 | Styhead | Rust 1.79 from oe-core |
-| Walnascar | Rust 1.81.0 from oe-core |
+| Walnascar | Rust 1.82.0 from oe-core |
 
 Based on my testing, some datalayouts has changed in Rust 1.76, which also made it necessary to change them for Arm achitectures, by adding the following to local.conf:
 
@@ -134,6 +134,9 @@ PACKAGECONFIG knobs
   Don't build Firefox with Wayland dependencies. This config should not be enable if wayland-only
   is enabled.
 
+* system-av1: (off by default)
+  Use system av1. Currently untested.
+
 * system-nspr: (off by default and autodetected in some cases)
   Use NSPR from the operating system, instead of building it with Firefox. In case an ARM CPU
   is the target without cryptographic capabilities, this config is automatically enabled.
@@ -185,17 +188,17 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 
 | Firefox version | Dependency | Used commit | Source / Comment |
 | --------------- | ---------- | -------------- | ---------------- |
-| 128.8.0esr + 135.0.1 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
-| 128.8.0esr + 135.0.1 | mp4parse | a138e40ec1c603615873e524b5b22e11c0ec4820 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.8.0esr + 135.0.1 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.8.0esr + 135.0.1 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.8.0esr + 135.0.1 | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required by `js/src/frontend/smoosh/Cargo.toml` |
-| 128.8.0esr + 135.0.1 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
+| 128.8.0esr + 136.0.1 | mp4parse | a138e40ec1c603615873e524b5b22e11c0ec4820 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.8.0esr + 136.0.1 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.8.0esr + 136.0.1 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.8.0esr + 136.0.1 | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required by `js/src/frontend/smoosh/Cargo.toml` |
+| 128.8.0esr + 136.0.1 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
 | 128.8.0esr | gpu-descriptor | 7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d | Required by top level Cargo.toml |
 | 128.8.0esr | aa-stroke | d94278ed9c7020f50232689a26d1277eb0eb74d2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.8.0esr | warp | 9d081461ae1167eb321585ce424f4fef6cf0092b | Required by top level Cargo.toml |
@@ -206,15 +209,16 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 | 128.8.0esr | mapped_hyph | c7651a0cffff41996ad13c44f689bd9cd2192c01 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.8.0esr | ~~neqo~~ | ~~121fe683ae4b39a5b694f671abfd397cbd9b4322~~ | Required by `netwerk/socket/neqo_glue/Cargo.toml` - Not used by 128.8.0esr, uses vendored version. |
 | 128.8.0esr | wgpu | c7458638d14921c7562e4197ddeefa17be413587 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 135.0.1 | application-services | 03cf4a362408b9caffa6848aae2fcf472a789460 | Required by top level Cargo.toml |
-| 135.0.1 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 135.0.1 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 135.0.1 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 135.0.1 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 135.0.1 | neqo | c6d5502fb5b827473e7c5d7c4c380275cdb3d931 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
-| 135.0.1 | wgpu | 5543961a71cc8e5399b696fae3f6aae82c019717 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 135.0.1 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
-| 135.0.1 | zlib | 4aa430ccb77537d0d60dab8db993ca51bb1194c5 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 135.0.1 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
-| 135.0.1 | mls-rs | eedb37e50e3fca51863f460755afd632137da57c | Required by `third-party/rust/mls-platform-api/Cargo.toml` crate |
-| 135.0.1 | mls-platform-api | 19c3f18b747d13354370ba84440bb0b963932634 |  Required by `security/mls/mls_gk/Cargo.toml` |
+| 136.0.1 | application-services | 25934715ecc08fc922c80797c637dea64ee742d1 | Required by top level Cargo.toml |
+| 136.0.1 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 136.0.1 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 136.0.1 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 136.0.1 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 136.0.1 | neqo | c6d5502fb5b827473e7c5d7c4c380275cdb3d931 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
+| 136.0.1 | wgpu | aa7bec65b90028e4db6ec8def8589b52097d92f9 | Required by `gfx/wgpu_bindings/Cargo.toml` |
+| 136.0.1 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
+| 136.0.1 | zlib | 4aa430ccb77537d0d60dab8db993ca51bb1194c5 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 136.0.1 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
+| 136.0.1 | mls-rs | eedb37e50e3fca51863f460755afd632137da57c | Required by `third-party/rust/mls-platform-api/Cargo.toml` crate |
+| 136.0.1 | mls-platform-api | 19c3f18b747d13354370ba84440bb0b963932634 |  Required by `security/mls/mls_gk/Cargo.toml` |
+| 136.0.1 | objc | 4de89f5aa9851ceca4d40e7ac1e2759410c04324 | Required by top level Cargo.toml |
