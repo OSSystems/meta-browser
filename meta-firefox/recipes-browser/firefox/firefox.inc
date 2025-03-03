@@ -172,11 +172,19 @@ DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libra
 
 # At the end of do_configure task cargo-common class takes all
 # the git repos from the SRC_URI, and appends them to the end
-# of cargo_home/config as repo patches for separate crates.
-# This might work for building pure Rust applications, but not
-# so much when the application comes with their own build system
-# (like Firefox).
-#
+# of cargo_home/config as repo patches for separate crates, if
+# they have a name and destsuffix parameter.
+
+# This works for most crates, however not for all - this is mostly
+# a problem for repositories where the source code is not in the
+# top level folder, and for repositories which are actually a workspace,
+# and may contain multiple crates in multiple subfolders - they might
+# even refer to different subfolders. When this is the case, the above
+# method only sets the top folder in the patch, which makes cargo not
+# find the crates, and fail. This is also the main reason why Cargo.toml
+# is patched directly, instead of letting cargo_common class just include
+# these patches.
+
 # To avoid this, save the SRC_URI variable before the do_configure
 # task, and remove all the git repos from it. At the end of the do_configure
 # task just restore it to its original value.
