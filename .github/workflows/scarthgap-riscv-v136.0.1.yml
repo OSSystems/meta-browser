@@ -1,0 +1,46 @@
+name: scarthgap-riscv-136.0.1
+run-name: Build latest Firefox for Risc-V architecture with Scarthgap
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build-scarthgap-riscv-latest:
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    environment: ff-build-env
+    steps:
+      - run: |
+         mkdir -p /yocto/scarthgap
+         cd /yocto/scarthgap
+         rm -rf meta-browser meta-firefox-test
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
+         # clone the test repo
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         ./meta-firefox-test/scripts/build.sh scarthgap riscv latest
+  test-scarthgap-riscv-latest:
+    runs-on: [self-hosted, desktop]
+    needs: build-scarthgap-riscv-latest
+    steps:
+      - run: |
+         cd /yocto/scarthgap
+         ./meta-firefox-test/scripts/test.sh scarthgap riscv latest
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          path: meta-firefox/test-results/*.xml
+          reporter: java-junit
+          name: Test Results - scarthgap risc-v latest
+          working-directory: /yocto/scarthgap/meta-browser

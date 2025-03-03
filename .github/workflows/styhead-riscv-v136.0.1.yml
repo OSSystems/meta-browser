@@ -1,0 +1,46 @@
+name: styhead-riscv-136.0.1
+run-name: Build latest Firefox for Risc-V architecture with Styhead
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build-styhead-riscv-latest:
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    environment: ff-build-env
+    steps:
+      - run: |
+         mkdir -p /yocto/styhead  
+         cd /yocto/styhead  
+         rm -rf meta-browser meta-firefox-test
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
+         # clone the test repo
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         ./meta-firefox-test/scripts/build.sh styhead riscv latest
+  test-styhead-riscv-latest:
+    runs-on: [self-hosted, desktop]
+    needs: build-styhead-riscv-latest
+    steps:
+      - run: |
+         cd /yocto/styhead
+         ./meta-firefox-test/scripts/test.sh styhead riscv latest
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          path: meta-firefox/test-results/*.xml
+          reporter: java-junit
+          name: Test Results - styhead risc-v latest
+          working-directory: /yocto/styhead/meta-browser
