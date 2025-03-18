@@ -12,7 +12,12 @@ EXTRA_OECONF:append:arm = " --disable-elf-hack"
 EXTRA_OECONF:append:x86 = " --disable-elf-hack"
 EXTRA_OECONF:append:x86-64 = " --disable-elf-hack"
 
+EXTRA_OECONF:append:libc-musl = " --disable-jemalloc "
+EXTRA_OECONF:append:libc-musl:x86-64 = " --disable-sandbox "
+
 SELECTED_OPTIMIZATION = "-Os -fsigned-char -fno-strict-aliasing"
+
+LDFLAGS:append:libc-musl = " -Wl,-rpath,${libdir}/firefox "
 
 export CROSS_COMPILE = "1"
 export MOZCONFIG = "${B}/mozconfig"
@@ -31,9 +36,6 @@ mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
-	# For Kirkstone meta-rust layer is required, however
-	# that seems to set different target/host triplets compared
-	# to the rust used in poky (in later releases)
 	export RUST_HOST="${RUST_BUILD_SYS}"
 	export RUST_TARGET="${RUST_HOST_SYS}"
 

@@ -1,0 +1,65 @@
+name: Firefox build- and smoke-test
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        yocto_version: [kirkstone, scarthgap, styhead, walnascar]
+        ff_version: [esr, latest]
+        libc_flavour: [glibc, musl]
+        arch: [arm, aarch64, riscv, x86-64]
+        exclude:
+          - yocto_version: kirkstone
+            arch: riscv
+    runs-on: [self-hosted, desktop]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    environment: ff-build-env
+    steps:
+      - run: |
+         mkdir -p /yocto/${{ matrix.yocto_version }}
+         cd /yocto/${{ matrix.yocto_version }}
+         rm -rf meta-browser meta-firefox-test
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+         git -C meta-browser checkout $GITHUB_HEAD_REF
+         # clone the test repo
+         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+  test:
+    runs-on: [self-hosted, desktop]
+    needs: build
+    strategy:
+      matrix:
+        yocto_version: [kirkstone, scarthgap, styhead, walnascar]
+        ff_version: [esr, latest]
+        libc_flavour: [glibc, musl]
+        arch: [arm, aarch64, riscv, x86-64]
+        exclude:
+          - yocto_version: kirkstone
+            arch: riscv
+    steps:
+      - run: |
+         cd /yocto/${{ matrix.yocto_version }}
+         ./meta-firefox-test/scripts/test.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+      - uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          path: meta-firefox/test-results/*.xml
+          reporter: java-junit
+          name: Test Results - ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+          working-directory: /yocto/${{ matrix.yocto_version }}/meta-browser
+          fail-on-empty: false
