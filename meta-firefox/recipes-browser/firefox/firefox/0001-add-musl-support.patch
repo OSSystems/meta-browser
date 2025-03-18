@@ -1,0 +1,39 @@
+Allow Firefox to be compiled with musl-libc. _Unwind_GetIP symbol
+is not implemented by musl, so use it only with libc.
+
+Same for PTHREAD_MUTEX_ADAPTIVE_NP - glibc only symbol.
+
+Upstream-Status: Inappropriate [musl-specific]
+diff --git a/./memory/build/Mutex.h.orig b/./memory/build/Mutex.h
+index 3f60f10..9398a8f 100644
+--- a/./memory/build/Mutex.h.orig
++++ b/./memory/build/Mutex.h
+@@ -57,7 +57,7 @@ struct MOZ_CAPABILITY("mutex") Mutex {
+     }
+ #elif defined(XP_DARWIN)
+     mMutex = OS_UNFAIR_LOCK_INIT;
+-#elif defined(XP_LINUX) && !defined(ANDROID)
++#elif defined(XP_LINUX) && !defined(ANDROID) && defined(__GLIBC__)
+     pthread_mutexattr_t attr;
+     if (pthread_mutexattr_init(&attr) != 0) {
+       return false;
+--- ./mozglue/misc/StackWalk.cpp.orig	2025-03-18 09:35:42.384325332 +0100
++++ ./mozglue/misc/StackWalk.cpp	2025-03-18 15:54:54.522407257 +0100
+@@ -52,7 +52,7 @@
+ 
+ #if (defined(linux) &&                                            \
+      ((defined(__GNUC__) && (defined(__i386) || defined(PPC))) || \
+-      defined(HAVE__UNWIND_BACKTRACE)) &&                         \
++      defined(HAVE__UNWIND_BACKTRACE)) &&   \
+      (HAVE___LIBC_STACK_END || ANDROID))
+ #  define MOZ_STACKWALK_SUPPORTS_LINUX 1
+ #else
+@@ -696,7 +696,7 @@
+ //
+ // Changes to to OS/Architecture support here should be reflected in
+ // build/moz.configure/memory.configure
+-#elif HAVE_DLADDR &&                                           \
++#elif defined(__GLIBC__) && HAVE_DLADDR &&                                           \
+     (HAVE__UNWIND_BACKTRACE || MOZ_STACKWALK_SUPPORTS_LINUX || \
+      MOZ_STACKWALK_SUPPORTS_MACOSX)
+ 
