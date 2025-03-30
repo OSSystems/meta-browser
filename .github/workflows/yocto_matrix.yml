@@ -23,12 +23,11 @@ jobs:
         exclude:
           - yocto_version: kirkstone
             arch: riscv
-    runs-on: [self-hosted, desktop]
+    runs-on: [self-hosted, firefox]
     container:
       image: skandigraun/yocto:latest
       volumes:
         - yocto:/yocto
-    environment: ff-build-env
     steps:
       - run: |
          mkdir -p /yocto/${{ matrix.yocto_version }}
@@ -37,10 +36,10 @@ jobs:
          git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
          git -C meta-browser checkout $GITHUB_HEAD_REF
          # clone the test repo
-         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY_OWNER/meta-firefox-test
+         git clone https://github.com/OldManYellsAtCloud/meta-firefox-test.git
          ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
   test:
-    runs-on: [self-hosted, desktop]
+    runs-on: [self-hosted, firefox]
     needs: build
     strategy:
       matrix:

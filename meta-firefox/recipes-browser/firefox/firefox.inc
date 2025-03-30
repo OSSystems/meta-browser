@@ -10,13 +10,11 @@ DEPENDS:x86:append = " nasm-native "
 RDEPENDS:${PN} = "libva libpci"
 RDEPENDS:${PN}-dev = "dbus"
 
-# Use system's nss in case the CPU has no native crypto support (e.g. armv7)
-# On dunfell and kirkstone use the vendored version, as they contain too old version.
-# This is only for ARM arch: Firefox's nss explicitly includes code using hw-crypto support for this arch.
-ARM_AND_NO_HW_CRYPTO = "${@ True if 'crypto' not in d.getVar('TUNE_FEATURES') and \
+# Disable hw crypto support in freebl/nss in case the CPU has no native crypto support (e.g. armv7)
+EXTRA_OECONF:append = "${@ ' --nss-disable-arm-crypto=1 ' if 'crypto' not in d.getVar('TUNE_FEATURES') and \
                         ( 'arm' in d.getVar('TARGET_ARCH') or \
                           'aarch64' in d.getVar('TARGET_ARCH') \
-                        ) else False }"
+                        ) else '' }"
 
 LICENSE = "MPL-2.0"
 
@@ -49,6 +47,7 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0004-Fix-compiling-with-enable-openmax-config.patch \
            file://0001-rust-don-t-abort-on-panic.patch \
            file://0001-add-musl-support.patch \
+           file://0001-Add-option-to-disable-arm-hw-crypto-engine.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
            file://debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch \
@@ -137,8 +136,6 @@ PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d
                    rust-simd \
 "
 
-PACKAGECONFIG:append = "${@ ' system-nss system-nspr ' if ${ARM_AND_NO_HW_CRYPTO} else '' }"
-
 PACKAGECONFIG[alsa] = "--enable-alsa,--disable-alsa,alsa-lib"
 PACKAGECONFIG[wayland] = "--enable-default-toolkit=cairo-gtk3-wayland,--enable-default-toolkit=cairo-gtk3,virtual/egl,"
 PACKAGECONFIG[gpu] = ",,,"
@@ -149,10 +146,8 @@ PACKAGECONFIG[forbid-multiple-compositors] = ",,,"
 PACKAGECONFIG[disable-sandboxed-libraries] = "--without-wasm-sandboxed-libraries,,,"
 PACKAGECONFIG[rust-simd] = "--enable-rust-simd,,"
 
-# nspr and nss dependencies are handled separately, due to requiring
-# different versions depending on Yocto version and CPU capabilities.
-PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr-4.35,nspr-4.35"
-PACKAGECONFIG[system-nss] = "--with-system-nss,,nss-3.108,nss-3.108"
+PACKAGECONFIG[system-nspr] = "--with-system-nspr,,nspr,nspr"
+PACKAGECONFIG[system-nss] = "--with-system-nss,,nss,nss"
 PACKAGECONFIG[system-ffi] = "--with-system-ffi,,libffi,libffi"
 PACKAGECONFIG[system-icu] = "--with-system-icu,,icu,icu"
 PACKAGECONFIG[system-zlib] = "--with-system-zlib,,zlib,zlib"

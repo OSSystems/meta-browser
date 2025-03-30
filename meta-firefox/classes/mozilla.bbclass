@@ -8,9 +8,9 @@ EXTRA_OECONF = "--target=${TARGET_SYS} --host=${BUILD_SYS} \
                 --prefix=${prefix} \
                 --libdir=${libdir}"
 
-EXTRA_OECONF:append:arm = " --disable-elf-hack"
-EXTRA_OECONF:append:x86 = " --disable-elf-hack"
-EXTRA_OECONF:append:x86-64 = " --disable-elf-hack"
+EXTRA_OECONF:append:arm = " --disable-sandbox --disable-elf-hack "
+EXTRA_OECONF:append:aarch64 = " --disable-elf-hack "
+EXTRA_OECONF:append:x86-64 = " --disable-elf-hack "
 
 EXTRA_OECONF:append:libc-musl = " --disable-jemalloc "
 EXTRA_OECONF:append:libc-musl:x86-64 = " --disable-sandbox "
