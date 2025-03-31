@@ -29,26 +29,47 @@ the kas folder - that contains all the branch/revision information used for test
 install it, in case it is missing  (e.g. on Debian based systems install `libstdc++-dev` or
 on Fedora install `libstdc++-devel`)
 
-Note: Firefox requires at least Rust 1.76 starting from version 127. meta-rust layer provides
-1.78, however this layer is not compatible with Scarthgap (nor newer). Fortunately lately a
-meta-lts-mixins layer has been created with a more up to date version of Rust, for Scarthgap.
+Note: Firefox requires at least Rust 1.76 starting from version 127, and Rust 1.82 from version 137. 
 
-The state of Rust needs some caution when it comes to the the version used, and its provider.
-Testing is performed using the following combinations:
+At this time the state of Rust in the Yocto ecosystem is not the best. Master/Walnascar provides
+1.83 - so this works for all Firefox. meta-lts-mixins layers however are below 1.82 for both
+Kirkstone and Scarthgap, and until this doesn't change, meta-rust layer should be used.
 
-| Yocto version | Rust version |
-| ---------------- | ----- |
-| Kirkstone | Rust 1.80.1 from meta-lts-mixins (kirkstone/rust branch) |
-| Scarthgap | Rust 1.81.0 from meta-lts-mixins (scarthgap/rust branch) |
-| Styhead | Rust 1.79 from oe-core |
-| Walnascar | Rust 1.83.0 from oe-core |
+For Styhead there is no up to date Rust available officially.
 
-Based on my testing, some datalayouts has changed in Rust 1.76, which also made it necessary to change them for Arm achitectures, by adding the following to local.conf:
+When using meta-rust, make sure to add the following to a bbappend or local.conf:
 
 ```
-DATA_LAYOUT[arm-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
-DATA_LAYOUT[armv7-eabi] = "e-m:e-p:32:32-Fi8-i64:64-v128:64:128-a:0:32-n32-S64"
+# when using a bbappend
+RUST_HOST = "${BUILD_SYS}"
+RUST_TARGET = "${TARGET_SYS}"
+
+# when using local.conf
+RUST_HOST:pn-firefox = "${BUILD_SYS}"
+RUST_TARGET:pn-firefox = "${TARGET_SYS}"
 ```
+
+Due to this, the selection of Rust provider needs some caution.
+Testing is performed using the following combinations (the "latest" version should also be able to compile "ESR"):
+
+| Yocto version | Rust version ESR | Rust version latest |
+| ---------------- | ----- | ---- |
+| Kirkstone | Rust 1.80.1 from meta-lts-mixins (kirkstone/rust branch) | Rust 1.82.0 from meta-rust |
+| Scarthgap | Rust 1.81.0 from meta-lts-mixins (scarthgap/rust branch) | Custom Rust 1.82 - Note1 |
+| Styhead | Rust 1.79 from oe-core | N/A - Note2 |
+| Walnascar | Rust 1.83.0 from oe-core | Rust 1.83.0 from oe-core |
+
+Note1: The latest available Rust for Scarthgap is 1.81.0 in meta-lts-mixins layer. Meta-rust layer claims to
+have version 1.82.0 and is compatible with Scarthgap, however unfortunately in practice it throws various errors.
+I expect meta-lts-mixins to be updated in the foreseeable future, however until then I have backported
+some relevant patches from oe-core master to a fork of meta-lts-mixins: https://github.com/OldManYellsAtCloud/meta-lts-mixins
+Testing was performed successfully using this Rust version. Note that this fork mostly for testing, and
+while I am willing to support it to build Firefox, in general it shouldn't be used for other things than experimenting.
+
+Note2: The latest available Rust for Styhead is 1.79 at the time of writing this, and that branch is only
+weeks away from being EOL. Due to this, the latest Firefox version was not tested with it. In case you
+find up-to-date enough recipes for Rust that work on Styhead, Firefox should work also. In case support
+is needed, I can only provide very limited about for this combination.
 
 Contributing
 ------------
@@ -180,37 +201,38 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 
 | Firefox version | Dependency | Used commit | Source / Comment |
 | --------------- | ---------- | -------------- | ---------------- |
-| 128.9.0esr + 136.0.3 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
-| 128.9.0esr + 136.0.3 | mp4parse | a138e40ec1c603615873e524b5b22e11c0ec4820 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.9.0esr + 136.0.3 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.9.0esr + 136.0.3 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.9.0esr + 136.0.3 | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required by `js/src/frontend/smoosh/Cargo.toml` |
-| 128.9.0esr + 136.0.3 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.9.0esr + 137.0 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.9.0esr + 137.0 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
+| 128.9.0esr | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required by `js/src/frontend/smoosh/Cargo.toml` |
 | 128.9.0esr | gpu-descriptor | 7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d | Required by top level Cargo.toml |
 | 128.9.0esr | aa-stroke | d94278ed9c7020f50232689a26d1277eb0eb74d2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | warp | 9d081461ae1167eb321585ce424f4fef6cf0092b | Required by top level Cargo.toml |
 | 128.9.0esr | application-services | 7c275b9088557abcbc8f3c2834f9aaa9064ca5e4 | Required by top level Cargo.toml |
 | 128.9.0esr | mio | 9a2ef335c366044ffe73b1c4acabe50a1daefe05 | Required by top level Cargo.toml |
+| 128.9.0esr | mp4parse | a138e40ec1c603615873e524b5b22e11c0ec4820 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | cubeb-coreaudio | 8bce3b333a920999055397a397e59c2b81a93b9a | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | audioipc | e1071472c55193032aa4c1403317844005f9d0fc | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | mapped_hyph | c7651a0cffff41996ad13c44f689bd9cd2192c01 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | ~~neqo~~ | ~~121fe683ae4b39a5b694f671abfd397cbd9b4322~~ | Required by `netwerk/socket/neqo_glue/Cargo.toml` - Not used by 128.9.0esr, uses vendored version. |
 | 128.9.0esr | wgpu | c7458638d14921c7562e4197ddeefa17be413587 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 136.0.3 | application-services | 25934715ecc08fc922c80797c637dea64ee742d1 | Required by top level Cargo.toml |
-| 136.0.3 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 136.0.3 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 136.0.3 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 136.0.3 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 136.0.3 | neqo | c6d5502fb5b827473e7c5d7c4c380275cdb3d931 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
-| 136.0.3 | wgpu | aa7bec65b90028e4db6ec8def8589b52097d92f9 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 136.0.3 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
-| 136.0.3 | zlib | 4aa430ccb77537d0d60dab8db993ca51bb1194c5 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 136.0.3 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
-| 136.0.3 | mls-rs | eedb37e50e3fca51863f460755afd632137da57c | Required by `third-party/rust/mls-platform-api/Cargo.toml` crate |
-| 136.0.3 | mls-platform-api | 19c3f18b747d13354370ba84440bb0b963932634 |  Required by `security/mls/mls_gk/Cargo.toml` |
-| 136.0.3 | objc | 4de89f5aa9851ceca4d40e7ac1e2759410c04324 | Required by top level Cargo.toml |
+| 137.0 | application-services | 25934715ecc08fc922c80797c637dea64ee742d1 | Required by top level Cargo.toml |
+| 137.0 | mp4parse | e64650a686e5c5732395cd059e17cfd3b1e5b63b | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0 | neqo | f8946d5187271b3e63e8d0209343510bdeac1451 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
+| 137.0 | wgpu | 93f64dc847a0e6788b17b292ae4d7d59361e3be0 | Required by `gfx/wgpu_bindings/Cargo.toml` |
+| 137.0 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
+| 137.0 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
+| 137.0 | mls-rs | b747d7efb85a776b97ad8afa8d1b32893fa5efa3 | Required by `third_party/rust/mls-platform-api/Cargo.toml` crate |
+| 137.0 | mls-platform-api | 5d88241b9765cae3669aba21f0946bd3700f7db1 |  Required by `security/mls/mls_gk/Cargo.toml` |
+| 137.0 | objc | 4de89f5aa9851ceca4d40e7ac1e2759410c04324 | Required by top level Cargo.toml |
+| 137.0 | osmesa-src | a9c57bae855c8a16c8397c04127f75ab14171c81 | Required by gfx/wr/wrench/Cargo.toml |

@@ -32,12 +32,17 @@ export WASM_CXX = "${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
 
 export BUILD_VERBOSE_LOG = "1"
 
+RUST_HOST ?= "${RUST_BUILD_SYS}"
+RUST_TARGET ?= "${RUST_HOST_SYS}"
+
+export CRATE_CC_NO_DEFAULTS = "1"
+
 mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
-	export RUST_HOST="${RUST_BUILD_SYS}"
-	export RUST_TARGET="${RUST_HOST_SYS}"
+	export RUST_HOST=${RUST_HOST}
+	export RUST_TARGET=${RUST_TARGET}
 
 	export BINDGEN_MFLOAT="${@bb.utils.contains('TUNE_CCARGS_MFLOAT', 'hard', '-mfloat-abi=hard', '', d)}"
 	export BINDGEN_CFLAGS="--target=${TARGET_SYS} --sysroot=${RECIPE_SYSROOT} ${BINDGEN_MFLOAT}"
