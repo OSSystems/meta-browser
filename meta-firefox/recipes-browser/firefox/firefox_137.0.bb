@@ -6,7 +6,7 @@ include firefox.inc
 
 DEPENDS:append:libc-musl = " libexecinfo "
 
-LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=20d883514bd953070b1a93a475d0d0cb \
+LIC_FILES_CHKSUM = "file://toolkit/content/license.html;md5=412d1b6ae4693e123d6f2f107c3344fa \
                     file://LICENSE;md5=dc9b6ecd19a14a54a628edaaf23733bf"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-latest:"
@@ -14,21 +14,22 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-latest:"
 SRC_URI += "git://github.com/mozilla/application-services.git;protocol=https;branch=main;name=application-services;destsuffix=application-services \
             git://github.com/mozilla/audioipc;protocol=https;branch=master;name=audioipc;destsuffix=audioipc \
             git://github.com/jamienicol/glutin;protocol=https;branch=wr;name=glutin;destsuffix=glutin \
-            git://github.com/trifectatechfoundation/zlib-rs;protocol=https;branch=main;name=zlib;destsuffix=zlib \
             git://github.com/beurdouche/nss-gk-api;protocol=https;branch=main;name=nss-gk-api;destsuffix=nss-gk-api \
             git://github.com/beurdouche/mls-rs;protocol=https;branch=main;name=mls-rs;destsuffix=mls-rs \
             git://github.com/beurdouche/mls-platform-api;protocol=https;branch=main;name=mls-platform-api;destsuffix=mls-platform-api \
-            git://github.com/glandium/rust-objc;protocol=https;branch=ATOMIC_USIZE_INIT;name=objc;destsuffix=objc"
+            git://github.com/glandium/rust-objc;protocol=https;branch=ATOMIC_USIZE_INIT;name=objc;destsuffix=objc \
+            git://github.com/servo/osmesa-src;protocol=https;branch=main;name=osmesa-src;destsuffix=osmesa-src"
 
-SRC_URI[sha256sum] = "95304fb019d4d5a2ddf838cefd68e0b7d1c5eb098d383113fb569266f6b5c028"
+SRC_URI[sha256sum] = "1ec47e2f83ccb80c0133f171091b5669c7ffdf7b86051fc85c0f915b7bcba91d"
 
 SRCREV_FORMAT .= "_application-services"
 SRCREV_application-services = "25934715ecc08fc922c80797c637dea64ee742d1"
 
 SRCREV_FORMAT .= "_neqo"
-SRCREV_neqo = "c6d5502fb5b827473e7c5d7c4c380275cdb3d931"
+SRCREV_neqo = "f8946d5187271b3e63e8d0209343510bdeac1451"
+
 SRCREV_FORMAT .= "_wgpu"
-SRCREV_wgpu = "aa7bec65b90028e4db6ec8def8589b52097d92f9"
+SRCREV_wgpu = "93f64dc847a0e6788b17b292ae4d7d59361e3be0"
 
 SRCREV_FORMAT .= "_audioipc"
 SRCREV_audioipc = "e6f44a2bd1e57d11dfc737632a9e849077632330"
@@ -45,20 +46,23 @@ SRCREV_glutin = "03285da9c14ec56296c2400c781d2c32b80d745a"
 SRCREV_FORMAT .= "_aa-stroke"
 SRCREV_aa-stroke = "a821fa621c2def48e90c82774b4c6563b5a8ea4a"
 
-SRCREV_FORMAT .= "_zlib"
-SRCREV_zlib = "4aa430ccb77537d0d60dab8db993ca51bb1194c5"
-
 SRCREV_FORMAT .= "_nss-gk-api"
 SRCREV_nss-gk-api = "e48a946811ffd64abc78de3ee284957d8d1c0d63"
 
 SRCREV_FORMAT .= "_mls-rs"
-SRCREV_mls-rs = "eedb37e50e3fca51863f460755afd632137da57c"
+SRCREV_mls-rs = "b747d7efb85a776b97ad8afa8d1b32893fa5efa3"
 
 SRCREV_FORMAT .= "_mls-platform-api"
-SRCREV_mls-platform-api = "19c3f18b747d13354370ba84440bb0b963932634"
+SRCREV_mls-platform-api = "5d88241b9765cae3669aba21f0946bd3700f7db1"
 
 SRCREV_FORMAT .= "_objc"
 SRCREV_objc = "4de89f5aa9851ceca4d40e7ac1e2759410c04324"
+
+SRCREV_FORMAT .= "_mp4parse"
+SRCREV_mp4parse = "e64650a686e5c5732395cd059e17cfd3b1e5b63b"
+
+SRCREV_FORMAT .= "_osmesa-src"
+SRCREV_osmesa-src = "a9c57bae855c8a16c8397c04127f75ab14171c81"
 
 PACKAGECONFIG[x11-only] = "--enable-default-toolkit=cairo-gtk3-x11-only,,,,,wayland-only"
 PACKAGECONFIG[wayland-only] = "--enable-default-toolkit=cairo-gtk3-wayland-only,,virtual/egl,,,x11-only"
