@@ -69,7 +69,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            git://github.com/hsivonen/chardetng_c.git;protocol=https;branch=tldquery;name=chardetng_c;destsuffix=chardetng_c \
            git://github.com/chris-zen/coremidi.git;protocol=https;branch=master;name=coremidi;destsuffix=coremidi \
            git://github.com/mozilla/midir.git;protocol=https;branch=firefox-vendoring;name=midir;destsuffix=midir \
-           git://github.com/mozilla-spidermonkey/jsparagus;protocol=https;branch=ci_generated;name=jsparagus;destsuffix=jsparagus \
            git://github.com/FirefoxGraphics/aa-stroke;protocol=https;branch=main;name=aa-stroke;destsuffix=aa-stroke \
            git://github.com/mozilla/cubeb-coreaudio-rs;protocol=https;branch=trailblazer;name=cubeb-coreaudio;destsuffix=cubeb-coreaudio \
            git://github.com/mozilla/cubeb-pulse-rs;protocol=https;branch=dev;name=cubeb-pulse;destsuffix=cubeb-pulse \
@@ -97,14 +96,10 @@ SRCREV_FORMAT .= "_cose-rust"
 SRCREV_cose-rust = "43c22248d136c8b38fe42ea709d08da6355cf04b"
 SRCREV_FORMAT .="_midir"
 SRCREV_midir = "85156e360a37d851734118104619f86bd18e94c6"
-SRCREV_FORMAT .= "_mp4parse"
-SRCREV_mp4parse = "a138e40ec1c603615873e524b5b22e11c0ec4820"
 SRCREV_FORMAT .= "_cubeb-pulse"
 SRCREV_cubeb-pulse = "8678dcab1c287de79c4c184ccc2e065bc62b70e2"
 SRCREV_FORMAT .= "_wpf-gpu-raster"
 SRCREV_wpf-gpu-raster = "99979da091fd58fba8477e7fcdf5ec0727102916"
-SRCREV_FORMAT .= "_jsparagus"
-SRCREV_jsparagus = "61f399c53a641ebd3077c1f39f054f6d396a633c"
 SRCREV_FORMAT .= "_unicode-bidi"
 SRCREV_unicode-bidi = "ca612daf1c08c53abe07327cb3e6ef6e0a760f0c"
 
