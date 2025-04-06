@@ -1,12 +1,33 @@
-Current build and test status: [![Firefox build- and smoke-test](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/yocto_matrix.yml/badge.svg)](https://github.com/OldManYellsAtCloud/meta-browser/actions/workflows/yocto_matrix.yml)
+## Build and test status: 
 
-The following build combinations are tested automatically for each PR (the current config only allows to generate 1 summary badge, for everything):
-- all supported Yocto versions (Kirkstone, Scarthgap, Styhead, Walnascar/master)
-- both ESR and latest Firefox version
-- glibc and musl 
-- 4 arches: arm, aarch64, riscv-64 and x86-64
 
-All combinations of the above are tested, except for RISC-V@Kirkstone combinations, which are not tested.
+### Glibc
+
+| x | aarch64 | arm | riscv64 | x86-64 |
+| ---- | ---- | ---- | ---- | ---- |
+| Kirkstone - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/128.9.0esr/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/128.9.0esr/test) |
+| Kirkstone - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/137.0.1/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/137.0.1/test) |
+| Scarthgap - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/128.9.0esr/test) |
+| Scarthgap - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/137.0.1/test) |
+| Styhead - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/styhead/arm/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/arm/glibc/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/styhead/riscv/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/riscv/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/glibc/128.9.0esr/test) |
+| Styhead - 137.0.1 | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/glibc/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/arm/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/arm/glibc/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/riscv/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/riscv/glibc/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/glibc/137.0.1/test) |
+| Walnascar - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/arm/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/arm/glibc/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/walnascar/riscv/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/glibc/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/glibc/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/glibc/128.9.0esr/test) |
+| Walnascar - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/arm/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/arm/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/glibc/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/glibc/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/glibc/137.0.1/test) |
+
+
+### musl-libc
+
+| x | aarch64 | arm | riscv64 | x86-64 |
+| ---- | ---- | ---- | ---- | ---- |
+| Kirkstone - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/128.9.0esr/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/128.9.0esr/test) |
+| Kirkstone - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/137.0.1/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/137.0.1/test) |
+| Scarthgap - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/128.9.0esr/test) |
+| Scarthgap - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/137.0.1/test) |
+| Styhead - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/styhead/arm/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/arm/musl/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/styhead/riscv/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/riscv/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/musl/128.9.0esr/test) |
+| Styhead - 137.0.1 | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/aarch64/musl/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/arm/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/arm/musl/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/riscv/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/riscv/musl/137.0.1/test) | Note1 ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/styhead/x86-64/musl/137.0.1/test) |
+| Walnascar - 128.9.0esr | ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/arm/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/arm/musl/128.9.0esr/test) |![](https://sarvari.me/meta-browser/badges/walnascar/riscv/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/musl/128.9.0esr/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/musl/128.9.0esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/musl/128.9.0esr/test) |
+| Walnascar - 137.0.1 | ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/aarch64/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/arm/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/arm/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/riscv/musl/137.0.1/test) | ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/musl/137.0.1/build) <br/> ![](https://sarvari.me/meta-browser/badges/walnascar/x86-64/musl/137.0.1/test) |
+
 
 OpenEmbedded/Yocto BSP layer for Firefox Browser
 ================================================
@@ -55,18 +76,11 @@ Testing is performed using the following combinations (the "latest" version shou
 | Yocto version | Rust version ESR | Rust version latest |
 | ---------------- | ----- | ---- |
 | Kirkstone | Rust 1.80.1 from meta-lts-mixins (kirkstone/rust branch) | Rust 1.82.0 from meta-rust |
-| Scarthgap | Rust 1.81.0 from meta-lts-mixins (scarthgap/rust branch) | Custom Rust 1.82 - Note1 |
-| Styhead | Rust 1.79 from oe-core | N/A - Note2 |
+| Scarthgap | Rust 1.85.1 from meta-lts-mixins (scarthgap/rust branch) | Rust 1.85.1 from meta-lts-mixins (scarthgap/rust branch) |
+| Styhead | Rust 1.79 from oe-core | N/A - Note1 |
 | Walnascar | Rust 1.83.0 from oe-core | Rust 1.83.0 from oe-core |
 
-Note1: The latest available Rust for Scarthgap is 1.81.0 in meta-lts-mixins layer. Meta-rust layer claims to
-have version 1.82.0 and is compatible with Scarthgap, however unfortunately in practice it throws various errors.
-I expect meta-lts-mixins to be updated in the foreseeable future, however until then I have backported
-some relevant patches from oe-core master to a fork of meta-lts-mixins: https://github.com/OldManYellsAtCloud/meta-lts-mixins
-Testing was performed successfully using this Rust version. Note that this fork mostly for testing, and
-while I am willing to support it to build Firefox, in general it shouldn't be used for other things than experimenting.
-
-Note2: The latest available Rust for Styhead is 1.79 at the time of writing this, and that branch is only
+Note1: The latest available Rust for Styhead is 1.79 at the time of writing this, and that branch is only
 weeks away from being EOL. Due to this, the latest Firefox version was not tested with it. In case you
 find up-to-date enough recipes for Rust that work on Styhead, Firefox should work also. In case support
 is needed, I can only provide very limited about for this combination.
@@ -201,15 +215,15 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 
 | Firefox version | Dependency | Used commit | Source / Comment |
 | --------------- | ---------- | -------------- | ---------------- |
-| 128.9.0esr + 137.0 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
-| 128.9.0esr + 137.0 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.9.0esr + 137.0 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 128.9.0esr + 137.0 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | any_all_workaround | 7fb1b7034c9f172aade21ee1c8554e8d8a48af80 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | chardetng | 3484d3e3ebdc8931493aa5df4d7ee9360a90e76b | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | chardetng_c | ed8a4c6f900a90d4dbc1d64b856e61490a1c3570 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | coremidi | fc68464b5445caf111e41f643a2e69ccce0b4f83 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | cose | 43c22248d136c8b38fe42ea709d08da6355cf04b | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | midir | 85156e360a37d851734118104619f86bd18e94c6 | Required by top level Cargo.toml |
+| 128.9.0esr + 137.0.1 | cubeb-pulse | 8678dcab1c287de79c4c184ccc2e065bc62b70e2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.9.0esr + 137.0.1 | wpf-gpu-raster | 99979da091fd58fba8477e7fcdf5ec0727102916 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 128.9.0esr + 137.0.1 | unicode-bidi | ca612daf1c08c53abe07327cb3e6ef6e0a760f0c | Required by top level Cargo.toml |
 | 128.9.0esr | jsparagus | 61f399c53a641ebd3077c1f39f054f6d396a633c | Required by `js/src/frontend/smoosh/Cargo.toml` |
 | 128.9.0esr | gpu-descriptor | 7b71a4e47c81903ad75e2c53deb5ab1310f6ff4d | Required by top level Cargo.toml |
 | 128.9.0esr | aa-stroke | d94278ed9c7020f50232689a26d1277eb0eb74d2 | Required by `toolkit/library/rust/shared/Cargo.toml` |
@@ -222,17 +236,17 @@ Note: the dependency column refers to the `destsuffix` used in the recipes.
 | 128.9.0esr | mapped_hyph | c7651a0cffff41996ad13c44f689bd9cd2192c01 | Required by `toolkit/library/rust/shared/Cargo.toml` |
 | 128.9.0esr | ~~neqo~~ | ~~121fe683ae4b39a5b694f671abfd397cbd9b4322~~ | Required by `netwerk/socket/neqo_glue/Cargo.toml` - Not used by 128.9.0esr, uses vendored version. |
 | 128.9.0esr | wgpu | c7458638d14921c7562e4197ddeefa17be413587 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 137.0 | application-services | 25934715ecc08fc922c80797c637dea64ee742d1 | Required by top level Cargo.toml |
-| 137.0 | mp4parse | e64650a686e5c5732395cd059e17cfd3b1e5b63b | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 137.0 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 137.0 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 137.0 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 137.0 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
-| 137.0 | neqo | f8946d5187271b3e63e8d0209343510bdeac1451 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
-| 137.0 | wgpu | 93f64dc847a0e6788b17b292ae4d7d59361e3be0 | Required by `gfx/wgpu_bindings/Cargo.toml` |
-| 137.0 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
-| 137.0 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
-| 137.0 | mls-rs | b747d7efb85a776b97ad8afa8d1b32893fa5efa3 | Required by `third_party/rust/mls-platform-api/Cargo.toml` crate |
-| 137.0 | mls-platform-api | 5d88241b9765cae3669aba21f0946bd3700f7db1 |  Required by `security/mls/mls_gk/Cargo.toml` |
-| 137.0 | objc | 4de89f5aa9851ceca4d40e7ac1e2759410c04324 | Required by top level Cargo.toml |
-| 137.0 | osmesa-src | a9c57bae855c8a16c8397c04127f75ab14171c81 | Required by gfx/wr/wrench/Cargo.toml |
+| 137.0.1 | application-services | 25934715ecc08fc922c80797c637dea64ee742d1 | Required by top level Cargo.toml |
+| 137.0.1 | mp4parse | e64650a686e5c5732395cd059e17cfd3b1e5b63b | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0.1 | aa-stroke | a821fa621c2def48e90c82774b4c6563b5a8ea4a | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0.1 | cubeb-coreaudio | 2407441a2f67341a0e13b4ba6547555e387c671c | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0.1 | audioipc | e6f44a2bd1e57d11dfc737632a9e849077632330 | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0.1 | mapped_hyph | eff105f6ad7ec9b79816cfc1985a28e5340ad14b | Required by `toolkit/library/rust/shared/Cargo.toml` |
+| 137.0.1 | neqo | f8946d5187271b3e63e8d0209343510bdeac1451 | Required by `netwerk/socket/neqo_glue/Cargo.toml` |
+| 137.0.1 | wgpu | 93f64dc847a0e6788b17b292ae4d7d59361e3be0 | Required by `gfx/wgpu_bindings/Cargo.toml` |
+| 137.0.1 | glutin | 03285da9c14ec56296c2400c781d2c32b80d745a | Required by `gfx/wr/Cargo.toml` |
+| 137.0.1 | nss-gk-api | e48a946811ffd64abc78de3ee284957d8d1c0d63 | Required by top level Cargo.toml and `third-party/rust/mls-rs-crypto-nss/Cargo.toml` |
+| 137.0.1 | mls-rs | b747d7efb85a776b97ad8afa8d1b32893fa5efa3 | Required by `third_party/rust/mls-platform-api/Cargo.toml` crate |
+| 137.0.1 | mls-platform-api | 5d88241b9765cae3669aba21f0946bd3700f7db1 |  Required by `security/mls/mls_gk/Cargo.toml` |
+| 137.0.1 | objc | 4de89f5aa9851ceca4d40e7ac1e2759410c04324 | Required by top level Cargo.toml |
+| 137.0.1 | osmesa-src | a9c57bae855c8a16c8397c04127f75ab14171c81 | Required by gfx/wr/wrench/Cargo.toml |
