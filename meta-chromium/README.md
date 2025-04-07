@@ -82,6 +82,36 @@ host. clang-native from the meta-clang layer is used to build those binaries.
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
 
+### Troubleshooting Build Error: std::bad_alloc
+If you encounter a build error similar to the following:
+
+```
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+terminate called recursively
+terminate called recursively
+```
+You might be experiencing what has been descibed in
+[this issue](https://github.com/OSSystems/meta-browser/issues/845#issuecomment-2664769837).
+
+You can try to increase the
+[vm.max_map_count](https://docs.kernel.org/admin-guide/sysctl/vm.html#max-map-count)
+value to allow your system to handle more memory mappings.
+
+1. Temporarily Set vm.max_map_count:
+
+```
+# echo 1048576 > /proc/sys/vm/max_map_count
+```
+This change will only persist until the system is rebooted. 
+
+2. Permanently Set vm.max_map_count:
+To make this change permanent, you need to modify `/etc/sysctl.conf` and add:
+```bash
+vm.max_map_count=1048576
+```
+A reboot may be required for the new value to get picked up (or run `sysconf -p`).
+
 ### scarthgap-specific requirements
 
 The scarthgap OE/Yocto branch is an LTS release, which is often at odds with
