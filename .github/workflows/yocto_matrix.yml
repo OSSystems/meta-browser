@@ -11,6 +11,11 @@ on:
         description: 'Branch to checkout for the workflow'
         required: true
         default: 'master'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
 
 permissions:
   contents: read
@@ -40,8 +45,15 @@ jobs:
          mkdir -p /yocto/${{ matrix.yocto_version }}
          cd /yocto/${{ matrix.yocto_version }}
          rm -rf meta-browser meta-firefox-test
-         git clone $GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser
-         git -C meta-browser checkout ${{ github.event.inputs.branch }}
+         if [ "${{ github.event_name }}" = "pull_request" ]; then
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
+             GH_REV="$GITHUB_HEAD_REF"
+         else
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser"
+             GH_REV="${{ github.event.inputs.branch }}"
+         fi
+         git clone $GH_URL
+         git -C meta-browser checkout $GH_REV
          # clone the test repo
          git clone https://github.com/OldManYellsAtCloud/meta-firefox-test.git
          ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
