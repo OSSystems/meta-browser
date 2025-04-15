@@ -1,6 +1,16 @@
 name: Firefox build- and smoke-test
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Repository to clone for the workflow'
+        required: true
+        default: 'OSSystems'
+      branch:
+        description: 'Branch to checkout for the workflow'
+        required: true
+        default: 'master'
 
 permissions:
   contents: read
@@ -30,8 +40,8 @@ jobs:
          mkdir -p /yocto/${{ matrix.yocto_version }}
          cd /yocto/${{ matrix.yocto_version }}
          rm -rf meta-browser meta-firefox-test
-         git clone $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
-         git -C meta-browser checkout $GITHUB_HEAD_REF
+         git clone $GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser
+         git -C meta-browser checkout ${{ github.event.inputs.branch }}
          # clone the test repo
          git clone https://github.com/OldManYellsAtCloud/meta-firefox-test.git
          ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
