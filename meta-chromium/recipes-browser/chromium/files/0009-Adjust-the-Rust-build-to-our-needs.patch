@@ -1,4 +1,4 @@
-From f4f50a5de596d13d18f1f9b80f83e446936a4afb Mon Sep 17 00:00:00 2001
+From 394ff496602bf9695c7f815f5f73c0027ab4ddc7 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 16 Jan 2024 12:29:30 +0000
 Subject: [PATCH] Adjust the Rust build to our needs
@@ -16,14 +16,14 @@ Subject: [PATCH] Adjust the Rust build to our needs
 Upstream-Status: Inappropriate [specific to our build setup]
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- build/config/rust.gni            | 26 +++++++++++++++++++-------
+ build/config/rust.gni            | 28 ++++++++++++++++++++--------
  build/rust/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 28 +++++++++++++++++++++-------
  build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
- 4 files changed, 52 insertions(+), 19 deletions(-)
+ 4 files changed, 53 insertions(+), 20 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 60856e609d..4baeaecb9c 100644
+index 74b3b9ced5..5affd0b445 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
 @@ -102,6 +102,11 @@ declare_args() {
@@ -63,12 +63,16 @@ index 60856e609d..4baeaecb9c 100644
      cargo_target_abi = ""
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
-@@ -191,18 +203,18 @@ if (is_linux || is_chromeos) {
-     }
-     if (arm_arch == "armv7-a" || arm_arch == "armv7") {
-       # No way to inform Rust about the -a suffix.
--      rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
-+      rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
+@@ -201,21 +213,21 @@ if (is_linux || is_chromeos) {
+       # targets in fact target Thumb, see:
+       # https://github.com/rust-lang/rust/issues/44722
+       if (arm_use_neon) {
+-        rust_abi_target = "thumbv7neon-unknown-linux-gnueabi" + float_suffix
++        rust_abi_target = "thumbv7neon" + vendor + "-linux-gnueabi" + float_suffix
+       } else {
+-        rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
++        rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
+       }
        cargo_target_abi = "eabi" + float_suffix
      } else {
 -      rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
@@ -99,10 +103,10 @@ index 8f2096dfe5..de43d44eed 100755
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index b5f5291283..9619dccc45 100644
+index 6b996aa1fe..146f6633ce 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -191,7 +191,8 @@ if (toolchain_has_rust) {
+@@ -207,7 +207,8 @@ if (toolchain_has_rust) {
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
 
@@ -112,7 +116,7 @@ index b5f5291283..9619dccc45 100644
 
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -320,12 +321,12 @@ if (toolchain_has_rust) {
+@@ -336,12 +337,12 @@ if (toolchain_has_rust) {
          rust_abi_target,
        ]
 
@@ -128,7 +132,7 @@ index b5f5291283..9619dccc45 100644
        }
 
        visibility = [ ":*" ]
-@@ -338,8 +339,18 @@ if (toolchain_has_rust) {
+@@ -354,8 +355,18 @@ if (toolchain_has_rust) {
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -149,7 +153,7 @@ index b5f5291283..9619dccc45 100644
 
        visibility = [ ":*" ]
      }
-@@ -379,7 +390,10 @@ if (toolchain_has_rust) {
+@@ -395,7 +406,10 @@ if (toolchain_has_rust) {
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
