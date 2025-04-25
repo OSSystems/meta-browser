@@ -1,4 +1,4 @@
-From 2e867ac9e97b5ae2090b4de212d9c0e50eee653b Mon Sep 17 00:00:00 2001
+From feb3b8299f312e4074fc76fe7b6dfa236a5823d8 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 25 Jun 2024 11:06:19 +0000
 Subject: [PATCH] Drop GN compiler settings conflicting with OE
@@ -19,10 +19,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 46 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index f58320b88f..309c3078a2 100644
+index e7a60d56b5..b0e9e04bf3 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1240,26 +1240,6 @@ config("compiler_cpu_abi") {
+@@ -1211,26 +1211,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }
@@ -49,7 +49,7 @@ index f58320b88f..309c3078a2 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1267,9 +1247,6 @@ config("compiler_cpu_abi") {
+@@ -1238,9 +1218,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +59,7 @@ index f58320b88f..309c3078a2 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1349,8 +1326,6 @@ config("compiler_cpu_abi") {
+@@ -1320,8 +1297,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +68,7 @@ index f58320b88f..309c3078a2 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1399,8 +1374,6 @@ config("compiler_cpu_abi") {
+@@ -1370,8 +1345,6 @@ config("compiler_cpu_abi") {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
            } else {
@@ -77,7 +77,7 @@ index f58320b88f..309c3078a2 100644
            }
          } else {
            cflags += [
-@@ -1458,8 +1431,6 @@ config("compiler_cpu_abi") {
+@@ -1429,8 +1402,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -86,7 +86,7 @@ index f58320b88f..309c3078a2 100644
          } else {
            cflags += [
              "-EB",
-@@ -1628,23 +1599,6 @@ config("compiler_deterministic") {
+@@ -1599,23 +1570,6 @@ config("compiler_deterministic") {
        }
      }
    }
