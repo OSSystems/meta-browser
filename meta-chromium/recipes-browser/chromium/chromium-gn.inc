@@ -25,12 +25,24 @@ SRC_URI += "\
     file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
-    file://0011-Disable-crabbyavif-to-fix-build-errors.patch \
-    file://0012-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
-    file://0013-Revert-Set-Rust-symbol-visibility-to-hidden-when-C-s.patch \
-    file://0014-pdfium-Fix-missing-PDFiumAPIStringBufferAdapter-temp.patch \
-    file://0015-Revert-Connect-the-Rust-log-crate-to-the-base-loggin.patch \
+    file://0011-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
+    file://0012-Revert-Set-Rust-symbol-visibility-to-hidden-when-C-s.patch \
+    file://0013-pdfium-Fix-missing-PDFiumAPIStringBufferAdapter-temp.patch \
+    file://0014-Revert-Remove-libavif-based-AVIF-decoder.patch \
+    file://0015-Revert-Remove-third_party-libavif.patch \
+    file://0016-Disable-crabbyavif-to-fix-build-errors.patch \
+    file://0017-rust-Use-adler-instead-of-adler2.patch \
+    file://0018-third_party-node-update_node_binaries-Update-nodejs-.patch \
 "
+
+# Missing third_party sources.
+SRC_URI += "\
+    git://chromium.googlesource.com/external/github.com/AOMediaCodec/libavif;protocol=https;branch=main;name=libavif;destsuffix=third_party/libavif/src \
+"
+
+SRCREV_FORMAT .= "_libavif"
+SRCREV_libavif = "e7b34a1f5e9f7024d08311c7bae156061b889882"
+
 # ARM/AArch64-specific patches.
 SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
@@ -481,6 +493,12 @@ do_copy_target_rustlibs () {
     cp -r $rustlib_src_dir "${STAGING_LIBDIR_NATIVE}/rustlib"
 }
 addtask copy_target_rustlibs after do_configure before do_compile
+
+do_copy_missing_third_party_sources () {
+	rm -rf ${S}/third_party/libavif/src
+	cp -r ${UNPACKDIR}/third_party/libavif/src/ ${S}/third_party/libavif/
+}
+addtask copy_missing_third_party_sources after do_patch before do_configure
 
 do_configure() {
 	cd ${S}
