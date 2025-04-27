@@ -1,0 +1,79 @@
+name: Firefox build- and smoke-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Repository to clone for the workflow'
+        required: true
+        default: 'OSSystems'
+      branch:
+        description: 'Branch to checkout for the workflow'
+        required: true
+        default: 'master'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-firefox/**'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build:
+    if: ${{ github.repository_owner == 'OSSystems' }}
+    strategy:
+      matrix:
+        yocto_version: [kirkstone, scarthgap, styhead, walnascar]
+        ff_version: [esr, latest]
+        libc_flavour: [glibc, musl]
+        arch: [arm, aarch64, riscv, x86-64]
+        exclude:
+          - yocto_version: kirkstone
+            arch: riscv
+          - yocto_version: styhead
+            ff_version: latest
+    runs-on: [self-hosted, firefox]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    steps:
+      - run: |
+         mkdir -p /yocto/${{ matrix.yocto_version }}
+         cd /yocto/${{ matrix.yocto_version }}
+         rm -rf meta-browser meta-firefox-test
+         if [ "${{ github.event_name }}" = "pull_request" ]; then
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
+             GH_REV="$GITHUB_HEAD_REF"
+         else
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser"
+             GH_REV="${{ github.event.inputs.branch }}"
+         fi
+         git clone $GH_URL
+         git -C meta-browser checkout $GH_REV
+         # clone the test repo
+         git clone https://github.com/OldManYellsAtCloud/meta-firefox-test.git
+         ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+  test:
+    if: ${{ github.repository_owner == 'OSSystems' }}
+    runs-on: [self-hosted, firefox]
+    needs: build
+    strategy:
+      matrix:
+        yocto_version: [kirkstone, scarthgap, styhead, walnascar]
+        ff_version: [esr, latest]
+        libc_flavour: [glibc, musl]
+        arch: [arm, aarch64, riscv, x86-64]
+        exclude:
+          - yocto_version: kirkstone
+            arch: riscv
+          - yocto_version: styhead
+            ff_version: latest
+    steps:
+      - run: |
+         cd /yocto/${{ matrix.yocto_version }}
+         ./meta-firefox-test/scripts/test.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
