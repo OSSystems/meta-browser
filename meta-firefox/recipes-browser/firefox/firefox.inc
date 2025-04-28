@@ -94,7 +94,7 @@ SRCREV_FORMAT .= "_any-all-woraround"
 SRCREV_any-all-workaround = "7fb1b7034c9f172aade21ee1c8554e8d8a48af80"
 SRCREV_FORMAT .= "_cose-rust"
 SRCREV_cose-rust = "43c22248d136c8b38fe42ea709d08da6355cf04b"
-SRCREV_FORMAT .="_midir"
+SRCREV_FORMAT .= "_midir"
 SRCREV_midir = "85156e360a37d851734118104619f86bd18e94c6"
 SRCREV_FORMAT .= "_cubeb-pulse"
 SRCREV_cubeb-pulse = "8678dcab1c287de79c4c184ccc2e065bc62b70e2"
@@ -123,7 +123,7 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbid-multiple-compositors',
 TOOLCHAIN:pn-firefox = "clang"
 AS = "${CC}"
 
-DISABLE_STATIC=""
+DISABLE_STATIC = ""
 
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
