@@ -138,3 +138,14 @@ index 9c7ada2..a5ec4d0 100644
  elif CONFIG['TARGET_CPU'] == 'arm':
      stack_alignment = 4
      ASFLAGS += ['-I%s/dist/include/dav1d/' % TOPOBJDIR]
+--- ./toolkit/components/resistfingerprinting/extract_rfp_targets.py	2025-05-26 15:52:51.714265797 +0200
++++ ./toolkit/components/resistfingerprinting/extract_rfp_targets.py	2025-05-26 15:58:17.970476117 +0200
+@@ -65,7 +65,7 @@
+ def main(output, targets_path, defaults_base_path, defaults_fpp_path):
+     output.write("// This is a generated file. Please do not edit.\n")
+     output.write(
+-        f"// See extract_rfp_targets.py, {targets_path}, {defaults_base_path}, {defaults_fpp_path} files instead.\n"
++        f"// See extract_rfp_targets.py, {'/'.join(targets_path.split('/')[-4:])}, {'/'.join(defaults_base_path.split('/')[-4:])}, {'/'.join(defaults_fpp_path.split('/')[-4:])} files instead.\n"
+     )
+ 
+     write_targets(output, parse_targets(targets_path))

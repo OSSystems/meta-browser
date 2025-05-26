@@ -1,0 +1,15 @@
+Fixes: On Scarthgap, compiling with musl, the compilation fails with the following error:
+
+third_party/sqlite3/ext/sqlite-vec/sqlite-vec.c:69:9: error: unknown type name 'u_int8_t'; did you mean 'uint8_t'?
+
+Upstream-Status: Inappropriate [oe-specific]
+--- ./third_party/sqlite3/ext/sqlite-vec/sqlite-vec.c.orig	2025-05-27 08:03:14.262073801 +0200
++++ ./third_party/sqlite3/ext/sqlite-vec/sqlite-vec.c	2025-05-27 08:05:26.885013410 +0200
+@@ -66,6 +66,7 @@
+ #ifndef __COSMOPOLITAN__
+ #ifndef __wasi__
+ #ifndef __sun__
++#include <sys/types.h>
+ typedef u_int8_t uint8_t;
+ typedef u_int16_t uint16_t;
+ typedef u_int64_t uint64_t;
