@@ -212,8 +212,8 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/gimli/0.31.0 \
             crate://crates.io/gl_generator/0.14.0 \
             crate://crates.io/gleam/0.15.0 \
-            crate://crates.io/glean-core/64.1.1 \
-            crate://crates.io/glean/64.1.1 \
+            crate://crates.io/glean-core/64.3.1 \
+            crate://crates.io/glean/64.3.1 \
             crate://crates.io/glob/0.3.1 \
             crate://crates.io/glow/0.16.0 \
             crate://crates.io/glsl/6.0.2 \
@@ -322,7 +322,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/macho-unwind-info/0.4.0 \
             crate://crates.io/malloc_buf/0.0.6 \
             crate://crates.io/malloc_size_of/0.1.1 \
-            crate://crates.io/malloc_size_of_derive/0.1.2 \
+            crate://crates.io/malloc_size_of_derive/0.1.3 \
             crate://crates.io/marionette/0.7.0 \
             crate://crates.io/markup5ever/0.12.1 \
             crate://crates.io/matches/0.1.10 \
@@ -877,8 +877,8 @@ SRC_URI[getrandom-0.3.1.sha256sum] = "43a49c392881ce6d5c3b8cb70f98717b7c07aabbdf
 SRC_URI[gimli-0.31.0.sha256sum] = "32085ea23f3234fc7846555e85283ba4de91e21016dc0455a16286d87a292d64"
 SRC_URI[gl_generator-0.14.0.sha256sum] = "1a95dfc23a2b4a9a2f5ab41d194f8bfda3cabec42af4e39f08c339eb2a0c124d"
 SRC_URI[gleam-0.15.0.sha256sum] = "0173481f2bb6e809bf4985de2e86c83876d84d2805830e3301cd37355e897f0f"
-SRC_URI[glean-core-64.1.1.sha256sum] = "5ca0df94fb37669287b77e8aa300913ad1d14426d7f9e443b0ce1185349c817e"
-SRC_URI[glean-64.1.1.sha256sum] = "95024f4707705270208e36983976cbac235dd7fc33c9f1cb0dee396ec1ce295d"
+SRC_URI[glean-core-64.3.1.sha256sum] = "1ac4ff736d4ed65d751ff5289fc95b2e224791d6ecd127d551c7b6035faf1a39"
+SRC_URI[glean-64.3.1.sha256sum] = "1f6155b7e7f027bb402c536a82f832281de4bbca277454b1b1bccb83eb4042ff"
 SRC_URI[glob-0.3.1.sha256sum] = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 SRC_URI[glow-0.16.0.sha256sum] = "c5e5ea60d70410161c8bf5da3fdfeaa1c72ed2c15f8bbb9d19fe3a4fad085f08"
 SRC_URI[glslopt-0.1.11.sha256sum] = "913662ae8335df058d56e00f11340b20fa82e03e0276587797ef325ab01e50d4"
@@ -987,7 +987,7 @@ SRC_URI[macho-unwind-info-0.4.0.sha256sum] = "6b6086acc74bc23f56b60e88bb082d505e
 SRC_URI[mach2-0.4.1.sha256sum] = "6d0d1830bcd151a6fc4aea1369af235b36c1528fe976b8ff678683c9995eade8"
 SRC_URI[malloc_buf-0.0.6.sha256sum] = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 SRC_URI[malloc_size_of-0.1.1.sha256sum] = "e5d719de8b8f230028cf8192ae4c1b25267cd6b8a99d2747d345a70b8c81aa13"
-SRC_URI[malloc_size_of_derive-0.1.2.sha256sum] = "632647502a8bfa82458c07134791fffa7a719f00427d1afd79c3cb6d4960a982"
+SRC_URI[malloc_size_of_derive-0.1.3.sha256sum] = "f44db74bde26fdf427af23f1d146c211aed857c59e3be750cf2617f6b0b05c94"
 SRC_URI[marionette-0.7.0.sha256sum] = "7119b584459086fc14cfd12efd09f15378d3c1f9a8f21482d06feaae76987fb6"
 SRC_URI[markup5ever-0.12.1.sha256sum] = "16ce3abbeba692c8b8441d036ef91aea6df8da2c6b6e21c7e14d3c18e526be45"
 SRC_URI[matches-0.1.10.sha256sum] = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"

@@ -113,9 +113,31 @@ Upstream-Status: Inappropriate [oe specific]
  optional = true
  
  [dev-dependencies]
---- ./Cargo.toml	2025-05-26 14:08:32.594779491 +0200
-+++ ./Cargo.toml	2025-05-26 14:32:49.249901029 +0200
-@@ -237,37 +237,83 @@
+--- ./third_party/rust/search/Cargo.toml	2025-05-26 14:33:58.145203910 +0200
++++ ./third_party/rust/search/Cargo.toml	2025-05-26 14:34:49.891479426 +0200
+@@ -35,17 +35,15 @@
+ parking_lot = ">=0.11,<=0.12"
+ serde_json = "1"
+ thiserror = "1"
++error-support = "0.1.0"
+ 
+ [dependencies.env_logger]
+ version = "0.10.0"
+ optional = true
+ default-features = false
+ 
+-[dependencies.error-support]
+-path = "../support/error"
+-
+ [dependencies.firefox-versioning]
+-path = "../support/firefox-versioning"
++path = "../../../application-services/components/support/firefox-versioning"
+ 
+ [dependencies.remote_settings]
+ path = "../remote_settings"
+--- ./Cargo.toml	2025-06-10 21:56:41.861854153 +0200
++++ ./Cargo.toml	2025-06-10 22:00:09.692820628 +0200
+@@ -237,21 +237,21 @@
  unicode-width = { path = "build/rust/unicode-width" }
  
  # To-be-published changes.
@@ -146,6 +168,8 @@ Upstream-Status: Inappropriate [oe specific]
  # Allow webrender to have a versioned dependency on the older crate on crates.io
  # in order to build standalone.
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
+@@ -259,17 +259,63 @@
+ wr_malloc_size_of = { path = "gfx/wr/wr_malloc_size_of" }
  
  # objc 0.2.7 + fa7ca43b862861dd1cd000d7ad01e6e0266cda13
 -objc = { git = "https://github.com/glandium/rust-objc", rev = "4de89f5aa9851ceca4d40e7ac1e2759410c04324" }
@@ -218,25 +242,3 @@ Upstream-Status: Inappropriate [oe specific]
 +
 +[patch."https://github.com/beurdouche/mls-platform-api"]
 +mls-platform-api = { path = "../mls-platform-api" }
---- ./third_party/rust/search/Cargo.toml	2025-05-26 14:33:58.145203910 +0200
-+++ ./third_party/rust/search/Cargo.toml	2025-05-26 14:34:49.891479426 +0200
-@@ -35,17 +35,15 @@
- parking_lot = ">=0.11,<=0.12"
- serde_json = "1"
- thiserror = "1"
-+error-support = "0.1.0"
- 
- [dependencies.env_logger]
- version = "0.10.0"
- optional = true
- default-features = false
- 
--[dependencies.error-support]
--path = "../support/error"
--
- [dependencies.firefox-versioning]
--path = "../support/firefox-versioning"
-+path = "../../../application-services/components/support/firefox-versioning"
- 
- [dependencies.remote_settings]
- path = "../remote_settings"
