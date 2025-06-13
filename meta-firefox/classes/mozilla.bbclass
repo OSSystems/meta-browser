@@ -1,5 +1,9 @@
 SECTION = "x11/utils"
-DEPENDS:append = " gnu-config-native virtual/libintl libxt libxi zip-native gtk+ "
+DEPENDS:append = " gnu-config-native virtual/libintl \
+	${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'libxt libxi', '', d)} \
+	zip-native \
+"
+
 
 inherit pkgconfig cargo
 
