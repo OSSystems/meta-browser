@@ -18,43 +18,6 @@ Upstream-Status: Inappropriate [OE-specific]
  toolkit/content/buildconfig.html | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/toolkit/content/buildconfig.html b/toolkit/content/buildconfig.html
-index 9c7ada2..a5ec4d0 100644
---- a/toolkit/content/buildconfig.html
-+++ b/toolkit/content/buildconfig.html
-@@ -44,25 +44,25 @@
-             <th>Compiler flags</th>
-           </tr>
-           <tr>
--            <td>@CC@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-             <td>@CC_VERSION@</td>
--            <td>@CFLAGS@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-           </tr>
-           <tr>
--            <td>@CXX@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-             <td>@CC_VERSION@</td>
--            <td>@CXXFLAGS@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-           </tr>
-           <tr>
--            <td>@RUSTC@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-             <td>@RUSTC_VERSION@</td>
--            <td>@RUSTFLAGS@</td>
-+            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
-           </tr>
-         </tbody>
-       </table>
-       #endif
-       <h2>Configure options</h2>
--      <p>@MOZ_CONFIGURE_OPTIONS@</p>
-+      <p>Removed for reproducability. Look it up in Yocto build logs.</p>
-       #ifdef ANDROID
-       <h2>Package name</h2>
-       <p>@ANDROID_PACKAGE_NAME@</p>
 --- a/media/libaom/moz.build	2024-08-06 12:03:48.896436119 +0200
 +++ b/media/libaom/moz.build	2024-08-06 12:04:22.279991683 +0200
 @@ -28,6 +28,7 @@
@@ -149,3 +112,38 @@ index 9c7ada2..a5ec4d0 100644
      )
  
      write_targets(output, parse_targets(targets_path))
+--- ./toolkit/content/buildconfig.html.orig	2025-06-25 20:57:21.774377749 +0200
++++ ./toolkit/content/buildconfig.html	2025-06-25 20:58:51.498740281 +0200
+@@ -44,25 +44,25 @@
+             <th>Compiler flags</th>
+           </tr>
+           <tr>
+-            <td>@CC@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@CC_VERSION@</td>
+-            <td>@CFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+           <tr>
+-            <td>@CXX@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@CC_VERSION@</td>
+-            <td>@CXXFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+           <tr>
+-            <td>@RUSTC@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@RUSTC_VERSION@</td>
+-            <td>@RUSTFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+         </tbody>
+       </table>
+       #endif
+       <h2>Configure options</h2>
+-      <p>@MOZ_CONFIGURE_OPTIONS@</p>
++      <p>Removed for reproducability. Look it up in Yocto build logs.</p>
+     </div>
+   </body>
+ </html>

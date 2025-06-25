@@ -26,117 +26,8 @@ Upstream-Status: Inappropriate [oe specific]
  #endif
  
  # Thankfully, @REPLACE_NAME@ is unlikely to be a legitimate source, so
---- ./gfx/wgpu_bindings/Cargo.toml	2025-05-26 14:24:11.419558400 +0200
-+++ ./gfx/wgpu_bindings/Cargo.toml	2025-05-26 14:25:29.331687563 +0200
-@@ -16,8 +16,7 @@
- 
- [dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-core"
- # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
- features = [
-   "serde",
-@@ -32,33 +31,28 @@
- # (We should consider also enabling "vulkan" for Vulkan Portability.)
- [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-core"
- features = ["metal"]
- 
- # We want the wgpu-core Direct3D backends on Windows.
- [target.'cfg(windows)'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-core"
- features = ["dx12"]
- 
- # We want the wgpu-core Vulkan backend on Linux and Windows.
- [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-core"
- features = ["vulkan"]
- 
- [dependencies.wgt]
- package = "wgpu-types"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-types"
- 
- [dependencies.wgh]
- package = "wgpu-hal"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "35f131ff10153e48b790e1f156c864734063ce71"
-+path = "../../../wgpu/wgpu-hal"
- features = ["device_lost_panic", "internal_error_panic"]
- 
- [target.'cfg(windows)'.dependencies]
---- ./third_party/rust/suggest/Cargo.toml.orig	2025-05-26 14:26:08.953326550 +0200
-+++ ./third_party/rust/suggest/Cargo.toml	2025-05-26 14:27:56.374274834 +0200
-@@ -61,11 +61,9 @@
- serde_json = "1"
- thiserror = "1"
- 
--[dependencies.error-support]
--path = "../support/error"
--
--[dependencies.interrupt-support]
--path = "../support/interrupt"
-+interrupt-support = "0.1.0"
-+sql-support = "0.1.0"
-+error-support = "0.1.0"
- 
- [dependencies.remote_settings]
- path = "../remote_settings"
-@@ -82,9 +80,6 @@
- version = "1"
- features = ["derive"]
- 
--[dependencies.sql-support]
--path = "../support/sql"
--
- [dependencies.tempfile]
- version = "3.2.0"
- optional = true
-@@ -100,7 +95,7 @@
- path = "../viaduct"
- 
- [dependencies.viaduct-reqwest]
--path = "../support/viaduct-reqwest"
-+path = "../../../application-services/components/support/viaduct-reqwest"
- optional = true
- 
- [dev-dependencies]
---- ./third_party/rust/search/Cargo.toml	2025-05-26 14:33:58.145203910 +0200
-+++ ./third_party/rust/search/Cargo.toml	2025-05-26 14:34:49.891479426 +0200
-@@ -35,17 +35,15 @@
- parking_lot = ">=0.11,<=0.12"
- serde_json = "1"
- thiserror = "1"
-+error-support = "0.1.0"
- 
- [dependencies.env_logger]
- version = "0.10.0"
- optional = true
- default-features = false
- 
--[dependencies.error-support]
--path = "../support/error"
--
- [dependencies.firefox-versioning]
--path = "../support/firefox-versioning"
-+path = "../../../application-services/components/support/firefox-versioning"
- 
- [dependencies.remote_settings]
- path = "../remote_settings"
---- ./Cargo.toml	2025-06-10 21:56:41.861854153 +0200
-+++ ./Cargo.toml	2025-06-10 22:00:09.692820628 +0200
+--- ./Cargo.toml	2025-06-25 08:24:39.162282199 +0200
++++ ./Cargo.toml	2025-06-25 08:27:53.409710345 +0200
 @@ -237,21 +237,21 @@
  unicode-width = { path = "build/rust/unicode-width" }
  
@@ -168,7 +59,7 @@ Upstream-Status: Inappropriate [oe specific]
  # Allow webrender to have a versioned dependency on the older crate on crates.io
  # in order to build standalone.
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
-@@ -259,17 +259,63 @@
+@@ -259,18 +259,64 @@
  wr_malloc_size_of = { path = "gfx/wr/wr_malloc_size_of" }
  
  # objc 0.2.7 + fa7ca43b862861dd1cd000d7ad01e6e0266cda13
@@ -176,15 +67,17 @@ Upstream-Status: Inappropriate [oe specific]
 +objc = { path = "../objc" }
  
  # application-services overrides to make updating them all simpler.
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--relevancy = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--search = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--suggest = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "280db3a3a06a8f517151ff0b84b5ce67fcc7afd6" }
+-context_id = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-relevancy = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-search = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "9b46be5beedb6a1d859014a71bac58e2d722f954" }
++context_id = { path = "../application-services/components/context_id", version = "0.1.0" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
 +relevancy = { path = "../application-services/components/relevancy", version = "0.1.0"}
 +sql-support = { path = "../application-services/components/support/sql", version = "0.1.0" }
@@ -242,3 +135,126 @@ Upstream-Status: Inappropriate [oe specific]
 +
 +[patch."https://github.com/beurdouche/mls-platform-api"]
 +mls-platform-api = { path = "../mls-platform-api" }
+--- ./gfx/wgpu_bindings/Cargo.toml	2025-06-25 08:17:52.654944797 +0200
++++ ./gfx/wgpu_bindings/Cargo.toml	2025-06-26 09:32:15.115001567 +0200
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-core"
+ # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
+ features = [
+   "serde",
+@@ -32,33 +31,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "85001b2436f686451d6d783225311c06b60e6680"
++path = "../../../wgpu/wgpu-hal"
+ features = ["device_lost_panic", "internal_error_panic"]
+ 
+ [target.'cfg(windows)'.dependencies]
+--- ./third_party/rust/suggest/Cargo.toml	2025-06-25 08:19:30.377078747 +0200
++++ ./third_party/rust/suggest/Cargo.toml	2025-06-26 12:25:07.413614054 +0200
+@@ -62,11 +62,9 @@
+ unicase = "2.6"
+ unicode-normalization = "0.1"
+ 
+-[dependencies.error-support]
+-path = "../support/error"
+-
+-[dependencies.interrupt-support]
+-path = "../support/interrupt"
++interrupt-support = "0.1.0"
++sql-support = "0.1.0"
++error-support = "0.1.0"
+ 
+ [dependencies.remote_settings]
+ path = "../remote_settings"
+@@ -84,9 +82,6 @@
+ version = "1"
+ features = ["derive"]
+ 
+-[dependencies.sql-support]
+-path = "../support/sql"
+-
+ [dependencies.tempfile]
+ version = "3.2.0"
+ optional = true
+@@ -102,7 +97,7 @@
+ path = "../viaduct"
+ 
+ [dependencies.viaduct-reqwest]
+-path = "../support/viaduct-reqwest"
++path = "../../../application-services/components/support/viaduct-reqwest"
+ optional = true
+ 
+ [dev-dependencies]
+@@ -112,8 +107,8 @@
+ itertools = "0.14"
+ 
+ [dev-dependencies.error-support]
+-path = "../support/error"
+ features = ["testing"]
++version = "0.1.0"
+ 
+ [dev-dependencies.rc_crypto]
+ path = "../support/rc_crypto"
+--- ./third_party/rust/search/Cargo.toml	2025-06-25 08:23:12.946087187 +0200
++++ ./third_party/rust/search/Cargo.toml	2025-06-26 12:28:44.748127218 +0200
+@@ -32,12 +32,10 @@
+ parking_lot = ">=0.11,<=0.12"
+ serde_json = "1"
+ thiserror = "1"
+-
+-[dependencies.error-support]
+-path = "../support/error"
++error-support = "0.1.0"
+ 
+ [dependencies.firefox-versioning]
+-path = "../support/firefox-versioning"
++path = "../../../application-services/components/support/firefox-versioning"
+ 
+ [dependencies.remote_settings]
+ path = "../remote_settings"
+@@ -55,7 +53,7 @@
+ pretty_assertions = "0.6"
+ 
+ [dev-dependencies.error-support]
+-path = "../support/error"
++version = "0.1.0"
+ features = ["testing"]
+ 
+ [dev-dependencies.viaduct-reqwest]
