@@ -452,3 +452,15 @@ LIC_FILES_CHKSUM = "\
     file://${S}/url/third_party/mozilla/LICENSE.txt;md5=437ced1e9b232651b0912a9594da43b2 \
     file://${S}/v8/LICENSE;md5=f38a2942edcfe4abb45e9a83a1ad2f82 \
     "
+
+unlink_gitfiles() {
+    rm -f ${S}/.git-blame-ignore-revs
+    rm -f ${S}/.gitallowed
+    rm -f ${S}/.gitattributes
+    rm -f ${S}/.gitignore
+    rm -f ${S}/.gitmodules
+}
+
+do_unpack:append() {
+    bb.build.exec_func('unlink_gitfiles', d)
+}
