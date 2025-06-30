@@ -6,7 +6,7 @@ CVE_PRODUCT = "chromium:chromium google:chrome"
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
 SRC_URI[sha256sum] = "f98315eacbf3be106feca37f8243d8c4092d4fd832c918aa36dc229eb6ab39e0"
 
-S = "${WORKDIR}/chromium-${PV}"
+S = "${UNPACKDIR}/chromium-${PV}"
 
 # GCC is not tested or officially supported upstream, and supporting it here
 # requires an ever-growing amount of backports and custom patches, without any
@@ -452,3 +452,15 @@ LIC_FILES_CHKSUM = "\
     file://${S}/url/third_party/mozilla/LICENSE.txt;md5=437ced1e9b232651b0912a9594da43b2 \
     file://${S}/v8/LICENSE;md5=f38a2942edcfe4abb45e9a83a1ad2f82 \
     "
+
+unlink_gitfiles() {
+    rm -f ${S}/.git-blame-ignore-revs
+    rm -f ${S}/.gitallowed
+    rm -f ${S}/.gitattributes
+    rm -f ${S}/.gitignore
+    rm -f ${S}/.gitmodules
+}
+
+do_unpack:append() {
+    bb.build.exec_func('unlink_gitfiles', d)
+}

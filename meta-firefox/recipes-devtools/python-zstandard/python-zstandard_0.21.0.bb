@@ -8,7 +8,7 @@ SRC_URI = "https://files.pythonhosted.org/packages/4d/70/1f883646641d7ad39441815
 SRC_URI[md5sum] = "7baafeb332651d70881ce692edf912b3"
 SRC_URI[sha256sum] = "f08e3a10d01a247877e4cb61a82a319ea746c356a3786558bed2481e6c405546"
 
-S = "${WORKDIR}/zstandard-0.21.0"
+S = "${UNPACKDIR}/zstandard-0.21.0"
 
 RDEPENDS_${PN} = ""
 

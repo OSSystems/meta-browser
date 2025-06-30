@@ -45,6 +45,7 @@ mozilla_run_mach() {
 	export SHELL="/bin/sh"
 	export RUSTFLAGS="${RUSTFLAGS} -Clinker=${WORKDIR}/wrapper/target-rust-ccld --sysroot=${RECIPE_SYSROOT}"
 
+	export AS="${CC}"
 	export RUST_HOST=${RUST_HOST}
 	export RUST_TARGET=${RUST_TARGET}
 

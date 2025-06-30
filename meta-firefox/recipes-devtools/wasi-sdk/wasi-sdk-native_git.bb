@@ -10,7 +10,6 @@ inherit native
 
 DEPENDS = "clang-native cmake-native ninja-native"
 
-S = "${WORKDIR}/git"
 
 SRC_URI = "gitsm://github.com/WebAssembly/wasi-sdk.git;protocol=https;branch=main"
 SRC_URI += "file://0001-disable-exceptions-and-bulk-memory.patch"
