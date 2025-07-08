@@ -1,0 +1,58 @@
+name: Chromium build- and smoke-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Repository to clone for the workflow'
+        required: true
+        default: 'brightsign'
+      branch:
+        description: 'Branch to checkout for the workflow'
+        required: true
+        default: 'master'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-chromium/**'
+      - '.github/workflows/chromium.yml'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  build:
+    if: ${{ github.repository_owner == 'brightsign' }}
+    strategy:
+      matrix:
+        yocto_version: [master]
+        chromium_version: [ozone-wayland, x11]
+        libc_flavour: [glibc]
+        arch: [arm, aarch64, x86-64]
+    runs-on: [self-hosted, chromium]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    steps:
+      - run: |
+         mkdir -p /yocto/${{ matrix.yocto_version }}
+         cd /yocto/${{ matrix.yocto_version }}
+         rm -rf meta-browser meta-chromium-test
+         # Clean stale pseudo state from any previous interrupted builds
+         rm -rf build/tmp/work/*/*/*/pseudo build/tmp/sysroots-components/*/pseudo 2>/dev/null || true
+         if [ "${{ github.event_name }}" = "pull_request" ]; then
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
+             GH_REV="$GITHUB_HEAD_REF"
+         else
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser"
+             GH_REV="${{ github.event.inputs.branch }}"
+         fi
+         git clone $GH_URL
+         git -C meta-browser checkout $GH_REV
+         # clone the test repo
+         git clone https://github.com/brightsign/meta-chromium-test.git
+         ./meta-chromium-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.chromium_version }} ${{ matrix.libc_flavour}}

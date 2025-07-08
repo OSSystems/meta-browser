@@ -203,6 +203,13 @@ DEBUG_FLAGS:remove:x86 = "-g"
 DEBUG_FLAGS:append:x86 = "-g1"
 GN_ARGS += "symbol_level=0"
 
+# For ARM builds, completely remove debug flags that cause binary size issues
+# This prevents the "output file too large" linker error on ARM32
+CFLAGS:remove:arm = "-g"
+CXXFLAGS:remove:arm = "-g"
+TARGET_CFLAGS:remove:arm = "-g"
+TARGET_CXXFLAGS:remove:arm = "-g"
+
 # As of Chromium 62.0.3202.94 and Yocto Rocko (GCC 7, binutils 2.29), passing
 # -g to the compiler results in many linker errors on aarch64, such as:
 # obj/third_party/WebKit/Source/modules/payments/libpayments.a(PaymentEventDataConversion.o)(.debug_loc+0x4e25): error: relocation overflow in R_AARCH64_ABS32
