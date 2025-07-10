@@ -121,7 +121,6 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbid-multiple-compositors',
            ', '', d)}"
 
 TOOLCHAIN:pn-firefox = "clang"
-AS = "${CC}"
 
 DISABLE_STATIC = ""
 
