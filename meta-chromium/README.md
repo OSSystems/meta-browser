@@ -15,8 +15,16 @@ This layer depends on:
   - revision: HEAD
 
 * URI: git://github.com/kraj/meta-clang
-  - branch: master
+  - branch: scarthgap-clang20
   - revision: HEAD
+
+* URI: git://git.yoctoproject.org/meta-lts-mixins
+  - branch: scarthgap/rust
+  - revision: HEAD
+
+**NOTE**: the compiler may require some adjustments based on the latest
+dependencies updates. Please refer to the *Test-built* section in the update
+commit logs for specific revision hashes used during build tests.
 
 ## Contributing
 
@@ -121,11 +129,6 @@ recipes to build correctly.
 This is particularly a problem for the toolchain (i.e. LLVM/clang and Rust).
 Chromium needs a more recent version of Rust than OE Core provides for
 scarthgap, which is why we depend on meta-lts-mixins' `scarthgap/rust` branch.
-
-**Side note: For now, clang 18 provided by meta-clang is recent enough, but at
-some point during scarthgap's LTS lifetime Chromium won't be compilable with
-that version, and we'll have to create e.g. a scarthgap-clang20 branch for
-meta-clang and use that.**
 
 ## PACKAGECONFIG knobs
 
