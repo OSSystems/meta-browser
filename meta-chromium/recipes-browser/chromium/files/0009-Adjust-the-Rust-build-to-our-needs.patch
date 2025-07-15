@@ -1,7 +1,7 @@
-From 394ff496602bf9695c7f815f5f73c0027ab4ddc7 Mon Sep 17 00:00:00 2001
+From 8a8e2590d1c05348ed6f3155cf4038a8c7a6ba48 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 16 Jan 2024 12:29:30 +0000
-Subject: [PATCH] Adjust the Rust build to our needs
+Subject: [PATCH 09/11] Adjust the Rust build to our needs
 
 1. Set `RUSTC_BOOTSTRAP=1` environment variable when calling rustc, to
    avoid the need of a nightly Rust toolchain.
@@ -12,21 +12,25 @@ Subject: [PATCH] Adjust the Rust build to our needs
    part for the Rust "target triple", but Chromium assumes the vendor to
    always be "-unknown". This new arg lets us override the default when
    building target code.
+4. Use host rust compiler when with host_system_allocator_toolchain
+5. Remove arm32 bit specific clang flags from rust compiler invocation
 
 Upstream-Status: Inappropriate [specific to our build setup]
+Co-authored-by: Caner Altinbasak <cal@brightsign.biz>
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
- build/config/rust.gni            | 28 ++++++++++++++++++++--------
+ build/config/rust.gni            | 28 ++++++++++++++++++----------
+ build/rust/filter_clang_args.py  |  5 +++++
  build/rust/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 28 +++++++++++++++++++++-------
  build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
- 4 files changed, 53 insertions(+), 20 deletions(-)
+ 5 files changed, 56 insertions(+), 22 deletions(-)
 
 diff --git a/build/config/rust.gni b/build/config/rust.gni
-index 74b3b9ced5..5affd0b445 100644
+index bd18d13119..e260576fba 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -102,6 +102,11 @@ declare_args() {
+@@ -95,6 +95,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -36,15 +40,15 @@ index 74b3b9ced5..5affd0b445 100644
 +  # platform default.
 +  rust_target_triple_vendor_for_target = ""
  }
-
- # Use the Rust toolchain built in-tree. When false, we use the prebuilt Rust
-@@ -174,14 +179,21 @@ if (enable_rust) {
+ 
+ declare_args() {
+@@ -187,14 +192,21 @@ if (enable_rust) {
  # https://issues.chromium.org/u/1/issues/372512092#comment5 for an example.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
 +  vendor = "-unknown"
 +
-+  is_host = current_toolchain == host_toolchain || toolchain_for_rust_host_build_tools
++  is_host = current_toolchain == host_toolchain || current_toolchain == host_system_allocator_toolchain || toolchain_for_rust_host_build_tools
 +  if (!is_host && rust_target_triple_vendor_for_target != "") {
 +    vendor = rust_target_triple_vendor_for_target
 +  }
@@ -63,25 +67,28 @@ index 74b3b9ced5..5affd0b445 100644
      cargo_target_abi = ""
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
-@@ -201,21 +213,21 @@ if (is_linux || is_chromeos) {
+@@ -213,18 +225,14 @@ if (is_linux || is_chromeos) {
+       # The thumbv7 vs. armv7 distinction is for legacy reasons and both
        # targets in fact target Thumb, see:
        # https://github.com/rust-lang/rust/issues/44722
-       if (arm_use_neon) {
+-      if (arm_use_neon) {
 -        rust_abi_target = "thumbv7neon-unknown-linux-gnueabi" + float_suffix
-+        rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
-       } else {
+-      } else {
 -        rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
-+        rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
-       }
+-      }
++      rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
        cargo_target_abi = "eabi" + float_suffix
      } else {
--      rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
-+      rust_abi_target = "arm" + vendor + "-linux-gnueabi" + float_suffix
+       rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
        cargo_target_abi = "eabi" + float_suffix
      }
    } else if (current_cpu == "riscv64") {
 -    rust_abi_target = "riscv64gc-unknown-linux-gnu"
 +    rust_abi_target = "riscv64gc" + vendor + "-linux-gnu"
+     cargo_target_abi = ""
+   } else if (current_cpu == "ppc64") {
+     rust_abi_target = "powerpc64le-unknown-linux-gnu"
+@@ -237,7 +245,7 @@ if (is_linux || is_chromeos) {
      cargo_target_abi = ""
    } else {
      # Best guess for other future platforms.
@@ -90,6 +97,22 @@ index 74b3b9ced5..5affd0b445 100644
      cargo_target_abi = ""
    }
  } else if (is_android) {
+diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
+index 5a1843c0df..7fb4b49516 100644
+--- a/build/rust/filter_clang_args.py
++++ b/build/rust/filter_clang_args.py
+@@ -24,6 +24,11 @@ def filter_clang_args(clangargs):
+           pass
+         elif args[i].startswith('-plugin-arg'):
+           i += 2
++      # Filter out ARM-specific flags that aren't supported on other architectures
++      elif args[i].startswith('-mbranch-protection'):
++        pass  # Skip this argument
++      elif args[i].startswith('-mfpu='):
++        pass
+       else:
+         yield args[i]
+       i += 1
 diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
 index 8f2096dfe5..de43d44eed 100755
 --- a/build/rust/rustc_wrapper.py
@@ -99,27 +122,27 @@ index 8f2096dfe5..de43d44eed 100755
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
    rustenv = remaining_args[rustenv_separator + 1:sources_separator]
 +  rustenv += ["RUSTC_BOOTSTRAP=1"]
-
+ 
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 6b996aa1fe..146f6633ce 100644
+index bb2c988452..fdddf68d46 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -207,7 +207,8 @@ if (toolchain_has_rust) {
+@@ -168,7 +168,8 @@ if (toolchain_has_rust) {
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
-
+ 
 -  sysroot_lib_subdir = "lib/rustlib/$rust_abi_target/lib"
 +  sysroot_target_subdir = "lib/rustlib/$rust_abi_target"
 +  sysroot_lib_subdir = "$sysroot_target_subdir/lib"
-
+ 
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -336,12 +337,12 @@ if (toolchain_has_rust) {
+@@ -295,12 +296,12 @@ if (toolchain_has_rust) {
          rust_abi_target,
        ]
-
+ 
 -      outputs = []
 +      outputs = [ "$target_out_dir/target.json" ]
        foreach(lib, all_stdlibs_to_copy) {
@@ -130,9 +153,9 @@ index 6b996aa1fe..146f6633ce 100644
 -        outputs += [ "$target_out_dir/$lib" ]
 +        outputs += [ "$target_out_dir/lib/$lib" ]
        }
-
+ 
        visibility = [ ":*" ]
-@@ -354,8 +355,18 @@ if (toolchain_has_rust) {
+@@ -313,8 +314,18 @@ if (toolchain_has_rust) {
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -150,10 +173,10 @@ index 6b996aa1fe..146f6633ce 100644
 +      deps = [ ":find_stdlib" ]
 +      sources = [ "$target_out_dir/target.json" ]
 +      outputs = [ "$prebuilt_rustc_sysroot/$sysroot_target_subdir/target.json" ]
-
+ 
        visibility = [ ":*" ]
      }
-@@ -395,7 +406,10 @@ if (toolchain_has_rust) {
+@@ -354,7 +365,10 @@ if (toolchain_has_rust) {
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
@@ -162,26 +185,26 @@ index 6b996aa1fe..146f6633ce 100644
 +        ":prebuilt_rustc_copy_to_sysroot",
 +        ":prebuilt_rustc_copy_target_json_to_sysroot",
 +      ]
-
-       # The host builds tools toolchain supports Rust only and does not use
-       # the allocator remapping to point it to PartitionAlloc.
+     }
+   }
+ }
 diff --git a/build/rust/std/find_std_rlibs.py b/build/rust/std/find_std_rlibs.py
 index 386258f890..e8fdaa904a 100755
 --- a/build/rust/std/find_std_rlibs.py
 +++ b/build/rust/std/find_std_rlibs.py
 @@ -17,7 +17,7 @@ import re
  from collections import defaultdict
-
+ 
  EXPECTED_STDLIB_INPUT_REGEX = re.compile(r"([0-9a-z_]+)(?:-([0-9]+))?$")
 -RLIB_NAME_REGEX = re.compile(r"lib([0-9a-z_]+)-([0-9a-f]+)\.rlib$")
 +RLIB_NAME_REGEX = re.compile(r"lib([0-9a-z_]+)(-([0-9a-f]+))?\.rlib$")
-
-
+ 
+ 
  def main():
 @@ -52,6 +52,8 @@ def main():
      rustc_args.extend(["--target", args.target])
    rustlib_dir = subprocess.check_output(rustc_args).rstrip().decode()
-
+ 
 +  lib_output_dir = os.path.join(args.output, 'lib')
 +
    # Copy the rlibs to a predictable location. Whilst we're doing so,
@@ -193,7 +216,7 @@ index 386258f890..e8fdaa904a 100755
      depfile.write(
 -        "%s:" % (os.path.join(args.output, "lib%s.rlib" % args.depfile_target)))
 +        "%s:" % (os.path.join(lib_output_dir, "lib%s.rlib" % args.depfile_target)))
-
+ 
      def copy_file(infile, outfile):
        depfile.write(f" {infile}")
 @@ -99,7 +101,7 @@ def main():
@@ -202,27 +225,30 @@ index 386258f890..e8fdaa904a 100755
        # which we need for statically computable gn dependency rules.
 -      (crate_name, metadata) = RLIB_NAME_REGEX.match(f).group(1, 2)
 +      (crate_name, metadata) = RLIB_NAME_REGEX.match(f).group(1, 3)
-
+ 
        # Use the number of times we've seen this name to disambiguate the output
        # filenames. Since we sort the input filenames including the metadata,
 @@ -117,14 +119,18 @@ def main():
        output_filename = f"lib{concise_name}.rlib"
-
+ 
        infile = os.path.join(rustlib_dir, f)
 -      outfile = os.path.join(args.output, output_filename)
 +      outfile = os.path.join(lib_output_dir, output_filename)
        copy_file(infile, outfile)
-
+ 
      for f in extra_libs:
        infile = os.path.join(rustlib_dir, f)
 -      outfile = os.path.join(args.output, f)
 +      outfile = os.path.join(lib_output_dir, f)
        copy_file(infile, outfile)
-
+ 
 +    infile = os.path.join(os.environ['RUST_TARGET_PATH'], f'{args.target}.json')
 +    outfile = os.path.join(args.output, 'target.json')
 +    copy_file(infile, outfile)
 +
      depfile.write("\n")
-
+ 
+ 
+-- 
+2.39.5
 

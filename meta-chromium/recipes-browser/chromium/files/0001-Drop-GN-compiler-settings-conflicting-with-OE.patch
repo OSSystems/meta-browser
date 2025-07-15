@@ -1,7 +1,7 @@
-From feb3b8299f312e4074fc76fe7b6dfa236a5823d8 Mon Sep 17 00:00:00 2001
+From 69bdbc33f4e6f2882f6ac8fb6bae883577887239 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Tue, 25 Jun 2024 11:06:19 +0000
-Subject: [PATCH] Drop GN compiler settings conflicting with OE
+Subject: [PATCH 01/11] Drop GN compiler settings conflicting with OE
 
 The clang cross compiler built with meta-clang has lots of these
 settings built-in and specifying them with GN confuses the compiler:
@@ -19,10 +19,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 46 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index e7a60d56b5..b0e9e04bf3 100644
+index 59942a3cf6..cf5e62eb15 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1211,26 +1211,6 @@ config("compiler_cpu_abi") {
+@@ -1255,26 +1255,6 @@ config("compiler_cpu_abi") {
            "-msse3",
          ]
        }
@@ -49,7 +49,7 @@ index e7a60d56b5..b0e9e04bf3 100644
      } else if (current_cpu == "mipsel" && !is_nacl) {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1238,9 +1218,6 @@ config("compiler_cpu_abi") {
+@@ -1282,9 +1262,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +59,7 @@ index e7a60d56b5..b0e9e04bf3 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1320,8 +1297,6 @@ config("compiler_cpu_abi") {
+@@ -1364,8 +1341,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +68,7 @@ index e7a60d56b5..b0e9e04bf3 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1370,8 +1345,6 @@ config("compiler_cpu_abi") {
+@@ -1414,8 +1389,6 @@ config("compiler_cpu_abi") {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
            } else {
@@ -77,7 +77,7 @@ index e7a60d56b5..b0e9e04bf3 100644
            }
          } else {
            cflags += [
-@@ -1429,8 +1402,6 @@ config("compiler_cpu_abi") {
+@@ -1473,8 +1446,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -86,11 +86,10 @@ index e7a60d56b5..b0e9e04bf3 100644
          } else {
            cflags += [
              "-EB",
-@@ -1599,23 +1570,6 @@ config("compiler_deterministic") {
-       }
+@@ -1656,23 +1627,6 @@ config("compiler_deterministic") {
      }
    }
--
+ 
 -  # Tells the compiler not to use absolute paths when passing the default
 -  # paths to the tools it invokes. We don't want this because we don't
 -  # really need it and it can mess up the RBE cache entries.
@@ -107,6 +106,10 @@ index e7a60d56b5..b0e9e04bf3 100644
 -      ldflags += [ "-no-canonical-prefixes" ]
 -    }
 -  }
- }
+-
+   if (use_libcxx_modules) {
+     cflags += [
+       # This removes absolute paths from .pcm files.
+-- 
+2.39.5
 
- config("clang_revision") {

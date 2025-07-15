@@ -6,7 +6,7 @@ require chromium.inc
 
 inherit native
 
-S = "${WORKDIR}/chromium-${PV}"
+S = "${UNPACKDIR}/chromium-${PV}"
 
 # bootstrap.py --no_clean hardcodes the build location to out_bootstrap.
 # Omitting --no_clean causes the script to create a temporary directory with a
