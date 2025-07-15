@@ -54,5 +54,5 @@ jobs:
          git clone $GH_URL
          git -C meta-browser checkout $GH_REV
          # clone the test repo
-         git clone -b chromium136-master https://github.com/brightsign/meta-chromium-test.git
+         git clone -b main https://github.com/brightsign/meta-chromium-test.git
          ./meta-chromium-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.chromium_version }} ${{ matrix.libc_flavour}}

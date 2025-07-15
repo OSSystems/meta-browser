@@ -1,8 +1,8 @@
-From 0a052a88bf96542e0bb7585ccbfd39e681a32e3d Mon Sep 17 00:00:00 2001
+From 5d022ee1f84195bafcc6436a6e1f9b6f00e986cc Mon Sep 17 00:00:00 2001
 From: Khem Raj <raj.khem@gmail.com>
 Date: Wed, 4 Dec 2019 19:06:54 -0800
-Subject: [PATCH] Delete compiler options not available in release versions of
- clang _yet_
+Subject: [PATCH 04/11] Delete compiler options not available in release
+ versions of clang _yet_
 
 * CREL feature is not supported on the current clang toolchain version,
   which causes build to fail with the following error:
@@ -15,32 +15,31 @@ Upstream-Status: Inappropriate [ clang/master already supports them ]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
 Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
-
 ---
  build/config/compiler/BUILD.gn | 12 +++++-------
  1 file changed, 5 insertions(+), 7 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index b0e9e04bf3..46ed84d73c 100644
+index cf5e62eb15..58e0fd0a71 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -614,13 +614,6 @@ config("compiler") {
-     } else {
+@@ -629,13 +629,6 @@ config("compiler") {
        cflags += [ "-ffp-contract=off" ]
      }
--
+ 
 -    # Enable ELF CREL (see crbug.com/357878242) for all platforms that use ELF
 -    # (excluding toolchains that use an older version of LLVM).
--    if (is_linux && !llvm_android_mainline &&
+-    # TODO(crbug.com/376278218): This causes segfault on Linux ARM builds.
+-    if (is_linux && use_lld && !llvm_android_mainline && current_cpu != "arm" &&
 -        default_toolchain != "//build/toolchain/cros:target") {
 -      cflags += [ "-Wa,--crel,--allow-experimental-crel" ]
 -    }
    }
-
+ 
    # C11/C++11 compiler flags setup.
-@@ -1934,6 +1927,11 @@ config("default_warnings") {
+@@ -2083,6 +2076,11 @@ config("default_warnings") {
        }
-
+ 
        cflags += [
 +        # Disable unknown warnings, since system clang may not have
 +        # backported newer warning yet unlike internal clang that
@@ -49,4 +48,7 @@ index b0e9e04bf3..46ed84d73c 100644
 +
          # TODO(crbug.com/330524456): -Wcast-function-type is under -Wextra now.
          "-Wno-cast-function-type",
+ 
+-- 
+2.39.5
 

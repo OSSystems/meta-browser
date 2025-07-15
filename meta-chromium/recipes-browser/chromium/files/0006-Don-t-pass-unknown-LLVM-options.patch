@@ -1,7 +1,7 @@
-From 8e9bf93215630604eed49476d6e848ad3ec3bdba Mon Sep 17 00:00:00 2001
+From 9a75e4248e3099a26ddcdfb0efc42cf82b4ec131 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Fri, 8 Dec 2023 11:47:43 +0000
-Subject: [PATCH] Don't pass unknown LLVM options
+Subject: [PATCH 06/11] Don't pass unknown LLVM options
 
 Because we compile and link with an older LLVM version than upstream, we
 need to drop the following LLVM options that aren't available yet:
@@ -17,13 +17,13 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 18 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 46ed84d73c..5f7cfb69e9 100644
+index 58e0fd0a71..b3385edfc0 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -590,24 +590,6 @@ config("compiler") {
+@@ -604,24 +604,6 @@ config("compiler") {
        }
      }
-
+ 
 -    # TODO(crbug.com/40283598): This causes binary size growth and potentially
 -    # other problems.
 -    # TODO(crbug.com/40284925): This isn't supported by Cronet's mainline llvm version.
@@ -45,3 +45,6 @@ index 46ed84d73c..5f7cfb69e9 100644
      # TODO(crbug.com/40192287): Investigate why/if this should be needed.
      if (is_win) {
        cflags += [ "/clang:-ffp-contract=off" ]
+-- 
+2.39.5
+

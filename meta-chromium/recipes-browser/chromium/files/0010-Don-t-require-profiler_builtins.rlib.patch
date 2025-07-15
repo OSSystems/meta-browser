@@ -1,7 +1,7 @@
-From d6862d22d64ddb3e1b85c086eb8c14e69450ceb0 Mon Sep 17 00:00:00 2001
+From 6d8f717cb23cc00c25182d5377ffebc9028761d3 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Wed, 7 Feb 2024 11:58:30 +0000
-Subject: [PATCH] Don't require profiler_builtins.rlib
+Subject: [PATCH 10/11] Don't require profiler_builtins.rlib
 
 This library is only needed for profiling builds, which we don't do.
 Including it leads to compile errors on with OE's current master branch
@@ -14,10 +14,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
-index 38e5ab7645..b5f5291283 100644
+index fdddf68d46..7afe61ab75 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -100,7 +100,6 @@ if (toolchain_has_rust) {
+@@ -76,7 +76,6 @@ if (toolchain_has_rust) {
    # don't need to pass to the C++ linker because they're used for specialized
    # purposes.
    skip_stdlib_files = [
@@ -25,3 +25,6 @@ index 38e5ab7645..b5f5291283 100644
      "rustc_std_workspace_alloc",
      "rustc_std_workspace_core",
      "rustc_std_workspace_std",
+-- 
+2.39.5
+

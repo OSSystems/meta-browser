@@ -1,8 +1,8 @@
-From 713169dbbcb3081744ea103749597885bb1b97a2 Mon Sep 17 00:00:00 2001
+From feb7f0598505fa6240a84ef8441c8c47d8e7b8f2 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Fri, 22 Mar 2024 10:43:47 +0000
-Subject: [PATCH] Fix "constexpr variable must be initialized by a constant
- expression"
+Subject: [PATCH 07/11] Fix "constexpr variable must be initialized by a
+ constant expression"
 
 clang 17 still has some problems with constexpr strings. We need to
 change the problematic expressions to be const instead.
@@ -26,5 +26,8 @@ index e926bdca5b..799c4b3f80 100644
 +const inline std::string kLegacyHierarchyCountryCodeString{"XX"};
 +const AddressCountryCode kLegacyHierarchyCountryCode =
      AddressCountryCode(kLegacyHierarchyCountryCodeString);
-
+ 
  // Creates an instance of the address hierarchy model corresponding to the
+-- 
+2.39.5
+

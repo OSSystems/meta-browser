@@ -1,7 +1,7 @@
-From a8c669d57bd409ba07255bd52fe3c9f0817de2ac Mon Sep 17 00:00:00 2001
+From 5b09c349a19ed28bbadba3061ca16d5aabb044e5 Mon Sep 17 00:00:00 2001
 From: Raphael Kubo da Costa <kubo@igalia.com>
 Date: Wed, 8 Nov 2017 16:43:47 +0100
-Subject: [PATCH] wrapper: extra flags
+Subject: [PATCH 03/11] wrapper: extra flags
 
 The patch below is used to allow running Chromium as root as well as passing
 extra flags to it by default.
@@ -9,7 +9,6 @@ extra flags to it by default.
 Upstream-Status: Inappropriate [embedder specific]
 
 Signed-off-by: Raphael Kubo da Costa <kubo@igalia.com>
-
 ---
  chrome/installer/linux/common/wrapper | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
@@ -21,9 +20,12 @@ index aaa46bf71f..7d8c8dd5fb 100755
 @@ -36,5 +36,7 @@ exec < /dev/null
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
-
+ 
 +CHROME_EXTRA_ARGS=""
 +
  # Note: exec -a below is a bashism.
 -exec -a "$0" "$HERE/@@PROGNAME@@" "$@"
 +exec -a "$0" "$HERE/@@PROGNAME@@" ${CHROME_EXTRA_ARGS} "$@"
+-- 
+2.39.5
+

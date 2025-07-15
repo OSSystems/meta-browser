@@ -1,7 +1,7 @@
-From be9a610454f3a90e2610443a424efcb34b4903e5 Mon Sep 17 00:00:00 2001
+From 9eb5a6ed9a73d7fab673f049ea7e5b9c4218434c Mon Sep 17 00:00:00 2001
 From: Hongxu Jia <hongxu.jia@windriver.com>
 Date: Fri, 22 Jan 2021 00:02:25 +0800
-Subject: [PATCH] avoid link latomic failure on CentOS 8 host
+Subject: [PATCH 05/11] avoid link latomic failure on CentOS 8 host
 
 When host (such as CentOS 8) did not install libatomic, there was a
 link failure on native. In fact, only target requires to link atomic,
@@ -11,17 +11,16 @@ Upstream-Status: Inappropriate [oe specific]
 
 Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
-
 ---
  base/BUILD.gn               | 2 ++
  build/config/linux/BUILD.gn | 2 ++
  2 files changed, 4 insertions(+)
 
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 57a6af0061..2703e81421 100644
+index 5b41b3d805..2925aa607e 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
-@@ -1104,7 +1104,9 @@ component("base") {
+@@ -1107,7 +1107,9 @@ component("base") {
    # Needed for <atomic> if using newer C++ library than sysroot, except if
    # building inside the cros_sdk environment - use host_toolchain as a
    # more robust check for this.
@@ -38,10 +37,13 @@ index 131bb71d1d..20f918ab82 100644
 @@ -40,7 +40,9 @@ config("runtime_library") {
      defines = [ "OS_CHROMEOS" ]
    }
-
+ 
 +  # Only target requires <atomic>
    if ((!is_chromeos || default_toolchain != "//build/toolchain/cros:target") &&
 +      (current_toolchain != host_toolchain) &&
        (!use_custom_libcxx || current_cpu == "mipsel")) {
      libs = [ "atomic" ]
    }
+-- 
+2.39.5
+
