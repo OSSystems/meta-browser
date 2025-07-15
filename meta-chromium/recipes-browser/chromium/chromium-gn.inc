@@ -25,12 +25,14 @@ SRC_URI += "\
     file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
-    file://0011-Disable-crabbyavif-to-fix-build-errors.patch \
-    file://0012-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
-    file://0013-Revert-Set-Rust-symbol-visibility-to-hidden-when-C-s.patch \
-    file://0014-pdfium-Fix-missing-PDFiumAPIStringBufferAdapter-temp.patch \
-    file://0015-Revert-Connect-the-Rust-log-crate-to-the-base-loggin.patch \
+    file://0011-PATCH-Fix-bindgen-sysroot-detection-for-Yocto-builds.patch \
+    file://0012-fix-check_version-Only-compare-node.js-major-version.patch \
+    file://0013-Disable-hardcoded-target-flags-for-cross-compilation.patch \
+    file://0014-run_bindgen-simpler.patch \
+    file://0015-cross-compile-detection.patch \
+    file://0016-cross-compile-detection.patch \
 "
+
 # ARM/AArch64-specific patches.
 SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
@@ -262,6 +264,10 @@ GN_ARGS += "disable_fieldtrial_testing_config=true"
 # See https://crrev.com/c/2424669
 GN_ARGS += "chrome_pgo_phase=0"
 
+# Disable passing --warning-suppression-mappings= flag to clang.
+# This feature is available on Clang21+
+GN_ARGS += "clang_warning_suppression_file="""
+
 # API keys for accessing Google services. By default, we use an invalid key
 # only to prevent the "you are missing an API key" infobar from being shown on
 # startup.
@@ -281,6 +287,14 @@ GN_ARGS += ' \
 BUILD_CPPFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
 BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+
+# Set environment variables for bindgen to configure Yocto cross-compilation
+export BINDGEN_TARGET_SYSROOT = "${STAGING_DIR_TARGET}"
+export BINDGEN_NATIVE_SYSROOT = "${STAGING_DIR_NATIVE}"
+export BINDGEN_TARGET_ARCH = "${TARGET_ARCH}"
+export BINDGEN_TARGET_VENDOR = "${TARGET_VENDOR}"
+export BINDGEN_TARGET_OS = "${TARGET_OS}"
+export BINDGEN_BUILD_ARCH = "${BUILD_ARCH}"
 
 # Toolchains we will use for the build. We need to point to the toolchain file
 # we've created, set the right target architecture and make sure we are not
@@ -427,6 +441,7 @@ python do_write_toolchain_file () {
     toolchain_file = os.path.join(toolchain_dir, "BUILD.gn")
     write_toolchain_file(d, toolchain_file)
 }
+
 addtask write_toolchain_file after do_patch before do_configure
 
 do_add_nodejs_symlink () {
@@ -485,6 +500,16 @@ addtask copy_target_rustlibs after do_configure before do_compile
 do_configure() {
 	cd ${S}
 	python3 ./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
+
+	# Add Yocto-specific Rust target triples before running gn gen
+	# Use grep to avoid duplicates in case this runs multiple times
+	grep -qxF "${TARGET_SYS}-gnu" ${S}/build/rust/known-target-triples.txt || echo "${TARGET_SYS}-gnu" >> ${S}/build/rust/known-target-triples.txt
+
+	# For the build system, we need to construct the correct triple
+	# BUILD_SYS might not include the vendor part, so construct it properly
+	BUILD_TRIPLE="${BUILD_ARCH}-poky-linux-gnu"
+	grep -qxF "${BUILD_TRIPLE}" ${S}/build/rust/known-target-triples.txt || echo "${BUILD_TRIPLE}" >> ${S}/build/rust/known-target-triples.txt
+
 	gn gen --args='${GN_ARGS}' "${OUTPUT_DIR}"
 }
 

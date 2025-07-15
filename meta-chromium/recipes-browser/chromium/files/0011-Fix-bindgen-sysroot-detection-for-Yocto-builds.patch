@@ -1,0 +1,166 @@
+From dabd6cd62a584da6390e17df16b85f4581b1d95d Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Wed, 2 Jul 2025 14:20:30 +0100
+Subject: [PATCH 11/13] Fix bindgen sysroot detection for Yocto builds
+
+When building Chromium under Yocto, bindgen fails to find system headers
+like stddef.h because it doesn't know where to look for them in the
+cross-compilation sysroot environment.
+
+This patch modifies run_bindgen.py to detect when running in a Yocto
+environment (by looking for 'recipe-sysroot' in the resource-dir argument)
+and automatically adds the appropriate system include paths from both the
+native and target sysroots.
+
+This fixes the build error:
+"fatal error: 'stddef.h' file not found"
+
+Upstream-Status: Inappropriate [specific to our build setup]
+---
+ build/rust/run_bindgen.py | 116 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 110 insertions(+), 6 deletions(-)
+
+diff --git a/build/rust/run_bindgen.py b/build/rust/run_bindgen.py
+index 9a0eead6bb..f4692b42aa 100755
+--- a/build/rust/run_bindgen.py
++++ b/build/rust/run_bindgen.py
+@@ -79,11 +79,6 @@ def main():
+     genargs.append('--output')
+     genargs.append(args.output)
+ 
+-    # The GN rules know what path to find the system headers in, and we want to
+-    # use the headers we specify, instead of non-hermetic headers from elsewhere
+-    # in the system.
+-    genargs.append('--no-include-path-detection')
+-
+     if args.wrap_static_fns:
+       wrap_static_fns = stack.enter_context(
+           action_helpers.atomic_output(args.wrap_static_fns))
+@@ -93,7 +88,112 @@ def main():
+       genargs.append(wrap_static_fns.name)
+     genargs.append(args.header)
+     genargs.append('--')
+-    genargs.extend(filter_clang_args(args.clangargs))
++    
++    # Yocto build - use environment variables set by meta-browser
++    target_sysroot = os.environ.get('BINDGEN_TARGET_SYSROOT')
++    native_sysroot = os.environ.get('BINDGEN_NATIVE_SYSROOT')
++    target_arch = os.environ.get('BINDGEN_TARGET_ARCH', '')
++    target_vendor = os.environ.get('BINDGEN_TARGET_VENDOR', '')
++    target_os = os.environ.get('BINDGEN_TARGET_OS', '')
++    build_arch = os.environ.get('BINDGEN_BUILD_ARCH', '')
++    
++    # Debug output
++    print(f"DEBUG: target_sysroot={target_sysroot}")
++    print(f"DEBUG: native_sysroot={native_sysroot}")
++    print(f"DEBUG: target_arch={target_arch}")
++    print(f"DEBUG: build_arch={build_arch}")
++    print(f"DEBUG: output path={args.output}")
++    
++    # Check if we're cross-compiling by comparing target and build architectures
++    is_cross_compile = target_arch and build_arch and target_arch != build_arch
++    
++    # Check if this is a host build by looking for host-specific indicators in output path
++    is_host_build = args.output and ('native' in args.output or 'host' in args.output)
++    
++    print(f"DEBUG: is_cross_compile={is_cross_compile}")
++    print(f"DEBUG: is_host_build={is_host_build}")
++    
++    # Decide which sysroot to use
++    if is_host_build and native_sysroot and os.path.exists(native_sysroot):
++      # Host build - use native sysroot
++      sysroot = native_sysroot
++      print(f"DEBUG: Using native sysroot: {sysroot}")
++    elif target_sysroot and os.path.exists(target_sysroot):
++      # Target build - use target sysroot
++      sysroot = target_sysroot
++      print(f"DEBUG: Using target sysroot: {sysroot}")
++    else:
++      # Fallback - no sysroot
++      sysroot = None
++      print(f"DEBUG: No sysroot found!")
++      print(f"DEBUG: target_sysroot exists: {target_sysroot and os.path.exists(target_sysroot) if target_sysroot else False}")
++      print(f"DEBUG: native_sysroot exists: {native_sysroot and os.path.exists(native_sysroot) if native_sysroot else False}")
++    
++    if sysroot:
++      clang_args = ['--sysroot', sysroot] + filter_clang_args(args.clangargs)
++      print(f"DEBUG: Adding sysroot args: --sysroot {sysroot}")
++      
++      # Add system include path
++      system_include = os.path.join(sysroot, 'usr/include')
++      if os.path.exists(system_include):
++        clang_args.extend(['-I', system_include])
++        print(f"DEBUG: Adding include path: {system_include}")
++      
++      # Add clang resource directory include path for compiler-provided headers
++      if native_sysroot:
++        clang_resource_dir = os.path.join(native_sysroot, 'usr/lib/clang')
++        if os.path.exists(clang_resource_dir):
++          # Find the actual version directory (not 'latest')
++          for version_dir in os.listdir(clang_resource_dir):
++            if version_dir != 'latest':
++              clang_include_dir = os.path.join(clang_resource_dir, version_dir, 'include')
++              if os.path.exists(clang_include_dir):
++                clang_args.extend(['-I', clang_include_dir])
++                print(f"DEBUG: Adding clang include path: {clang_include_dir}")
++                break
++      
++      # For cross-compilation, set target triple and filter problematic flags
++      if is_cross_compile and not is_host_build and target_arch and target_vendor and target_os:
++        # Map common Yocto target architectures to clang target triples
++        arch_map = {
++          'aarch64': 'aarch64',
++          'arm': 'arm',
++          'armv7a': 'arm',
++          'armv7ve': 'arm', 
++          'armv6': 'arm',
++          'armv5te': 'arm',
++          'x86_64': 'x86_64',
++          'riscv64': 'riscv64',
++          'riscv32': 'riscv32',
++        }
++        
++        clang_arch = arch_map.get(target_arch, target_arch)
++        if clang_arch.startswith('cortexa'):
++          clang_arch = 'aarch64'  # Map Cortex-A to aarch64
++        
++        target_triple = f"{clang_arch}-unknown-linux-gnu"
++        print(f"DEBUG: Setting up cross-compilation for {target_triple}")
++        clang_args = ['--target=' + target_triple] + clang_args
++        
++        # Filter out target-specific flags that cause issues in cross-compilation
++        filtered_args = []
++        for arg in clang_args:
++          # Skip ARM-specific flags that don't work with bindgen
++          if (arg.startswith('-mbranch-protection=') or 
++              arg.startswith('-mcpu=') or 
++              arg.startswith('-mfpu=') or
++              arg.startswith('-mthumb') or
++              arg.startswith('-marm') or
++              arg.startswith('-march=native')):
++            print(f"DEBUG: Filtering out problematic flag: {arg}")
++            continue
++          filtered_args.append(arg)
++        clang_args = filtered_args
++      
++      genargs.extend(clang_args)
++    else:
++      genargs.extend(filter_clang_args(args.clangargs))
++      print("DEBUG: No sysroot - using filtered clang args only")
+     env = os.environ
+     if args.ld_library_path:
+       if sys.platform == 'darwin':
+@@ -102,6 +202,10 @@ def main():
+         env["LD_LIBRARY_PATH"] = args.ld_library_path
+     if args.libclang_path:
+       env["LIBCLANG_PATH"] = args.libclang_path
++    
++    # Debug: show final command
++    print(f"DEBUG: Final command: {args.exe} {' '.join(genargs)}")
++    
+     try:
+       subprocess.check_call([args.exe, *genargs], env=env)
+     except:
+-- 
+2.39.5
+

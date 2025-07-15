@@ -1,0 +1,62 @@
+From dc1f9e4dbef6d1b3b0f2ceed65449856ad7acdfd Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Wed, 2 Jul 2025 17:14:03 +0100
+Subject: [PATCH 13/13] Disable hardcoded target flags for cross-compilation
+
+When cross-compiling with Yocto, the toolchain is already properly
+configured with the correct target triple. The hardcoded
+--target=x86_64-unknown-linux-gnu and --target=i386-unknown-linux-gnu
+settings conflict with the Yocto target (e.g., x86_64-poky-linux) and
+cause the linker to look for runtime libraries in the wrong location.
+
+This results in "cannot open crtbeginS.o" and "unable to find library
+-lgcc" errors because the linker searches for these files using the
+wrong target path.
+
+Upstream-Status: Inappropriate [OE-Specific]
+---
+ build/config/compiler/BUILD.gn | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
+index b3385edfc0..46c681a39c 100644
+--- a/build/config/compiler/BUILD.gn
++++ b/build/config/compiler/BUILD.gn
+@@ -1207,23 +1207,23 @@ config("compiler_cpu_abi") {
+     # CPU architecture. We may or may not be doing a cross compile now, so for
+     # simplicity we always explicitly set the architecture.
+     if (current_cpu == "x64") {
+-      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
+-          !is_chromeos_device) {
+-        cflags += [ "--target=x86_64-unknown-linux-gnu" ]
+-        ldflags += [ "--target=x86_64-unknown-linux-gnu" ]
+-      } else {
++      #if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
++      #    !is_chromeos_device) {
++      #  cflags += [ "--target=x86_64-unknown-linux-gnu" ]
++      #  ldflags += [ "--target=x86_64-unknown-linux-gnu" ]
++      #} else {
+         cflags += [ "-m64" ]
+         ldflags += [ "-m64" ]
+-      }
++      #}
+       cflags += [ "-msse3" ]
+     } else if (current_cpu == "x86") {
+-      if (is_clang && !is_android && !is_nacl && !is_chromeos_device) {
+-        cflags += [ "--target=i386-unknown-linux-gnu" ]
+-        ldflags += [ "--target=i386-unknown-linux-gnu" ]
+-      } else {
++      # if (is_clang && !is_android && !is_nacl && !is_chromeos_device) {
++      #  cflags += [ "--target=i386-unknown-linux-gnu" ]
++      #  ldflags += [ "--target=i386-unknown-linux-gnu" ]
++      #} else {
+         cflags += [ "-m32" ]
+         ldflags += [ "-m32" ]
+-      }
++      #}
+       if (!is_nacl) {
+         cflags += [
+           "-mfpmath=sse",
+-- 
+2.39.5
+
