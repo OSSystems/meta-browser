@@ -1,0 +1,38 @@
+From 8165fbc462774b1b26f764e08be59ee2bdb6483f Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Wed, 2 Jul 2025 15:46:35 +0100
+Subject: [PATCH] fix(check_version):Only compare node.js major version number
+
+Yocto has a slightly newer version of node.js available. Compare only
+the major version to avoid build errors.
+
+Upstream-Status: Inappropriate [specific to our build setup]
+---
+ third_party/node/check_version.js | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/third_party/node/check_version.js b/third_party/node/check_version.js
+index 0a037ab..72201b4 100644
+--- a/third_party/node/check_version.js
++++ b/third_party/node/check_version.js
+@@ -28,12 +28,17 @@ async function main() {
+       await readFile(args.expected_version_file, {encoding: 'utf-8'});
+   const expectedVersion = extractExpectedVersion(contents);
+
++  // Extract major version numbers for comparison
++  const expectedMajor = expectedVersion.match(/^v?(\d+)/)?.[1];
++  const actualMajor = process.version.match(/^v?(\d+)/)?.[1];
++
+   const errorMessage =
+-      `Failed NodeJS version check: Expected version '${expectedVersion}', ` +
+-      `but found '${process.version}'. Did you run 'gclient sync'? If the ` +
++      `Failed NodeJS version check: Expected major version '${expectedMajor}', ` +
++      `but found '${actualMajor}'. Expected full version was '${expectedVersion}', ` +
++      `actual version is '${process.version}'. Did you run 'gclient sync'? If the ` +
+       `problem persists try running 'gclient sync -f' instead, or deleting ` +
+       `third_party/node/{linux,win,mac} folders and trying again.`;
+
+-  assert.equal(expectedVersion, process.version, errorMessage);
++  assert.equal(expectedMajor, actualMajor, errorMessage);
+ }
+ main();

@@ -5,18 +5,18 @@ and/or Yocto.
 
 This layer depends on:
 
-* URI: git://git.openembedded.org/openembedded-core
+* URI: git://git.yoctoproject.org/poky
   - branch: master
-  - revision: HEAD
+  - revision: 243d54fd466f5f852cc0fdcce57997918ce35f32
 
 * URI: git://git.openembedded.org/meta-openembedded
   - layers: meta-oe
   - branch: master
-  - revision: HEAD
+  - revision: a8dfd10600035a799abae03178fc7054582ea43d
 
 * URI: git://github.com/kraj/meta-clang
   - branch: master
-  - revision: HEAD
+  - revision: 7a2f83360920b10214e2659e17a4b9cba2d0435b
 
 ## Contributing
 
