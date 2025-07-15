@@ -1,4 +1,4 @@
-From 8e9bf93215630604eed49476d6e848ad3ec3bdba Mon Sep 17 00:00:00 2001
+From 3b75872755ee4d57c8bb6ab26c5d7fd2a3491569 Mon Sep 17 00:00:00 2001
 From: Max Ihlenfeldt <max@igalia.com>
 Date: Fri, 8 Dec 2023 11:47:43 +0000
 Subject: [PATCH] Don't pass unknown LLVM options
@@ -17,10 +17,10 @@ Signed-off-by: Max Ihlenfeldt <max@igalia.com>
  1 file changed, 18 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
-index 46ed84d73c..5f7cfb69e9 100644
+index 58e0fd0..b3385ed 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -590,24 +590,6 @@ config("compiler") {
+@@ -604,24 +604,6 @@ config("compiler") {
        }
      }
 
