@@ -1,7 +1,7 @@
 DESCRIPTION ?= "Browser made by Mozilla"
 
 DEPENDS:append = "pulseaudio cbindgen-native clang-native \
-            nodejs-native python-zstandard gtk+3 \
+            nodejs-native python3-zstandard gtk+3 \
             libevent dbus-glib"
 
 DEPENDS:x86-64:append = " nasm-native "
@@ -121,7 +121,6 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbid-multiple-compositors',
            ', '', d)}"
 
 TOOLCHAIN:pn-firefox = "clang"
-AS = "${CC}"
 
 DISABLE_STATIC = ""
 
