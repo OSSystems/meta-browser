@@ -15,9 +15,9 @@ Upstream-Status: Inappropriate [oe-specific]
 
 diff --git a/Cargo.toml b/Cargo.toml
 index 29942b6..2158c9d 100644
---- a/Cargo.toml
-+++ b/Cargo.toml
-@@ -74,13 +74,11 @@ opt-level = 1
+--- ./Cargo.toml.orig	2025-07-21 21:22:22.479442980 +0200
++++ ./Cargo.toml	2025-07-21 21:22:31.245820309 +0200
+@@ -80,13 +80,11 @@
  rpath = false
  lto = false
  debug-assertions = true
