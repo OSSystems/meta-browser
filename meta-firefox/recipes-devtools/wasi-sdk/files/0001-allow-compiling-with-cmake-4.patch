@@ -1,0 +1,25 @@
+From bf31dbdd45582713fd8727ecd3873e656f2b567a Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Sun, 20 Jul 2025 20:24:41 +0200
+Subject: [PATCH] allow compiling with cmake 4
+
+Upstream-Status: Pending
+
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ wasi-sdk.cmake | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/wasi-sdk.cmake b/wasi-sdk.cmake
+index 83ee9b0..a2ef1b2 100644
+--- a/wasi-sdk.cmake
++++ b/wasi-sdk.cmake
+@@ -1,7 +1,7 @@
+ # Cmake toolchain description file for the Makefile
+ 
+ # This is arbitrary, AFAIK, for now.
+-cmake_minimum_required(VERSION 3.4.0)
++cmake_minimum_required(VERSION 3.5.0)
+ 
+ set(CMAKE_SYSTEM_NAME WASI)
+ set(CMAKE_SYSTEM_VERSION 1)

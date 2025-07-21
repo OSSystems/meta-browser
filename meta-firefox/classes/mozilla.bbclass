@@ -53,6 +53,8 @@ mozilla_run_mach() {
 	export INSTALL_SDK=0
 	export DESTDIR="${D}"
 
+	export AS="${CC}"
+
         cd "${S}"
 
 	./mach "$@"
