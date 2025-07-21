@@ -1,0 +1,24 @@
+Clang sends warnings about unsued command line arguments to stderr during configuring
+freebl (which is enabled for targets without hw crypto support). Gyp only checks
+if there is anything on stderr, but not the content - it throws an error like this:
+
+|  0:35.65   File "/yocto/master/build/tmp/work/cortexa15t2hf-neon-poky-linux-gnueabi/firefox/140.0.4/sources/firefox-140.0.4/third_party/python/gyp/pylib/gyp/input.py", line 928, in ExpandVariables
+|  0:35.65     raise GypError("Call to '%s' returned exit status %d while in %s. stderr: %s" %
+|  0:35.65                    (contents, p.returncode, build_file, p_stderr))
+|  0:35.65 gyp.common.GypError: Call to 'sh -c "${CC:-cc} -o - -E -dM - ${CFLAGS} < /dev/null | grep __SOFTFP__ > /dev/null && echo -mfloat-abi=softfp || true"' returned exit status 0 while in /yocto/master/build/tmp/work/cortexa15t2hf-neon-poky-linux-gnueabi/firefox/140.0.4/sources/firefox-140.0.4/security/nss/lib/freebl/freebl.gyp. stderr: b"arm-poky-linux-gnueabi-clang: warning: -Wl,-O1: 'linker' input unused [-Wunused-command-line-argument]\narm-poky-linux-gnueabi-clang: warning: -Wl,--hash-style=gnu: 'linker' input unused [-Wunused-command-line-argument]\narm-poky-linux-gnueabi-clang: warning: -Wl,--as-needed: 'linker' input unused [-Wunused-command-line-argument]\narm-poky-linux-gnueabi-clang: warning: -Wl,-z,relro,-z,now: 'linker' input unused [-Wunused-command-line-argument]\n" while loading dependencies of /yocto/master/build/tmp/work/cortexa15t2hf-neon-poky-linux-gnueabi/firefox/140.0.4/sources/firefox-140.0.4/security/nss/lib/softoken/softoken.gyp while loading dependencies of /yocto/master/build/tmp/work/cortexa15t2hf-neon-poky-linux-gnueabi/firefox/140.0.4/sources/firefox-140.0.4/security/nss/nss.gyp while trying to load /yocto/master/build/tmp/work/cortexa15t2hf-neon-poky-linux-gnueabi/firefox/140.0.4/sources/firefox-140.0.4/security/nss/nss.gyp
+
+
+To avoid it, ignore unused agruments during this configuration step.
+
+Upstream-Status: Pending
+--- ./security/nss/lib/freebl/freebl.gyp.orig	2025-07-21 08:37:11.116440837 +0200
++++ ./security/nss/lib/freebl/freebl.gyp	2025-07-21 08:37:24.383635931 +0200
+@@ -949,7 +949,7 @@
+       [ 'target_arch=="arm"', {
+         # When the compiler uses the softfloat ABI, we want to use the compatible softfp ABI when enabling NEON for these objects.
+         # Confusingly, __SOFTFP__ is the name of the define for the softfloat ABI, not for the softfp ABI.
+-        'softfp_cflags': '<!(sh -c "${CC:-cc} -o - -E -dM - ${CFLAGS} < /dev/null | grep __SOFTFP__ > /dev/null && echo -mfloat-abi=softfp || true")',
++        'softfp_cflags': '<!(sh -c "${CC:-cc} -Qunused-arguments -o - -E -dM - ${CFLAGS} < /dev/null | grep __SOFTFP__ > /dev/null && echo -mfloat-abi=softfp || true")',
+       }],
+       [ 'target_arch=="ppc64" or target_arch=="ppc64le"', {
+        'ppc_abi': '<!(sh -c "${CC:-cc} -dM -E - < /dev/null | awk \'\\$2 == \\"_CALL_ELF\\" {print \\$3}\'")',
