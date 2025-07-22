@@ -15,7 +15,7 @@ This layer depends on:
   - revision: HEAD
 
 * URI: git://github.com/kraj/meta-clang
-  - branch: master
+  - branch: scarthgap-clang20
   - revision: HEAD
 
 ## Contributing
@@ -82,6 +82,36 @@ host. clang-native from the meta-clang layer is used to build those binaries.
 Additionally, make sure the machine being used to build Chromium is powerful
 enough: a x86-64 machine with at least 16GB RAM is recommended.
 
+### Troubleshooting Build Error: std::bad_alloc
+If you encounter a build error similar to the following:
+
+```
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+terminate called recursively
+terminate called recursively
+```
+You might be experiencing what has been descibed in
+[this issue](https://github.com/OSSystems/meta-browser/issues/845#issuecomment-2664769837).
+
+You can try to increase the
+[vm.max_map_count](https://docs.kernel.org/admin-guide/sysctl/vm.html#max-map-count)
+value to allow your system to handle more memory mappings.
+
+1. Temporarily Set vm.max_map_count:
+
+```
+# echo 1048576 > /proc/sys/vm/max_map_count
+```
+This change will only persist until the system is rebooted. 
+
+2. Permanently Set vm.max_map_count:
+To make this change permanent, you need to modify `/etc/sysctl.conf` and add:
+```bash
+vm.max_map_count=1048576
+```
+A reboot may be required for the new value to get picked up (or run `sysconf -p`).
+
 ### scarthgap-specific requirements
 
 The scarthgap OE/Yocto branch is an LTS release, which is often at odds with
@@ -89,13 +119,12 @@ Chromium's release model because it often requires recent versions of certain
 recipes to build correctly.
 
 This is particularly a problem for the toolchain (i.e. LLVM/clang and Rust).
-Chromium needs a more recent version of Rust than OE Core provides for
+
+* Chromium needs a more recent version of Rust than OE Core provides for
 scarthgap, which is why we depend on meta-lts-mixins' `scarthgap/rust` branch.
 
-**Side note: For now, clang 18 provided by meta-clang is recent enough, but at
-some point during scarthgap's LTS lifetime Chromium won't be compilable with
-that version, and we'll have to create e.g. a scarthgap-clang20 branch for
-meta-clang and use that.**
+* Clang 18 provided by meta-clang is no longer compatible with the current
+Chromium release, thus we depend on meta-clang's `scarthgap-clang20` branch.
 
 ## PACKAGECONFIG knobs
 
