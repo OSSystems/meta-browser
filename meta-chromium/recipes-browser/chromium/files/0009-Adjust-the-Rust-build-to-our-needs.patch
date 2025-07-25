@@ -68,7 +68,7 @@ index 74b3b9ced5..5affd0b445 100644
        # https://github.com/rust-lang/rust/issues/44722
        if (arm_use_neon) {
 -        rust_abi_target = "thumbv7neon-unknown-linux-gnueabi" + float_suffix
-+        rust_abi_target = "thumbv7neon" + vendor + "-linux-gnueabi" + float_suffix
++        rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
        } else {
 -        rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
 +        rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
