@@ -1,0 +1,29 @@
+From f29addf315e55f371c7c9a973002607a628ea3ea Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Fri, 25 Jul 2025 13:00:14 +0100
+Subject: [PATCH 19/19] rust: filter out arm specific flags from rust compiler
+
+Upstream-Status: Inappropriate [specific to our build setup]
+---
+ build/rust/filter_clang_args.py | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
+index 5a1843c0df..7fb4b49516 100644
+--- a/build/rust/filter_clang_args.py
++++ b/build/rust/filter_clang_args.py
+@@ -24,6 +24,11 @@ def filter_clang_args(clangargs):
+           pass
+         elif args[i].startswith('-plugin-arg'):
+           i += 2
++      # Filter out ARM-specific flags that aren't supported on other architectures
++      elif args[i].startswith('-mbranch-protection'):
++        pass  # Skip this argument
++      elif args[i].startswith('-mfpu='):
++        pass
+       else:
+         yield args[i]
+       i += 1
+-- 
+2.39.5
+
