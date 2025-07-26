@@ -35,6 +35,7 @@ SRC_URI += "\
     file://0018-third_party-node-update_node_binaries-Update-nodejs-.patch \
     file://0019-Reduce-minimum-browser-window-width-to-480px.patch \
     file://0020-rust-filter-out-arm-specific-flags-from-rust-compile.patch \
+    file://0021-chromium-fix-v4l2-compiler-error-on-arm.patch \
 "
 
 # Missing third_party sources.
