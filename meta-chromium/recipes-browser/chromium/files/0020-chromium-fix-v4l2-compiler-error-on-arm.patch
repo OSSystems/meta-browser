@@ -1,0 +1,31 @@
+From 568dd0026ac86878bf6f0c99ac837a964525860f Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Sat, 26 Jul 2025 12:47:57 +0100
+Subject: [PATCH 20/20] chromium: fix v4l2 compiler error on arm
+
+fixes:
+../../media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc:450:20:
+error: non-constant-expression cannot be narrowed from type '__suseconds64_t'
+(aka 'long long') to 'long' in initializer list [-Wc++11-narrowing]
+
+Upstream-Status: Inappropriate [specific to our build setup]
+---
+ media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc b/media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc
+index b77f2b08d7..9069b97c02 100644
+--- a/media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc
++++ b/media/gpu/v4l2/legacy/v4l2_video_decoder_backend_stateful.cc
+@@ -447,7 +447,7 @@ void V4L2StatefulVideoDecoderBackend::OnOutputBufferDequeued(
+     const struct timeval timeval = buffer->GetTimeStamp();
+     const struct timespec timespec = {
+         .tv_sec = timeval.tv_sec,
+-        .tv_nsec = timeval.tv_usec * 1000,
++        .tv_nsec = static_cast<long>(timeval.tv_usec * 1000),
+     };
+ 
+     const int64_t flat_timespec =
+-- 
+2.39.5
+
