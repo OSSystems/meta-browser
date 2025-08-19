@@ -26,9 +26,9 @@ Upstream-Status: Inappropriate [oe specific]
  #endif
  
  # Thankfully, @REPLACE_NAME@ is unlikely to be a legitimate source, so
---- ./Cargo.toml	2025-07-21 21:22:22.479442980 +0200
-+++ ./Cargo.toml	2025-07-22 08:05:25.200696340 +0200
-@@ -231,20 +231,20 @@
+--- ./Cargo.toml	2025-08-19 22:44:26.085999031 +0200
++++ ./Cargo.toml	2025-08-19 22:47:29.357875065 +0200
+@@ -222,20 +222,20 @@
  unicode-width = { path = "build/rust/unicode-width" }
  
  # To-be-published changes.
@@ -57,7 +57,7 @@ Upstream-Status: Inappropriate [oe specific]
  # Allow webrender to have a versioned dependency on the older crate on crates.io
  # in order to build standalone.
  malloc_size_of_derive = { path = "xpcom/rust/malloc_size_of_derive" }
-@@ -252,19 +252,65 @@
+@@ -243,22 +243,68 @@
  wr_malloc_size_of = { path = "gfx/wr/wr_malloc_size_of" }
  
  # objc 0.2.7 + fa7ca43b862861dd1cd000d7ad01e6e0266cda13
@@ -65,17 +65,17 @@ Upstream-Status: Inappropriate [oe specific]
 +objc = { path = "../objc" }
  
  # application-services overrides to make updating them all simpler.
--context_id = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--filter_adult = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--relevancy = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--search = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--sql-support = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--suggest = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--sync15 = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--tabs = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--viaduct = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
--webext-storage = { git = "https://github.com/mozilla/application-services", rev = "4d9d334a28f61f1be84c92007aa0e76f04d165f4" }
+-context_id = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-filter_adult = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-interrupt-support = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-relevancy = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-search = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-sql-support = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-suggest = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-sync15 = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-tabs = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-viaduct = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
+-webext-storage = { git = "https://github.com/mozilla/application-services", rev = "b5175a2a2458834c9fdc0468d851658b0657f95b" }
 +context_id = { path = "../application-services/components/context_id", version = "0.1.0" }
 +filter_adult = { path = "../application-services/components/filter_adult", version = "0.1.0" }
 +interrupt-support = { path = "../application-services/components/support/interrupt", version = "0.1.0" }
@@ -90,6 +90,9 @@ Upstream-Status: Inappropriate [oe specific]
 +webext-storage = { path = "../application-services/components/webext-storage", version = "0.1.0" }
  
  allocator-api2 = { path = "third_party/rust/allocator-api2" }
+ 
+ # Patched version of zip 2.4.2 to allow for reading omnijars.
+ zip = { path = "third_party/rust/zip" }
 +
 +[patch."https://github.com/FirefoxGraphics/aa-stroke"]
 +aa-stroke = { path = "../aa-stroke"}
@@ -120,13 +123,13 @@ Upstream-Status: Inappropriate [oe specific]
 +wgpu-core-deps-windows-linux-android = { path = "../wgpu/wgpu-core/platform-deps/windows-linux-android" }
 +
 +[patch."https://github.com/mozilla/neqo"]
-+neqo-bin = { path = "../neqo/neqo-bin", version = "0.13.4" }
-+neqo-http3 = { path = "../neqo/neqo-http3", version = "0.13.4" }
-+neqo-common = { path = "../neqo/neqo-common", version = "0.13.4" }
-+neqo-transport = { path = "../neqo/neqo-transport", version = "0.13.4" }
-+neqo-qpack = { path = "../neqo/neqo-qpack", version = "0.13.4" }
-+neqo-crypto = { path = "../neqo/neqo-crypto", version = "0.13.4" }
-+neqo-udp = { path = "../neqo/neqo-udp", version = "0.13.4" }
++neqo-bin = { path = "../neqo/neqo-bin", version = "0.14.1" }
++neqo-http3 = { path = "../neqo/neqo-http3", version = "0.14.1" }
++neqo-common = { path = "../neqo/neqo-common", version = "0.14.1" }
++neqo-transport = { path = "../neqo/neqo-transport", version = "0.14.1" }
++neqo-qpack = { path = "../neqo/neqo-qpack", version = "0.14.1" }
++neqo-crypto = { path = "../neqo/neqo-crypto", version = "0.14.1" }
++neqo-udp = { path = "../neqo/neqo-udp", version = "0.14.1" }
 +
 +[patch."https://github.com/beurdouche/mls-rs"]
 +mls-rs = { path = "../mls-rs/mls-rs" }
@@ -135,75 +138,25 @@ Upstream-Status: Inappropriate [oe specific]
 +
 +[patch."https://github.com/beurdouche/mls-platform-api"]
 +mls-platform-api = { path = "../mls-platform-api" }
---- ./gfx/wgpu_bindings/Cargo.toml	2025-07-22 08:08:15.175404433 +0200
-+++ ./gfx/wgpu_bindings/Cargo.toml	2025-07-22 08:09:03.897006228 +0200
-@@ -16,8 +16,7 @@
- 
- [dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-core"
- # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
- features = [
-   "serde",
-@@ -32,33 +31,28 @@
- # (We should consider also enabling "vulkan" for Vulkan Portability.)
- [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-core"
- features = ["metal"]
- 
- # We want the wgpu-core Direct3D backends on Windows.
- [target.'cfg(windows)'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-core"
- features = ["dx12"]
- 
- # We want the wgpu-core Vulkan backend on Linux and Windows.
- [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
- package = "wgpu-core"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-core"
- features = ["vulkan"]
- 
- [dependencies.wgt]
- package = "wgpu-types"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-types"
- 
- [dependencies.wgh]
- package = "wgpu-hal"
--git = "https://github.com/gfx-rs/wgpu"
--rev = "3a5d0f2747fd43a0c4db8d911be1aca510c9ee82"
-+path = "../../../wgpu/wgpu-hal"
- features = ["device_lost_panic", "internal_error_panic"]
- 
- [target.'cfg(windows)'.dependencies]
---- ./third_party/rust/suggest/Cargo.toml	2025-07-22 08:11:22.954183455 +0200
-+++ ./third_party/rust/suggest/Cargo.toml	2025-07-22 08:15:04.683390396 +0200
-@@ -62,11 +62,10 @@
+--- ./third_party/rust/suggest/Cargo.toml	2025-08-19 22:48:22.541759937 +0200
++++ ./third_party/rust/suggest/Cargo.toml	2025-08-19 22:49:37.512073314 +0200
+@@ -61,12 +61,9 @@
+ thiserror = "1"
  unicase = "2.6"
  unicode-normalization = "0.1"
- 
+-
 -[dependencies.error-support]
 -path = "../support/error"
+-
+-[dependencies.interrupt-support]
+-path = "../support/interrupt"
 +interrupt-support = "0.1.0"
 +sql-support = "0.1.0"
 +error-support = "0.1.0"
  
--[dependencies.interrupt-support]
--path = "../support/interrupt"
- 
  [dependencies.remote_settings]
  path = "../remote_settings"
-@@ -84,9 +83,6 @@
+@@ -84,9 +81,6 @@
  version = "1"
  features = ["derive"]
  
@@ -213,7 +166,7 @@ Upstream-Status: Inappropriate [oe specific]
  [dependencies.tempfile]
  version = "3.2.0"
  optional = true
-@@ -102,7 +98,7 @@
+@@ -102,7 +96,7 @@
  path = "../viaduct"
  
  [dependencies.viaduct-reqwest]
@@ -222,7 +175,7 @@ Upstream-Status: Inappropriate [oe specific]
  optional = true
  
  [dev-dependencies]
-@@ -111,10 +107,6 @@
+@@ -111,10 +105,6 @@
  hex = "0.4"
  itertools = "0.14"
  
@@ -233,8 +186,8 @@ Upstream-Status: Inappropriate [oe specific]
  [dev-dependencies.rc_crypto]
  path = "../support/rc_crypto"
  
---- ./third_party/rust/search/Cargo.toml	2025-07-22 08:17:05.929158762 +0200
-+++ ./third_party/rust/search/Cargo.toml	2025-07-22 08:17:56.965300165 +0200
+--- ./third_party/rust/search/Cargo.toml	2025-08-19 22:50:15.662403495 +0200
++++ ./third_party/rust/search/Cargo.toml	2025-08-19 22:51:00.264111808 +0200
 @@ -32,12 +32,10 @@
  parking_lot = ">=0.11,<=0.12"
  serde_json = "1"
@@ -259,8 +212,8 @@ Upstream-Status: Inappropriate [oe specific]
  features = ["testing"]
  
  [dev-dependencies.viaduct-reqwest]
---- ./third_party/rust/filter_adult/Cargo.toml	2025-07-22 08:20:15.886037160 +0200
-+++ ./third_party/rust/filter_adult/Cargo.toml	2025-07-22 08:21:01.466229626 +0200
+--- ./third_party/rust/filter_adult/Cargo.toml	2025-08-19 22:51:27.129492547 +0200
++++ ./third_party/rust/filter_adult/Cargo.toml	2025-08-19 22:51:41.354331104 +0200
 @@ -46,7 +46,7 @@
  optional = true
  
@@ -270,3 +223,54 @@ Upstream-Status: Inappropriate [oe specific]
  
  [dependencies.uniffi]
  version = "0.29.0"
+--- ./gfx/wgpu_bindings/Cargo.toml	2025-08-19 22:54:25.349216619 +0200
++++ ./gfx/wgpu_bindings/Cargo.toml	2025-08-19 22:55:10.989527541 +0200
+@@ -16,8 +16,7 @@
+ 
+ [dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-core"
+ # TODO: remove the replay feature on the next update containing https://github.com/gfx-rs/wgpu/pull/5182
+ features = [
+   "serde",
+@@ -32,33 +31,28 @@
+ # (We should consider also enabling "vulkan" for Vulkan Portability.)
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-core"
+ features = ["metal"]
+ 
+ # We want the wgpu-core Direct3D backends on Windows.
+ [target.'cfg(windows)'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-core"
+ features = ["dx12"]
+ 
+ # We want the wgpu-core Vulkan backend on Linux and Windows.
+ [target.'cfg(any(windows, all(unix, not(any(target_os = "macos", target_os = "ios")))))'.dependencies.wgc]
+ package = "wgpu-core"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-core"
+ features = ["vulkan"]
+ 
+ [dependencies.wgt]
+ package = "wgpu-types"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-types"
+ 
+ [dependencies.wgh]
+ package = "wgpu-hal"
+-git = "https://github.com/gfx-rs/wgpu"
+-rev = "b83c9cfd578837a6163d980130249c245a9c5f8a"
++path = "../../../wgpu/wgpu-hal"
+ features = ["device_lost_panic", "internal_error_panic"]
+ 
+ [target.'cfg(windows)'.dependencies]

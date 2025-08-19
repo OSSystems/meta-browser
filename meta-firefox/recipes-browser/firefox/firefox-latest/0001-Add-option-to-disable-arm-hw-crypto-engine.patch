@@ -1,0 +1,84 @@
+From 0a3789949ffb04829eee00ebe28c785253ce7a96 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Sun, 30 Mar 2025 14:14:06 +0200
+Subject: [PATCH] Add option to disable arm hw crypto engine
+
+On some older ARM SoC's there is no hardware support for cryptography.
+However the nss librray in Firefox expect this support to be present,
+which fails the build when this is not the case.
+
+To avoid this, introduce a new option that allows disabling building
+for ARM crypto engine when it is required.
+
+Upstream-Status: Pending
+---
+ moz.configure                     | 12 ++++++++++++
+ security/moz.build                |  3 +++
+ security/nss/coreconf/config.gypi |  6 +++---
+ 3 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/moz.configure b/moz.configure
+index 804b9a3..fd13950 100755
+--- a/moz.configure
++++ b/moz.configure
+@@ -534,6 +534,18 @@ def build_backend_defaults(
+     return tuple(all_backends) or None
+ 
+ 
++option(
++    "--nss-disable-arm-crypto",
++    default="0",
++    help="Build NSS libraries with HW crypto engine for ARM"
++)
++
++@depends("--nss-disable-arm-crypto")
++def nss_disable_arm_crypto(disable):
++    return disable
++
++set_config("DISABLE_NSS_ARM_HW_CRYPTO", nss_disable_arm_crypto)
++
+ option(
+     "--build-backends",
+     nargs="+",
+diff --git a/security/nss/coreconf/config.gypi b/security/nss/coreconf/config.gypi
+index baf4256..e6e7160 100644
+--- a/security/nss/coreconf/config.gypi
++++ b/security/nss/coreconf/config.gypi
+@@ -101,9 +101,9 @@
+     'cc_is_gcc%': '<(cc_is_gcc)',
+     'cc_use_gnu_ld%': '<(cc_use_gnu_ld)',
+     # Some defaults
+-    'disable_arm_hw_aes%': 0,
+-    'disable_arm_hw_sha1%': 0,
+-    'disable_arm_hw_sha2%': 0,
++    'disable_arm_hw_aes%': '<(arm_hw_crypto)',
++    'disable_arm_hw_sha1%': '<(arm_hw_crypto)',
++    'disable_arm_hw_sha2%': '<(arm_hw_crypto)',
+     'disable_intel_hw_sha%': 0,
+     'disable_tests%': 0,
+     'disable_chachapoly%': 0,
+diff --git a/security/nss/lib/freebl/freebl.gyp b/security/nss/lib/freebl/freebl.gyp
+index 14f213c..09e29ac 100644
+--- a/security/nss/lib/freebl/freebl.gyp
++++ b/security/nss/lib/freebl/freebl.gyp
+@@ -606,7 +606,7 @@
+           'dependencies': [
+             'gcm-aes-x86_c_lib',
+           ]
+-        }, 'target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64"', {
++        }, '(disable_arm_hw_aes==0 or disable_arm_hw_sha1==0 or disable_arm_hw_sha2==0) and (target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64")', {
+           'dependencies': [
+             'armv8_c_lib',
+           ],
+--- ./security/moz.build	2025-08-20 11:08:04.582644171 +0200
++++ ./security/moz.build	2025-08-20 11:08:48.231464193 +0200
+@@ -118,6 +118,9 @@
+ # it.
+ gyp_vars["use_pkcs5_pbkd2_params2_only"] = 1
+ 
++# When set to 1, this disables building with arm hw crypto engine
++gyp_vars["arm_hw_crypto"] = CONFIG["DISABLE_NSS_ARM_HW_CRYPTO"]
++
+ # Clang can build NSS with its integrated assembler since version 9.
+ if (
+     CONFIG["TARGET_CPU"] == "x86_64"

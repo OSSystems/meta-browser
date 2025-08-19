@@ -138,9 +138,6 @@ SRCREV_mls-platform-api = "5d88241b9765cae3669aba21f0946bd3700f7db1"
 SRCREV_FORMAT .= "_mls-rs"
 SRCREV_mls-rs = "b747d7efb85a776b97ad8afa8d1b32893fa5efa3"
 
-SRCREV_FORMAT .= "_neqo"
-SRCREV_neqo = "c3179d9f363bf92a908d90e4240b315b9ff72516"
-
 SRCREV_FORMAT .= "_nss-gk-api"
 SRCREV_nss-gk-api = "e48a946811ffd64abc78de3ee284957d8d1c0d63"
 
