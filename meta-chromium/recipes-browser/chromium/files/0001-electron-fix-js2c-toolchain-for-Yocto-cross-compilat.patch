@@ -1,0 +1,37 @@
+From eb0e4dad4045362cc2cb2b16296f8df79a89c1e9 Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Tue, 29 Jul 2025 00:00:00 +0000
+Subject: [PATCH] electron: fix js2c toolchain for Yocto cross-compilation
+
+The electron js2c toolchain selection logic doesn't properly handle
+Yocto cross-compilation environments where host tools need to be built
+with the host toolchain rather than the target toolchain.
+
+This patch forces the electron_js2c_toolchain to use host_toolchain
+in cross-compilation scenarios to ensure node_js2c can execute on
+the build machine.
+
+Upstream-Status: Inappropriate [OE-specific]
+---
+ electron/build/js2c_toolchain.gni | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/electron/build/js2c_toolchain.gni b/electron/build/js2c_toolchain.gni
+index b56590857c..b754143aba 100644
+--- a/electron/build/js2c_toolchain.gni
++++ b/electron/build/js2c_toolchain.gni
+@@ -6,6 +6,11 @@ declare_args() {
+   electron_js2c_toolchain = ""
+ }
+ 
++# Force host toolchain for Yocto cross-compilation
++if (electron_js2c_toolchain == "" && defined(host_toolchain)) {
++  electron_js2c_toolchain = host_toolchain
++}
++
+ if (electron_js2c_toolchain == "") {
+   if (current_os == host_os && current_cpu == host_cpu) {
+     # This is not a cross-compile, so build the snapshot with the current
+-- 
+2.39.5
+

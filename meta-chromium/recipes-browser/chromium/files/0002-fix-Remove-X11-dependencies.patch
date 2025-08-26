@@ -1,0 +1,74 @@
+From a1b544e401fee3aff490de23c0c4749d797d4448 Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Tue, 29 Jul 2025 13:35:16 +0100
+Subject: [PATCH] fix: Remove X11 dependencies
+
+Electron introduces X11 dependencies in wayland ozone platform backend.
+This is undesired behaviour.
+
+Upstream-Status: Inappropriate
+---
+ electron/BUILD.gn                                         | 8 +++++---
+ .../shell/browser/api/electron_api_desktop_capturer.cc    | 2 ++
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/electron/BUILD.gn b/electron/BUILD.gn
+index fe4fb706f5..3308a5bb92 100644
+--- a/electron/BUILD.gn
++++ b/electron/BUILD.gn
+@@ -637,7 +637,6 @@ source_set("electron_lib") {
+     }
+   }
+   if (is_linux) {
+-    libs = [ "xshmfence" ]
+     deps += [
+       ":electron_gtk_stubs",
+       ":libnotify_loader",
+@@ -647,19 +646,22 @@ source_set("electron_lib") {
+       "//device/bluetooth",
+       "//third_party/crashpad/crashpad/client",
+       "//ui/base/ime/linux",
+-      "//ui/events/devices/x11",
+-      "//ui/events/platform/x11",
+       "//ui/gtk:gtk_config",
+       "//ui/linux:linux_ui",
+       "//ui/linux:linux_ui_factory",
+       "//ui/wm",
+     ]
+     if (ozone_platform_x11) {
++      libs = [ "xshmfence" ]
+       sources += filenames.lib_sources_linux_x11
+       public_deps += [
+         "//ui/base/x",
+         "//ui/ozone/platform/x11",
+       ]
++      deps += [
++        "//ui/events/devices/x11",
++        "//ui/events/platform/x11",
++      ]
+     }
+     configs += [ ":gio_unix" ]
+     defines += [
+diff --git a/electron/shell/browser/api/electron_api_desktop_capturer.cc b/electron/shell/browser/api/electron_api_desktop_capturer.cc
+index d0b3f40b5d..e43bd39199 100644
+--- a/electron/shell/browser/api/electron_api_desktop_capturer.cc
++++ b/electron/shell/browser/api/electron_api_desktop_capturer.cc
+@@ -49,6 +49,7 @@
+ 
+ namespace {
+ #if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_OZONE_X11)
+ // Private function in ui/base/x/x11_display_util.cc
+ base::flat_map<x11::RandR::Output, int> GetMonitors(
+     std::pair<uint32_t, uint32_t> version,
+@@ -143,6 +144,7 @@ base::flat_map<int32_t, uint32_t> MonitorAtomIdToDisplayId() {
+   return monitor_atom_to_display;
+ }
+ #endif
++#endif
+ 
+ std::unique_ptr<ThumbnailCapturer> MakeWindowCapturer() {
+ #if BUILDFLAG(IS_MAC)
+-- 
+2.39.5
+

@@ -1,0 +1,225 @@
+From e1d41130d98f66b0a48e07bf8d76737caee3d65b Mon Sep 17 00:00:00 2001
+From: Caner Altinbasak <cal@brightsign.biz>
+Date: Tue, 29 Jul 2025 17:21:47 +0100
+Subject: [PATCH] fix: Electron yocto build problems
+
+Upstream-Status: Inappropriate
+---
+ content/zygote/zygote_linux.cc                |  1 +
+ electron/shell/browser/native_window_views.cc | 24 ++++++++++---------
+ electron/shell/browser/native_window_views.h  |  4 ++--
+ .../browser/osr/osr_host_display_client.cc    |  2 +-
+ .../browser/osr/osr_host_display_client.h     |  2 +-
+ electron/shell/browser/ui/gtk/menu_util.cc    |  7 ++++++
+ 6 files changed, 25 insertions(+), 15 deletions(-)
+
+diff --git a/content/zygote/zygote_linux.cc b/content/zygote/zygote_linux.cc
+index 003169cf7d..07a5f855b1 100644
+--- a/content/zygote/zygote_linux.cc
++++ b/content/zygote/zygote_linux.cc
+@@ -13,6 +13,7 @@
+ #include <sys/socket.h>
+ #include <sys/types.h>
+ #include <sys/wait.h>
++#include <sys/prctl.h>
+ #include <grp.h>
+ 
+ #include <tuple>
+diff --git a/electron/shell/browser/native_window_views.cc b/electron/shell/browser/native_window_views.cc
+index 3b18f05042..25cdaa4027 100644
+--- a/electron/shell/browser/native_window_views.cc
++++ b/electron/shell/browser/native_window_views.cc
+@@ -333,6 +333,7 @@ NativeWindowViews::NativeWindowViews(const gin_helper::Dictionary& options,
+   if (parent)
+     SetParentWindow(parent);
+ 
++#if BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     // Before the window is mapped the SetWMSpecState can not work, so we have
+     // to manually set the _NET_WM_STATE.
+@@ -365,6 +366,7 @@ NativeWindowViews::NativeWindowViews(const gin_helper::Dictionary& options,
+                     window_type);
+   }
+ #endif
++#endif
+ 
+ #if BUILDFLAG(IS_WIN)
+   if (!has_frame()) {
+@@ -478,7 +480,7 @@ NativeWindowViews::~NativeWindowViews() {
+ }
+ 
+ void NativeWindowViews::SetGTKDarkThemeEnabled(bool use_dark_theme) {
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     const std::string color = use_dark_theme ? "dark" : "light";
+     auto* connection = x11::Connection::Get();
+@@ -566,7 +568,7 @@ void NativeWindowViews::Show() {
+ 
+   NotifyWindowShow();
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (global_menu_bar_)
+     global_menu_bar_->OnWindowMapped();
+ 
+@@ -582,7 +584,7 @@ void NativeWindowViews::ShowInactive() {
+ 
+   NotifyWindowShow();
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (global_menu_bar_)
+     global_menu_bar_->OnWindowMapped();
+ 
+@@ -601,7 +603,7 @@ void NativeWindowViews::Hide() {
+ 
+   NotifyWindowHide();
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (global_menu_bar_)
+     global_menu_bar_->OnWindowUnmapped();
+ #endif
+@@ -632,7 +634,7 @@ bool NativeWindowViews::IsVisible() const {
+ bool NativeWindowViews::IsEnabled() const {
+ #if BUILDFLAG(IS_WIN)
+   return ::IsWindowEnabled(GetAcceleratedWidget());
+-#elif BUILDFLAG(IS_LINUX)
++#elif BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11())
+     return !event_disabler_.get();
+   NOTIMPLEMENTED();
+@@ -669,7 +671,7 @@ void NativeWindowViews::SetEnabledInternal(bool enable) {
+ 
+ #if BUILDFLAG(IS_WIN)
+   ::EnableWindow(GetAcceleratedWidget(), enable);
+-#else
++#elif BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     views::DesktopWindowTreeHostPlatform* tree_host =
+         views::DesktopWindowTreeHostLinux::GetHostForWidget(
+@@ -1001,7 +1003,7 @@ bool NativeWindowViews::MoveAbove(const std::string& sourceId) {
+   ::SetWindowPos(GetAcceleratedWidget(), GetWindow(otherWindow, GW_HWNDPREV), 0,
+                  0, 0, 0,
+                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+-#else
++#elif BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     if (!IsWindowValid(static_cast<x11::Window>(id.id)))
+       return false;
+@@ -1023,7 +1025,7 @@ void NativeWindowViews::MoveTop() {
+   ::SetWindowPos(GetAcceleratedWidget(), HWND_TOP, pos.x(), pos.y(),
+                  size.width(), size.height(),
+                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+-#else
++#elif BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11())
+     electron::MoveWindowToForeground(
+         static_cast<x11::Window>(GetAcceleratedWidget()));
+@@ -1365,7 +1367,7 @@ void NativeWindowViews::SetIgnoreMouseEvents(bool ignore, bool forward) {
+   } else {
+     SetForwardMouseMessages(forward);
+   }
+-#else
++#elif BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     auto* connection = x11::Connection::Get();
+     if (ignore) {
+@@ -1431,7 +1433,7 @@ bool NativeWindowViews::IsFocusable() const {
+ }
+ 
+ void NativeWindowViews::SetMenu(ElectronMenuModel* menu_model) {
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   // Remove global menu bar.
+   if (global_menu_bar_ && menu_model == nullptr) {
+     global_menu_bar_.reset();
+@@ -1487,7 +1489,7 @@ void NativeWindowViews::SetMenu(ElectronMenuModel* menu_model) {
+ void NativeWindowViews::SetParentWindow(NativeWindow* parent) {
+   NativeWindow::SetParentWindow(parent);
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   if (x11_util::IsX11()) {
+     auto* connection = x11::Connection::Get();
+     connection->SetProperty(
+diff --git a/electron/shell/browser/native_window_views.h b/electron/shell/browser/native_window_views.h
+index 7e192ff817..042bb5ee25 100644
+--- a/electron/shell/browser/native_window_views.h
++++ b/electron/shell/browser/native_window_views.h
+@@ -28,7 +28,7 @@
+ 
+ namespace electron {
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+ class GlobalMenuBarX11;
+ #endif
+ 
+@@ -262,7 +262,7 @@ class NativeWindowViews : public NativeWindow,
+   // events from resizing the window.
+   extensions::SizeConstraints old_size_constraints_;
+ 
+-#if BUILDFLAG(IS_LINUX)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   std::unique_ptr<GlobalMenuBarX11> global_menu_bar_;
+ #endif
+ 
+diff --git a/electron/shell/browser/osr/osr_host_display_client.cc b/electron/shell/browser/osr/osr_host_display_client.cc
+index 8f316f0449..b037fa8bf8 100644
+--- a/electron/shell/browser/osr/osr_host_display_client.cc
++++ b/electron/shell/browser/osr/osr_host_display_client.cc
+@@ -95,7 +95,7 @@ void OffScreenHostDisplayClient::CreateLayeredWindowUpdater(
+   layered_window_updater_->SetActive(active_);
+ }
+ 
+-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+ void OffScreenHostDisplayClient::DidCompleteSwapWithNewSize(
+     const gfx::Size& size) {}
+ #endif
+diff --git a/electron/shell/browser/osr/osr_host_display_client.h b/electron/shell/browser/osr/osr_host_display_client.h
+index e95eb43bd1..0f4e0386d3 100644
+--- a/electron/shell/browser/osr/osr_host_display_client.h
++++ b/electron/shell/browser/osr/osr_host_display_client.h
+@@ -74,7 +74,7 @@ class OffScreenHostDisplayClient : public viz::HostDisplayClient {
+       mojo::PendingReceiver<viz::mojom::LayeredWindowUpdater> receiver)
+       override;
+ 
+-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
++#if BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
+   void DidCompleteSwapWithNewSize(const gfx::Size& size) override;
+ #endif
+ 
+diff --git a/electron/shell/browser/ui/gtk/menu_util.cc b/electron/shell/browser/ui/gtk/menu_util.cc
+index 76bc5862f6..28204fab5a 100644
+--- a/electron/shell/browser/ui/gtk/menu_util.cc
++++ b/electron/shell/browser/ui/gtk/menu_util.cc
+@@ -18,8 +18,11 @@
+ #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
+ #include "ui/base/models/image_model.h"
+ #include "ui/base/models/menu_model.h"
++#include "ui/base/ozone_buildflags.h"
+ #include "ui/events/event_constants.h"
++#if BUILDFLAG(IS_OZONE_X11)
+ #include "ui/events/keycodes/keyboard_code_conversion_x.h"
++#endif
+ #include "ui/ozone/public/ozone_platform.h"
+ 
+ namespace electron::gtkui {
+@@ -42,7 +45,11 @@ int EventFlagsFromGdkState(guint state) {
+ guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
+   // The second parameter is false because accelerator keys are expressed in
+   // terms of the non-shift-modified key.
++#if BUILDFLAG(IS_OZONE_X11)
+   return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
++#else
++  return 0;
++#endif
+ }
+ 
+ GdkModifierType GetGdkModifierForAccelerator(
+-- 
+2.39.5
+

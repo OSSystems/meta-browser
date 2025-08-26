@@ -1,4 +1,4 @@
-name: Chromium build- and smoke-test
+name: Electron build- and smoke-test
 
 on:
   workflow_dispatch:
@@ -16,9 +16,9 @@ on:
       - master
     paths:
       - 'meta-chromium/recipes-browser/chromium/files/**'
-      - 'meta-chromium/recipes-browser/chromium/chromium*'
+      - 'meta-chromium/recipes-browser/chromium/electron*'
       - 'meta-chromium/recipes-browser/chromium/gn*'
-      - '.github/workflows/chromium.yml'
+      - '.github/workflows/electron.yml'
 
 permissions:
   contents: read
@@ -31,8 +31,8 @@ jobs:
     strategy:
       matrix:
         yocto_version: [master]
-        browser_version: [ozone-wayland, x11]
-        browser: [chromium]
+        browser_version: [ozone-wayland, ozone-x11]
+        browser: [electron]
         libc_flavour: [glibc]
         arch: [arm, aarch64, x86-64]
     runs-on: [self-hosted, chromium]
