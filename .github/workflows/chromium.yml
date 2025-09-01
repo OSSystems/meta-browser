@@ -11,6 +11,21 @@ on:
         description: 'Branch to checkout for the workflow'
         required: true
         default: 'master'
+      use_aws:
+        description: 'Use AWS EC2 instances instead of local runner'
+        required: false
+        type: boolean
+        default: true
+      instance_type:
+        description: 'EC2 instance type for build (more cores = faster builds)'
+        required: false
+        type: choice
+        options:
+          - 'c6id.4xlarge'   # 16 vCPUs, 32 GB RAM, 1x 950 GB NVMe
+          - 'c6id.8xlarge'   # 32 vCPUs, 64 GB RAM, 1x 1900 GB NVMe
+          - 'c6id.12xlarge'  # 48 vCPUs, 96 GB RAM, 2x 1425 GB NVMe
+          - 'c6id.16xlarge'  # 64 vCPUs, 128 GB RAM, 2x 1900 GB NVMe
+        default: 'c6id.8xlarge'
   pull_request:
     branches:
       - master
@@ -24,11 +39,37 @@ permissions:
   contents: read
   actions: read
   checks: write
+  id-token: write  # Required for OIDC authentication
 
 jobs:
-  build:
-    if: ${{ github.repository_owner == 'brightsign' }}
+  # AWS-based builds (always for PR, default for manual dispatch)
+  aws-matrix-build:
+    if: ${{ github.repository_owner == 'brightsign' && (github.event_name == 'pull_request' || inputs.use_aws == true || inputs.use_aws == null) }}
     strategy:
+      fail-fast: false  # Continue other matrix jobs even if one fails
+      matrix:
+        yocto_version: [master]
+        ozone_platform: [ozone-wayland, x11]
+        libc_flavour: [glibc]
+        arch: [arm, aarch64, x86-64]
+    uses: ./.github/workflows/bs_meta_browser_ci_ec2.yml
+    secrets: inherit
+    with:
+      build_type: "release"
+      browser: "chromium"
+      yocto_version: ${{ matrix.yocto_version }}
+      chromium_version: ${{ matrix.ozone_platform }}
+      libc_flavour: ${{ matrix.libc_flavour }}
+      arch: ${{ matrix.arch }}
+      aws_arn_role: "arn:aws:iam::195607249165:role/github-actions-meta-browser-repo"
+      aws_region: "us-east-1"
+      instance_type: ${{ inputs.instance_type || 'c6id.8xlarge' }}  # Default for PR builds, user choice for manual
+
+  # Local runner (manual dispatch only, when explicitly disabled AWS)
+  local-build:
+    if: ${{ github.repository_owner == 'brightsign' && github.event_name == 'workflow_dispatch' && inputs.use_aws == false }}
+    strategy:
+      fail-fast: false  # Continue other matrix jobs even if one fails
       matrix:
         yocto_version: [master]
         browser_version: [ozone-wayland, x11]
@@ -57,5 +98,5 @@ jobs:
          git clone $GH_URL
          git -C meta-browser checkout $GH_REV
          # clone the test repo
-         git clone -b electron-master https://github.com/brightsign/meta-chromium-test.git
+         git clone https://github.com/brightsign/meta-chromium-test.git
          ./meta-chromium-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.browser_version }} ${{ matrix.browser }} ${{ matrix.libc_flavour}}

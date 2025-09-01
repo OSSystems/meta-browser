@@ -1,0 +1,526 @@
+name: 'BrightSign Build and Test Meta-Browser: Build and test workflow'
+on:
+  workflow_call:
+    inputs:
+      runner_name:
+        description: 'Runner name'
+        required: true
+        type: string
+
+      github_hosted_runner:
+        description: 'Whether to use GitHub-hosted runner'
+        required: false
+        type: boolean
+        default: false
+
+      browser:
+        description: "Electron or Chromium"
+        required: true
+        type: string
+
+      build_type:
+        description: 'Build Type'
+        required: true
+        type: string
+
+      yocto_version:
+        description: 'Yocto version'
+        required: true
+        type: string
+
+      chromium_version:
+        description: 'Display backend/Ozone platform (ozone-wayland or x11)'
+        required: true
+        type: string
+
+      libc_flavour:
+        description: 'libc flavour'
+        required: true
+        type: string
+
+      arch:
+        description: 'Architecture'
+        required: true
+        type: string
+
+      aws_arn_role:
+        required: true
+        type: string
+
+      aws_region:
+        required: true
+        type: string
+
+jobs:
+  build-and-test-meta-browser:
+    name: Build and Test Meta-Browser
+    runs-on: ${{ inputs.runner_name }}
+    timeout-minutes: 660  # 11 hours - increase for long Yocto builds
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Configure AWS credentials for accessing S3 cache buckets
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.aws_arn_role }}
+          role-session-name: mb-build-${{ github.run_id }}
+          role-duration-seconds: 43200  # 12 hours - maximum for most IAM roles
+
+      # Download config file and set environment variables
+      - name: Download config file and set env vars from it
+        run: |
+          aws s3 cp s3://meta-browser-ci-config-bucket/config.json .
+          aws s3 cp s3://meta-browser-ci-config-bucket/set_github_env_vars.py .
+          python3 set_github_env_vars.py --file config.json
+
+      # Quick system verification (using pre-configured custom AMI)
+      - name: Verify AMI configuration
+        run: |
+          echo "=== Verifying pre-configured AMI ==="
+          echo "AMI Info:"
+          cat /etc/ami-info || echo "No AMI info file found"
+          
+          echo ""
+          echo "Checking KAS installation:"
+          kas --version || echo "KAS not found"
+          
+          echo ""
+          echo "Checking locale:"
+          locale
+          
+          echo ""
+          echo "Checking AWS CLI:"
+          aws --version || echo "AWS CLI not found"
+          
+          echo ""
+          echo "Available disk space:"
+          df -h
+          
+          echo ""
+          echo "Memory info:"
+          free -h
+          
+          echo "✓ AMI verification complete - all dependencies pre-installed"
+
+      # Setup large swap space on local NVMe SSD for memory-intensive Yocto builds
+      - name: Setup NVMe storage and swap
+        run: |
+          echo "=== Setting up NVMe storage and swap ==="
+          
+          # Get current user once for all operations
+          CURRENT_USER=$(whoami)
+          echo "Setting up NVMe storage for user: $CURRENT_USER"
+          
+          # Check for NVMe storage and set up build directory
+          if [ -e /dev/nvme1n1 ]; then
+            echo "NVMe storage detected, setting up build directory..."
+            
+            # Create filesystem if not already done
+            if ! mount | grep -q nvme1n1; then
+              sudo mkfs.ext4 -F /dev/nvme1n1
+              sudo mkdir -p /mnt/nvme
+              sudo mount /dev/nvme1n1 /mnt/nvme
+              sudo chown $CURRENT_USER:$CURRENT_USER /mnt/nvme
+            fi
+            
+            # Create build directory on NVMe storage
+            echo "Setting up build workspace on NVMe storage..."
+            sudo mkdir -p /mnt/nvme/yocto-build
+            sudo chown $CURRENT_USER:$CURRENT_USER /mnt/nvme/yocto-build
+            
+            # Create symlink from /yocto to NVMe storage
+            sudo rm -rf /yocto 2>/dev/null || true
+            sudo ln -sf /mnt/nvme/yocto-build /yocto
+            sudo chown -h $CURRENT_USER:$CURRENT_USER /yocto
+            
+            # Set up swap on NVMe (256GB)
+            echo "Creating 256GB swap file on NVMe SSD..."
+            sudo fallocate -l 256G /mnt/nvme/swapfile
+            sudo chmod 600 /mnt/nvme/swapfile
+            sudo mkswap /mnt/nvme/swapfile
+            sudo swapon /mnt/nvme/swapfile
+            
+            echo "✓ Build directory and swap configured on NVMe storage"
+          else
+            echo "ERROR: No NVMe device found! Instance should have NVMe storage for optimal build performance."
+            echo "Available block devices:"
+            lsblk
+            exit 1
+          fi
+          
+          # Verify swap is active
+          echo "=== Memory and swap status ==="
+          free -h
+          swapon --show
+          echo "Available disk space:"
+          df -h
+
+      # Mount EFS file systems and setup cache directories
+      - name: Setup EFS mounts and cache directories
+        run: |
+          # Get current user for consistent permission management
+          CURRENT_USER=$(whoami)
+          echo "Setting up EFS mounts and cache directories for user: $CURRENT_USER"
+          
+          # Create mount points and cache directories
+          sudo mkdir -p /mnt/shared-cache/sstate-cache /mnt/shared-cache/downloads /mnt/git-mirror
+          
+          # Debug DNS resolution
+          echo "=== DNS Troubleshooting ==="
+          echo "Checking DNS resolution for EFS endpoints..."
+          nslookup ${{ env.SHARED_CACHE_EFS_ID }}.efs.${{ env.AWS_REGION }}.amazonaws.com || echo "DNS lookup failed"
+          nslookup ${{ env.GIT_MIRROR_EFS_ID }}.efs.${{ env.AWS_REGION }}.amazonaws.com || echo "DNS lookup failed"
+          
+          # Check AWS metadata service and VPC DNS
+          echo "=== VPC DNS Settings ==="
+          curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/ | head -1 | xargs -I {} curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/{}/vpc-id || echo "VPC metadata failed"
+          
+          # Check if we can reach AWS services
+          echo "=== AWS Connectivity Check ==="
+          if curl -s --connect-timeout 10 https://s3.amazonaws.com; then
+            echo "✓ S3 reachable"
+          else
+            echo "✗ S3 not reachable - this will cause build artifact upload to fail"
+            echo "Network connectivity issue detected"
+            exit 1
+          fi
+          
+          # Alternative: Use mount target IP if DNS fails
+          echo "=== Alternative EFS Mount Strategy ==="
+          # Try to resolve mount target IPs through AWS CLI if available
+          if command -v aws &> /dev/null; then
+            echo "Attempting to get EFS mount targets..."
+            aws efs describe-mount-targets --file-system-id ${{ env.SHARED_CACHE_EFS_ID }} --region ${{ env.AWS_REGION }} || echo "AWS CLI describe failed"
+          fi
+          
+          # Try using regional EFS mount target instead
+          echo "=== Mounting EFS file systems ==="
+          echo "Shared cache EFS: ${{ env.SHARED_CACHE_EFS_ID }}"
+          echo "Git mirror EFS: ${{ env.GIT_MIRROR_EFS_ID }}"
+          echo "AWS Region: ${{ env.AWS_REGION }}"
+          
+          # Get EFS mount target IPs for fallback
+          SHARED_CACHE_IP=$(aws efs describe-mount-targets --file-system-id ${{ env.SHARED_CACHE_EFS_ID }} --region ${{ env.AWS_REGION }} --query 'MountTargets[0].IpAddress' --output text 2>/dev/null || echo "")
+          GIT_MIRROR_IP=$(aws efs describe-mount-targets --file-system-id ${{ env.GIT_MIRROR_EFS_ID }} --region ${{ env.AWS_REGION }} --query 'MountTargets[0].IpAddress' --output text 2>/dev/null || echo "")
+          echo "Shared cache EFS IP: $SHARED_CACHE_IP"
+          echo "Git mirror EFS IP: $GIT_MIRROR_IP"
+          
+          # Mount shared cache EFS (sstate, downloads) with DNS and IP fallback
+          SHARED_MOUNTED=false
+          for i in {1..2}; do
+            echo "Attempt $i: Mounting shared cache EFS..."
+            # Try DNS first
+            if sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+              ${{ env.SHARED_CACHE_EFS_ID }}.efs.${{ env.AWS_REGION }}.amazonaws.com:/ /mnt/shared-cache 2>/dev/null; then
+              echo "✓ Shared cache EFS mounted successfully via DNS"
+              SHARED_MOUNTED=true
+              break
+            elif [ -n "$SHARED_CACHE_IP" ]; then
+              echo "DNS failed, trying IP address: $SHARED_CACHE_IP"
+              if sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+                $SHARED_CACHE_IP:/ /mnt/shared-cache; then
+                echo "✓ Shared cache EFS mounted successfully via IP"
+                SHARED_MOUNTED=true
+                break
+              fi
+            fi
+            echo "✗ Mount attempt $i failed, retrying..."
+            sleep 5
+          done
+          
+          # Mount git mirror EFS with DNS and IP fallback  
+          GIT_MOUNTED=false
+          for i in {1..2}; do
+            echo "Attempt $i: Mounting git mirror EFS..."
+            # Try DNS first
+            if sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+              ${{ env.GIT_MIRROR_EFS_ID }}.efs.${{ env.AWS_REGION }}.amazonaws.com:/ /mnt/git-mirror 2>/dev/null; then
+              echo "✓ Git mirror EFS mounted successfully via DNS"
+              GIT_MOUNTED=true
+              break
+            elif [ -n "$GIT_MIRROR_IP" ]; then
+              echo "DNS failed, trying IP address: $GIT_MIRROR_IP"
+              if sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+                $GIT_MIRROR_IP:/ /mnt/git-mirror; then
+                echo "✓ Git mirror EFS mounted successfully via IP"
+                GIT_MOUNTED=true
+                break
+              fi
+            fi
+            echo "✗ Mount attempt $i failed, retrying..."
+            sleep 5
+          done
+          
+          # Report mount results
+          if [ "$SHARED_MOUNTED" = "false" ]; then
+            echo "⚠️  WARNING: Failed to mount shared cache EFS - builds will be slower without cache"
+          fi
+          if [ "$GIT_MOUNTED" = "false" ]; then
+            echo "⚠️  WARNING: Failed to mount git mirror EFS - will clone repositories directly"
+          fi
+          
+          if [ "$SHARED_MOUNTED" = "true" ] && [ "$GIT_MOUNTED" = "true" ]; then
+            echo "🎉 All EFS file systems mounted successfully!"
+          fi
+          
+          # Verify mounts
+          echo "=== Mount Verification ==="
+          mount | grep mnt || echo "No /mnt filesystems found"
+          df -h | grep mnt || echo "No /mnt filesystems in df"
+          
+          # Set permissions on mount points only (not recursive to avoid processing massive cache data)
+          sudo chown $CURRENT_USER:$CURRENT_USER /mnt/shared-cache /mnt/git-mirror
+          sudo chmod 755 /mnt/shared-cache /mnt/git-mirror
+          echo "✓ Mount point permissions set (skipped recursive operation to avoid processing 100GB+ of cache data)"
+
+      # Set up build directories and environment
+      - name: Setup build environment
+        run: |
+          # Set environment variables and get current user
+          export LANG=en_US.UTF-8
+          export LC_ALL=en_US.UTF-8
+          CURRENT_USER=$(whoami)
+          echo "Setting up build environment for user: $CURRENT_USER"
+          
+          # Setup environment variables for all shells
+          echo "export PATH=\$PATH:\$HOME/.local/bin" >> ~/.bashrc
+          echo "export LANG=en_US.UTF-8" >> ~/.bashrc
+          echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc
+          
+          # Create and setup the build directory structure
+          sudo mkdir -p /yocto/${{ inputs.yocto_version }} /yocto/yocto_ccache /yocto/test-images
+          sudo chown -R $CURRENT_USER:$CURRENT_USER /yocto
+          sudo chmod -R 755 /yocto/${{ inputs.yocto_version }} /yocto/yocto_ccache /yocto/test-images
+          
+          # Clean any previous builds in the NVMe-backed directory
+          cd /yocto/${{ inputs.yocto_version }}
+          rm -rf meta-browser meta-chromium-test build/tmp/work/*/*/*/pseudo build/tmp/sysroots-components/*/pseudo 2>/dev/null || true
+          
+          # Ensure current directory has proper permissions for symlink creation
+          sudo chown $CURRENT_USER:$CURRENT_USER .
+          sudo chmod 755 .
+          
+          # Create symlinks to EFS mounts in both build directory and /yocto root
+          ln -sf /mnt/shared-cache/sstate-cache ./sstate-cache
+          ln -sf /mnt/shared-cache/downloads ./downloads
+          ln -sf /mnt/shared-cache/sstate-cache /yocto/yocto_sstate_chromium
+          ln -sf /mnt/shared-cache/sstate-cache /yocto/yocto_sstate_electron
+          ln -sf /mnt/shared-cache/downloads /yocto/yocto_dl
+
+      # Clone repositories (check if PR or manual trigger)
+      - name: Clone repositories
+        run: |
+          # Clone directly into the NVMe-backed /yocto directory
+          cd /yocto/${{ inputs.yocto_version }}
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+              GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
+              GH_REV="$GITHUB_HEAD_REF"
+          else
+              GH_URL="$GITHUB_SERVER_URL/brightsign/meta-browser"
+              GH_REV="master"
+          fi
+          
+          echo "Cloning from $GH_URL, branch/ref: $GH_REV"
+          git clone $GH_URL
+          git -C meta-browser checkout $GH_REV
+          
+          # Clone the test repo
+          echo "Cloning meta-chromium-test electron-master branch"
+          git clone https://github.com/brightsign/meta-chromium-test.git
+
+      # Run the build
+      - name: Build Browser
+        timeout-minutes: 660  # 11 hours for Yocto build
+        run: |
+          # Set environment variables that the Docker container would have
+          export LANG=en_US.UTF-8
+          export LC_ALL=en_US.UTF-8
+          export PATH=$PATH:$HOME/.local/bin
+          
+          # Debug environment and verify setup
+          echo "=== Environment Debug ==="
+          echo "PATH: $PATH"
+          echo "User: $(whoami)"
+          echo "Current directory: $(pwd)"
+          which kas || echo "kas not found in PATH"
+          
+          echo "Building ${{ inputs.browser }} with ${{ inputs.chromium_version }}"
+          
+          # The build script expects to run from /yocto/master (repositories already cloned here)
+          cd /yocto/${{ inputs.yocto_version }}
+          
+          # Verify repositories are present
+          if [ -d "meta-browser" ] && [ -d "meta-chromium-test" ]; then
+            echo "✓ Repositories successfully cloned to /yocto/${{ inputs.yocto_version }}"
+            ls -la meta-browser/ meta-chromium-test/
+          else
+            echo "✗ ERROR: Repositories not found in /yocto/${{ inputs.yocto_version }}"
+            ls -la
+            exit 1
+          fi
+          
+          # Display cache status (cache directories already set up in previous step)
+          echo "=== Cache Status ==="
+          if [ -w /mnt/shared-cache/sstate-cache ]; then
+            SSTATE_COUNT=$(find /mnt/shared-cache/sstate-cache -name "*.tar.*" | wc -l)
+            echo "✓ sstate-cache directory accessible, existing files: $SSTATE_COUNT"
+          else
+            echo "✗ sstate-cache directory not accessible"
+          fi
+          
+          if [ -w /mnt/shared-cache/downloads ]; then
+            DOWNLOADS_COUNT=$(find /mnt/shared-cache/downloads -type f | wc -l)
+            echo "✓ downloads directory accessible, existing files: $DOWNLOADS_COUNT"
+          else
+            echo "✗ downloads directory not accessible"
+          fi
+          
+          # Show cache directory sizes
+          echo "Cache directory sizes:"
+          du -sh /mnt/shared-cache/sstate-cache 2>/dev/null || echo "  sstate-cache: not accessible"
+          du -sh /mnt/shared-cache/downloads 2>/dev/null || echo "  downloads: not accessible"
+                    
+          echo "Building ${{ inputs.browser }} with ${{ inputs.chromium_version }}"
+          echo "Current directory: $(pwd)"
+          echo "Directory contents: $(ls -la)"
+          echo "Yocto directories:"
+          ls -la /yocto/ 2>/dev/null || echo "No /yocto directory"
+          
+          # Verify the build script exists and is executable
+          if [ -f "./meta-chromium-test/scripts/build.sh" ]; then
+            echo "✓ Build script found and ready"
+            chmod +x ./meta-chromium-test/scripts/build.sh
+          else
+            echo "✗ Build script not found!"
+            find . -name "build.sh" 2>/dev/null || echo "No build.sh found anywhere"
+            exit 1
+          fi
+          
+          # Verify cache symlinks (already created in build environment setup)
+          echo "=== Cache Directory Verification ==="
+          ls -la /yocto/ | grep -E "(yocto_dl|yocto_sstate)" || echo "Cache symlinks not found"
+          echo "✓ ccache disabled in kas configuration - relying on sstate cache"
+          
+          # Fix test-images directory permissions (build script needs to write here)
+          echo "=== Fixing test-images directory permissions ==="
+          CURRENT_USER=$(whoami)
+          sudo chown -R $CURRENT_USER:$CURRENT_USER /yocto/test-images
+          sudo chmod 755 /yocto/test-images
+          echo "test-images directory ownership:"
+          ls -la /yocto/ | grep test-images
+          
+          # Run the build script
+          echo "=== Starting build on NVMe storage ==="
+          echo "Available disk space:"
+          df -h
+          
+          ./meta-chromium-test/scripts/build.sh ${{ inputs.yocto_version }} ${{ inputs.arch }} ${{ inputs.chromium_version }} ${{ inputs.browser }} ${{ inputs.libc_flavour }}
+          
+          # Post-build cache analysis
+          echo "=== Post-Build Cache Analysis ==="
+          DOWNLOADS_COUNT_AFTER=$(find /mnt/shared-cache/downloads -type f 2>/dev/null | wc -l)
+          SSTATE_COUNT_AFTER=$(find /mnt/shared-cache/sstate-cache -type f 2>/dev/null | wc -l)
+          echo "Downloads files after build: $DOWNLOADS_COUNT_AFTER"
+          echo "Sstate cache files after build: $SSTATE_COUNT_AFTER"
+          echo "Downloads size after build:"
+          du -sh /mnt/shared-cache/downloads 2>/dev/null || echo "0 bytes"
+          echo "Sstate cache size after build:"
+          du -sh /mnt/shared-cache/sstate-cache 2>/dev/null || echo "0 bytes"
+          
+          # Analyze BitBake log for cache utilization
+          echo "=== BitBake Cache Analysis ==="
+          BUILD_LOG=$(find build/tmp/log -name "*.log" -type f | head -1)
+          if [ -n "$BUILD_LOG" ] && [ -f "$BUILD_LOG" ]; then
+            echo "Analyzing build log: $BUILD_LOG"
+            echo "Sstate cache hits:"
+            grep -c "sstate.*Found.*valid" "$BUILD_LOG" 2>/dev/null || echo "0"
+            echo "Sstate cache misses:"
+            grep -c "sstate.*not.*found" "$BUILD_LOG" 2>/dev/null || echo "0"
+            echo "Cache restore operations:"
+            grep -c "restoring.*from sstate" "$BUILD_LOG" 2>/dev/null || echo "0"
+          else
+            echo "No build log found for analysis"
+          fi
+          
+          # Show recent sstate cache activity
+          echo "Most recent sstate cache files (last 10 created):"
+          find /mnt/shared-cache/sstate-cache -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -10 | while read timestamp file; do
+            echo "$(date -d @${timestamp%.*} '+%Y-%m-%d %H:%M:%S') $file"
+          done || echo "No sstate files found"
+
+      # Refresh AWS credentials before upload (they may have expired during long build)
+      - name: Refresh AWS credentials for artifact upload
+        if: success()
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ inputs.aws_arn_role }}
+          role-session-name: mb-upload-${{ github.run_id }}
+          role-duration-seconds: 3600  # 1 hour for upload
+
+      # Upload build artifacts to S3 (if successful)
+      - name: Upload artifacts
+        if: success()
+        run: |
+          cd /yocto/${{ inputs.yocto_version }}
+          
+          # Find and upload build artifacts
+          DEPLOY_DIR=$(find build -name "deploy" -type d | head -1)
+          if [ -n "$DEPLOY_DIR" ] && [ -d "$DEPLOY_DIR" ]; then
+            echo "=== Artifact Upload ==="
+            echo "Deploy directory: $DEPLOY_DIR"
+            echo "Checking directory contents:"
+            ls -la "$DEPLOY_DIR" || echo "Failed to list deploy directory"
+            
+            # Check available disk space
+            echo "Available disk space:"
+            df -h
+            
+            # Calculate upload size
+            UPLOAD_SIZE=$(du -sh "$DEPLOY_DIR" | cut -f1)
+            echo "Upload size: $UPLOAD_SIZE"
+            
+            # S3 destination path
+            S3_PATH="s3://${ARTIFACT_BUCKET_NAME}/meta-browser/${{ inputs.yocto_version }}/${{ inputs.arch }}/${{ inputs.chromium_version }}/${{ github.run_id }}/"
+            echo "S3 destination: $S3_PATH"
+            echo "Bucket name from env: ${ARTIFACT_BUCKET_NAME}"
+            
+            # Verify AWS credentials are working
+            echo "Verifying AWS credentials..."
+            if aws sts get-caller-identity; then
+              echo "✓ AWS credentials verified successfully"
+            else
+              echo "✗ AWS credentials verification failed"
+              exit 1
+            fi
+            
+            echo "Starting S3 upload..."
+            # Use quiet mode to avoid excessive logging for large uploads
+            if aws s3 sync "$DEPLOY_DIR/" "$S3_PATH" --cli-read-timeout 0 --cli-connect-timeout 60 --quiet; then
+              echo "✓ Artifacts uploaded successfully to $S3_PATH"
+              
+              # Verify upload
+              echo "Verifying upload..."
+              aws s3 ls "$S3_PATH" --recursive --human-readable --summarize
+            else
+              echo "✗ S3 upload failed"
+              exit 1
+            fi
+          else
+            echo "No deploy directory found"
+            echo "Available directories:"
+            find . -name "deploy" -type d 2>/dev/null || echo "No deploy directories found"
+            echo "Build directory structure:"
+            find build -type d -maxdepth 3 2>/dev/null || echo "No build directory found"
+          fi
+
+      # Unmount EFS file systems
+      - name: Cleanup EFS mounts
+        if: always()
+        run: |
+          sudo umount /mnt/shared-cache || true
+          sudo umount /mnt/git-mirror || true

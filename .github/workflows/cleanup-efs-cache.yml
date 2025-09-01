@@ -1,0 +1,169 @@
+name: 'EFS Cache Cleanup'
+
+on:
+  workflow_dispatch:
+    inputs:
+      cleanup_downloads:
+        description: 'Clean downloads directory on EFS'
+        required: true
+        type: boolean
+        default: false
+      
+      cleanup_sstate:
+        description: 'Clean sstate-cache directory on EFS'
+        required: true
+        type: boolean
+        default: false
+      
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        type: string
+        default: 'us-east-1'
+      
+      instance_type:
+        description: 'EC2 instance type for cleanup'
+        required: false
+        type: string
+        default: 't3.medium'
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+jobs:
+  start-runner:
+    name: Start EC2 Runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-runner.outputs.ec2-instance-id }}
+    steps:
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ secrets.AWS_ARN_ROLE }}
+
+      # Start EC2 runner for cleanup
+      - name: Start EC2 runner
+        id: start-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          ec2-image-id: ami-0ba9883b710398fbb
+          ec2-instance-type: ${{ inputs.instance_type }}
+          subnet-id: ${{ env.VPC_SUBNET_ID }}
+          security-group-id: ${{ env.VPC_SG_ID }}
+          iam-role-name: yocto-github-actions-role
+          aws-resource-tags: >
+            [
+              {"Key": "Name", "Value": "gh-runner-meta-browser-cleanup"},
+              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+            ]
+
+  cleanup-efs:
+    name: Cleanup EFS Cache
+    needs: start-runner
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    steps:
+      # Configure AWS credentials on the EC2 runner
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ secrets.AWS_ARN_ROLE }}
+
+      # Download config and get EFS ID
+      - name: Download config file and set env vars from it
+        run: |
+          aws s3 cp s3://meta-browser-ci-config-bucket/config.json .
+          aws s3 cp s3://meta-browser-ci-config-bucket/set_github_env_vars.py .
+          python3 set_github_env_vars.py --file config.json
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nfs-common
+
+      - name: Mount EFS and perform cleanup
+        run: |
+          # Create mount point
+          sudo mkdir -p /mnt/shared-cache
+          
+          # Mount EFS using environment variable from config
+          echo "Mounting EFS: ${{ env.SHARED_CACHE_EFS_ID }}"
+          sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+            ${{ env.SHARED_CACHE_EFS_ID }}.efs.${{ inputs.aws_region }}.amazonaws.com:/ /mnt/shared-cache
+          
+          # Show current disk usage
+          echo "=== Current EFS disk usage ==="
+          df -h /mnt/shared-cache
+          echo ""
+          echo "=== Directory sizes before cleanup ==="
+          sudo du -sh /mnt/shared-cache/* 2>/dev/null || echo "No directories found"
+          echo ""
+          
+          # Cleanup downloads if requested
+          if [ "${{ inputs.cleanup_downloads }}" = "true" ]; then
+            echo "=== Cleaning yocto_downloads ==="
+            if [ -d "/mnt/shared-cache/downloads" ]; then
+              echo "Removing downloads directory..."
+              sudo rm -rf /mnt/shared-cache/downloads/*
+              echo "Downloads directory cleaned"
+            else
+              echo "Downloads directory not found"
+            fi
+          else
+            echo "Skipping downloads cleanup"
+          fi
+          
+          # Cleanup sstate-cache if requested
+          if [ "${{ inputs.cleanup_sstate }}" = "true" ]; then
+            echo "=== Cleaning sstate-cache ==="
+            if [ -d "/mnt/shared-cache/sstate-cache" ]; then
+              echo "Removing sstate-cache directory..."
+              sudo rm -rf /mnt/shared-cache/sstate-cache/*
+              echo "sstate-cache directory cleaned"
+            else
+              echo "sstate-cache directory not found"
+            fi
+          else
+            echo "Skipping sstate-cache cleanup"
+          fi
+          
+          # Show final disk usage
+          echo ""
+          echo "=== Directory sizes after cleanup ==="
+          sudo du -sh /mnt/shared-cache/* 2>/dev/null || echo "No directories found"
+          echo ""
+          echo "=== Final EFS disk usage ==="
+          df -h /mnt/shared-cache
+          
+          # Unmount EFS
+          sudo umount /mnt/shared-cache
+
+  stop-runner:
+    name: Stop EC2 Runner
+    needs:
+      - start-runner
+      - cleanup-efs
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ secrets.AWS_ARN_ROLE }}
+
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
