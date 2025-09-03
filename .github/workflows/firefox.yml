@@ -3,8 +3,8 @@ name: Firefox build- and smoke-test
 on:
   workflow_dispatch:
     inputs:
-      repository:
-        description: 'Repository to clone for the workflow'
+      repository_owner:
+        description: 'Repository owner (e.g., OSSystems, brightsign)'
         required: true
         default: 'OSSystems'
       branch:
@@ -48,7 +48,7 @@ jobs:
              GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
              GH_REV="$GITHUB_HEAD_REF"
          else
-             GH_URL="$GITHUB_SERVER_URL/${{ github.event.inputs.repository }}/meta-browser"
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.inputs.repository_owner }}/meta-browser"
              GH_REV="${{ github.event.inputs.branch }}"
          fi
          git clone $GH_URL
