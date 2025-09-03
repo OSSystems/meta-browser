@@ -1,0 +1,20 @@
+header:
+  version: 11
+
+target: chromium-test-image
+
+local_conf_header:
+  meta-chromium-common: |
+    LICENSE_FLAGS_ACCEPTED += "commercial"
+    INHERIT += "rm_work"
+    PACKAGECONFIG:append:pn-qemu = " sdl "
+    PACKAGECONFIG:append:pn-qemu:class-nativesdk = " sdl "
+    PACKAGECONFIG:append:pn-qemu-system-native = " sdl "
+    DL_DIR = "${TOPDIR}/../downloads"
+    SSTATE_DIR = "${TOPDIR}/../sstate-cache"
+    EXTRA_IMAGE_FEATURES:append = " allow-empty-password allow-root-login ssh-server-openssh tools-debug "
+    IMAGE_FSTYPES:remove = "wic.qcow2"
+    INHERIT:remove = "create-spdx"
+    # Chromium specific settings
+    PACKAGECONFIG:append:pn-wayland = " freeglut"
+    PACKAGECONFIG:append:pn-mesa = " gbm gallium"

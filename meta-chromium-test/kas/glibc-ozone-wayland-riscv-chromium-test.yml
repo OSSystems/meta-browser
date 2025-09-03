@@ -1,0 +1,12 @@
+header:
+  version: 11
+  includes:
+    - meta-chromium-test/kas/chromium/ozone-wayland.yml
+    - meta-chromium-test/kas/repos/common-repos.yml
+    - meta-chromium-test/kas/chromium-common.yml
+
+machine: qemuriscv64
+
+local_conf_header:
+  image_name: |
+    IMAGE_NAME = "glibc-ozone-wayland-riscv-chromium"

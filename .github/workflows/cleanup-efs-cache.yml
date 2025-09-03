@@ -1,0 +1,267 @@
+name: 'EFS Cache Cleanup'
+
+on:
+  workflow_dispatch:
+    inputs:
+      cleanup_downloads:
+        description: 'Clean downloads directory on EFS'
+        required: true
+        type: boolean
+        default: false
+      
+      cleanup_sstate:
+        description: 'Clean sstate-cache directory on EFS'
+        required: true
+        type: choice
+        options:
+          - 'none'
+          - 'all'
+          - 'older-than-week'
+        default: 'older-than-week'
+      
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        type: string
+        default: 'us-east-1'
+      
+      aws_arn_role:
+        description: 'AWS IAM Role ARN for authentication'
+        required: true
+        type: string
+        default: 'arn:aws:iam::195607249165:role/github-actions-meta-browser-repo'
+      
+      instance_type:
+        description: 'EC2 instance type for cleanup'
+        required: false
+        type: string
+        default: 't3.medium'
+  
+  schedule:
+    # Run every Monday at 00:00 UTC (weekly cleanup)
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+
+jobs:
+  start-runner:
+    name: Start EC2 Runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-runner.outputs.ec2-instance-id }}
+    steps:
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.aws_arn_role }}
+
+      # Download config file and set environment variables
+      - name: Download config file and set env vars from it
+        run: |
+          aws s3 cp s3://meta-browser-ci-config-bucket/config.json .
+          aws s3 cp s3://meta-browser-ci-config-bucket/set_github_env_vars.py .
+          python3 set_github_env_vars.py --file config.json
+
+      # Start EC2 runner for cleanup
+      - name: Start EC2 runner
+        id: start-runner
+        uses: brightsign/ec2-github-runner@0fa8b183dd4124fd191ccdbc48b68f0ea46a9634
+        with:
+          mode: start
+          github-app-private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          github-app-id: 287690
+          ec2-image-id: ami-08a4255385679596c  # Custom AMI with Yocto build dependencies pre-installed
+          ec2-instance-type: ${{ inputs.instance_type }}
+          subnet-id: ${{ env.VPC_SUBNET_ID }}
+          security-group-id: ${{ env.VPC_SG_ID }}
+          run-as-service-with-user: root
+          label: "mb-cleanup-${{ github.run_id }}-${{ github.run_attempt }}"
+          aws-resource-tags: >
+            [
+              {"Key": "Name", "Value": "gh-runner-meta-browser-cleanup"},
+              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"}
+            ]
+
+  cleanup-efs:
+    name: Cleanup EFS Cache
+    needs: start-runner
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    steps:
+      # Configure AWS credentials on the EC2 runner
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.aws_arn_role }}
+
+      # Download config and get EFS ID
+      - name: Download config file and set env vars from it
+        run: |
+          aws s3 cp s3://meta-browser-ci-config-bucket/config.json .
+          aws s3 cp s3://meta-browser-ci-config-bucket/set_github_env_vars.py .
+          python3 set_github_env_vars.py --file config.json
+
+      - name: Mount EFS and perform cleanup
+        run: |
+          # Create mount point
+          sudo mkdir -p /mnt/shared-cache
+          
+          # Mount EFS using environment variable from config
+          echo "Mounting EFS: ${{ env.SHARED_CACHE_EFS_ID }}"
+          sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,intr,timeo=600 \
+            ${{ env.SHARED_CACHE_EFS_ID }}.efs.${{ inputs.aws_region }}.amazonaws.com:/ /mnt/shared-cache
+          
+          # Show current disk usage
+          echo "=== Current EFS disk usage ==="
+          df -h /mnt/shared-cache
+          echo ""
+          echo "=== Directory sizes before cleanup ==="
+          sudo du -sh /mnt/shared-cache/* 2>/dev/null || echo "No directories found"
+          echo ""
+          
+          # Cleanup downloads based on selection (default false for scheduled runs)
+          CLEANUP_DOWNLOADS="${{ github.event_name == 'schedule' && 'false' || inputs.cleanup_downloads }}"
+          echo "=== Processing downloads cleanup: $CLEANUP_DOWNLOADS ==="
+          if [ -d "/mnt/shared-cache/downloads" ]; then
+            cd /mnt/shared-cache/downloads
+            echo "Current downloads directory size:"
+            du -sh . 2>/dev/null || echo "Cannot calculate size"
+            
+            if [ "$CLEANUP_DOWNLOADS" = "true" ]; then
+              echo "Removing all downloads..."
+              rm -rf ./* 2>/dev/null || true
+              echo "Downloads directory size after cleanup:"
+              du -sh . 2>/dev/null || echo "Cannot calculate size"
+            else
+              echo "Skipping downloads cleanup (disabled)"
+            fi
+            cd /
+          else
+            echo "Downloads directory not found"
+          fi
+          
+          # Cleanup sstate-cache based on selection (use older-than-week for scheduled runs)
+          CLEANUP_MODE="${{ github.event_name == 'schedule' && 'older-than-week' || inputs.cleanup_sstate }}"
+          echo "=== Processing sstate-cache cleanup: $CLEANUP_MODE ==="
+          if [ -d "/mnt/shared-cache/sstate-cache" ]; then
+            cd /mnt/shared-cache/sstate-cache
+            echo "Current sstate-cache directory size:"
+            df -h . 2>/dev/null || echo "Cannot calculate size"
+            du -sh . 2>/dev/null || echo "Cannot calculate size"
+            
+            case "$CLEANUP_MODE" in
+              "none")
+                echo "Skipping sstate-cache cleanup as requested"
+                ;;
+              "all")
+                echo "Removing all sstate-cache..."
+                rm -rf ./* 2>/dev/null || true
+                ;;
+              "older-than-week")
+                echo "Smart pruning sstate-cache files not accessed for 7+ days..."
+                # Smart sstate pruning function that handles paired tarball and siginfo files
+                prune_sstate() {
+                  local age="$1"
+                  local pattern="$2"
+                  echo "Pruning ${pattern} accessed ${age} days ago"
+                  
+                  find . -atime "${age}" \( -name "${pattern}" -o -name "${pattern}.siginfo" \) -print | \
+                  while read file; do
+                    case "${file}" in
+                      *.tgz)
+                        tarball="${file}"
+                        siginfo="${file}.siginfo"
+                        delete=y
+                        ;;
+                      *.siginfo)
+                        tarball="${file%.siginfo}"
+                        siginfo="${file}"
+                        # Only delete siginfo if tarball doesn't exist
+                        if [ -e "${tarball}" ]; then
+                          delete=n
+                        else
+                          delete=y
+                        fi
+                        ;;
+                    esac
+                    
+                    if [ "${delete}" = "y" ]; then
+                      if [ -e "${tarball}" ]; then
+                        echo "Removing tarball: ${tarball}"
+                        rm -f "${tarball}" 2>/dev/null || true
+                      fi
+                      if [ -e "${siginfo}" ]; then
+                        echo "Removing siginfo: ${siginfo}"
+                        rm -f "${siginfo}" 2>/dev/null || true
+                      fi
+                    fi
+                  done
+                }
+                
+                # Prune files not accessed for 7+ days
+                prune_sstate "+6" "*.tgz"
+                
+                # Clean up dangling symlinks
+                echo "Pruning dangling symlinks..."
+                find . -type l ! -exec test -e {} \; -print0 | xargs -0 --no-run-if-empty rm -v 2>/dev/null || true
+                
+                # Clean up old temporary files (*.tgz.????????)
+                echo "Pruning old temporary files..."
+                find . -ctime +1 -name '*.tgz.????????' -print0 | xargs -0 --no-run-if-empty rm -v 2>/dev/null || true
+                ;;
+            esac
+            
+            if [ "$CLEANUP_MODE" != "none" ]; then
+              echo "sstate-cache directory size after cleanup:"
+              df -h . 2>/dev/null || echo "Cannot calculate size"  
+              du -sh . 2>/dev/null || echo "Cannot calculate size"
+            fi
+            cd /
+          else
+            echo "sstate-cache directory not found"
+          fi
+          
+          # Show final disk usage
+          echo ""
+          echo "=== Directory sizes after cleanup ==="
+          sudo du -sh /mnt/shared-cache/* 2>/dev/null || echo "No directories found"
+          echo ""
+          echo "=== Final EFS disk usage (note: EFS may take time to reflect freed space) ==="
+          # Sync filesystem to help with metadata updates
+          sync
+          df -h /mnt/shared-cache
+          echo ""
+          echo "✅ Cleanup completed! Directory sizes above show the actual freed space."
+          echo "   EFS filesystem usage (df) may take some time to reflect the changes due to distributed filesystem metadata."
+          
+          # Unmount EFS
+          sudo umount /mnt/shared-cache
+
+  stop-runner:
+    name: Stop EC2 Runner
+    needs:
+      - start-runner
+      - cleanup-efs
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws_region }}
+          role-to-assume: ${{ inputs.aws_arn_role }}
+
+      - name: Stop EC2 runner
+        uses: brightsign/ec2-github-runner@0fa8b183dd4124fd191ccdbc48b68f0ea46a9634
+        with:
+          mode: stop
+          github-app-private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          github-app-id: 287690
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

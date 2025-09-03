@@ -1,0 +1,95 @@
+name: Electron build- and smoke-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: 'Repository to clone for the workflow'
+        required: true
+        default: 'OSSystems'
+      branch:
+        description: 'Branch to checkout for the workflow'
+        required: true
+        default: 'master'
+      use_aws:
+        description: 'Use AWS EC2 instances instead of local runner'
+        required: false
+        type: boolean
+        default: true
+      instance_type:
+        description: 'EC2 instance type for build (more cores = faster builds)'
+        required: false
+        type: choice
+        options:
+          - 'c6id.4xlarge'   # 16 vCPUs, 32 GB RAM, 1x 950 GB NVMe
+          - 'c6id.8xlarge'   # 32 vCPUs, 64 GB RAM, 1x 1900 GB NVMe
+          - 'c6id.12xlarge'  # 48 vCPUs, 96 GB RAM, 2x 1425 GB NVMe
+          - 'c6id.16xlarge'  # 64 vCPUs, 128 GB RAM, 2x 1900 GB NVMe
+        default: 'c6id.8xlarge'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'meta-chromium/recipes-browser/chromium/files/**'
+      - 'meta-chromium/recipes-browser/chromium/electron*'
+      - 'meta-chromium/recipes-browser/chromium/gn*'
+      - '.github/workflows/electron.yml'
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  id-token: write  # Required for OIDC authentication
+
+jobs:
+  # AWS-based builds (always for PR, default for manual dispatch)
+  aws-matrix-build:
+    if: ${{ (github.repository_owner == 'brightsign' || github.repository_owner == 'OSSystems') && (github.event_name == 'pull_request' || inputs.use_aws == true || inputs.use_aws == null) }}
+    strategy:
+      fail-fast: false  # Continue other matrix jobs even if one fails
+      matrix:
+        ozone_platform: [ozone-wayland, ozone-x11]
+        arch: [arm, aarch64, x86-64]
+    uses: ./.github/workflows/bs_meta_browser_ci_ec2.yml
+    secrets: inherit
+    with:
+      build_type: "release"
+      browser: "electron"
+      chromium_version: ${{ matrix.ozone_platform }}
+      arch: ${{ matrix.arch }}
+      aws_arn_role: "arn:aws:iam::195607249165:role/github-actions-meta-browser-repo"
+      aws_region: "us-east-1"
+      instance_type: ${{ github.event.inputs.instance_type || 'c6id.8xlarge' }}
+
+  # Local runner (manual dispatch only, when explicitly disabled AWS)
+  local-build:
+    if: ${{ (github.repository_owner == 'brightsign' || github.repository_owner == 'OSSystems') && github.event_name == 'workflow_dispatch' && inputs.use_aws == false }}
+    strategy:
+      fail-fast: false  # Continue other matrix jobs even if one fails
+      matrix:
+        browser_version: [ozone-wayland, ozone-x11]
+        browser: [electron]
+        arch: [arm, aarch64, x86-64]
+    runs-on: [self-hosted, chromium]
+    container:
+      image: skandigraun/yocto:latest
+      volumes:
+        - yocto:/yocto
+    steps:
+      - run: |
+         mkdir -p /yocto
+         cd /yocto
+         rm -rf meta-browser
+         # Clean stale pseudo state from any previous interrupted builds
+         rm -rf build/tmp/work/*/*/*/pseudo build/tmp/sysroots-components/*/pseudo 2>/dev/null || true
+         if [ "${{ github.event_name }}" = "pull_request" ]; then
+             GH_URL="$GITHUB_SERVER_URL/${{ github.event.pull_request.head.repo.full_name }}"
+             GH_REV="$GITHUB_HEAD_REF"
+         else
+             GH_URL="$GITHUB_SERVER_URL/${{ github.repository }}"
+             GH_REV="${{ github.ref_name }}"
+         fi
+         git clone $GH_URL
+         git -C meta-browser checkout $GH_REV
+         # meta-chromium-test is now integrated into meta-browser
+         ./meta-browser/meta-chromium-test/scripts/build.sh ${{ matrix.arch }} ${{ matrix.browser_version }} ${{ matrix.browser }}

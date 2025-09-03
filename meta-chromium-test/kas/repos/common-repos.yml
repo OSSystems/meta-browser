@@ -1,0 +1,28 @@
+header:
+  version: 11
+
+repos:
+  meta-browser:
+    layers:
+      meta-chromium:
+      meta-chromium-test:
+  meta-oe:
+    url: https://github.com/openembedded/meta-openembedded
+    commit: "1d6095b73fa21062fde2b347cd61b6c5104390d9"
+    layers:
+      meta-oe:
+      meta-networking:
+      meta-multimedia:
+      meta-python:
+  poky:
+    url: https://github.com/yoctoproject/poky.git
+    commit: "9bc47d6a4d23bff5999b69fa2b99e1b32eaa62fb"
+    layers:
+      meta:
+      meta-poky:
+      meta-yocto-bsp:
+  meta-clang:
+    url: https://github.com/kraj/meta-clang
+    commit: "02e254ba1fb4937530d94a154b4c713c904c2d06"
+    layers:
+      .:

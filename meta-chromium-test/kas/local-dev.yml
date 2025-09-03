@@ -1,0 +1,12 @@
+header:
+  version: 11
+
+local_conf_header:
+  local-development: |
+    # Override CI-specific paths for local development
+    DL_DIR = "${TOPDIR}/../downloads"
+    SSTATE_DIR = "${TOPDIR}/../sstate-cache"
+    # Disable source mirror for local development
+    SOURCE_MIRROR_URL = ""
+    # Remove own-mirrors inherit for local development
+    INHERIT:remove = "own-mirrors"
