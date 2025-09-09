@@ -22,8 +22,8 @@ SRC_URI += "\
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0006-Don-t-pass-unknown-LLVM-options.patch \
     file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
-    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
-    file://0009-Adjust-the-Rust-build-to-our-needs.patch \
+    ${@'' if d.getVar('WHINLATTER_OR_NEWER') == '1' else 'file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch'} \
+    ${@'' if d.getVar('WHINLATTER_OR_NEWER') == '1' else 'file://0009-Adjust-the-Rust-build-to-our-needs.patch'} \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
     file://0012-Revert-Set-Rust-symbol-visibility-to-hidden-when-C-s.patch \
@@ -31,9 +31,10 @@ SRC_URI += "\
     file://0014-Revert-Remove-libavif-based-AVIF-decoder.patch \
     file://0015-Revert-Remove-third_party-libavif.patch \
     file://0016-Disable-crabbyavif-to-fix-build-errors.patch \
-    file://0017-rust-Use-adler-instead-of-adler2.patch \
+    ${@'' if d.getVar('WHINLATTER_OR_NEWER') == '1' else 'file://0017-rust-Use-adler-instead-of-adler2.patch'} \
     file://0018-third_party-node-update_node_binaries-Update-nodejs-.patch \
     file://0019-Reduce-minimum-browser-window-width-to-480px.patch \
+    ${@'file://0020-Do-not-use-fuse-ld-option.patch' if d.getVar('WHINLATTER_OR_NEWER') == '1' else ''} \
 "
 
 # Missing third_party sources.
@@ -198,7 +199,7 @@ GN_ARGS += 'host_pkg_config="pkg-config-native"'
 GN_ARGS += "is_debug=false is_official_build=true"
 
 # Use lld linker its quicker see https://lld.llvm.org/#performance
-GN_ARGS += "use_lld=true use_gold=false"
+GN_ARGS += "${@'' if d.getVar('WHINLATTER_OR_NEWER') == '1' else 'use_lld=true use_gold=false'}"
 
 # By default, passing is_official_build=true to GN causes its symbol_level
 # variable to be set to "2". This means the compiler will be passed "-g2" and
@@ -473,15 +474,19 @@ do_add_clang_latest () {
 addtask add_clang_latest after do_configure before do_compile
 
 do_copy_clang_library () {
-    # Chromium needs to link against libclang_rt.builtins.a for both host and
-    # target code, and expects to find both libraries in the same directory
-    # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
-    # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
-    lib_file="$(find . -name 'libclang_rt.builtins*')"
-    # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
-    stripped_lib_file="${lib_file#*/*/}"
-    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
+    if [ "${@d.getVar('WHINLATTER_OR_NEWER')}" = "1" ]; then
+        cp -r ${STAGING_LIBDIR_NATIVE}/clang/latest ${STAGING_DIR_HOST}${nonarch_libdir}/clang/
+    else
+        # Chromium needs to link against libclang_rt.builtins.a for both host and
+        # target code, and expects to find both libraries in the same directory
+        # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
+        cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
+        # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
+        lib_file="$(find . -name 'libclang_rt.builtins*')"
+        # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
+        stripped_lib_file="${lib_file#*/*/}"
+        cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
+    fi
 }
 addtask copy_clang_library after do_add_clang_latest before do_compile
 
