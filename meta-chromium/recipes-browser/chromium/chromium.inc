@@ -16,6 +16,8 @@ TOOLCHAIN = "clang"
 # By default, clang.bbclass sets TOOLCHAIN:class-native to "gcc", but we want
 # to build the native recipes (e.g. GN) with clang too.
 TOOLCHAIN:class-native = "clang"
+# TOOLCHAIN_NATIVE is needed by whinlatter
+TOOLCHAIN_NATIVE = "clang"
 
 # This makes the target build use libc++ and compiler_rt instead of the GNU
 # runtime, just like upstream does. The native binaries compiled and run as
