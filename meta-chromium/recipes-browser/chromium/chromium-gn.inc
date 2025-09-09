@@ -104,7 +104,7 @@ DEPENDS += " \
     rust-native \
     virtual/libgl \
 "
-DEPENDS:append:runtime-llvm = " compiler-rt compiler-rt-native libcxx-native"
+DEPENDS:append = " compiler-rt compiler-rt-native libcxx-native"
 DEPENDS:append:libc-musl = " libexecinfo"
 
 LDFLAGS:append:libc-musl = " -lexecinfo"
@@ -288,9 +288,9 @@ GN_ARGS += ' \
 '
 
 # Use libcxx headers for native parts
-BUILD_CPPFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
+BUILD_CPPFLAGS:append = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
-BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+BUILD_LDFLAGS:append = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
 
 # Toolchains we will use for the build. We need to point to the toolchain file
 # we've created, set the right target architecture and make sure we are not
