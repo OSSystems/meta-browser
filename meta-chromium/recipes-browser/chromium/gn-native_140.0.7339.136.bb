@@ -28,11 +28,11 @@ BUILD_LD = "${CXX}"
 BUILD_AR = "llvm-ar"
 
 DEPENDS = "clang-native ninja-native"
-DEPENDS:append:runtime-llvm = " compiler-rt-native libcxx-native"
+DEPENDS:append = " compiler-rt-native libcxx-native"
 # Use libcxx headers for native parts
-CXXFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
+CXXFLAGS:append = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
-LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+LDFLAGS:append = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
 
 do_configure[noexec] = "1"
 

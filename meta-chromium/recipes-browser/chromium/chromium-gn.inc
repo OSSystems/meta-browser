@@ -22,7 +22,6 @@ SRC_URI += "\
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0006-Don-t-pass-unknown-LLVM-options.patch \
     file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
-    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
@@ -75,6 +74,7 @@ DEPENDS += " \
     libwebp \
     libxkbcommon \
     libxslt \
+    lld-native \
     ninja-native \
     nodejs-native \
     nspr \
@@ -89,7 +89,7 @@ DEPENDS += " \
     rust-native \
     virtual/libgl \
 "
-DEPENDS:append:runtime-llvm = " compiler-rt compiler-rt-native libcxx-native"
+DEPENDS:append = " compiler-rt compiler-rt-native libcxx-native"
 DEPENDS:append:libc-musl = " libexecinfo"
 
 LDFLAGS:append:libc-musl = " -lexecinfo"
@@ -284,12 +284,12 @@ GN_ARGS += ' \
 '
 
 # Use libcxx headers for native parts
-BUILD_CPPFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
+BUILD_CPPFLAGS:append = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
-BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
-LDFLAGS:append:runtime-llvm = " --target=${TARGET_SYS}"
-CXXFLAGS:append:runtime-llvm = " --target=${TARGET_SYS} -nostdlib++"
-CFLAGS:append:runtime-llvm = " --target=${TARGET_SYS}"
+BUILD_LDFLAGS:append = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+LDFLAGS:append = " --target=${TARGET_SYS}"
+CXXFLAGS:append = " --target=${TARGET_SYS} -nostdlib++"
+CFLAGS:append = " --target=${TARGET_SYS}"
 
 # Toolchains we will use for the build. We need to point to the toolchain file
 # we've created, set the right target architecture and make sure we are not
@@ -492,15 +492,7 @@ do_add_clang_latest () {
 addtask add_clang_latest after do_configure before do_compile
 
 do_copy_clang_library () {
-    # Chromium needs to link against libclang_rt.builtins.a for both host and
-    # target code, and expects to find both libraries in the same directory
-    # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
-    # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
-    lib_file="$(find . -name 'libclang_rt.builtins*')"
-    # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
-    stripped_lib_file="${lib_file#*/*/}"
-    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
+    cp -r ${STAGING_LIBDIR_NATIVE}/clang/latest ${STAGING_DIR_HOST}${nonarch_libdir}/clang/
 }
 addtask copy_clang_library after do_add_clang_latest before do_compile
 
