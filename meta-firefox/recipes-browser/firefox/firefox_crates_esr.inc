@@ -376,7 +376,7 @@ SRC_URI += "crate://crates.io/abi_stable/0.11.3 \
             crate://crates.io/ndarray/0.15.4 \
             crate://crates.io/net2/0.2.38 \
             crate://crates.io/new_debug_unreachable/1.0.4 \
-            crate://crates.io/nix/0.29.0 \
+            crate://crates.io/nix/0.30.1 \
             crate://crates.io/nom/7.1.3 \
             crate://crates.io/nss-gk-api/0.3.0 \
             crate://crates.io/ntapi/0.4.0 \
@@ -1051,7 +1051,7 @@ SRC_URI[nanoserde-0.1.37.sha256sum] = "5de9cf844ab1e25a0353525bd74cb889843a6215f
 SRC_URI[ndarray-0.15.4.sha256sum] = "dec23e6762830658d2b3d385a75aa212af2f67a4586d4442907144f3bb6a1ca8"
 SRC_URI[net2-0.2.38.sha256sum] = "74d0df99cfcd2530b2e694f6e17e7f37b8e26bb23983ac530c0c97408837c631"
 SRC_URI[new_debug_unreachable-1.0.4.sha256sum] = "e4a24736216ec316047a1fc4252e27dabb04218aa4a3f37c6e7ddbf1f9782b54"
-SRC_URI[nix-0.29.0.sha256sum] = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
+SRC_URI[nix-0.30.1.sha256sum] = "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
 SRC_URI[nom-7.1.3.sha256sum] = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
 SRC_URI[nss-gk-api-0.3.0.sha256sum] = "4c17aec6d4e1822c023689899f09311592a36cbf6de8f85dfaf5f01976790d8d"
 SRC_URI[ntapi-0.4.0.sha256sum] = "bc51db7b362b205941f71232e56c625156eb9a929f8cf74a428fd5bc094a4afc"
