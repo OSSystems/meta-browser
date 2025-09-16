@@ -25,12 +25,10 @@ SRC_URI += "\
     file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
-    file://0011-Disable-crabbyavif-to-fix-build-errors.patch \
-    file://0012-Revert-Allow-and-use-std-hardware_destructive_interf.patch \
-    file://0013-Revert-Set-Rust-symbol-visibility-to-hidden-when-C-s.patch \
-    file://0014-pdfium-Fix-missing-PDFiumAPIStringBufferAdapter-temp.patch \
-    file://0015-Revert-Connect-the-Rust-log-crate-to-the-base-loggin.patch \
+    file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
+    file://0012-chromium-fix-v4l2-compiler-error-on-arm.patch \
 "
+
 # ARM/AArch64-specific patches.
 SRC_URI:append:aarch64 = "${@bb.utils.contains('TUNE_FEATURES', 'crypto', '', ' file://arm/0001-Fix-AES-crypto-SIGILL-on-rpi4-64.patch', d)}"
 
@@ -114,7 +112,7 @@ BUILD_CC:toolchain-clang = "clang"
 BUILD_CXX:toolchain-clang = "clang++"
 BUILD_LD:toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "upower use-egl"
+PACKAGECONFIG ??= "upower use-egl use-v4l2"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
@@ -126,10 +124,10 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 
-# Starting with M61, Chromium defaults to building with its own copy of libc++
-# instead of the system's libstdc++. Add a knob to control this behavior
-# https://groups.google.com/a/chromium.org/d/msg/chromium-packagers/8aYO3me2SCE/SZ8pJXhZAwAJ
-PACKAGECONFIG[custom-libcxx] = "use_custom_libcxx=true,use_custom_libcxx=false,,"
+#  As of Chromium 138, libc++ is required unconditionally.
+# https://docs.google.com/document/d/193ig0qeM23rK1yH6bW14O3zIgVztyKaY4R1XRwgmUFk/edit?usp=sharing
+# Force use_custom_libcxx=true as Chromium 138+ requires libc++
+GN_ARGS += "use_custom_libcxx=true"
 
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
 PACKAGECONFIG[gtk4] = ""
@@ -148,6 +146,10 @@ PACKAGECONFIG[upower] = ",,,upower"
 # but remember to also use proprietary codecs so that H.264 is supported. Also note
 # that not all the hardware configs might be supported.
 PACKAGECONFIG[use-vaapi] = "use_vaapi=true use_libgav1_parser=true,use_vaapi=false,libva"
+# Enable stateless V4L2 M2M video decoding support.
+# This requires 'proprietary-codecs' PACKAGECONFIG
+# to decode h264 streams on the V4L2 M2M device.
+PACKAGECONFIG[use-v4l2] = "use_v4l2_codec=true,use_v4l2_codec=false"
 
 # Base GN arguments, mostly related to features we want to enable or disable.
 GN_ARGS = " \
@@ -205,6 +207,13 @@ DEBUG_FLAGS:remove:x86 = "-g"
 DEBUG_FLAGS:append:x86 = "-g1"
 GN_ARGS += "symbol_level=0"
 
+# For ARM builds, completely remove debug flags that cause binary size issues
+# This prevents the "output file too large" linker error on ARM32
+CFLAGS:remove:arm = "-g"
+CXXFLAGS:remove:arm = "-g"
+TARGET_CFLAGS:remove:arm = "-g"
+TARGET_CXXFLAGS:remove:arm = "-g"
+
 # As of Chromium 62.0.3202.94 and Yocto Rocko (GCC 7, binutils 2.29), passing
 # -g to the compiler results in many linker errors on aarch64, such as:
 # obj/third_party/WebKit/Source/modules/payments/libpayments.a(PaymentEventDataConversion.o)(.debug_loc+0x4e25): error: relocation overflow in R_AARCH64_ABS32
@@ -257,6 +266,10 @@ GN_ARGS += "disable_fieldtrial_testing_config=true"
 # See https://crrev.com/c/2424669
 GN_ARGS += "chrome_pgo_phase=0"
 
+# Disable passing --warning-suppression-mappings= flag to clang.
+# This feature is available on Clang21+
+GN_ARGS += "clang_warning_suppression_file="""
+
 # API keys for accessing Google services. By default, we use an invalid key
 # only to prevent the "you are missing an API key" infobar from being shown on
 # startup.
@@ -276,6 +289,9 @@ GN_ARGS += ' \
 BUILD_CPPFLAGS:append:runtime-llvm = " -isysroot=${STAGING_DIR_NATIVE} -stdlib=libc++"
 # Use libgcc for native parts
 BUILD_LDFLAGS:append:runtime-llvm = " -rtlib=libgcc -unwindlib=libgcc -stdlib=libc++ -lc++abi -rpath ${STAGING_LIBDIR_NATIVE}"
+LDFLAGS:append:runtime-llvm = " --target=${TARGET_SYS}"
+CXXFLAGS:append:runtime-llvm = " --target=${TARGET_SYS} -nostdlib++"
+CFLAGS:append:runtime-llvm = " --target=${TARGET_SYS}"
 
 # Toolchains we will use for the build. We need to point to the toolchain file
 # we've created, set the right target architecture and make sure we are not
@@ -343,15 +359,16 @@ ARM_VERSION:armv6 = "6"
 # overriding what GN wants
 TUNE_CCARGS:remove = "-mthumb"
 
+# Linking rust with partitionalloc is problematic in arm32
 GN_ARGS:append:arm = ' \
         arm_float_abi="${ARM_FLOAT_ABI}" \
         arm_fpu="${ARM_FPU}" \
         arm_tune="${ARM_TUNE}" \
         arm_version=${ARM_VERSION} \
+        use_partition_alloc_as_malloc=false \
+        enable_backup_ref_ptr_support=false \
 '
-# tcmalloc's atomicops-internals-arm-v6plus.h uses the "dmb" instruction that
-# is not available on (some?) ARMv6 models, which causes the build to fail.
-GN_ARGS:append:armv6 = ' use_partition_alloc_as_malloc=false enable_backup_ref_ptr_support=false'
+
 # The WebRTC code fails to build on ARMv6 when NEON is enabled.
 # https://bugs.chromium.org/p/webrtc/issues/detail?id=6574
 GN_ARGS:append:armv6 = ' arm_use_neon=false'
@@ -365,6 +382,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-angle=gles-egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-v4l2', '--ozone-platform-hint=wayland --enable-features=AcceleratedVideoDecoder,AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL', '', d)} \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
@@ -422,6 +440,7 @@ python do_write_toolchain_file () {
     toolchain_file = os.path.join(toolchain_dir, "BUILD.gn")
     write_toolchain_file(d, toolchain_file)
 }
+
 addtask write_toolchain_file after do_patch before do_configure
 
 do_add_nodejs_symlink () {
@@ -443,16 +462,34 @@ do_add_clang_latest () {
     # directory that is a copy of /usr/lib/clang/$CLANG_VERSION. Chromium
     # manually links against libclang_rt.builtins.a and uses the `clang_version`
     # GN variable to find it. This allows us to set it to the same value for all
-    # Yocto releases.
+    # Yocto releases. Also copy headers so bindgen can find system headers.
     cd "${STAGING_LIBDIR_NATIVE}/clang"
     rm -rf latest
-    # find the directory containing the library
+    
+    # Find a directory with runtime libraries and copy it as base
     for dir in *; do
-        if [ -n "$(find $dir -name 'libclang_rt.builtins*')" ] ; then
+        if [ -d "$dir" ] && [ -n "$(find $dir -name 'libclang_rt.builtins*' 2>/dev/null)" ]; then
+            echo "Copying clang directory $dir to latest (runtime libraries)"
             cp -r "$dir" latest
             break
         fi
     done
+    
+    # Find and copy headers from any versioned directory to ensure bindgen can find them
+    headers_copied=false
+    for dir in *; do
+        if [ -d "$dir/include" ]; then
+            echo "Found headers in $dir/include, copying to latest/include"
+            mkdir -p latest/include
+            cp -r "$dir/include/"* latest/include/
+            headers_copied=true
+            break
+        fi
+    done
+    
+    if [ "$headers_copied" = false ]; then
+        echo "Warning: No Clang headers found in any versioned directories"
+    fi
 }
 addtask add_clang_latest after do_configure before do_compile
 
@@ -480,6 +517,12 @@ addtask copy_target_rustlibs after do_configure before do_compile
 do_configure() {
 	cd ${S}
 	python3 ./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
+
+	# Add Rust-style target triples (converted by Yocto's rust-common.bbclass)
+	grep -qxF "${RUST_TARGET_SYS}" ${S}/build/rust/known-target-triples.txt || echo "${RUST_TARGET_SYS}" >> ${S}/build/rust/known-target-triples.txt
+	grep -qxF "${RUST_HOST_SYS}" ${S}/build/rust/known-target-triples.txt || echo "${RUST_HOST_SYS}" >> ${S}/build/rust/known-target-triples.txt
+	grep -qxF "${RUST_BUILD_SYS}" ${S}/build/rust/known-target-triples.txt || echo "${RUST_BUILD_SYS}" >> ${S}/build/rust/known-target-triples.txt
+
 	gn gen --args='${GN_ARGS}' "${OUTPUT_DIR}"
 }
 
