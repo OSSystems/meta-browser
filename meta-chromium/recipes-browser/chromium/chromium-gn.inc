@@ -53,6 +53,8 @@ SRC_URI:append:libc-musl = "\
     file://musl/0015-fix-libc-version-include.patch \
 "
 
+SRC_URI:append = "${@oe.utils.version_less_or_equal('RUSTVERSION', '1.85', '', ' file://0016-Fix-adler-reference-for-Rust-1.86-and-later.patch', d)}"
+
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
 
 # Append instead of assigning; the gtk-icon-cache class inherited above also
