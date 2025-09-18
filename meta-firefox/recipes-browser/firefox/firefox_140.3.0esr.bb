@@ -1,7 +1,6 @@
 # Copyright (C) 2009-2015, O.S. Systems Software Ltda. All Rights Reserved
 # Released under the MIT license (see packages/COPYING)
 
-include firefox_crates_esr.inc
 include firefox.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/firefox-esr:"
