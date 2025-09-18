@@ -629,4 +629,4 @@ ALLOW_EMPTY:${PN}-dev = "0"
 
 # ERROR: QA Issue: lib32-chromium-ozone-wayland: ELF binary /usr/bin/chromium has relocations in .text [textrel]
 INSANE_SKIP:${PN}:append:x86 = "textrel"
-
+INSANE_SKIP:${PN}-dbg:append = "buildpaths"
