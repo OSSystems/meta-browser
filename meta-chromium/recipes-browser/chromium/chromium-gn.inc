@@ -412,26 +412,6 @@ python do_create_v8_qemu_wrapper () {
 do_create_v8_qemu_wrapper[dirs] = "${B}"
 addtask create_v8_qemu_wrapper after do_patch before do_configure
 
-# Check the LLVMVERSION defined in the meta-clang layer. Given Chromium is
-# developed using new C++ features, the LLVMVERSION has to be >= 14. Otherwise,
-# it is not guaranteed that Chromium will compile.
-python do_check_llvm_version () {
-  from distutils.version import LooseVersion
-
-  min_llvm_version = "14.0.0"
-  llvm_version = d.getVar('LLVMVERSION', False)
-  if not llvm_version:
-    bb.warn("Unable to determine LLVM version. Chromium may not be compiled "
-            "successfully if the LLVM version is below %s." % min_llvm_version)
-    return
-
-  if LooseVersion(llvm_version) < LooseVersion(min_llvm_version):
-    bb.fatal("Your LLVMVERSION (%s) is lower than the minimum required "
-             "LLVMVERSION (%s). If you are using dunfell, make sure you "
-             "use dunfell-clang14 branch." % (llvm_version, min_llvm_version))
-}
-addtask check_llvm_version before do_configure
-
 python do_write_toolchain_file () {
     """Writes a BUILD.gn file for Yocto detailing its toolchains."""
     toolchain_dir = d.expand("${S}/build/toolchain/yocto")
