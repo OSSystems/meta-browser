@@ -1,4 +1,4 @@
-From 568dd0026ac86878bf6f0c99ac837a964525860f Mon Sep 17 00:00:00 2001
+From 335090e8e3480bdeea12687f8aa2b0e3dd4bf868 Mon Sep 17 00:00:00 2001
 From: Caner Altinbasak <cal@brightsign.biz>
 Date: Sat, 26 Jul 2025 12:47:57 +0100
 Subject: [PATCH] chromium: fix v4l2 compiler error on arm
