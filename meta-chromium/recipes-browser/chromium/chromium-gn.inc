@@ -26,6 +26,7 @@ SRC_URI += "\
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
     file://0012-chromium-fix-v4l2-compiler-error-on-arm.patch \
+    file://23d818d3c7fba4658248f17fd7b8993199242aa9.patch \
 "
 
 # ARM/AArch64-specific patches.
