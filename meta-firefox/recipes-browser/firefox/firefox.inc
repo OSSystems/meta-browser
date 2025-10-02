@@ -134,44 +134,6 @@ DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libra
 
 LDFLAGS:append = "${@bb.utils.contains('PACKAGECONFIG', 'system-av1', ' -Wl,--undefined-version ', '', d)}"
 
-# At the end of do_configure task cargo-common class takes all
-# the git repos from the SRC_URI, and appends them to the end
-# of cargo_home/config as repo patches for separate crates, if
-# they have a name and destsuffix parameter.
-
-# This works for most crates, however not for all - this is mostly
-# a problem for repositories where the source code is not in the
-# top level folder, and for repositories which are actually a workspace,
-# and may contain multiple crates in multiple subfolders - they might
-# even refer to different subfolders. When this is the case, the above
-# method only sets the top folder in the patch, which makes cargo not
-# find the crates, and fail. This is also the main reason why Cargo.toml
-# is patched directly, instead of letting cargo_common class just include
-# these patches.
-
-# To avoid this, save the SRC_URI variable before the do_configure
-# task, and remove all the git repos from it. At the end of the do_configure
-# task just restore it to its original value.
-python save_src_uri(){
-  d.setVar("SRC_URI_BAK", d.getVar("SRC_URI"))
-  all_uris = d.getVar("SRC_URI").split()
-
-  uris_without_git = ""
-  for uri in all_uris:
-    if not uri.startswith("git://"):
-      uris_without_git += " " + uri
-
-  d.setVar("SRC_URI", uris_without_git)
-}
-
-python restore_src_uri(){
-  d.setVar("SRC_URI", d.getVar("SRC_URI_BAK"))
-}
-
-do_configure[prefuncs] += "save_src_uri"
-do_configure[postfuncs] += "restore_src_uri"
-
-
 do_configure:append(){
     wayland_only='${@bb.utils.contains("PACKAGECONFIG", "wayland-only", "true", "false", d)}'
     x11_only='${@bb.utils.contains("PACKAGECONFIG", "x11-only", "true", "false", d)}'
