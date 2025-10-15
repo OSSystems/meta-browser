@@ -40,6 +40,9 @@ and/or Yocto.
 This layer depends on oe-core, meta-oe and meta-clang (only pre-Whinlatter). This layer supports 
 multiple Yocto releases, the branches should match each other.
 
+Starting version 144 Firefox requires at least Clang 17 to compile. (For Kirkstone current testing is
+performed using Clang 14 for the ESR version and Clang 18 for the latest version).
+
 Additionally, the Rust version shipped with Kirkstone and Scarthgap oe-core is out of date, 
 which can be remediated by other third-party layers: for Kirkstone and Scarthgap version the 
 corresponding branch of meta-lts-mixins is required for up to date Rust compiler. Additionally, 
@@ -79,7 +82,7 @@ Testing is performed using the following combinations (the "latest" version shou
 | Kirkstone | Rust 1.90.0 from meta-lts-mixins (kirkstone/rust branch) | Rust 1.90.0 from meta-lts-mixins (kirkstone/rust branch) |
 | Scarthgap | Rust 1.90.0 from meta-lts-mixins (scarthgap/rust branch) | Rust 1.90.0 from meta-lts-mixins (scarthgap/rust branch) |
 | Walnascar | Rust 1.84.1 from oe-core | Rust 1.84.1 from oe-core |
-| Master | Rust 1.89.0 from oe-core | Rust 1.89.0 from oe-core |
+| Master | Rust 1.90.0 from oe-core | Rust 1.90.0 from oe-core |
 
 Contributing
 ------------
