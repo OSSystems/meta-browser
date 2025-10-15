@@ -1,0 +1,18 @@
+Firefox 144+ fails to build with musl libc for 32-bit arm platform with the
+following error:
+
+.../mozglue/baseprofiler/core/shared-libraries-linux.cc:189:19: error: variable has incomplete type 'struct stat64'
+
+This happens only on Walnascar and newer.
+
+Upstream-Status: Inappropriate [oe-specific]
+--- ./mozglue/baseprofiler/moz.build.orig	2025-11-09 20:09:57.984105202 +0100
++++ ./mozglue/baseprofiler/moz.build	2025-11-09 20:10:22.843793731 +0100
+@@ -33,6 +33,7 @@
+         SOURCES += [
+             "core/shared-libraries-linux.cc",
+         ]
++        DEFINES["_LARGEFILE64_SOURCE"] = True
+         if CONFIG["TARGET_CPU"] == "arm" and CONFIG["OS_TARGET"] != "FreeBSD":
+             SOURCES += [
+                 "core/EHABIStackWalk.cpp",
