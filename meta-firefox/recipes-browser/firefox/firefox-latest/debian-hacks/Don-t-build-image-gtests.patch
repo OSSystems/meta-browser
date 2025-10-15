@@ -1,0 +1,29 @@
+From dd65c3fac7e7a65006add6f9964fbc68fd7898b0 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Thu, 9 Jun 2016 14:45:44 +0900
+Subject: [PATCH] Don't build image/ gtests
+
+Building them causes an ICE with GCC 4.7. As they are not part of what
+is shipped, and not currently run either, just skip building them.
+
+Upstream-Status: Inappropriate
+
+Reworked for Firefox 144.0
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+---
+ image/moz.build | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/image/moz.build b/image/moz.build
+index 87dbefcdd2..4eae02d54e 100644
+--- a/image/moz.build
++++ b/image/moz.build
+@@ -5,7 +5,6 @@
+ # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ 
+ DIRS += ["build", "decoders", "encoders"]
+-TEST_DIRS += ["test/gtest"]
+ 
+ if CONFIG["FUZZING_INTERFACES"]:
+     TEST_DIRS += ["test/fuzzing"]
