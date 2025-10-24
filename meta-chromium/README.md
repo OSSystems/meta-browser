@@ -5,18 +5,22 @@ and/or Yocto.
 
 This layer depends on:
 
-* URI: git://git.yoctoproject.org/poky
+* URI: git://git.openembedded.org/openembedded-core
   - branch: master
-  - revision: 243d54fd466f5f852cc0fdcce57997918ce35f32
+  - revision: HEAD
 
 * URI: git://git.openembedded.org/meta-openembedded
   - layers: meta-oe
   - branch: master
-  - revision: a8dfd10600035a799abae03178fc7054582ea43d
+  - revision: HEAD
 
 * URI: git://github.com/kraj/meta-clang
   - branch: master
-  - revision: 7a2f83360920b10214e2659e17a4b9cba2d0435b
+  - revision: HEAD
+
+**NOTE**: the compiler may require some adjustments based on the latest dependencies
+updates. Please refer to the *Test-built* section in the update commit logs for
+specific revision hashes used during build tests.
 
 ## Contributing
 
