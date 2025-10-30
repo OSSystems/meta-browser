@@ -22,34 +22,31 @@ diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index 59942a3..cf5e62e 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1255,26 +1255,6 @@ config("compiler_cpu_abi") {
-           "-msse3",
-         ]
-       }
+@@ -1301,23 +1301,6 @@ config("compiler_cpu_abi") {
+         "-mfpmath=sse",
+         "-msse3",
+       ]
 -    } else if (current_cpu == "arm") {
--      if (is_clang && !is_android && !is_nacl && !is_chromeos_device) {
+-      if (is_clang && !is_android && !is_chromeos_device) {
 -        cflags += [ "--target=arm-linux-gnueabihf" ]
 -        ldflags += [ "--target=arm-linux-gnueabihf" ]
 -      }
--      if (!is_nacl) {
--        cflags += [
--          "-march=$arm_arch",
--          "-mfloat-abi=$arm_float_abi",
--        ]
--      }
+-      cflags += [
+-        "-march=$arm_arch",
+-        "-mfloat-abi=$arm_float_abi",
+-      ]
 -      if (arm_tune != "") {
 -        cflags += [ "-mtune=$arm_tune" ]
 -      }
 -    } else if (current_cpu == "arm64") {
--      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
--          !is_chromeos_device) {
+-      if (is_clang && !is_android && !is_fuchsia && !is_chromeos_device) {
 -        cflags += [ "--target=aarch64-linux-gnu" ]
 -        ldflags += [ "--target=aarch64-linux-gnu" ]
 -      }
-     } else if (current_cpu == "mipsel" && !is_nacl) {
+     } else if (current_cpu == "mipsel") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1282,9 +1262,6 @@ config("compiler_cpu_abi") {
+@@ -1325,9 +1308,6 @@ config("compiler_cpu_abi") {
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +56,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1364,8 +1341,6 @@ config("compiler_cpu_abi") {
+@@ -1407,8 +1387,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +65,7 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1414,8 +1389,6 @@ config("compiler_cpu_abi") {
+@@ -1457,8 +1435,6 @@ config("compiler_cpu_abi") {
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
            } else {
@@ -77,7 +74,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [
-@@ -1473,8 +1446,6 @@ config("compiler_cpu_abi") {
+@@ -1516,8 +1492,6 @@ config("compiler_cpu_abi") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -86,14 +83,14 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [
              "-EB",
-@@ -1656,23 +1627,6 @@ config("compiler_deterministic") {
+@@ -1686,23 +1660,6 @@ config("compiler_deterministic") {
      }
    }
-
+ 
 -  # Tells the compiler not to use absolute paths when passing the default
 -  # paths to the tools it invokes. We don't want this because we don't
 -  # really need it and it can mess up the RBE cache entries.
--  if (is_clang && (!is_nacl || is_nacl_saigo)) {
+-  if (is_clang) {
 -    cflags += [ "-no-canonical-prefixes" ]
 -
 -    # Same for links: Let the compiler driver invoke the linker
@@ -107,6 +104,6 @@ index 59942a3..cf5e62e 100644
 -    }
 -  }
 -
-   if (use_libcxx_modules) {
+   if (use_clang_modules) {
      cflags += [
        # This removes absolute paths from .pcm files.
