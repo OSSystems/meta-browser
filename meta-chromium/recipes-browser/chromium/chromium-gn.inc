@@ -22,12 +22,12 @@ SRC_URI += "\
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0006-Don-t-pass-unknown-LLVM-options.patch \
     file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
-    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
     file://0012-chromium-fix-v4l2-compiler-error-on-arm.patch \
     file://0013-Reduce-minimum-browser-window-width-to-480px.patch \
+    file://0001-Define___rust_alloc_error_handler_should_panic_v2.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -474,15 +474,24 @@ do_add_clang_latest () {
 addtask add_clang_latest after do_configure before do_compile
 
 do_copy_clang_library () {
-    # Chromium needs to link against libclang_rt.builtins.a for both host and
-    # target code, and expects to find both libraries in the same directory
-    # (thanks to 0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch).
-    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang"
-    # lib_file = "./$CLANG_VERSION/lib/linux/libclang_rt.builtins-$ARCH.a"
-    lib_file="$(find . -name 'libclang_rt.builtins*')"
-    # stripped_lib_file = "lib/linux/libclang_rt.builtins-$ARCH.a"
-    stripped_lib_file="${lib_file#*/*/}"
-    cp "$lib_file" "${STAGING_LIBDIR_NATIVE}/clang/latest/${stripped_lib_file}"
+    cp -r "${STAGING_LIBDIR_NATIVE}/clang/latest" "${STAGING_DIR_HOST}${nonarch_libdir}/clang/"
+    cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang" || return
+
+    lib_file=$(find . \( -name "libclang_rt.builtins-*" -o -name "liborc_rt-*" \))
+    export ARCH="${TARGET_ARCH}"
+
+    mkdir -p "latest/lib/${ARCH}-unknown-linux-gnu"
+    cp $lib_file "latest/lib/${ARCH}-unknown-linux-gnu/"
+    cd "latest/lib/${ARCH}-unknown-linux-gnu/" || return
+
+    for file in *-"${ARCH}".a; do
+        new_name=$(echo "$file" | sed "s/-${ARCH}//")
+        mv "$file" "$new_name"
+    done
+
+    native_arch_path="${STAGING_LIBDIR_NATIVE}/clang/latest/lib/${ARCH}-unknown-linux-gnu/"
+    mkdir -p "$native_arch_path"
+    cp -r * "$native_arch_path"
 }
 addtask copy_clang_library after do_add_clang_latest before do_compile
 
@@ -619,4 +628,4 @@ ALLOW_EMPTY:${PN}-dev = "0"
 
 # ERROR: QA Issue: lib32-chromium-ozone-wayland: ELF binary /usr/bin/chromium has relocations in .text [textrel]
 INSANE_SKIP:${PN}:append:x86 = "textrel"
-
+INSANE_SKIP:${PN}-dbg:append = "buildpaths"

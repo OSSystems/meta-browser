@@ -20,8 +20,8 @@ Co-authored-by: Caner Altinbasak <cal@brightsign.biz>
 Signed-off-by: Max Ihlenfeldt <max@igalia.com>
 ---
  build/config/rust.gni            | 28 ++++++++++++++++++----------
- build/rust/filter_clang_args.py  |  5 +++++
- build/rust/rustc_wrapper.py      |  1 +
+ ...ni_impl/filter_clang_args.py  |  5 +++++
+ ...ni_impl/rustc_wrapper.py      |  1 +
  build/rust/std/BUILD.gn          | 28 +++++++++++++++++++++-------
  build/rust/std/find_std_rlibs.py | 16 +++++++++++-----
  5 files changed, 56 insertions(+), 22 deletions(-)
@@ -99,8 +99,8 @@ index bd18d13..e260576 100644
  } else if (is_android) {
 diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
 index 5a1843c..7fb4b49 100644
---- a/build/rust/filter_clang_args.py
-+++ b/build/rust/filter_clang_args.py
+--- a/build/rust/gni_impl/filter_clang_args.py
++++ b/build/rust/gni_impl/filter_clang_args.py
 @@ -24,6 +24,11 @@ def filter_clang_args(clangargs):
            pass
          elif args[i].startswith('-plugin-arg'):
@@ -113,10 +113,10 @@ index 5a1843c..7fb4b49 100644
        else:
          yield args[i]
        i += 1
-diff --git a/build/rust/rustc_wrapper.py b/build/rust/rustc_wrapper.py
+diff --git a/build/rust/gni_impl/rustc_wrapper.py b/build/rust/gni_impl/rustc_wrapper.py
 index 8f2096d..de43d44 100755
---- a/build/rust/rustc_wrapper.py
-+++ b/build/rust/rustc_wrapper.py
+--- a/build/rust/gni_impl/rustc_wrapper.py
++++ b/build/rust/gni_impl/rustc_wrapper.py
 @@ -160,6 +160,7 @@ def main():
    rustc_args = remaining_args[:ldflags_separator]
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
