@@ -20,14 +20,14 @@ SRC_URI += "\
     file://0003-wrapper-extra-flags.patch \
     file://0004-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
-    file://0006-Don-t-pass-unknown-LLVM-options.patch \
     file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
     file://0012-chromium-fix-v4l2-compiler-error-on-arm.patch \
     file://0013-Reduce-minimum-browser-window-width-to-480px.patch \
-    file://0001-Define___rust_alloc_error_handler_should_panic_v2.patch \
+    file://0001-Fix-building-gpu_host_impl.cc-on-Linux.patch \
+    file://chromium-142-crabbyavif-rust18x.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -265,6 +265,15 @@ GN_ARGS += "disable_fieldtrial_testing_config=true"
 # Unsupported instrumentation profile format version.
 # See https://crrev.com/c/2424669
 GN_ARGS += "chrome_pgo_phase=0"
+
+# Disable Dawn
+# It fails with:
+# ../../components/viz/host/gpu_host_impl.cc:109:30: error: expected ';' after return statement
+#   109 |   return SKIA_COMMIT_HASH "_" DAWN_COMMIT_HASH;
+#       |                              ^
+#       |                              ;
+# 1 error generated
+GN_ARGS += "skia_use_dawn=false"
 
 # Disable passing --warning-suppression-mappings= flag to clang.
 # This feature is available on Clang21+
