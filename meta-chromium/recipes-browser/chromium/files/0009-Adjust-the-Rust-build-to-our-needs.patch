@@ -30,7 +30,7 @@ diff --git a/build/config/rust.gni b/build/config/rust.gni
 index bd18d13..e260576 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -95,6 +95,11 @@ declare_args() {
+@@ -91,6 +91,11 @@
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -40,10 +40,10 @@ index bd18d13..e260576 100644
 +  # platform default.
 +  rust_target_triple_vendor_for_target = ""
  }
-
+ 
  declare_args() {
-@@ -187,14 +192,21 @@ if (enable_rust) {
- # https://issues.chromium.org/u/1/issues/372512092#comment5 for an example.
+@@ -177,12 +182,19 @@
+ # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
 +  vendor = "-unknown"
@@ -56,18 +56,16 @@ index bd18d13..e260576 100644
    if (current_cpu == "arm64") {
 -    rust_abi_target = "aarch64-unknown-linux-gnu"
 +    rust_abi_target = "aarch64" + vendor + "-linux-gnu"
-     cargo_target_abi = ""
    } else if (current_cpu == "x86") {
 -    rust_abi_target = "i686-unknown-linux-gnu"
 +    rust_abi_target = "i686" + vendor + "-linux-gnu"
-     cargo_target_abi = ""
    } else if (current_cpu == "x64") {
 -    rust_abi_target = "x86_64-unknown-linux-gnu"
 +    rust_abi_target = "x86_64" + vendor + "-linux-gnu"
-     cargo_target_abi = ""
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
-@@ -213,18 +225,14 @@ if (is_linux || is_chromeos) {
+       float_suffix = "hf"
+@@ -200,25 +212,21 @@
        # The thumbv7 vs. armv7 distinction is for legacy reasons and both
        # targets in fact target Thumb, see:
        # https://github.com/rust-lang/rust/issues/44722
@@ -77,31 +75,33 @@ index bd18d13..e260576 100644
 -        rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
 -      }
 +      rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
-       cargo_target_abi = "eabi" + float_suffix
      } else {
        rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
-       cargo_target_abi = "eabi" + float_suffix
      }
    } else if (current_cpu == "riscv64") {
 -    rust_abi_target = "riscv64gc-unknown-linux-gnu"
 +    rust_abi_target = "riscv64gc" + vendor + "-linux-gnu"
-     cargo_target_abi = ""
    } else if (current_cpu == "ppc64") {
-     rust_abi_target = "powerpc64le-unknown-linux-gnu"
-@@ -237,7 +245,7 @@ if (is_linux || is_chromeos) {
-     cargo_target_abi = ""
+-    rust_abi_target = "powerpc64le-unknown-linux-gnu"
++    rust_abi_target = "powerpc64le" + vendor + "-linux-gnu"
+   } else if (current_cpu == "s390x") {
+-    rust_abi_target = "s390x-unknown-linux-gnu"
++    rust_abi_target = "s390x" + vendor + "-linux-gnu"
+   } else if (current_cpu == "loong64") {
+-    rust_abi_target = "loongarch64-unknown-linux-gnu"
++    rust_abi_target = "loongarch64" + vendor + "-linux-gnu"
    } else {
      # Best guess for other future platforms.
 -    rust_abi_target = current_cpu + "-unknown-linux-gnu"
-+    rust_abi_target = current_cpu + vendor + "-linux-gnu"
-     cargo_target_abi = ""
++    rust_abi_target = current_cpu + "" + vendor + "-linux-gnu"
    }
  } else if (is_android) {
+   import("//build/config/android/abi.gni")
 diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
 index 5a1843c..7fb4b49 100644
 --- a/build/rust/gni_impl/filter_clang_args.py
 +++ b/build/rust/gni_impl/filter_clang_args.py
-@@ -24,6 +24,11 @@ def filter_clang_args(clangargs):
+@@ -25,6 +25,11 @@
            pass
          elif args[i].startswith('-plugin-arg'):
            i += 2
@@ -129,20 +129,20 @@ diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
 index bb2c988..fdddf68 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -168,7 +168,8 @@ if (toolchain_has_rust) {
+@@ -167,7 +167,8 @@
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
-
+ 
 -  sysroot_lib_subdir = "lib/rustlib/$rust_abi_target/lib"
 +  sysroot_target_subdir = "lib/rustlib/$rust_abi_target"
 +  sysroot_lib_subdir = "$sysroot_target_subdir/lib"
-
+ 
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -295,12 +296,12 @@ if (toolchain_has_rust) {
+@@ -294,12 +295,12 @@
          rust_abi_target,
        ]
-
+ 
 -      outputs = []
 +      outputs = [ "$target_out_dir/target.json" ]
        foreach(lib, all_stdlibs_to_copy) {
@@ -153,9 +153,9 @@ index bb2c988..fdddf68 100644
 -        outputs += [ "$target_out_dir/$lib" ]
 +        outputs += [ "$target_out_dir/lib/$lib" ]
        }
-
+ 
        visibility = [ ":*" ]
-@@ -313,8 +314,18 @@ if (toolchain_has_rust) {
+@@ -312,8 +313,18 @@
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -173,10 +173,10 @@ index bb2c988..fdddf68 100644
 +      deps = [ ":find_stdlib" ]
 +      sources = [ "$target_out_dir/target.json" ]
 +      outputs = [ "$prebuilt_rustc_sysroot/$sysroot_target_subdir/target.json" ]
-
+ 
        visibility = [ ":*" ]
      }
-@@ -354,7 +365,10 @@ if (toolchain_has_rust) {
+@@ -353,7 +364,10 @@
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
