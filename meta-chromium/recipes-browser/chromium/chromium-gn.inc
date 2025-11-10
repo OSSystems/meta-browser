@@ -182,7 +182,8 @@ GN_ARGS += 'host_pkg_config="pkg-config-native"'
 # (debug, release, official) but for historical reasons there are two
 # separate flags.
 # See also: https://groups.google.com/a/chromium.org/d/msg/chromium-dev/hkcb6AOX5gE/PPT1ukWoBwAJ
-GN_ARGS += "is_debug=false is_official_build=true"
+GN_ARGS += "is_debug=false"
+GN_ARGS += "is_official_build=${@bb.utils.contains('PACKAGECONFIG', 'component-build', 'false', 'true', d)}"
 
 # Use lld linker its quicker see https://lld.llvm.org/#performance
 GN_ARGS += "use_lld=true use_gold=false"
