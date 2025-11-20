@@ -6,11 +6,6 @@ DEPENDS += " \
         virtual/egl \
         libdrm \
         virtual/libgbm \
-        libxkbcommon \
-"
-
-RDEPENDS:${PN} += " \
-    xkeyboard-config \
 "
 
 GN_ARGS += "\

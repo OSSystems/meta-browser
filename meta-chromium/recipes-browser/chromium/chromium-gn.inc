@@ -96,7 +96,10 @@ DEPENDS:append:libc-musl = " libexecinfo"
 LDFLAGS:append:libc-musl = " -lexecinfo"
 
 # The wrapper script we use from upstream requires bash.
-RDEPENDS:${PN} = "bash"
+RDEPENDS:${PN} += "bash"
+
+# libxkbcommon requires an initialized config directory at runtime.
+RDEPENDS:${PN} += "xkeyboard-config"
 
 COMPATIBLE_MACHINE = "(-)"
 COMPATIBLE_MACHINE:aarch64 = "(.*)"
