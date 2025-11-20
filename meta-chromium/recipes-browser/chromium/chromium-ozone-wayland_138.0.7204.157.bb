@@ -10,7 +10,6 @@ DEPENDS += "\
 "
 
 GN_ARGS += "\
-        ${PACKAGECONFIG_CONFARGS} \
         use_ozone=true \
         ozone_auto_platforms=false \
         ozone_platform_headless=true \

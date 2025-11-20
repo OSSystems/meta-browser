@@ -1,6 +1,6 @@
 require chromium-gn.inc
 
-DEPENDS += " \
+DEPENDS += "\
         virtual/libgles3 \
         virtual/libgles2 \
         virtual/egl \
@@ -8,17 +8,17 @@ DEPENDS += " \
         virtual/libgbm \
 "
 
-GN_ARGS += "\
-        ${PACKAGECONFIG_CONFARGS} \
+GN_ARGS += '\
         use_ozone=true \
         ozone_auto_platforms=false \
         ozone_platform_headless=true \
         ozone_platform_drm=true \
+        target_os="chromeos" \
         use_xkbcommon=true \
         use_system_minigbm=true \
         use_system_libffi=true \
         use_gtk=false \
-"
+'
 
 # The chromium binary must always be started with those arguments.
 CHROMIUM_EXTRA_ARGS:append = " --ozone-platform=drm"
