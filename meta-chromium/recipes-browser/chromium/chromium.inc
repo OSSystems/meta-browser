@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "dbe84fedf3496ea1d47f0b19c60cbb442418f0f2191a78f54039cfd04b087b42"
+SRC_URI[sha256sum] = "b802c5ab6477b62c85347fab4277e43d19d099ad26293ac3d0773c76c485b9d8"
 S = "${UNPACKDIR}/chromium-${PV}"
 
 # GCC is not tested or officially supported upstream, and supporting it here
