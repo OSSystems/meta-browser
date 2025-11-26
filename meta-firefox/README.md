@@ -55,13 +55,13 @@ the kas folder - that contains all the branch/revision information used for test
 install it, in case it is missing  (e.g. on Debian based systems install `libstdc++-dev` or
 on Fedora install `libstdc++-devel`)
 
-By default `disable-sandboxed-libraries` PACKAGECONFIG is *disabled*. This makes the build
-somewhat more secure, but it also brings in the wasi-sdk as a build-time dependency, which
-does increase the build time. Testing is performed using this dependency, but if you
-enable this knob, it can cut off the build time of dependencies quite a bit (for the
-price of some security, which you need to decide if it's acceptable for you).
+By default `disable-sandboxed-libraries` PACKAGECONFIG is *disabled*. Which means that wasi-sdk
+is a build dependency. Starting Firefox 145, wasi-sdk requires at least Clang 18 to be built:
+make sure to use kirkstone-clang18 branch of meta-clang. Without wasi-sdk (when `disable-sanboxed-libraries`
+PACKAGECONFIG is enabled), Firefox should still build with Clang 14. With ther branches
+this restriction is meaningless, since they all use at least Clang 18.
 
-Note: Firefox at least Rust 1.82 from version 137. 
+Firefox requires at least Rust 1.82 from version 137. 
 
 When using meta-rust, make sure to add the following to a bbappend or local.conf:
 
