@@ -1,0 +1,45 @@
+From 1fdbaaa58d6b816f4280db5de418112b9ff50c48 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Wed, 26 Nov 2025 13:15:30 +0100
+Subject: [PATCH] don't build wasm-component-ld
+
+wasm-component-ld is fetched from the internet. For OE, it is built
+with a separate recipe, no need to build it here also.
+
+Upstream-Status: Inappropriate [oe-specific]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ cmake/wasi-sdk-toolchain.cmake | 20 --------------------
+ 1 file changed, 20 deletions(-)
+
+diff --git a/cmake/wasi-sdk-toolchain.cmake b/cmake/wasi-sdk-toolchain.cmake
+index 61481e3..f68d288 100644
+--- a/cmake/wasi-sdk-toolchain.cmake
++++ b/cmake/wasi-sdk-toolchain.cmake
+@@ -116,26 +116,6 @@ install(DIRECTORY ${wasi_tmp_install}/bin ${wasi_tmp_install}/lib ${wasi_tmp_ins
+         USE_SOURCE_PERMISSIONS
+         DESTINATION ${CMAKE_INSTALL_PREFIX})
+ 
+-# Build logic for `wasm-component-ld` installed from Rust code.
+-set(wasm_component_ld_root ${CMAKE_CURRENT_BINARY_DIR}/wasm-component-ld)
+-set(wasm_component_ld ${wasm_component_ld_root}/bin/wasm-component-ld${CMAKE_EXECUTABLE_SUFFIX})
+-set(wasm_component_ld_version 0.5.19)
+-if(RUST_TARGET)
+-  set(rust_target_flag --target=${RUST_TARGET})
+-endif()
+-add_custom_command(
+-  OUTPUT ${wasm_component_ld}
+-  COMMAND
+-    cargo install --root ${wasm_component_ld_root} ${rust_target_flag}
+-      wasm-component-ld@${wasm_component_ld_version}
+-  COMMAND
+-    cmake -E make_directory ${wasi_tmp_install}/bin
+-  COMMAND
+-    cmake -E copy ${wasm_component_ld} ${wasi_tmp_install}/bin
+-  COMMENT "Building `wasm-component-ld` ...")
+-add_custom_target(wasm-component-ld DEPENDS ${wasm_component_ld})
+-add_dependencies(build wasm-component-ld)
+-
+ # Setup installation logic for CMake support files.
+ add_custom_target(misc-files)
+ add_dependencies(build misc-files)
