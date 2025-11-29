@@ -130,7 +130,7 @@ PACKAGECONFIG[system-pipewire] = "--with-system-pipewire,,pipewire,pipewire"
 PACKAGECONFIG[system-gbm] = "--with-system-gbm,,virtual/libgbm,libgbm"
 PACKAGECONFIG[system-libdrm] = "--with-system-libdrm,,libdrm,libdrm"
 
-DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", " wasi-sdk-native ", d)}'
+DEPENDS:append = '${@bb.utils.contains("PACKAGECONFIG", "disable-sandboxed-libraries", "", " wasi-sdk-sysroot-native ", d)}'
 
 LDFLAGS:append = "${@bb.utils.contains('PACKAGECONFIG', 'system-av1', ' -Wl,--undefined-version ', '', d)}"
 

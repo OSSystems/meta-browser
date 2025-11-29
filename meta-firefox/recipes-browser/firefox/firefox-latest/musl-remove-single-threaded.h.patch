@@ -1,0 +1,15 @@
+This header is not present in musl-libc, so remove it.
+
+Upstream-Status: Inappropriate [oe-specific: present with musl only]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+--- ./config/system-headers.mozbuild.orig	2025-11-06 11:27:51.377484100 +0100
++++ ./config/system-headers.mozbuild	2025-11-06 11:28:03.188254655 +0100
+@@ -865,7 +865,6 @@
+     "sys/shm.h",
+     "sys/siginfo.h",
+     "sys/signal.h",
+-    "sys/single_threaded.h",
+     "sys/socket.h",
+     "sys/sockio.h",
+     "sys/sparc/frame.h",

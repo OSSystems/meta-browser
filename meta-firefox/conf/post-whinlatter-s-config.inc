@@ -11,4 +11,7 @@ CORRECT_S = '${@bb.utils.contains_any("LAYERSERIES_CORENAMES", "whinlatter", d.g
 
 S:pn-cbindgen = "${CORRECT_S}"
 S:pn-cbindgen-native = "${CORRECT_S}"
-S:pn-wasi-sdk-native = "${CORRECT_S}"
+S:pn-wasi-sdk-sysroot-native = "${CORRECT_S}"
+S:pn-wasi-sdk-toolchain-native = "${CORRECT_S}"
+S:pn-wasm-component-ld = "${CORRECT_S}"
+S:pn-wasm-component-ld-native = "${CORRECT_S}"

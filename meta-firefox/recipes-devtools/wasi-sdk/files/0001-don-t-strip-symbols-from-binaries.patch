@@ -1,0 +1,31 @@
+From a4ef37515d280b0000de3f3b9a16a58aec91ab95 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Wed, 26 Nov 2025 16:04:11 +0100
+Subject: [PATCH] don't strip symbols from binaries
+
+By default the project is trying to shrink their footprint by
+stripping the debug symbols from the binaries, which however
+makes the relevant QA check complain.
+
+This patch removes the stripping.
+
+Upstream-Status: Inappropriate [oe-specific]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ cmake/wasi-sdk-toolchain.cmake | 23 -----------------------
+ 1 file changed, 23 deletions(-)
+
+diff --git a/cmake/wasi-sdk-toolchain.cmake b/cmake/wasi-sdk-toolchain.cmake
+index 61481e3..5f04af4 100644
+--- a/cmake/wasi-sdk-toolchain.cmake
++++ b/cmake/wasi-sdk-toolchain.cmake
+@@ -90,9 +90,6 @@ ExternalProject_Add(llvm-build
+     -DLLVM_DEFAULT_TARGET_TRIPLE=wasm32-wasi
+     -DLLVM_INSTALL_BINUTILS_SYMLINKS=TRUE
+     -DLLVM_ENABLE_LIBXML2=OFF
+-    # Pass `-s` to strip symbols by default and shrink the size of the
+-    # distribution
+-    -DCMAKE_EXE_LINKER_FLAGS=-s
+     ${llvm_cmake_flags_list}
+   # See https://www.scivision.dev/cmake-externalproject-list-arguments/ for
+   # why this is in `CMAKE_CACHE_ARGS` instead of above
