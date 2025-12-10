@@ -1,0 +1,21 @@
+With musl, prctl.h header contains the definition of prctl_mm_map
+struct, which is also part of linux/prctl.h header, causing
+compilation failure due to redefinition of the struct.
+
+To avoid it, remove the duplicate header when compiling with musl.
+
+(The glibc version of the header doesn't have this struct redefinition,
+though the patch seems to work fine with it also.)
+
+Upstream-Status: Pending
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+--- ./third_party/libwebrtc/rtc_base/platform_thread_types.cc.orig	2025-12-11 12:00:31.075911577 +0100
++++ ./third_party/libwebrtc/rtc_base/platform_thread_types.cc	2025-12-11 12:45:44.983639418 +0100
+@@ -12,7 +12,6 @@
+ 
+ // IWYU pragma: begin_keep
+ #if defined(WEBRTC_LINUX)
+-#include <linux/prctl.h>
+ #include <sys/prctl.h>
+ #include <sys/syscall.h>
+ 
