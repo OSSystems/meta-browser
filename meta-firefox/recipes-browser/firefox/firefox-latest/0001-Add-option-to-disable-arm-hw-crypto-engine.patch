@@ -61,12 +61,12 @@ diff --git a/security/nss/lib/freebl/freebl.gyp b/security/nss/lib/freebl/freebl
 index 14f213c..09e29ac 100644
 --- a/security/nss/lib/freebl/freebl.gyp
 +++ b/security/nss/lib/freebl/freebl.gyp
-@@ -606,7 +606,7 @@
-           'dependencies': [
-             'gcm-aes-x86_c_lib',
+@@ -603,7 +603,7 @@
+             'intel-gcm-wrap-nodepend_c_lib',
            ]
--        }, 'target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64"', {
-+        }, '(disable_arm_hw_aes==0 or disable_arm_hw_sha1==0 or disable_arm_hw_sha2==0) and (target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64")', {
+         }],
+-        [ 'target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64"', {
++        [ '(disable_arm_hw_aes==0 or disable_arm_hw_sha1==0 or disable_arm_hw_sha2==0) and (target_arch=="arm" or target_arch=="arm64" or target_arch=="aarch64")', {
            'dependencies': [
              'armv8_c_lib',
            ],

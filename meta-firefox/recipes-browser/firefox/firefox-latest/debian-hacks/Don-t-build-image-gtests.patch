@@ -22,7 +22,7 @@ index 87dbefcdd2..4eae02d54e 100644
 @@ -5,7 +5,6 @@
  # file, You can obtain one at http://mozilla.org/MPL/2.0/.
  
- DIRS += ["build", "decoders", "encoders"]
+ DIRS += ["build", "decoders", "encoders", "remote"]
 -TEST_DIRS += ["test/gtest"]
  
  if CONFIG["FUZZING_INTERFACES"]:
