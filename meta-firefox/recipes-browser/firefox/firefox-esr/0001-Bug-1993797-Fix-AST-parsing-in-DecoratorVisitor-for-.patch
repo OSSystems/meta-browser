@@ -1,0 +1,31 @@
+From b92ffccf95cb2003dd57b03991a4ccde1e0c1807 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Wed, 15 Oct 2025 05:42:37 +0000
+Subject: [PATCH] Bug 1993797 - Fix AST parsing in DecoratorVisitor for Python
+ 3.14 r=firefox-build-system-reviewers,glandium
+
+From: Alex Hochheiden <ahochheiden@mozilla.com>
+
+This is necessary due to the `ast.Str` removal in 3.14.
+
+Differential Revision: https://phabricator.services.mozilla.com/D268646
+
+Upstream-Status: Backport [https://github.com/mozilla-firefox/firefox/commit/4a8e9c0b1b6924f734c90486790a7c011faeda84]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ python/mach/mach/command_util.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/python/mach/mach/command_util.py b/python/mach/mach/command_util.py
+index 44e13f1..e94f477 100644
+--- a/python/mach/mach/command_util.py
++++ b/python/mach/mach/command_util.py
+@@ -299,7 +299,7 @@ class DecoratorVisitor(ast.NodeVisitor):
+                     # We only care about these 3 kwargs, so we can safely skip the rest
+                     continue
+ 
+-                kwarg_dict[keyword.arg] = getattr(keyword.value, "s", "")
++                kwarg_dict[keyword.arg] = keyword.value.value
+ 
+             command = kwarg_dict.pop("command")
+             self.results.setdefault(command, {})

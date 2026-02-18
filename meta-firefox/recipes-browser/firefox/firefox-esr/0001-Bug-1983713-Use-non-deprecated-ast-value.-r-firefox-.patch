@@ -1,0 +1,33 @@
+From 771ce420e59316d55296ef10ff609cf2a662c120 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Tue, 19 Aug 2025 05:08:34 +0000
+Subject: [PATCH] Bug 1983713 - Use non-deprecated ast value.
+ r=firefox-build-system-reviewers,nalexander,ahochheiden
+
+From: Mike Hommey <mh+mozilla@glandium.org>
+
+ast.Str was deprecated in python 3.12 and removed in 3.14. It inherited
+from ast.Constant, `Str.s` was equivalent to `Constant.value`, so we can
+use the latter on both old and newer python versions.
+
+Differential Revision: https://phabricator.services.mozilla.com/D261511
+
+Upstream-Status: Backport [https://github.com/mozilla-firefox/firefox/commit/e6db063cdccce8ace1fc7f7bc881175f9d10b255]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ python/mach/mach/command_util.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/python/mach/mach/command_util.py b/python/mach/mach/command_util.py
+index e94f477..14bf65d 100644
+--- a/python/mach/mach/command_util.py
++++ b/python/mach/mach/command_util.py
+@@ -292,7 +292,7 @@ class DecoratorVisitor(ast.NodeVisitor):
+             kwarg_dict = {}
+ 
+             for name, arg in zip(["command", "subcommand"], decorator.args):
+-                kwarg_dict[name] = arg.s
++                kwarg_dict[name] = arg.value
+ 
+             for keyword in decorator.keywords:
+                 if keyword.arg not in relevant_kwargs:
