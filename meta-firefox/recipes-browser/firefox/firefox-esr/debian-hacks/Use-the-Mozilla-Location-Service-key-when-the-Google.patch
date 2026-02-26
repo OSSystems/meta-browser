@@ -1,0 +1,27 @@
+From 68654e650ecbef61ce2bcc6447936cb7ff72c038 Mon Sep 17 00:00:00 2001
+From: Mike Hommey <mh@glandium.org>
+Date: Sun, 2 Apr 2017 06:33:19 +0900
+Subject: [PATCH] Use the Mozilla Location Service key when the Google Key is
+ not there
+
+Upstream-Status: Inappropriate
+---
+ modules/libpref/init/all.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
+index 86bfe71247..b9674823de 100644
+--- a/modules/libpref/init/all.js
++++ b/modules/libpref/init/all.js
+@@ -3094,7 +3094,11 @@
+ 
+ // All the Geolocation preferences are here.
+ //
++#ifdef GOOGLE_LOCATION_SERVICE_API_KEY
+ pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%");
++#else
++pref("geo.provider.network.url", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%");
++#endif
+ 
+ // Timeout to wait before sending the location request.
+ pref("geo.provider.network.timeToWaitBeforeSending", 5000);
