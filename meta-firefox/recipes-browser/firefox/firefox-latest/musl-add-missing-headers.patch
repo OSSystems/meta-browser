@@ -1,0 +1,32 @@
+Fixes the following compilation errors with musl:
+
+stdint.h:
+...dom/media/webrtc/libwebrtc_overrides/call/call_basic_stats.h:17:24: error: unknown type name 'int64_t'
+
+
+unistd.h:
+...js/src/jit/riscv64/Assembler-riscv64.cpp:69:15: error: use of undeclared identifier '__NR_riscv_hwprobe'
+
+Upstream-Status: Pending
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+--- ./dom/media/webrtc/libwebrtc_overrides/call/call_basic_stats.h.orig	2026-02-27 22:05:00.464720120 +0000
++++ ./dom/media/webrtc/libwebrtc_overrides/call/call_basic_stats.h	2026-02-27 22:05:08.410068452 +0000
+@@ -9,6 +9,7 @@
+ 
+ #include <optional>
+ #include <string>
++#include <stdint.h>
+ 
+ namespace webrtc {
+ 
+--- ./js/src/jit/riscv64/Assembler-riscv64.cpp.orig	2026-02-28 08:05:26.309703857 +0100
++++ ./js/src/jit/riscv64/Assembler-riscv64.cpp	2026-02-28 08:05:37.230534497 +0100
+@@ -42,6 +42,7 @@
+ #include "mozilla/DebugOnly.h"
+ #include "mozilla/Maybe.h"
+ 
++#include "asm/unistd.h"
+ #include "gc/Marking.h"
+ #include "jit/AutoWritableJitCode.h"
+ #include "jit/ExecutableAllocator.h"
