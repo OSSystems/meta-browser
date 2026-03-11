@@ -485,10 +485,12 @@ do_copy_clang_library () {
     cp -r "${STAGING_LIBDIR_NATIVE}/clang/latest" "${STAGING_DIR_HOST}${nonarch_libdir}/clang/"
     cd "${STAGING_DIR_HOST}${nonarch_libdir}/clang" || return
 
-    lib_file=$(find . \( -name "libclang_rt.builtins-*" -o -name "liborc_rt-*" \))
+    lib_file=$(find $(find . -maxdepth 1 \! \( -name latest -o -name '.' \)) \( -name "libclang_rt.builtins-*" -o -name "liborc_rt-*" \))
+    echo "lib_file = $lib_file"
     export ARCH="${TARGET_ARCH}"
 
     mkdir -p "latest/lib/${ARCH}-unknown-linux-gnu"
+    echo "Executing cp $lib_file latest/lib/${ARCH}-unknown-linux-gnu/"
     cp $lib_file "latest/lib/${ARCH}-unknown-linux-gnu/"
     cd "latest/lib/${ARCH}-unknown-linux-gnu/" || return
 
@@ -499,6 +501,7 @@ do_copy_clang_library () {
 
     native_arch_path="${STAGING_LIBDIR_NATIVE}/clang/latest/lib/${ARCH}-unknown-linux-gnu/"
     mkdir -p "$native_arch_path"
+    echo "Executing cp -r $(ls -d *) $native_arch_path"
     cp -r * "$native_arch_path"
 }
 addtask copy_clang_library after do_add_clang_latest before do_compile
