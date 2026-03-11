@@ -10,6 +10,10 @@ inherit features_check pkgconfig gtk-icon-cache qemu rust-common
 OUTPUT_DIR = "out/Release"
 B = "${S}/${OUTPUT_DIR}"
 
+def rust_is_newer_than_190(d):
+    rustver = d.getVar('RUSTVERSION').split('.')
+    return int(rustver[0]) > 1 or (int(rustver[0]) == 1 and int(rustver[1]) > 90)
+
 # Backported patches.
 # None currently \o/
 
@@ -27,7 +31,7 @@ SRC_URI += "\
     file://0012-chromium-fix-v4l2-compiler-error-on-arm.patch \
     file://0013-Reduce-minimum-browser-window-width-to-480px.patch \
     file://0001-Fix-building-gpu_host_impl.cc-on-Linux.patch \
-    file://chromium-142-crabbyavif-rust18x.patch \
+    ${@ '' if rust_is_newer_than_190(d) else 'file://chromium-142-crabbyavif-rust18x.patch'} \
 "
 
 # ARM/AArch64-specific patches.
