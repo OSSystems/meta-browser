@@ -494,9 +494,11 @@ do_copy_clang_library () {
     cp $lib_file "latest/lib/${ARCH}-unknown-linux-gnu/"
     cd "latest/lib/${ARCH}-unknown-linux-gnu/" || return
 
-    for file in *-"${ARCH}".a; do
-        new_name=$(echo "$file" | sed "s/-${ARCH}//")
-        mv "$file" "$new_name"
+    for file in *-"${ARCH}".a *-"${ARCH}hf".a; do
+        if [ -f "$file" ]; then
+            new_name=$(echo "$file" | sed -e "s/-${ARCH}hf//" -e "s/-${ARCH}//")
+            mv "$file" "$new_name"
+        fi
     done
 
     native_arch_path="${STAGING_LIBDIR_NATIVE}/clang/latest/lib/${ARCH}-unknown-linux-gnu/"
