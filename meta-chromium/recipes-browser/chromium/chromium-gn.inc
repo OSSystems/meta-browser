@@ -4,7 +4,7 @@ require gn-utils.inc
 
 GTKIC_VERSION = "${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '4', '3',d)}"
 
-inherit features_check gtk-icon-cache qemu rust-common
+inherit features_check pkgconfig gtk-icon-cache qemu rust-common
 
 # The actual directory name in out/ is irrelevant for GN.
 OUTPUT_DIR = "out/Release"
@@ -85,7 +85,6 @@ DEPENDS += " \
     nss-native \
     pango \
     pciutils \
-    pkgconfig-native \
     ${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'pulseaudio', '', d)} \
     qemu-native \
     rust-native \
