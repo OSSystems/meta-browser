@@ -31,8 +31,8 @@ export MOZBUILD_STATE_PATH = "${S}/mozbuild_state"
 export OUT_DIR = "${S}/build/target/release/deps"
 export WASI_SYSROOT = "${STAGING_DATADIR_NATIVE}/wasi-sysroot"
 
-export WASM_CC = "${WASI_SYSROOT}/bin/clang -target wasm32-wasi "
-export WASM_CXX = "${WASI_SYSROOT}/bin/clang++ -target wasm32-wasi "
+export WASM_CC = "${WASI_SYSROOT}/bin/clang -target wasm32-wasip1 "
+export WASM_CXX = "${WASI_SYSROOT}/bin/clang++ -target wasm32-wasip1 "
 
 export BUILD_VERBOSE_LOG = "1"
 

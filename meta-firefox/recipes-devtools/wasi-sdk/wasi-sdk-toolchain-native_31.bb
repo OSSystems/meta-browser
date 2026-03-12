@@ -4,7 +4,7 @@ require wasi-sdk.inc
 # this is where both the toolchain and the sysroot needs to
 # be installed. sysroot is installed automatically here, but
 # this needs to be specified for the toolchain.
-EXTRA_OECMAKE += "-DWASI_SDK_BUILD_TOOLCHAIN=ON -DCMAKE_INSTALL_PREFIX:PATH=${datadir}/wasi-sysroot"
+EXTRA_OECMAKE += "-DWASI_SDK_BUILD_TOOLCHAIN=ON -DCMAKE_INSTALL_PREFIX:PATH=${datadir}/wasi-sysroot -DWASI_SDK_LIBEDIT=OFF"
 
 do_install:append(){
     ln -s ../../../lib/libedit.so.0 ${D}${datadir}/wasi-sysroot/lib/libedit.so.0

@@ -16,7 +16,7 @@ SRC_URI = "gitsm://github.com/WebAssembly/wasi-sdk.git;protocol=https;branch=mai
            file://0001-don-t-build-wasm-component-ld.patch \
            file://0001-don-t-strip-symbols-from-binaries.patch"
 
-SRCREV = "338aec5def0debda9de7e47838c9883e4e0d923f"
+SRCREV = "2e6b578a6986005e29e01c10b94843fdb2a76f0a"
 
 TOOLCHAIN = "clang"
 TOOLCHAIN:class-native = "clang"
@@ -27,4 +27,4 @@ RUNTIME:class-native = "llvm"
 FILES:${PN} = "${datadir}/wasi-sysroot/*"
 
 # this needs manual updating
-WASI_CLANG_VERSION = "21"
+WASI_CLANG_VERSION = "22"

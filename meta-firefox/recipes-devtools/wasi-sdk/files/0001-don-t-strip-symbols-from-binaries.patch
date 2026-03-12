@@ -19,8 +19,8 @@ diff --git a/cmake/wasi-sdk-toolchain.cmake b/cmake/wasi-sdk-toolchain.cmake
 index 61481e3..5f04af4 100644
 --- a/cmake/wasi-sdk-toolchain.cmake
 +++ b/cmake/wasi-sdk-toolchain.cmake
-@@ -90,9 +90,6 @@ ExternalProject_Add(llvm-build
-     -DLLVM_DEFAULT_TARGET_TRIPLE=wasm32-wasi
+@@ -166,9 +166,6 @@ ExternalProject_Add(llvm-build
+     -DLLVM_DEFAULT_TARGET_TRIPLE=wasm32-wasip1
      -DLLVM_INSTALL_BINUTILS_SYMLINKS=TRUE
      -DLLVM_ENABLE_LIBXML2=OFF
 -    # Pass `-s` to strip symbols by default and shrink the size of the
