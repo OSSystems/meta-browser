@@ -1,6 +1,6 @@
 require wasi-sdk.inc
 
-DEPENDS += "wasi-sdk-toolchain-native wasm-component-ld-native"
+DEPENDS += "wasi-sdk-toolchain-native wasm-component-ld-native libedit-native"
 RDEPENDS:${PN} = "wasi-sdk-toolchain-native wasm-component-ld-native"
 
 # The first 3 options come from the project's readme, about the compiling
