@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
                     file://LICENSE-MIT;md5=b377b220f43d747efdec40d69fcaa69d"
 
 SRC_URI += "git://github.com/bytecodealliance/wasm-component-ld.git;protocol=https;branch=main"
-SRCREV = "ee33b7d87d230cfa319736dc22c6083b9124847b"
+SRCREV = "0a5f2513f6157e2c01c0485aa68365d8e4622ccb"
 
 require wasm-component-ld-crates.inc
 
