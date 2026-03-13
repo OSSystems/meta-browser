@@ -27,3 +27,11 @@ index a0d3fca..22ef298 100644
  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
  project(wasi-sdk)
  include(ExternalProject)
+--- ./src/wasi-libc/CMakeLists.txt	2026-03-13 18:55:20.317042850 +0000
++++ ./src/wasi-libc/CMakeLists.txt	2026-03-13 18:55:24.272714795 +0000
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.26)
++cmake_minimum_required(VERSION 3.22)
+ 
+ # Give access to our `./cmake` local folder for `include(...)`.
+ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
