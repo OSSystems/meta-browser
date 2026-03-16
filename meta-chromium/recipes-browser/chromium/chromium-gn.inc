@@ -33,6 +33,7 @@ SRC_URI += "\
     file://0001-Fix-building-gpu_host_impl.cc-on-Linux.patch \
     ${@ '' if rust_is_newer_than_190(d) else 'file://chromium-142-crabbyavif-rust18x.patch'} \
     file://fix-SYS_SECCOMP-redefinition.patch \
+    file://use-adler2.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -488,6 +489,21 @@ do_copy_clang_library () {
     mkdir -p "$native_arch_path"
     echo "Executing cp -r $(ls -d *) $native_arch_path"
     cp -r * "$native_arch_path"
+
+    if [ "${TARGET_ARCH}" != "${BUILD_ARCH}" ]; then
+        export CHROMIUM_BUILD_TRIPLET="$(echo ${RUST_BUILD_SYS} | sed 's:-oe-:-unknown-:')"
+        cd "${STAGING_LIBDIR_NATIVE}/clang"
+        rm -rf "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+        cp -ar latest/lib/linux "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+        cd "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+
+        for file in *-"${BUILD_ARCH}".a *-"${BUILD_ARCH}hf".a; do
+            if [ -f "$file" ]; then
+                new_name=$(echo "$file" | sed -e "s/-${BUILD_ARCH}hf//" -e "s/-${BUILD_ARCH}//")
+                mv "$file" "$new_name"
+            fi
+        done
+    fi
 }
 addtask copy_clang_library after do_add_clang_latest before do_compile
 
