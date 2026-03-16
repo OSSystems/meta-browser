@@ -32,6 +32,7 @@ SRC_URI += "\
     file://0013-Reduce-minimum-browser-window-width-to-480px.patch \
     file://0001-Fix-building-gpu_host_impl.cc-on-Linux.patch \
     ${@ '' if rust_is_newer_than_190(d) else 'file://chromium-142-crabbyavif-rust18x.patch'} \
+    file://fix-SYS_SECCOMP-redefinition.patch \
 "
 
 # ARM/AArch64-specific patches.
