@@ -197,39 +197,17 @@ GN_ARGS += "use_lld=true use_gold=false"
 # file and other utilities are unable to read a 32-bit binary this size, which
 # causes it not to be stripped.
 # The solution is two-fold:
-# 1. Make sure -g is not passed on 32-bit architectures via DEBUG_FLAGS. -g is
-#    the same as -g2. -g1 generates an 800MB binary, which is a lot more
-#    manageable.
+# 1. Set DEBUG_LEVELFLAG as needed, which is used in both FULL_OPTIMIZATION
+#    and DEBUG_OPTIMIZATION.
 # 2. Explicitly pass symbol_level=0 to GN. This causes -g0 to be passed
 #    instead, so that if DEBUG_BUILD is not set GN will not create a huge debug
 #    binary anyway. Since our compiler flags are passed after GN's, -g0 does
 #    not cause any issues if DEBUG_BUILD is set, as -g1 will be passed later.
-DEBUG_FLAGS:remove:arm = "-g"
-DEBUG_FLAGS:append:arm = "-g1"
-DEBUG_FLAGS:remove:x86 = "-g"
-DEBUG_FLAGS:append:x86 = "-g1"
-GN_ARGS += "symbol_level=0"
-
+DEBUG_LEVELFLAG = "-g1"
 # For ARM builds, completely remove debug flags that cause binary size issues
 # This prevents the "output file too large" linker error on ARM32
-CFLAGS:remove:arm = "-g"
-CXXFLAGS:remove:arm = "-g"
-TARGET_CFLAGS:remove:arm = "-g"
-TARGET_CXXFLAGS:remove:arm = "-g"
-
-# As of Chromium 62.0.3202.94 and Yocto Rocko (GCC 7, binutils 2.29), passing
-# -g to the compiler results in many linker errors on aarch64, such as:
-# obj/third_party/WebKit/Source/modules/payments/libpayments.a(PaymentEventDataConversion.o)(.debug_loc+0x4e25): error: relocation overflow in R_AARCH64_ABS32
-DEBUG_FLAGS:remove:aarch64 = "-g"
-DEBUG_FLAGS:append:aarch64 = "-g1"
-
-# As of Chromium 60.0.3112.101 and Yocto Pyro (GCC 6, binutils 2.28), passing
-# -g to the compiler results in many linker errors on x86_64, such as:
-# obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)(.debug_loc+0x1e9a5): error: relocation overflow: reference to local symbol 82 in obj/third_party/WebKit/Source/core/loader/libloader.a(ModuleTreeLinker.o)
-# obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)(.debug_loc+0x253c): error: relocation overflow: reference to local symbol 31 in obj/third_party/WebKit/Source/core/libcore_generated.a(ScriptModule.o)
-# so we have to use the same hack described above.
-DEBUG_FLAGS:remove:x86-64 = "-g"
-DEBUG_FLAGS:append:x86-64 = "-g1"
+DEBUG_LEVELFLAG:arm = ""
+GN_ARGS += "symbol_level=0"
 
 # Disable Chrome Remote Desktop (aka Chromoting) support. Building host support
 # (so that the machine running this recipe can be controlled remotely from
