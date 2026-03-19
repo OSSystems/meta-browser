@@ -469,21 +469,21 @@ do_copy_clang_library () {
 
     lib_file=$(find $(find . -maxdepth 1 \! \( -name latest -o -name '.' \)) \( -name "libclang_rt.builtins-*" -o -name "liborc_rt-*" \))
     echo "lib_file = $lib_file"
-    export ARCH="${TARGET_ARCH}"
+    export CHROMIUM_TARGET_TRIPLET="$(echo ${RUST_TARGET_SYS} | sed 's:-oe-:-unknown-:')"
 
-    mkdir -p "latest/lib/${ARCH}-unknown-linux-gnu"
-    echo "Executing cp $lib_file latest/lib/${ARCH}-unknown-linux-gnu/"
-    cp $lib_file "latest/lib/${ARCH}-unknown-linux-gnu/"
-    cd "latest/lib/${ARCH}-unknown-linux-gnu/" || return
+    mkdir -p "latest/lib/${CHROMIUM_TARGET_TRIPLET}"
+    echo "Executing cp $lib_file latest/lib/${CHROMIUM_TARGET_TRIPLET}/"
+    cp $lib_file "latest/lib/${CHROMIUM_TARGET_TRIPLET}/"
+    cd "latest/lib/${CHROMIUM_TARGET_TRIPLET}/" || return
 
-    for file in *-"${ARCH}".a *-"${ARCH}hf".a; do
+    for file in *-"${TARGET_ARCH}".a *-"${TARGET_ARCH}hf".a; do
         if [ -f "$file" ]; then
-            new_name=$(echo "$file" | sed -e "s/-${ARCH}hf//" -e "s/-${ARCH}//")
+            new_name=$(echo "$file" | sed -e "s/-${TARGET_ARCH}hf//" -e "s/-${TARGET_ARCH}//")
             mv "$file" "$new_name"
         fi
     done
 
-    native_arch_path="${STAGING_LIBDIR_NATIVE}/clang/latest/lib/${ARCH}-unknown-linux-gnu/"
+    native_arch_path="${STAGING_LIBDIR_NATIVE}/clang/latest/lib/${CHROMIUM_TARGET_TRIPLET}/"
     mkdir -p "$native_arch_path"
     echo "Executing cp -r $(ls -d *) $native_arch_path"
     cp -r * "$native_arch_path"
