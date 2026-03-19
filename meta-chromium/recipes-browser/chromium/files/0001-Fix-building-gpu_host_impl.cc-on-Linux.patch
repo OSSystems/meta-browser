@@ -17,12 +17,13 @@ diff --git a/components/viz/host/gpu_host_impl.cc b/components/viz/host/gpu_host
 index e37dd6bb11..27bf4bc8e7 100644
 --- a/components/viz/host/gpu_host_impl.cc
 +++ b/components/viz/host/gpu_host_impl.cc
-@@ -27,10 +27,12 @@
+@@ -28,11 +28,13 @@
  #include "gpu/config/gpu_info.h"
  #include "gpu/ipc/common/gpu_client_ids.h"
  #include "gpu/ipc/host/gpu_disk_cache.h"
 -#include "gpu/webgpu/dawn_commit_hash.h"
  #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+ #include "services/webnn/host/weights_file_provider.h"
  #include "skia/buildflags.h"
  #include "skia/ext/skia_commit_hash.h"
 +#if BUILDFLAG(SKIA_USE_DAWN)

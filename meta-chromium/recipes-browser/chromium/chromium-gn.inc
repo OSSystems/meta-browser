@@ -34,6 +34,7 @@ SRC_URI += "\
     ${@ '' if rust_is_newer_than_190(d) else 'file://chromium-142-crabbyavif-rust18x.patch'} \
     file://fix-SYS_SECCOMP-redefinition.patch \
     file://use-adler2.patch \
+    file://chromium-145-zip_ffi_glue-use-edition2024.patch \
 "
 
 # ARM/AArch64-specific patches.
