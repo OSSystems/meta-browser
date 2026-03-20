@@ -30,7 +30,7 @@ diff --git a/build/config/rust.gni b/build/config/rust.gni
 index bd18d13..e260576 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -91,6 +91,11 @@
+@@ -93,6 +93,11 @@ declare_args() {
    # a platform. Mostly applicable to Windows, where new versions can handle ANSI
    # escape sequences but it's not reliable in general.
    force_rustc_color_output = false
@@ -42,7 +42,7 @@ index bd18d13..e260576 100644
  }
  
  declare_args() {
-@@ -177,12 +182,19 @@
+@@ -184,12 +189,19 @@ if (enable_rust) {
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -65,7 +65,7 @@ index bd18d13..e260576 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -200,25 +212,21 @@
+@@ -207,25 +219,21 @@ if (is_linux || is_chromeos) {
        # The thumbv7 vs. armv7 distinction is for legacy reasons and both
        # targets in fact target Thumb, see:
        # https://github.com/rust-lang/rust/issues/44722
@@ -101,7 +101,7 @@ diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
 index 5a1843c..7fb4b49 100644
 --- a/build/rust/gni_impl/filter_clang_args.py
 +++ b/build/rust/gni_impl/filter_clang_args.py
-@@ -25,6 +25,11 @@
+@@ -25,6 +25,11 @@ def filter_clang_args(clangargs):
            pass
          elif args[i].startswith('-plugin-arg'):
            i += 2
@@ -117,19 +117,19 @@ diff --git a/build/rust/gni_impl/rustc_wrapper.py b/build/rust/gni_impl/rustc_wr
 index 8f2096d..de43d44 100755
 --- a/build/rust/gni_impl/rustc_wrapper.py
 +++ b/build/rust/gni_impl/rustc_wrapper.py
-@@ -160,6 +160,7 @@ def main():
+@@ -204,6 +204,7 @@ def main():
    rustc_args = remaining_args[:ldflags_separator]
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
    rustenv = remaining_args[rustenv_separator + 1:sources_separator]
 +  rustenv += ["RUSTC_BOOTSTRAP=1"]
-
+ 
    abs_build_root = os.getcwd().replace('\\', '/') + '/'
    is_windows = sys.platform == 'win32' or args.target_windows
 diff --git a/build/rust/std/BUILD.gn b/build/rust/std/BUILD.gn
 index bb2c988..fdddf68 100644
 --- a/build/rust/std/BUILD.gn
 +++ b/build/rust/std/BUILD.gn
-@@ -167,7 +167,8 @@
+@@ -171,7 +171,8 @@ if (toolchain_has_rust) {
    # our locally-built std. Both reside in root_out_dir: we must only have one of
    # each per GN toolchain anyway.
  
@@ -139,7 +139,7 @@ index bb2c988..fdddf68 100644
  
    if (!rust_prebuilt_stdlib) {
      local_rustc_sysroot = "$root_out_dir/local_rustc_sysroot"
-@@ -294,12 +295,12 @@
+@@ -298,12 +299,12 @@ if (toolchain_has_rust) {
          rust_abi_target,
        ]
  
@@ -155,7 +155,7 @@ index bb2c988..fdddf68 100644
        }
  
        visibility = [ ":*" ]
-@@ -312,8 +313,18 @@
+@@ -316,8 +317,18 @@ if (toolchain_has_rust) {
                   "enable_rust=false")
        deps = [ ":find_stdlib" ]
        sources = get_target_outputs(":find_stdlib")
@@ -176,7 +176,7 @@ index bb2c988..fdddf68 100644
  
        visibility = [ ":*" ]
      }
-@@ -353,7 +364,10 @@
+@@ -357,7 +368,10 @@ if (toolchain_has_rust) {
          ":prebuilt_stdlib_libs",
          ":stdlib_public_dependent_libs",
        ]
@@ -194,58 +194,58 @@ index 386258f..e8fdaa9 100755
 +++ b/build/rust/std/find_std_rlibs.py
 @@ -17,7 +17,7 @@ import re
  from collections import defaultdict
-
+ 
  EXPECTED_STDLIB_INPUT_REGEX = re.compile(r"([0-9a-z_]+)(?:-([0-9]+))?$")
 -RLIB_NAME_REGEX = re.compile(r"lib([0-9a-z_]+)-([0-9a-f]+)\.rlib$")
 +RLIB_NAME_REGEX = re.compile(r"lib([0-9a-z_]+)(-([0-9a-f]+))?\.rlib$")
-
-
+ 
+ 
  def main():
-@@ -52,6 +52,8 @@ def main():
-     rustc_args.extend(["--target", args.target])
+@@ -53,6 +53,8 @@ def main():
    rustlib_dir = subprocess.check_output(rustc_args).rstrip().decode()
-
+   rustlib_dir = os.path.relpath(rustlib_dir)
+ 
 +  lib_output_dir = os.path.join(args.output, 'lib')
 +
    # Copy the rlibs to a predictable location. Whilst we're doing so,
    # also write a .d file so that ninja knows it doesn't need to do this
    # again unless the source rlibs change.
-@@ -63,7 +65,7 @@ def main():
+@@ -64,7 +66,7 @@ def main():
      # output rlibs for that purpose. If any of the input rlibs change, ninja
      # will run this script again and we'll copy them all afresh.
      depfile.write(
 -        "%s:" % (os.path.join(args.output, "lib%s.rlib" % args.depfile_target)))
 +        "%s:" % (os.path.join(lib_output_dir, "lib%s.rlib" % args.depfile_target)))
-
+ 
      def copy_file(infile, outfile):
        depfile.write(f" {infile}")
-@@ -99,7 +101,7 @@ def main():
+@@ -100,7 +102,7 @@ def main():
        # the correct file path to our linker invocations, we don't need
        # that, and it would prevent us having the predictable filenames
        # which we need for statically computable gn dependency rules.
 -      (crate_name, metadata) = RLIB_NAME_REGEX.match(f).group(1, 2)
 +      (crate_name, metadata) = RLIB_NAME_REGEX.match(f).group(1, 3)
-
+ 
        # Use the number of times we've seen this name to disambiguate the output
        # filenames. Since we sort the input filenames including the metadata,
-@@ -117,14 +119,18 @@ def main():
+@@ -118,14 +120,18 @@ def main():
        output_filename = f"lib{concise_name}.rlib"
-
+ 
        infile = os.path.join(rustlib_dir, f)
 -      outfile = os.path.join(args.output, output_filename)
 +      outfile = os.path.join(lib_output_dir, output_filename)
        copy_file(infile, outfile)
-
+ 
      for f in extra_libs:
        infile = os.path.join(rustlib_dir, f)
 -      outfile = os.path.join(args.output, f)
 +      outfile = os.path.join(lib_output_dir, f)
        copy_file(infile, outfile)
-
+ 
 +    infile = os.path.join(os.environ['RUST_TARGET_PATH'], f'{args.target}.json')
 +    outfile = os.path.join(args.output, 'target.json')
 +    copy_file(infile, outfile)
 +
      depfile.write("\n")
-
-
+ 
+ 
