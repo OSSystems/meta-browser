@@ -19,7 +19,7 @@ diff --git a/base/process/process_metrics_posix.cc b/base/process/process_metric
 index 873a328aa2..5d7d8c11ad 100644
 --- a/base/process/process_metrics_posix.cc
 +++ b/base/process/process_metrics_posix.cc
-@@ -107,7 +107,7 @@ void IncreaseFdLimitTo(unsigned int max_descriptors) {
+@@ -108,7 +108,7 @@ void IncreaseFdLimitTo(unsigned int max_
  
  #endif  // !BUILDFLAG(IS_FUCHSIA)
  
@@ -28,7 +28,7 @@ index 873a328aa2..5d7d8c11ad 100644
  namespace {
  
  size_t GetMallocUsageMallinfo() {
-@@ -125,7 +125,7 @@ size_t GetMallocUsageMallinfo() {
+@@ -126,7 +126,7 @@ size_t GetMallocUsageMallinfo() {
  }
  
  }  // namespace
@@ -37,7 +37,7 @@ index 873a328aa2..5d7d8c11ad 100644
          // BUILDFLAG(IS_ANDROID)
  
  size_t ProcessMetrics::GetMallocUsage() {
-@@ -133,9 +133,9 @@ size_t ProcessMetrics::GetMallocUsage() {
+@@ -134,9 +134,9 @@ size_t ProcessMetrics::GetMallocUsage()
    malloc_statistics_t stats = {0};
    malloc_zone_statistics(nullptr, &stats);
    return stats.size_in_use;
@@ -53,25 +53,26 @@ diff --git a/base/trace_event/malloc_dump_provider.cc b/base/trace_event/malloc_
 index f056277d4b..515d779cce 100644
 --- a/base/trace_event/malloc_dump_provider.cc
 +++ b/base/trace_event/malloc_dump_provider.cc
-@@ -186,6 +186,7 @@ void ReportAppleAllocStats(size_t* total_virtual_size,
+@@ -180,6 +180,7 @@ void ReportAppleAllocStats(size_t* total
  
- #if (BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
-     (!BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
+ #if (PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_ANDROID)) || \
+     (!PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && !BUILDFLAG(IS_WIN) &&    \
 +     defined(__GLIBC__) && \
       !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_FUCHSIA))
  void ReportMallinfoStats(ProcessMemoryDump* pmd,
                           size_t* total_virtual_size,
-@@ -358,8 +359,10 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
+@@ -384,9 +385,11 @@ bool MallocDumpProvider::OnMemoryDump(co
  #elif BUILDFLAG(IS_FUCHSIA)
  // TODO(fuchsia): Port, see https://crbug.com/706592.
  #else
 +#ifdef __GLIBC__
    ReportMallinfoStats(/*pmd=*/nullptr, &total_virtual_size, &resident_size,
                        &allocated_objects_size, &allocated_objects_count);
-+#endif
  #endif
++#endif
  
    MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("malloc");
+   outer_dump->AddScalar("virtual_size", MemoryAllocatorDump::kUnitsBytes,
 diff --git a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h b/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
 index 7392898797..0bf7c4ad99 100644
 --- a/third_party/swiftshader/third_party/llvm-10.0/configs/linux/include/llvm/Config/config.h
@@ -108,7 +109,7 @@ diff --git a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc b/t
 index 4f1d517869..0afd270817 100644
 --- a/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
 +++ b/third_party/tflite/src/tensorflow/lite/profiling/memory_info.cc
-@@ -38,7 +38,7 @@ bool MemoryUsage::IsSupported() {
+@@ -42,7 +42,7 @@ bool MemoryUsage::IsSupported() {
  
  MemoryUsage GetMemoryUsage() {
    MemoryUsage result;
