@@ -6,7 +6,7 @@ diff --git a/third_party/crabbyavif/BUILD.gn b/third_party/crabbyavif/BUILD.gn
 index 38b2055f5c..c9ef690b78 100644
 --- a/third_party/crabbyavif/BUILD.gn
 +++ b/third_party/crabbyavif/BUILD.gn
-@@ -202,7 +202,7 @@ rust_static_library("crabbyavif") {
+@@ -204,7 +204,7 @@ rust_static_library("crabbyavif") {
  
    # Required for disable_cfi feature.
    configs -= [ "//build/config/compiler:disallow_unstable_features" ]
@@ -38,9 +38,9 @@ index 90fa411889..a05f0a5e8b 100644
  #![deny(unsafe_op_in_unsafe_fn)]
 -#![cfg_attr(feature = "disable_cfi", feature(sanitize))]
 +#![cfg_attr(feature = "disable_cfi", feature(no_sanitize))]
- 
- #[macro_use]
- mod internal_utils;
+ // Clippy flags this as a false positive for some of the uses in this library. Disable this clippy
+ // warning.
+ #![allow(clippy::cast_slice_from_raw_parts)]
 diff --git a/third_party/crabbyavif/src/src/reformat/libyuv.rs b/third_party/crabbyavif/src/src/reformat/libyuv.rs
 index 9df874ccf7..3f68c16f2b 100644
 --- a/third_party/crabbyavif/src/src/reformat/libyuv.rs

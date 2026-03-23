@@ -93,10 +93,13 @@ def print_license_list(chromium_root, output_file):
     suitable for use in a Yocto recipe."""
     licenses = {}
     for license_file in find_chromium_licenses(chromium_root):
-        with open(license_file, 'rb') as file_handle:
+        # Only consider relative files
+        if license_file.startswith('/'):
+            continue
+        license_path = os.path.join(chromium_root, license_file)
+        with open(license_path, 'rb') as file_handle:
             license_hash = hashlib.md5(file_handle.read()).hexdigest()
-        license_relpath = os.path.relpath(license_file, chromium_root)
-        licenses[license_relpath] = license_hash
+        licenses[license_file] = license_hash
     with open(output_file, 'w') as out:
         out.write('LIC_FILES_CHKSUM = "\\\n')
         for f in sorted(licenses):
