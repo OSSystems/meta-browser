@@ -22,15 +22,16 @@ diff --git a/base/debug/stack_trace.cc b/base/debug/stack_trace.cc
 index 3debc8bd07..0cc88aa79f 100644
 --- a/base/debug/stack_trace.cc
 +++ b/base/debug/stack_trace.cc
-@@ -281,14 +281,14 @@ std::string StackTrace::ToString() const {
- }
- std::string StackTrace::ToStringWithPrefix(const char* prefix_string) const {
+@@ -366,7 +366,7 @@
+ 
+ std::string StackTrace::ToStringWithPrefix(cstring_view prefix_string) const {
    std::stringstream stream;
 -#if !defined(__UCLIBC__) && !defined(_AIX)
 +#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(_AIX)
    OutputToStreamWithPrefix(&stream, prefix_string);
  #endif
    return stream.str();
+@@ -390,7 +390,7 @@
  }
  
  std::ostream& operator<<(std::ostream& os, const StackTrace& s) {

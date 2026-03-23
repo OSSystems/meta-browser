@@ -21,7 +21,7 @@ diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.c
 index 2500a56acd..a5cf928bde 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.cc
-@@ -133,21 +133,11 @@ namespace sandbox {
+@@ -139,21 +139,11 @@ namespace sandbox {
  // present (as in newer versions of posix_spawn).
  ResultExpr RestrictCloneToThreadsAndEPERMFork() {
    const Arg<unsigned long> flags(0);
@@ -48,7 +48,7 @@ index 2500a56acd..a5cf928bde 100644
  
    // The following two flags are the two important flags in any vfork-emulating
    // clone call. EPERM any clone call that contains both of them.
-@@ -157,7 +147,7 @@ ResultExpr RestrictCloneToThreadsAndEPERMFork() {
+@@ -163,7 +153,7 @@ ResultExpr RestrictCloneToThreadsAndEPER
        AnyOf((flags & (CLONE_VM | CLONE_THREAD)) == 0,
              (flags & kImportantCloneVforkFlags) == kImportantCloneVforkFlags);
  
@@ -61,7 +61,7 @@ diff --git a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc b/sandbox/linux/s
 index 21087322e4..b48ffc1e13 100644
 --- a/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
 +++ b/sandbox/linux/seccomp-bpf-helpers/syscall_sets.cc
-@@ -423,6 +423,7 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
+@@ -438,6 +438,7 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__)
      case __NR_waitpid:
  #endif
@@ -69,7 +69,7 @@ index 21087322e4..b48ffc1e13 100644
        return true;
      case __NR_clone:  // Should be parameter-restricted.
      case __NR_setns:  // Privileged.
-@@ -435,7 +436,6 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
+@@ -450,7 +451,6 @@ bool SyscallSets::IsAllowedProcessStartO
  #if defined(__i386__) || defined(__x86_64__) || defined(__mips__)
      case __NR_set_thread_area:
  #endif
@@ -77,16 +77,16 @@ index 21087322e4..b48ffc1e13 100644
      case __NR_unshare:
  #if !defined(__mips__) && !defined(__aarch64__)
      case __NR_vfork:
-@@ -549,6 +549,8 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
+@@ -548,6 +548,8 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_mlock:
      case __NR_munlock:
      case __NR_munmap:
 +    case __NR_mremap:
 +    case __NR_membarrier:
+     case __NR_mseal:
        return true;
      case __NR_madvise:
-     case __NR_mincore:
-@@ -566,7 +568,6 @@ bool SyscallSets::IsAllowedAddressSpaceAccess(int sysno) {
+@@ -566,7 +568,6 @@ bool SyscallSets::IsAllowedAddressSpaceA
      case __NR_modify_ldt:
  #endif
      case __NR_mprotect:
@@ -98,8 +98,8 @@ diff --git a/sandbox/linux/system_headers/arm64_linux_syscalls.h b/sandbox/linux
 index 03d28567a3..5715a69bc4 100644
 --- a/sandbox/linux/system_headers/arm64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm64_linux_syscalls.h
-@@ -1215,4 +1215,8 @@
- #define __NR_landlock_restrict_self 446
+@@ -1279,4 +1279,8 @@
+ #define __NR_mseal 462
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -111,8 +111,8 @@ diff --git a/sandbox/linux/system_headers/arm_linux_syscalls.h b/sandbox/linux/s
 index bb1335e6d2..7e8150820a 100644
 --- a/sandbox/linux/system_headers/arm_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/arm_linux_syscalls.h
-@@ -1617,6 +1617,10 @@
- #define __NR_landlock_restrict_self (__NR_SYSCALL_BASE + 446)
+@@ -1677,6 +1677,10 @@
+ #define __NR_mseal (__NR_SYSCALL_BASE + 462)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -126,8 +126,8 @@ diff --git a/sandbox/linux/system_headers/linux_syscalls.h b/sandbox/linux/syste
 index 438147b401..6b67cbcedc 100644
 --- a/sandbox/linux/system_headers/linux_syscalls.h
 +++ b/sandbox/linux/system_headers/linux_syscalls.h
-@@ -10,6 +10,7 @@
- #define SANDBOX_LINUX_SYSTEM_HEADERS_LINUX_SYSCALLS_H_
+@@ -19,6 +19,7 @@
+ #include <sys/syscall.h>
  
  #include "build/build_config.h"
 +#include <sys/syscall.h>
@@ -138,8 +138,8 @@ diff --git a/sandbox/linux/system_headers/mips64_linux_syscalls.h b/sandbox/linu
 index 0f9ab41b6e..448351699f 100644
 --- a/sandbox/linux/system_headers/mips64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips64_linux_syscalls.h
-@@ -1415,4 +1415,8 @@
- #define __NR_landlock_restrict_self (__NR_Linux + 446)
+@@ -1475,4 +1475,8 @@
+ #define __NR_mseal (__NR_Linux + 462)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -151,8 +151,8 @@ diff --git a/sandbox/linux/system_headers/mips_linux_syscalls.h b/sandbox/linux/
 index 9664858a93..259751f93c 100644
 --- a/sandbox/linux/system_headers/mips_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/mips_linux_syscalls.h
-@@ -1697,4 +1697,8 @@
- #define __NR_landlock_restrict_self (__NR_Linux + 446)
+@@ -1757,4 +1757,8 @@
+ #define __NR_mseal (__NR_Linux + 462)
  #endif
  
 +#if !defined(__NR_membarrier)
@@ -164,8 +164,8 @@ diff --git a/sandbox/linux/system_headers/x86_64_linux_syscalls.h b/sandbox/linu
 index fe59d1ae35..37e677f7e9 100644
 --- a/sandbox/linux/system_headers/x86_64_linux_syscalls.h
 +++ b/sandbox/linux/system_headers/x86_64_linux_syscalls.h
-@@ -1438,5 +1438,9 @@
- #define __NR_landlock_restrict_self 446
+@@ -1502,5 +1502,9 @@
+ #define __NR_mseal 462
  #endif
  
 +#if !defined(__NR_membarrier)

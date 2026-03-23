@@ -46,14 +46,12 @@ SRC_URI:append:libc-musl = "\
     file://musl/0005-__libc_malloc-is-internal-to-glibc.patch \
     file://musl/0006-debug-Fix-build-with-musl.patch \
     file://musl/0007-mallopt-is-glibc-specific-API.patch \
-    file://musl/0008-Use-monotonic-clock-for-pthread_cond_timedwait-with-.patch \
     file://musl/0009-Fix-tab-crashes-on-musl.patch \
     file://musl/0010-pthread_getname_np.patch \
     file://musl/0011-sys-stat.patch \
     file://musl/0012-credentials-header.patch \
     file://musl/0013-fstatat64.patch \
     file://musl/0014-no-res-ninit-nclose.patch \
-    file://musl/0015-fix-libc-version-include.patch \
 "
 
 ANY_OF_DISTRO_FEATURES = "opengl vulkan"
