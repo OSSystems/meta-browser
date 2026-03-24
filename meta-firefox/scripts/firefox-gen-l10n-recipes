@@ -16,7 +16,6 @@ wget -np -nH -r --cut-dirs 7 -A "*.xpi" http://ftp.mozilla.org/pub/firefox/relea
 cd $OLDCWD
 
 for f in $TMPDIR/*.xpi; do
-	md5=$(md5sum $f | awk '{ print $1 }')
 	sha256=$(sha256sum $f | awk '{ print $1 }')
 	lang_code=$(echo $f | sed "s,$TMPDIR/\([^\.]*\).xpi,\1,g" | tr '[A-Z]' '[a-z]')
 
@@ -26,7 +25,6 @@ cat > firefox-l10n-${lang_code}_$1.bb <<EOF
 
 require firefox-l10n.inc
 
-SRC_URI[md5sum] = "$md5"
 SRC_URI[sha256sum] = "$sha256"
 EOF
 done
