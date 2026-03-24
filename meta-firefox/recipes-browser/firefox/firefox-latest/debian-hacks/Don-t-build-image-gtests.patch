@@ -20,9 +20,9 @@ index 87dbefcdd2..4eae02d54e 100644
 --- a/image/moz.build
 +++ b/image/moz.build
 @@ -5,7 +5,6 @@
- # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ if CONFIG["MOZ_JXL"]:
+     DIRS += ["rust/jxl"]
  
- DIRS += ["build", "decoders", "encoders", "remote"]
 -TEST_DIRS += ["test/gtest"]
  
  if CONFIG["FUZZING_INTERFACES"]:
