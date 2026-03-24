@@ -1,0 +1,73 @@
+From 9ab05b08ae3e83c80ac69c69008ed1048e9a0923 Mon Sep 17 00:00:00 2001
+From: Florin Malita <fmalita@google.com>
+Date: Mon, 18 Aug 2025 12:09:54 -0400
+Subject: [PATCH] Manual roll skcms from 3eb7168d199c to 238fd0489c04
+
+https://skia.googlesource.com/skcms.git/+log/3eb7168d199c..238fd0489c04
+
+2025-08-18 dloehr@google.com Gate F_From_Half change on clang
+2025-08-15 kjlubick@google.com Remove gcc special case in favor of __builtin_convertvector
+2025-08-15 dloehr@google.com Change use of removed intrinsic
+2025-08-15 girlboss@google.com skcms: support two attributes with GCC
+
+Cq-Include-Trybots: skia/skia.primary:Canary-Chromium
+Change-Id: I8c6b1b7ff4390d406b54b304ecdd5b606c46abcb
+Reviewed-on: https://skia-review.googlesource.com/c/skia/+/1040656
+Reviewed-by: Kaylee Lubick <kjlubick@google.com>
+Reviewed-by: Robert Phillips <robertphillips@google.com>
+
+Fixes error:
+ 0:02.72 [...]/sources/firefox-140.10.0/gfx/skia/skia/modules/skcms/src/Transform_inl.h:160:12: error: use of undeclared identifier '__builtin_ia32_vcvtph2ps256'; did you mean '__builtin_ia32_cvtpd2ps256'?
+ 0:02.72   160 |     return __builtin_ia32_vcvtph2ps256((I16)half);
+ 0:02.72       |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 0:02.72       |            __builtin_ia32_cvtpd2ps256
+ 0:02.72 [...]/recipe-sysroot-native/usr/lib/clang/22/include/avxintrin.h:2187:18: note: '__builtin_ia32_cvtpd2ps256' declared here
+ 0:02.72  2187 |   return (__m128)__builtin_ia32_cvtpd2ps256((__v4df) __a);
+ 0:02.72       |                  ^
+ 0:02.72 In file included from [...]/sources/firefox-140.10.0/gfx/skia/skia/modules/skcms/src/skcms_TransformHsw.cc:56:
+ 0:02.72 [...]/sources/firefox-140.10.0/gfx/skia/skia/modules/skcms/src/Transform_inl.h:160:40: error: cannot initialize a parameter of type '__attribute__((__vector
+_size__(4 * sizeof(double)))) double' (vector of 4 'double' values) with an rvalue of type 'I16' (vector of 8 'int16_t' values)
+ 0:02.72   160 |     return __builtin_ia32_vcvtph2ps256((I16)half);
+ 0:02.72       |                
+
+Upstream-Status: Backport [https://github.com/google/skia/commit/9ab05b08ae3e83c80ac69c69008ed1048e9a0923]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+ modules/skcms/src/Transform_inl.h | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/gfx/skia/skia/modules/skcms/src/Transform_inl.h b/gfx/skia/skia/modules/skcms/src/Transform_inl.h
+index bc10e7d47d76..aad05750a670 100644
+--- a/gfx/skia/skia/modules/skcms/src/Transform_inl.h
++++ b/gfx/skia/skia/modules/skcms/src/Transform_inl.h
+@@ -111,14 +111,9 @@ template <typename D, typename S>
+ SI D cast(const S& v) {
+ #if N == 1
+     return (D)v;
+-#elif defined(__clang__)
+-    return __builtin_convertvector(v, D);
+ #else
+-    D d;
+-    for (int i = 0; i < N; i++) {
+-        d[i] = v[i];
+-    }
+-    return d;
++    return __builtin_convertvector(v, D);
++
+ #endif
+ }
+ 
+@@ -156,8 +151,13 @@ SI F F_from_Half(U16 half) {
+ #elif defined(USING_AVX512F)
+     return (F)_mm512_cvtph_ps((__m256i)half);
+ #elif defined(USING_AVX_F16C)
++#if defined(__clang__)
++    typedef _Float16 __attribute__((vector_size(16))) F16;
++    return __builtin_convertvector((F16)half, F);
++#else
+     typedef int16_t __attribute__((vector_size(16))) I16;
+     return __builtin_ia32_vcvtph2ps256((I16)half);
++#endif // defined(__clang))
+ #else
+     U32 wide = cast<U32>(half);
+     // A half is 1-5-10 sign-exponent-mantissa, with 15 exponent bias.

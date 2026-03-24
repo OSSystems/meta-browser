@@ -98,7 +98,7 @@ DISABLE_STATIC = ""
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
                    ${@bb.utils.contains_any("TARGET_ARCH", "x86_64 arm aarch64", "webrtc", "", d)} \
-                   rust-simd disable-gecko-profiler \
+                   rust-simd \
 "
 
 PACKAGECONFIG[alsa] = "--enable-alsa,--disable-alsa,alsa-lib"
@@ -124,7 +124,6 @@ PACKAGECONFIG[system-png] = "--with-system-png,,libpng,libpng"
 PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
 PACKAGECONFIG[x11-only] = "--enable-default-toolkit=cairo-gtk3-x11-only,,,,,wayland-only"
 PACKAGECONFIG[wayland-only] = "--enable-default-toolkit=cairo-gtk3-wayland-only,,virtual/egl,,,x11-only"
-PACKAGECONFIG[disable-gecko-profiler] = "--disable-gecko-profiler,,,"
 PACKAGECONFIG[system-av1] = "--with-system-av1,,aom dav1d"
 PACKAGECONFIG[system-pipewire] = "--with-system-pipewire,,pipewire,pipewire"
 PACKAGECONFIG[system-gbm] = "--with-system-gbm,,virtual/libgbm,libgbm"
