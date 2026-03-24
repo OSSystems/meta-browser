@@ -1,0 +1,149 @@
+From d92df4744d379a44e49a2130e882f0c45e3371a2 Mon Sep 17 00:00:00 2001
+From: Gyorgy Sarvari <skandigraun@gmail.com>
+Date: Wed, 24 Jul 2024 21:07:56 +0200
+Subject: [PATCH] make build reproducible by removing TMPDIR
+
+1. The patched html file contains compiler configuration that can be looked up
+somewhere in the compiled firefox, however it refers to TMPDIR at many
+places (include path, lib path, etc).
+
+After looking into it, changing these variables seem to be a disproportionally
+big patch, so instead just remove the thing.
+
+2. All moz.build files got the same nasm argument: `--debug-prefix-map $TMPDIR/=/`
+This should remove the paths referring to the build machine.
+
+Upstream-Status: Inappropriate [OE-specific]
+---
+ toolkit/content/buildconfig.html | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+--- a/media/libaom/moz.build	2024-08-06 12:03:48.896436119 +0200
++++ b/media/libaom/moz.build	2024-08-06 12:04:22.279991683 +0200
+@@ -28,6 +28,7 @@
+         EXPORTS.aom += [ 'config/mac/x64/config/aom_config.h' ]
+     else: # Android, Linux, BSDs, etc.
+         ASFLAGS += [ '-I%s/media/libaom/config/linux/x64/' % TOPSRCDIR ]
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+         LOCAL_INCLUDES += [ '/media/libaom/config/linux/x64/' ]
+         EXPORTS.aom += [ 'config/linux/x64/config/aom_config.h' ]
+ elif CONFIG['TARGET_CPU'] == 'x86':
+@@ -41,6 +42,7 @@
+         NO_PGO = True # Compiler OOMs, bug 1445922
+     else: # Android, Linux, BSDs, etc.
+         ASFLAGS += [ '-I%s/media/libaom/config/linux/ia32/' % TOPSRCDIR ]
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+         LOCAL_INCLUDES += [ '/media/libaom/config/linux/ia32/' ]
+         EXPORTS.aom += [ 'config/linux/ia32/config/aom_config.h' ]
+ elif CONFIG['TARGET_CPU'] == 'arm':
+--- a/media/ffvpx/ffvpxcommon.mozbuild
++++ b/media/ffvpx/ffvpxcommon.mozbuild
+@@ -11,6 +11,12 @@ if CONFIG['CPU_ARCH'] != 'aarch64':
+     ASFLAGS += ['-I%s/media/ffvpx/libavcodec/x86/' % TOPSRCDIR]
+     ASFLAGS += ['-I%s/media/ffvpx/libavutil/x86/' % TOPSRCDIR]
+ 
++if CONFIG['TARGET_CPU'] == 'x86':
++    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
++
++if CONFIG['TARGET_CPU'] == 'x86_64':
++    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
++
+ if CONFIG['FFVPX_ASFLAGS']:
+     if CONFIG['FFVPX_USE_NASM']:
+         USE_NASM = True
+--- a/media/libvpx/moz.build	2024-08-07 09:30:02.280758173 +0200
++++ b/media/libvpx/moz.build	2024-08-07 09:30:20.045513609 +0200
+@@ -28,6 +28,7 @@
+         EXPORTS.vpx += files['LINUX_X64_EXPORTS']
+         SOURCES += files['LINUX_X64_SOURCES']
+         ASFLAGS += [ '-I%s/media/libvpx/config/linux/x64/' % TOPSRCDIR ]
++        ASFLAGS += [ '--debug-prefix-map', '%s/=/' % TOPSRCDIR ]
+         LOCAL_INCLUDES += [ '/media/libvpx/config/linux/x64/' ]
+ elif CONFIG['TARGET_CPU'] == 'x86':
+     if CONFIG['OS_TARGET'] == 'WINNT':
+@@ -44,6 +45,7 @@
+         EXPORTS.vpx += files['LINUX_IA32_EXPORTS']
+         SOURCES += files['LINUX_IA32_SOURCES']
+         ASFLAGS += [ '-I%s/media/libvpx/config/linux/ia32/' % TOPSRCDIR ]
++        ASFLAGS += [ '--debug-prefix-map', '%s/=/' % TOPSRCDIR ]
+         LOCAL_INCLUDES += [ '/media/libvpx/config/linux/ia32/' ]
+ elif CONFIG['TARGET_CPU'] == 'arm':
+     EXPORTS.vpx += files['LINUX_ARM_EXPORTS']
+--- ./media/libjpeg/moz.build	2024-08-07 09:32:21.776008707 +0200
++++ ./media/libjpeg/moz.build	2024-08-07 09:32:57.707525237 +0200
+@@ -312,9 +312,11 @@
+ if CONFIG['TARGET_CPU'] == 'x86':
+     ASFLAGS += ['-I%s/media/libjpeg/simd/nasm/' % TOPSRCDIR]
+     ASFLAGS += ['-I%s/media/libjpeg/simd/i386/' % TOPSRCDIR]
++    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+ if CONFIG['TARGET_CPU'] == 'x86_64':
+     ASFLAGS += ['-I%s/media/libjpeg/simd/nasm/' % TOPSRCDIR]
+     ASFLAGS += ['-I%s/media/libjpeg/simd/x86_64/' % TOPSRCDIR]
++    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+ 
+ # We allow warnings for third-party code that can be updated from upstream.
+ AllowCompilerWarnings()
+--- ./media/libdav1d/asm/moz.build	2024-10-28 20:31:55.074740088 +0100
++++ ./media/libdav1d/asm/moz.build	2024-10-28 20:33:04.748566455 +0100
+@@ -37,6 +37,7 @@
+         ASFLAGS += ['-I%s/media/libdav1d/asm/x86_32/win/' % TOPSRCDIR]
+     else:
+         ASFLAGS += ['-I%s/media/libdav1d/asm/x86_32/' % TOPSRCDIR]
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+         stack_alignment = 16
+         # Change stack alignment to 16 bytes.
+         if CONFIG['CC_TYPE'] == 'clang':
+@@ -54,6 +55,7 @@
+         # The rest of the platforms are all Linux-like: plain Linux
+         # Android, OpenBSD, NetBSD, FreeBSD, DragonFly, SunOS
+         ASFLAGS += ['-I%s/media/libdav1d/asm/x86_64/linux/' % TOPSRCDIR]
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+ elif CONFIG['TARGET_CPU'] == 'arm':
+     stack_alignment = 4
+     ASFLAGS += ['-I%s/dist/include/dav1d/' % TOPOBJDIR]
+--- ./toolkit/components/resistfingerprinting/extract_rfp_targets.py	2025-05-26 15:52:51.714265797 +0200
++++ ./toolkit/components/resistfingerprinting/extract_rfp_targets.py	2025-05-26 15:58:17.970476117 +0200
+@@ -65,7 +65,7 @@
+ def main(output, targets_path, defaults_base_path, defaults_fpp_path):
+     output.write("// This is a generated file. Please do not edit.\n")
+     output.write(
+-        f"// See extract_rfp_targets.py, {targets_path}, {defaults_base_path}, {defaults_fpp_path} files instead.\n"
++        f"// See extract_rfp_targets.py, {'/'.join(targets_path.split('/')[-4:])}, {'/'.join(defaults_base_path.split('/')[-4:])}, {'/'.join(defaults_fpp_path.split('/')[-4:])} files instead.\n"
+     )
+ 
+     write_targets(output, parse_targets(targets_path))
+--- ./toolkit/content/buildconfig.html.orig	2025-06-25 20:57:21.774377749 +0200
++++ ./toolkit/content/buildconfig.html	2025-06-25 20:58:51.498740281 +0200
+@@ -44,25 +44,25 @@
+             <th>Compiler flags</th>
+           </tr>
+           <tr>
+-            <td>@CC@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@CC_VERSION@</td>
+-            <td>@CFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+           <tr>
+-            <td>@CXX@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@CC_VERSION@</td>
+-            <td>@CXXFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+           <tr>
+-            <td>@RUSTC@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+             <td>@RUSTC_VERSION@</td>
+-            <td>@RUSTFLAGS@</td>
++            <td>Removed for reproducability. Look it up in Yocto build logs.</td>
+           </tr>
+         </tbody>
+       </table>
+       #endif
+       <h2>Configure options</h2>
+-      <p>@MOZ_CONFIGURE_OPTIONS@</p>
++      <p>Removed for reproducability. Look it up in Yocto build logs.</p>
+     </div>
+   </body>
+ </html>
