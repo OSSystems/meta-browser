@@ -515,6 +515,13 @@ addtask copy_target_rustlibs after do_configure before do_compile
 
 do_configure() {
 	cd ${S}
+
+	# Fix potential failure for the NodeJS version check.
+	# Chromium is tested against a specific NodeJS version but it works
+	# with slightly older versions, too.
+	NODE_VERSION=$(node -v)
+	sed -i s/^NODE_VERSION=.*/NODE_VERSION=\"$NODE_VERSION\"/g third_party/node/update_node_binaries
+
 	python3 ./build/linux/unbundle/replace_gn_files.py --system-libraries ${GN_UNBUNDLE_LIBS}
 
 	# Add Rust-style target triples (converted by Yocto's rust-common.bbclass)
