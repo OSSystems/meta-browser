@@ -30,10 +30,10 @@ diff --git a/build/config/rust.gni b/build/config/rust.gni
 index bd18d13..e260576 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -93,6 +93,11 @@ declare_args() {
-   # a platform. Mostly applicable to Windows, where new versions can handle ANSI
-   # escape sequences but it's not reliable in general.
-   force_rustc_color_output = false
+@@ -102,6 +102,11 @@
+   # * Fixing pre-existing violations of `clippy` lints (crbug.com/472355480)
+   # * Deciding on a policy (e.g. which trybots can/should cover `clippy`)
+   enable_rust_clippy = false
 +
 +  # Override the vendor part of the Rust target triple (with a leading dash)
 +  # used for building target code (not host code). Leave empty to use the
@@ -42,7 +42,7 @@ index bd18d13..e260576 100644
  }
  
  declare_args() {
-@@ -184,12 +189,19 @@ if (enable_rust) {
+@@ -193,12 +198,19 @@
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -65,18 +65,25 @@ index bd18d13..e260576 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -207,25 +219,21 @@ if (is_linux || is_chromeos) {
-       # The thumbv7 vs. armv7 distinction is for legacy reasons and both
-       # targets in fact target Thumb, see:
-       # https://github.com/rust-lang/rust/issues/44722
--      if (arm_use_neon) {
--        rust_abi_target = "thumbv7neon-unknown-linux-gnueabi" + float_suffix
--      } else {
--        rust_abi_target = "armv7-unknown-linux-gnueabi" + float_suffix
--      }
+@@ -206,31 +218,21 @@
+       float_suffix = ""
+     }
+     if (arm_arch == "armv7-a" || arm_arch == "armv7") {
+-      # We have no way to inform Rust about the -a suffix, so we end up
+-      # targeting armv7 in both cases.
+-      #
+-      # We also try to propagate the availability of NEON without feature
+-      # detection; in C++ this is done by -mfpu=neon, but in Rust we need to
+-      # use a different ABI target.
+-      #
+-      # The thumbv7 vs. armv7 distinction is for legacy reasons and both
+-      # targets in fact target Thumb, see:
+-      # https://github.com/rust-lang/rust/issues/44722
+-      rust_abi_target = "thumbv7neon-unknown-linux-gnueabi" + float_suffix
 +      rust_abi_target = "armv7" + vendor + "-linux-gnueabi" + float_suffix
      } else {
-       rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
+-      rust_abi_target = "arm-unknown-linux-gnueabi" + float_suffix
++      rust_abi_target = "arm" + vendor + "-linux-gnueabi" + float_suffix
      }
    } else if (current_cpu == "riscv64") {
 -    rust_abi_target = "riscv64gc-unknown-linux-gnu"
@@ -117,7 +124,7 @@ diff --git a/build/rust/gni_impl/rustc_wrapper.py b/build/rust/gni_impl/rustc_wr
 index 8f2096d..de43d44 100755
 --- a/build/rust/gni_impl/rustc_wrapper.py
 +++ b/build/rust/gni_impl/rustc_wrapper.py
-@@ -204,6 +204,7 @@ def main():
+@@ -250,6 +250,7 @@ def main():
    rustc_args = remaining_args[:ldflags_separator]
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
    rustenv = remaining_args[rustenv_separator + 1:sources_separator]
@@ -201,16 +208,16 @@ index 386258f..e8fdaa9 100755
  
  
  def main():
-@@ -53,6 +53,8 @@ def main():
-   rustlib_dir = subprocess.check_output(rustc_args).rstrip().decode()
-   rustlib_dir = os.path.relpath(rustlib_dir)
+@@ -61,6 +61,8 @@ def main():
+   rustlib_dir = os.path.relpath(rustlib_dir, os.path.realpath(os.curdir))
+ 
  
 +  lib_output_dir = os.path.join(args.output, 'lib')
 +
    # Copy the rlibs to a predictable location. Whilst we're doing so,
    # also write a .d file so that ninja knows it doesn't need to do this
    # again unless the source rlibs change.
-@@ -64,7 +66,7 @@ def main():
+@@ -72,7 +74,7 @@ def main():
      # output rlibs for that purpose. If any of the input rlibs change, ninja
      # will run this script again and we'll copy them all afresh.
      depfile.write(
@@ -219,7 +226,7 @@ index 386258f..e8fdaa9 100755
  
      def copy_file(infile, outfile):
        depfile.write(f" {infile}")
-@@ -100,7 +102,7 @@ def main():
+@@ -108,7 +110,7 @@ def main():
        # the correct file path to our linker invocations, we don't need
        # that, and it would prevent us having the predictable filenames
        # which we need for statically computable gn dependency rules.
@@ -228,7 +235,7 @@ index 386258f..e8fdaa9 100755
  
        # Use the number of times we've seen this name to disambiguate the output
        # filenames. Since we sort the input filenames including the metadata,
-@@ -118,14 +120,18 @@ def main():
+@@ -126,14 +128,18 @@ def main():
        output_filename = f"lib{concise_name}.rlib"
  
        infile = os.path.join(rustlib_dir, f)
