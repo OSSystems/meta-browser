@@ -1,0 +1,46 @@
+Fix zip_ffi_glue build errors
+
+error: let chains are only allowed in Rust 2024 or later
+  --> ../../components/user_data_importer/utility/parsing_ffi/zip_archive.rs:89:16
+   |
+89 |             if let Ok(file) = self.archive.by_index(i)
+   |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: let chains are only allowed in Rust 2024 or later
+  --> ../../components/user_data_importer/utility/parsing_ffi/zip_archive.rs:90:20
+   |
+90 |                 && let Some(outpath) = file.enclosed_name()
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: let chains are only allowed in Rust 2024 or later
+  --> ../../components/user_data_importer/utility/parsing_ffi/zip_archive.rs:91:20
+   |
+91 |                 && let Some(r) = f(file, &outpath)
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+error: let chains are only allowed in Rust 2024 or later
+   --> ../../components/user_data_importer/utility/parsing_ffi/zip_archive.rs:107:16
+    |
+107 |             if let Ok(file) = self.archive.by_index(i)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: let chains are only allowed in Rust 2024 or later
+   --> ../../components/user_data_importer/utility/parsing_ffi/zip_archive.rs:108:20
+    |
+108 |                 && let Some(outpath) = file.enclosed_name()
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 5 previous errors
+
+Signed-off-by: Zoltán Böszörményi <zboszor@gmail.com>
+Upstream-Status: Inappropriate [rust edition specific]
+
+--- a/components/user_data_importer/utility/BUILD.gn	2026-03-03 00:00:09.000000000 +0100
++++ b/components/user_data_importer/utility/BUILD.gn	2026-03-17 12:35:09.304632524 +0100
+@@ -64,6 +64,7 @@
+ rust_static_library("zip_ffi_glue") {
+   allow_unsafe = true
+   crate_root = "parsing_ffi/lib.rs"
++  edition = "2024"
+   sources = [
+     "parsing_ffi/history.rs",
+     "parsing_ffi/json.rs",
