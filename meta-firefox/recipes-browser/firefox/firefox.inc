@@ -52,6 +52,7 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0001-rust-don-t-abort-on-panic.patch \
            file://0001-add-musl-support.patch \
            file://0001-Add-option-to-disable-arm-hw-crypto-engine.patch \
+           file://fix-glibc-2.43-compilation.patch \
            file://freebl-ignore-unused-arguments-during-configure.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
