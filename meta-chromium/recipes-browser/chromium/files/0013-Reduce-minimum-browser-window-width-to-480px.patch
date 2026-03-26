@@ -23,12 +23,12 @@ diff --git a/chrome/browser/ui/views/frame/layout/browser_view_layout.h b/chrome
 index 493d444..99621d9 100644
 --- a/chrome/browser/ui/views/frame/layout/browser_view_layout.h
 +++ b/chrome/browser/ui/views/frame/layout/browser_view_layout.h
-@@ -95,7 +95,7 @@
+@@ -93,7 +93,7 @@
    // very small window, even on large monitors (which is why a minimum height is
    // not specified). This value is used for the main browser window only, not
    // for popups.
 -  static constexpr int kMainBrowserContentsMinimumWidth = 500;
 +  static constexpr int kMainBrowserContentsMinimumWidth = 480;
  
-   // The width of the vertical tab strip.
-   //
+   BrowserViewLayout(const BrowserViewLayout&) = delete;
+   BrowserViewLayout& operator=(const BrowserViewLayout&) = delete;
