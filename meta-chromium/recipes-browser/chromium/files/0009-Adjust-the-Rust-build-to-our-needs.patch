@@ -30,10 +30,10 @@ diff --git a/build/config/rust.gni b/build/config/rust.gni
 index bd18d13..e260576 100644
 --- a/build/config/rust.gni
 +++ b/build/config/rust.gni
-@@ -102,6 +102,11 @@
-   # * Fixing pre-existing violations of `clippy` lints (crbug.com/472355480)
-   # * Deciding on a policy (e.g. which trybots can/should cover `clippy`)
-   enable_rust_clippy = false
+@@ -121,6 +121,11 @@
+   # `fail_hard=False` when invoking `build_crubit.py` from
+   # `tools/rust/build_rust.py`).
+   enable_cpp_api_from_rust = false
 +
 +  # Override the vendor part of the Rust target triple (with a leading dash)
 +  # used for building target code (not host code). Leave empty to use the
@@ -42,7 +42,7 @@ index bd18d13..e260576 100644
  }
  
  declare_args() {
-@@ -193,12 +198,19 @@
+@@ -212,12 +217,19 @@
  # other toolchains.
  rust_abi_target = ""
  if (is_linux || is_chromeos) {
@@ -65,7 +65,7 @@ index bd18d13..e260576 100644
    } else if (current_cpu == "arm") {
      if (arm_float_abi == "hard") {
        float_suffix = "hf"
-@@ -206,31 +218,21 @@
+@@ -225,31 +237,21 @@
        float_suffix = ""
      }
      if (arm_arch == "armv7-a" || arm_arch == "armv7") {
@@ -124,7 +124,7 @@ diff --git a/build/rust/gni_impl/rustc_wrapper.py b/build/rust/gni_impl/rustc_wr
 index 8f2096d..de43d44 100755
 --- a/build/rust/gni_impl/rustc_wrapper.py
 +++ b/build/rust/gni_impl/rustc_wrapper.py
-@@ -250,6 +250,7 @@ def main():
+@@ -288,6 +288,7 @@ def main():
    rustc_args = remaining_args[:ldflags_separator]
    ldflags = remaining_args[ldflags_separator + 1:rustenv_separator]
    rustenv = remaining_args[rustenv_separator + 1:sources_separator]
