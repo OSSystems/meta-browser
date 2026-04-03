@@ -1,0 +1,55 @@
+From 3c8ac54e45cf6fc528fd2593c0bc986645e99332 Mon Sep 17 00:00:00 2001
+From: Alessandro Astone <alessandro.astone@canonical.com>
+Date: Tue, 24 Mar 2026 08:48:13 +0000
+Subject: [PATCH] Bug 2024326 - Mutex,ConditionVariable: Ensure alignment of
+ platformData r=jandem,glandium
+
+Declaring the variable as (void*)[] does not guarantee proper alignment to
+hold a pthread_mutex_t/pthread_cond_t.
+Since we're already including pthread.h, make the variable actually hold the
+wanted type. Here we keep using an array of size 1 to satisfy existing
+expectations that the name platformData_ is an array.
+
+Differential Revision: https://phabricator.services.mozilla.com/D288470
+
+meta-firefox comment: fixes crash on 32-bit systems when compiled against glibc 2.43.
+Upstream-Status: Backport [https://github.com/mozilla-firefox/firefox/commit/3c8ac54e45cf6fc528fd2593c0bc986645e99332]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+---
+ mozglue/misc/PlatformConditionVariable.h | 5 +----
+ mozglue/misc/PlatformMutex.h             | 5 +----
+ 2 files changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/mozglue/misc/PlatformConditionVariable.h b/mozglue/misc/PlatformConditionVariable.h
+index 255cfdcfc589b..dfcaa3a72920d 100644
+--- a/mozglue/misc/PlatformConditionVariable.h
++++ b/mozglue/misc/PlatformConditionVariable.h
+@@ -48,10 +48,7 @@ class ConditionVariableImpl {
+   PlatformData* platformData();
+ 
+ #if !defined(XP_WIN) && !defined(__wasi__)
+-  void* platformData_[sizeof(pthread_cond_t) / sizeof(void*)];
+-  static_assert(sizeof(pthread_cond_t) / sizeof(void*) != 0 &&
+-                    sizeof(pthread_cond_t) % sizeof(void*) == 0,
+-                "pthread_cond_t must have pointer alignment");
++  pthread_cond_t platformData_[1];
+ #else
+   void* platformData_[4];
+ #endif
+diff --git a/mozglue/misc/PlatformMutex.h b/mozglue/misc/PlatformMutex.h
+index 98996e093029d..ba5940369006d 100644
+--- a/mozglue/misc/PlatformMutex.h
++++ b/mozglue/misc/PlatformMutex.h
+@@ -44,10 +44,7 @@ class MutexImpl {
+   PlatformData* platformData();
+ 
+ #if !defined(XP_WIN) && !defined(__wasi__)
+-  void* platformData_[sizeof(pthread_mutex_t) / sizeof(void*)];
+-  static_assert(sizeof(pthread_mutex_t) / sizeof(void*) != 0 &&
+-                    sizeof(pthread_mutex_t) % sizeof(void*) == 0,
+-                "pthread_mutex_t must have pointer alignment");
++  pthread_mutex_t platformData_[1];
+ #else
+   void* platformData_[6];
+ #endif
