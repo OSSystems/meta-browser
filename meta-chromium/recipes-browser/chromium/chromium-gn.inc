@@ -493,8 +493,10 @@ do_copy_clang_library () {
     if [ "${TARGET_ARCH}" != "${BUILD_ARCH}" ]; then
         export CHROMIUM_BUILD_TRIPLET="$(echo ${RUST_BUILD_SYS} | sed 's:-oe-:-unknown-:')"
         cd "${STAGING_LIBDIR_NATIVE}/clang"
-        rm -rf "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
-        cp -ar latest/lib/linux "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+        if [ -d "latest/lib/linux" ]; then
+            rm -rf "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+            cp -ar latest/lib/linux "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
+        fi
         cd "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
 
         for file in *-"${BUILD_ARCH}".a *-"${BUILD_ARCH}hf".a; do
