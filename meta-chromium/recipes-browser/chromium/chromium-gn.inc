@@ -35,7 +35,6 @@ SRC_URI += "\
     file://fix-SYS_SECCOMP-redefinition.patch \
     file://use-adler2.patch \
     file://chromium-145-zip_ffi_glue-use-edition2024.patch \
-    file://chromium146_backport-Remove-now-obsolete-invalid-patch-on-bytemuck-v1.patch \
 "
 
 # ARM/AArch64-specific patches.
