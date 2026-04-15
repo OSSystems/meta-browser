@@ -22,7 +22,7 @@ diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index 59942a3..cf5e62e 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1306,25 +1306,6 @@
+@@ -1338,25 +1338,6 @@
          "-mfpmath=sse",
          "-msse3",
        ]
@@ -41,14 +41,14 @@ index 59942a3..cf5e62e 100644
 -        ldflags += [ "--target=aarch64-linux-gnu" ]
 -      }
 -      if (target_os == "chromeos" && cros_target_cpu_arch != "" &&
--          current_cpu == target_cpu) {
+-          is_a_target_toolchain) {
 -        cflags += [ "-march=$cros_target_cpu_arch" ]
 -        ldflags += [ "-march=$cros_target_cpu_arch" ]
 -      }
      } else if (current_cpu == "mipsel") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1332,9 +1313,6 @@
+@@ -1364,9 +1345,6 @@
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -58,7 +58,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1414,8 +1392,6 @@
+@@ -1446,8 +1424,6 @@
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -67,7 +67,7 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1464,8 +1440,6 @@
+@@ -1496,8 +1472,6 @@
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
            } else {
@@ -76,7 +76,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [
-@@ -1523,8 +1497,6 @@
+@@ -1555,8 +1529,6 @@
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -85,7 +85,7 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [
              "-EB",
-@@ -1695,23 +1667,6 @@
+@@ -1727,23 +1699,6 @@
      }
    }
  
@@ -109,7 +109,7 @@ index 59942a3..cf5e62e 100644
    if (use_clang_modules) {
      cflags += [
        # This removes absolute paths from .pcm files.
-@@ -1849,12 +1804,6 @@
+@@ -1881,12 +1836,6 @@
        "-fsanitize=array-bounds",
        "-fsanitize-trap=array-bounds",
  
