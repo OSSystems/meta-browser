@@ -7,7 +7,7 @@
 WHINLATTER_S = "${UNPACKDIR}/${BB_GIT_DEFAULT_DESTSUFFIX}"
 NON_WHINLATTER_S = "${WORKDIR}/git"
 
-CORRECT_S = '${@bb.utils.contains_any("LAYERSERIES_CORENAMES", "whinlatter", d.getVar("WHINLATTER_S"), d.getVar("NON_WHINLATTER_S"), d)}'
+CORRECT_S = '${@bb.utils.contains_any("LAYERSERIES_CORENAMES", "whinlatter wrynose", d.getVar("WHINLATTER_S"), d.getVar("NON_WHINLATTER_S"), d)}'
 
 S:pn-cbindgen = "${CORRECT_S}"
 S:pn-cbindgen-native = "${CORRECT_S}"
