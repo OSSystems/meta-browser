@@ -470,7 +470,7 @@ do_copy_clang_library () {
 
     lib_file=$(find $(find . -maxdepth 1 \! \( -name latest -o -name '.' \)) \( -name "libclang_rt.builtins-*" -o -name "liborc_rt-*" \))
     echo "lib_file = $lib_file"
-    export CHROMIUM_TARGET_TRIPLET="$(echo ${RUST_TARGET_SYS} | sed 's:-oe-:-unknown-:')"
+    export CHROMIUM_TARGET_TRIPLET="$(echo ${RUST_TARGET_SYS} | sed 's:${TARGET_VENDOR}-:-unknown-:')"
 
     mkdir -p "latest/lib/${CHROMIUM_TARGET_TRIPLET}"
     echo "Executing cp $lib_file latest/lib/${CHROMIUM_TARGET_TRIPLET}/"
@@ -490,7 +490,7 @@ do_copy_clang_library () {
     cp -r * "$native_arch_path"
 
     if [ "${TARGET_ARCH}" != "${BUILD_ARCH}" ]; then
-        export CHROMIUM_BUILD_TRIPLET="$(echo ${RUST_BUILD_SYS} | sed 's:-oe-:-unknown-:')"
+        export CHROMIUM_BUILD_TRIPLET="$(echo ${RUST_BUILD_SYS} | sed 's:${HOST_VENDOR}-:-unknown-:')"
         cd "${STAGING_LIBDIR_NATIVE}/clang"
         if [ -d "latest/lib/linux" ]; then
             rm -rf "latest/lib/${CHROMIUM_BUILD_TRIPLET}"
