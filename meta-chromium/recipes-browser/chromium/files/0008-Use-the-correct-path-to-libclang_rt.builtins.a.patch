@@ -1,0 +1,63 @@
+From 5a94e8db6767c1f0e6bb481a702170cb459f05c5 Mon Sep 17 00:00:00 2001
+Message-ID: <5a94e8db6767c1f0e6bb481a702170cb459f05c5.1776290094.git.calvin@wbinvd.org>
+From: Max Ihlenfeldt <max@igalia.com>
+Date: Tue, 19 Dec 2023 12:14:05 +0000
+Subject: [PATCH] Use the correct path to libclang_rt.builtins.a
+
+Chromium needs to link against libclang_rt.builtins.a, but it expects
+it in a slightly different directory than where it actually is in our
+sysroot. Thus, we need adjust the where Chromium looks for the library.
+
+Note that the directory used by this patch is actually independent of
+the target architecture. This has the added benefit that we can just
+copy the target's libclang_rt.builtins.a to the host's sysroot (to the
+same directory where the host's library is). This is necessary because
+Chromium needs to link against this library for both host and target
+code, but only allows us to specify a single `clang_base_path`.
+
+Upstream-Status: Inappropriate [specific to our sysroot setup]
+Signed-off-by: Max Ihlenfeldt <max@igalia.com>
+Signed-off-by: Calvin Owens <calvin@wbinvd.org>
+---
+ build/config/clang/BUILD.gn | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/build/config/clang/BUILD.gn b/build/config/clang/BUILD.gn
+index e05032c0c66f1..6d35b7e1d8412 100644
+--- a/build/config/clang/BUILD.gn
++++ b/build/config/clang/BUILD.gn
+@@ -185,22 +185,23 @@ template("clang_lib") {
+       } else if (is_apple) {
+         _dir = "darwin"
+       } else if (is_linux || is_chromeos) {
++        _dir = "linux"
+         if (current_cpu == "x64") {
+-          _dir = "x86_64-unknown-linux-gnu"
++          _suffix = "-x86_64"
+         } else if (current_cpu == "x86") {
+-          _dir = "i386-unknown-linux-gnu"
++          _suffix = "-i386"
+         } else if (current_cpu == "arm") {
+-          _dir = "armv7-unknown-linux-gnueabihf"
++          _suffix = "-armhf"
+         } else if (current_cpu == "arm64") {
+-          _dir = "aarch64-unknown-linux-gnu"
++          _suffix = "-aarch64"
+         } else if (current_cpu == "loong64") {
+-          _dir = "loongarch64-unknown-linux-gnu"
++          _suffix = "-loong64"
+         } else if (current_cpu == "riscv64") {
+-          _dir = "riscv64-unknown-linux-gnu"
++          _suffix = "-riscv64"
+         } else if (current_cpu == "ppc64") {
+-          _dir = "ppc64le-unknown-linux-gnu"
++          _suffix = "-ppc64le"
+         } else if (current_cpu == "s390x") {
+-          _dir = "s390x-unknown-linux-gnu"
++          _suffix = "-s390x"
+         } else {
+           assert(false)  # Unhandled cpu type
+         }
+-- 
+2.52.0
+

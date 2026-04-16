@@ -25,6 +25,7 @@ SRC_URI += "\
     file://0004-Delete-compiler-options-not-available-in-release-ver.patch \
     file://0005-avoid-link-latomic-failure-on-CentOS-8-host.patch \
     file://0007-Fix-constexpr-variable-must-be-initialized-by-a-cons.patch \
+    file://0008-Use-the-correct-path-to-libclang_rt.builtins.a.patch \
     file://0009-Adjust-the-Rust-build-to-our-needs.patch \
     file://0010-Don-t-require-profiler_builtins.rlib.patch \
     file://0011-fix-check_version-Only-compare-node.js-major-version.patch \
