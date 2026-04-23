@@ -17,12 +17,12 @@ diff --git a/chrome/installer/linux/common/wrapper b/chrome/installer/linux/comm
 index aaa46bf..7d8c8dd 100755
 --- a/chrome/installer/linux/common/wrapper
 +++ b/chrome/installer/linux/common/wrapper
-@@ -36,5 +36,7 @@ exec < /dev/null
+@@ -36,5 +36,7 @@
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
-
+ 
 +CHROME_EXTRA_ARGS=""
 +
  # Note: exec -a below is a bashism.
--exec -a "$0" "$HERE/@@PROGNAME@@" "$@"
+-exec -a "$0" "$HERE/@@PROGNAME" "$@"
 +exec -a "$0" "$HERE/@@PROGNAME@@" ${CHROME_EXTRA_ARGS} "$@"
