@@ -9,19 +9,19 @@ Upstream-Status: Pending
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 
 ---
- third_party/fontconfig/include/config.h | 2 +-
+ third_party/fontconfig/include/meson-config.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/third_party/fontconfig/include/config.h b/third_party/fontconfig/include/config.h
+diff --git a/third_party/fontconfig/include/meson-config.h b/third_party/fontconfig/include/meson-config.h
 index 9087ca0c15..3e4c56a519 100644
---- a/third_party/fontconfig/include/config.h
-+++ b/third_party/fontconfig/include/config.h
-@@ -157,7 +157,7 @@
+--- a/third_party/fontconfig/include/meson-config.h
++++ b/third_party/fontconfig/include/meson-config.h
+@@ -98,7 +98,7 @@
+ 
  #define HAVE_RANDOM 1
  
- /* Define to 1 if you have the `random_r' function. */
 -#define HAVE_RANDOM_R 1
 +/* #undef HAVE_RANDOM_R */
  
- /* Define to 1 if you have the `rand_r' function. */
  #define HAVE_RAND_R 1
+ 
