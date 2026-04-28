@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Copilot <223556219+Copilot@users.noreply.github.com>
+Date: Wed, 23 Apr 2026 13:30:00 +0100
+Subject: [PATCH] devtools: Replace import.meta.main with Node.js 22 compatible
+ check
+
+import.meta.main requires Node.js >= 24.2.0 but scarthgap ships
+Node.js 22.11.0. Use a URL comparison of import.meta.url against
+process.argv[1] as a fallback, which works on all Node.js ESM versions.
+
+Upstream-Status: Inappropriate [OE-specific workaround]
+
+Signed-off-by: Copilot <223556219+Copilot@users.noreply.github.com>
+---
+ .../src/scripts/build/generate_css_js_files.js | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/devtools-frontend/src/scripts/build/generate_css_js_files.js b/third_party/devtools-frontend/src/scripts/build/generate_css_js_files.js
+--- a/third_party/devtools-frontend/src/scripts/build/generate_css_js_files.js
++++ b/third_party/devtools-frontend/src/scripts/build/generate_css_js_files.js
+@@ -4,6 +4,7 @@
+ import cssnano from 'cssnano';
+ import cssnanoPresetLite from 'cssnano-preset-lite';
+ import * as fs from 'node:fs';
++import * as url from 'node:url';
+ import * as path from 'node:path';
+ import postcss from 'postcss';
+ 
+@@ -80,6 +81,7 @@ async function runMain() {
+   );
+ }
+ 
+-if (import.meta.main) {
++const isMain = import.meta.main ?? (url.fileURLToPath(import.meta.url) === fs.realpathSync(process.argv[1]));
++if (isMain) {
+   runMain();
+ }

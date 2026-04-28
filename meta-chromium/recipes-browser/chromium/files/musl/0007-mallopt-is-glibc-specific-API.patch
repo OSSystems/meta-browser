@@ -14,8 +14,8 @@ diff --git a/base/allocator/allocator_check.cc b/base/allocator/allocator_check.
 index 0ac9fa1975..b6338c8285 100644
 --- a/base/allocator/allocator_check.cc
 +++ b/base/allocator/allocator_check.cc
-@@ -11,7 +11,7 @@
- #include "base/allocator/partition_allocator/shim/winheap_stubs_win.h"
+@@ -16,7 +16,7 @@
+ #include "partition_alloc/shim/winheap_stubs_win.h"
  #endif
  
 -#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

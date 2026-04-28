@@ -1,0 +1,24 @@
+From: OE Build <oe@build>
+Subject: [PATCH] Fix Clang 20 crash on defaulted out-of-class friend operator==
+
+Clang 20 crashes (ICE in SetDeclDefaulted) when an out-of-class friend
+operator== with a DLL-export attribute uses = default. Provide an
+explicit implementation instead. Chromium 147 targets Clang 23 which
+doesn't have this bug.
+
+Upstream-Status: Inappropriate [scarthgap backport compatibility]
+Signed-off-by: OE Build <oe@build>
+
+--- a/services/network/public/cpp/permissions_policy/origin_with_possible_wildcards.cc
++++ b/services/network/public/cpp/permissions_policy/origin_with_possible_wildcards.cc
+@@ -94,7 +94,9 @@
+ }
+ 
+ bool operator==(const OriginWithPossibleWildcards& lhs,
+-                const OriginWithPossibleWildcards& rhs) = default;
++                const OriginWithPossibleWildcards& rhs) {
++  return lhs.csp_source == rhs.csp_source;
++}
+ 
+ std::strong_ordering operator<=>(const OriginWithPossibleWildcards& lhs,
+                                  const OriginWithPossibleWildcards& rhs) {

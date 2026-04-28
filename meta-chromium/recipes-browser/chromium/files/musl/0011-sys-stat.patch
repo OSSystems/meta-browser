@@ -25,11 +25,11 @@ diff --git a/base/files/file.h b/base/files/file.h
 index c252375ecd..625c137d2d 100644
 --- a/base/files/file.h
 +++ b/base/files/file.h
-@@ -8,6 +8,7 @@
- #include <stdint.h>
+@@ -10,6 +10,7 @@
  
+ #include <optional>
  #include <string>
 +#include <sys/stat.h>
  
  #include "base/base_export.h"
- #include "base/containers/span.h"
+ #include "base/compiler_specific.h"
