@@ -13,15 +13,16 @@ diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
 index 86bfe71247..b9674823de 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
-@@ -3094,7 +3094,11 @@
- 
+@@ -3088,8 +3088,11 @@
  // All the Geolocation preferences are here.
  //
+ #ifndef ANDROID
 +#ifdef GOOGLE_LOCATION_SERVICE_API_KEY
- pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%&solution_channel=%OS%");
+   pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%&solution_channel=%OS%");
+-
 +#else
-+pref("geo.provider.network.url", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%&solution_channel=%OS%");
++  pref("geo.provider.network.url", "https://location.services.mozilla.com/v1/geolocate?key=%MOZILLA_API_KEY%&solution_channel=%OS%");
 +#endif
- 
- // Timeout to wait before sending the location request.
- pref("geo.provider.network.timeToWaitBeforeSending", 5000);
+   // Timeout to wait before sending the location request.
+   pref("geo.provider.network.timeToWaitBeforeSending", 5000);
+   // Timeout for outbound network geolocation provider.

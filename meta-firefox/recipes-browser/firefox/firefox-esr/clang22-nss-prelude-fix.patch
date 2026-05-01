@@ -1,0 +1,40 @@
+From 2426dd68cd12e0ac022bca18efb9c7d0acd27e12 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Emilio=20Cobos=20=C3=81lvarez?= <emilio@crisal.io>
+Date: Wed, 27 Aug 2025 15:57:15 +0200
+Subject: [PATCH] clang: Push the fix for #3277 into Type::declaration.
+
+Fixes #3264.
+
+
+Fixes Firefox compilation error:
+
+ 0:08.37 error[E0432]: unresolved import `nss_prelude::SECItemType`
+ 0:08.37   --> /usr/src/debug/firefox/140.10.0esr/sources/firefox-140.10.0/third_party/rust/nss-gk-api/src/lib.rs:52:46
+
+The upstream patch contains tests also, which are not included in this
+backport. Also, the upstream patch reverts some extra changes which were
+added to the codebase after the version vendored by Firefox. That change is
+also omitted.
+
+Upstream-Status: Backport [https://github.com/rust-lang/rust-bindgen/commit/2426dd68cd12e0ac022bca18efb9c7d0acd27e12]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+---
+--- a/third_party/rust/bindgen/clang.rs
++++ b/third_party/rust/bindgen/clang.rs
+@@ -1210,11 +1210,11 @@ impl Type {
+ 
+     /// Get a cursor pointing to this type's declaration.
+     pub(crate) fn declaration(&self) -> Cursor {
+-        unsafe {
+-            Cursor {
+-                x: clang_getTypeDeclaration(self.x),
+-            }
+-        }
++        let decl = Cursor {
++            x: unsafe { clang_getTypeDeclaration(self.x) },
++        };
++        // Prior to clang 22, the declaration pointed to the definition.
++        decl.definition().unwrap_or(decl)
+     }
+ 
+     /// Get the canonical declaration of this type, if it is available.

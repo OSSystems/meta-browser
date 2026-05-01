@@ -52,6 +52,9 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0001-rust-don-t-abort-on-panic.patch \
            file://0001-add-musl-support.patch \
            file://0001-Add-option-to-disable-arm-hw-crypto-engine.patch \
+           file://0001-Fix-conflicting-types-for-once_flag-and-call_once-wi.patch \
+           file://fix-glibc-2.43-compilation.patch \
+           file://fix-crash-with-glibc-2.43-on-23-bit-systems.patch \
            file://freebl-ignore-unused-arguments-during-configure.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
@@ -98,7 +101,7 @@ DISABLE_STATIC = ""
 PACKAGECONFIG ??= "${@bb.utils.contains("DISTRO_FEATURES", "alsa", "alsa", "", d)} \
                    ${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "", d)} \
                    ${@bb.utils.contains_any("TARGET_ARCH", "x86_64 arm aarch64", "webrtc", "", d)} \
-                   rust-simd disable-gecko-profiler \
+                   rust-simd \
 "
 
 PACKAGECONFIG[alsa] = "--enable-alsa,--disable-alsa,alsa-lib"
@@ -124,7 +127,6 @@ PACKAGECONFIG[system-png] = "--with-system-png,,libpng,libpng"
 PACKAGECONFIG[system-webp] = "--with-system-webp,,libwebp,libwebp"
 PACKAGECONFIG[x11-only] = "--enable-default-toolkit=cairo-gtk3-x11-only,,,,,wayland-only"
 PACKAGECONFIG[wayland-only] = "--enable-default-toolkit=cairo-gtk3-wayland-only,,virtual/egl,,,x11-only"
-PACKAGECONFIG[disable-gecko-profiler] = "--disable-gecko-profiler,,,"
 PACKAGECONFIG[system-av1] = "--with-system-av1,,aom dav1d"
 PACKAGECONFIG[system-pipewire] = "--with-system-pipewire,,pipewire,pipewire"
 PACKAGECONFIG[system-gbm] = "--with-system-gbm,,virtual/libgbm,libgbm"

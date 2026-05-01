@@ -1,0 +1,16 @@
+
+Fixes error with musl and risc-v:
+0:06.78 E [...]/firefox/150.0/firefox-150.0/js/src/jit/riscv64/Assembler-riscv64.cpp:66:15: error: use of undeclared identifier '__NR_riscv_hwprobe'
+
+Upstream-Status: Pending
+--- ./js/src/jit/riscv64/Assembler-riscv64.cpp.orig	2026-04-24 06:57:02.499974552 +0200
++++ ./js/src/jit/riscv64/Assembler-riscv64.cpp	2026-04-24 06:57:34.476547777 +0200
+@@ -61,7 +61,7 @@
+ void RVFlags::Init() {
+   MOZ_ASSERT(!sComputed);
+ #if defined(__linux__) && !defined(JS_SIMULATOR_RISCV64) && \
+-    __has_include(<asm/hwprobe.h>)
++    __has_include(<asm/hwprobe.h>) && defined(__NR_riscv_hwprobe)
+   riscv_hwprobe probe[1] = {{RISCV_HWPROBE_KEY_IMA_EXT_0, 0}};
+   if (syscall(__NR_riscv_hwprobe, probe, 1, 0, nullptr, 0) == 0) {
+     if (probe[0].value & RISCV_HWPROBE_EXT_ZBA) {
