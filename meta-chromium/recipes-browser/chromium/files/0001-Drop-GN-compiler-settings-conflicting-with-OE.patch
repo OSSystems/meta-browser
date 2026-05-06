@@ -22,34 +22,33 @@ diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index 59942a3..cf5e62e 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -1255,26 +1255,6 @@ config("compiler_cpu_abi") {
-           "-msse3",
-         ]
-       }
+@@ -1338,25 +1338,6 @@
+         "-mfpmath=sse",
+         "-msse3",
+       ]
 -    } else if (current_cpu == "arm") {
--      if (is_clang && !is_android && !is_nacl && !is_chromeos_device) {
+-      if (is_clang && !is_android && !is_chromeos_device) {
 -        cflags += [ "--target=arm-linux-gnueabihf" ]
 -        ldflags += [ "--target=arm-linux-gnueabihf" ]
 -      }
--      if (!is_nacl) {
--        cflags += [
--          "-march=$arm_arch",
--          "-mfloat-abi=$arm_float_abi",
--        ]
--      }
--      if (arm_tune != "") {
--        cflags += [ "-mtune=$arm_tune" ]
--      }
+-      cflags += [
+-        "-march=$arm_arch",
+-        "-mfloat-abi=$arm_float_abi",
+-      ]
 -    } else if (current_cpu == "arm64") {
--      if (is_clang && !is_android && !is_nacl && !is_fuchsia &&
--          !is_chromeos_device) {
+-      if (is_clang && !is_android && !is_fuchsia && !is_chromeos_device) {
 -        cflags += [ "--target=aarch64-linux-gnu" ]
 -        ldflags += [ "--target=aarch64-linux-gnu" ]
 -      }
-     } else if (current_cpu == "mipsel" && !is_nacl) {
+-      if (target_os == "chromeos" && cros_target_cpu_arch != "" &&
+-          is_a_target_toolchain) {
+-        cflags += [ "-march=$cros_target_cpu_arch" ]
+-        ldflags += [ "-march=$cros_target_cpu_arch" ]
+-      }
+     } else if (current_cpu == "mipsel") {
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
-@@ -1282,9 +1262,6 @@ config("compiler_cpu_abi") {
+@@ -1364,9 +1345,6 @@
            if (is_android) {
              cflags += [ "--target=mipsel-linux-android" ]
              ldflags += [ "--target=mipsel-linux-android" ]
@@ -59,7 +58,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [ "-EL" ]
-@@ -1364,8 +1341,6 @@ config("compiler_cpu_abi") {
+@@ -1446,8 +1424,6 @@
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -68,7 +67,7 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [ "-EB" ]
            ldflags += [ "-EB" ]
-@@ -1414,8 +1389,6 @@ config("compiler_cpu_abi") {
+@@ -1496,8 +1472,6 @@
              cflags += [ "--target=mips64el-linux-android" ]
              ldflags += [ "--target=mips64el-linux-android" ]
            } else {
@@ -77,7 +76,7 @@ index 59942a3..cf5e62e 100644
            }
          } else {
            cflags += [
-@@ -1473,8 +1446,6 @@ config("compiler_cpu_abi") {
+@@ -1555,8 +1529,6 @@
        ldflags += [ "-Wl,--hash-style=sysv" ]
        if (custom_toolchain == "") {
          if (is_clang) {
@@ -86,14 +85,14 @@ index 59942a3..cf5e62e 100644
          } else {
            cflags += [
              "-EB",
-@@ -1656,23 +1627,6 @@ config("compiler_deterministic") {
+@@ -1727,23 +1699,6 @@
      }
    }
-
+ 
 -  # Tells the compiler not to use absolute paths when passing the default
 -  # paths to the tools it invokes. We don't want this because we don't
 -  # really need it and it can mess up the RBE cache entries.
--  if (is_clang && (!is_nacl || is_nacl_saigo)) {
+-  if (is_clang) {
 -    cflags += [ "-no-canonical-prefixes" ]
 -
 -    # Same for links: Let the compiler driver invoke the linker
@@ -107,6 +106,19 @@ index 59942a3..cf5e62e 100644
 -    }
 -  }
 -
-   if (use_libcxx_modules) {
+   if (use_clang_modules) {
      cflags += [
        # This removes absolute paths from .pcm files.
+@@ -1881,12 +1836,6 @@
+       "-fsanitize=array-bounds",
+       "-fsanitize-trap=array-bounds",
+ 
+-      # Some code users feature detection to determine if UBSAN (or any
+-      # sanitizer) is enabled, they then do expensive debug like operations. We
+-      # want to suppress this behaviour since we want to keep performance costs
+-      # as low as possible while having these checks.
+-      "-fsanitize-ignore-for-ubsan-feature=array-bounds",
+-
+       # Because we've enabled array-bounds sanitizing we also want to suppress
+       # the related warning about "unsafe-buffer-usage-in-static-sized-array",
+       # since we know that the array bounds sanitizing will catch any out-of-

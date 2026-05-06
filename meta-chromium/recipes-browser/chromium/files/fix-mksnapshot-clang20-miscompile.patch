@@ -1,0 +1,35 @@
+From: Copilot <223556219+Copilot@users.noreply.github.com>
+Subject: [PATCH] v8: Fix RegisterAllocator crash under QEMU user-mode emulation
+
+When cross-compiling for aarch64 with Clang 20, V8's mksnapshot
+crashes under QEMU user-mode emulation with SIGTRAP in
+RegisterAllocator::Free(). The crash occurs because std::find
+fails to locate a register pointer in allocated_registers_,
+causing erase(end()) which is undefined behavior.
+
+This appears to be triggered by Clang 20's optimization of the
+std::vector find+erase pattern combined with QEMU's emulation.
+The issue does not occur with Clang 23 on native arm64 hardware.
+
+Make Free() defensive by checking the find result before erasing.
+This is a build-time-only code path (mksnapshot generates V8
+builtins during compilation) with no runtime performance impact.
+
+Upstream-Status: Inappropriate [scarthgap backport compatibility]
+Signed-off-by: Caner Altinbasak <cal@brightsign.biz>
+
+--- a/v8/src/builtins/arm64/builtins-arm64.cc
++++ b/v8/src/builtins/arm64/builtins-arm64.cc
+@@ -3578,8 +3578,10 @@
+     DCHECK_NE(*reg, no_reg);
+     available_.Combine(*reg);
+     *reg = no_reg;
+-    allocated_registers_.erase(
+-      find(allocated_registers_.begin(), allocated_registers_.end(), reg));
++    auto it = find(allocated_registers_.begin(), allocated_registers_.end(),
++                   reg);
++    if (it != allocated_registers_.end())
++      allocated_registers_.erase(it);
+   }
+ 
+   void Reserve(const Register& reg) {

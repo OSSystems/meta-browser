@@ -1,0 +1,36 @@
+From: Copilot <223556219+Copilot@users.noreply.github.com>
+Subject: [PATCH] Fix incomplete type error with XRRigidTransform destructor
+
+Clang 20's libc++ requires complete types for unique_ptr destruction.
+Move the defaulted destructor from the header to the .cc file where
+gfx::Transform is fully defined.
+
+Upstream-Status: Inappropriate [scarthgap backport compatibility]
+Signed-off-by: Caner Altinbasak <cal@brightsign.biz>
+---
+ .../renderer/modules/xr/xr_rigid_transform.cc   | 2 ++
+ .../renderer/modules/xr/xr_rigid_transform.h    | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+--- a/third_party/blink/renderer/modules/xr/xr_rigid_transform.h
++++ b/third_party/blink/renderer/modules/xr/xr_rigid_transform.h
+@@ -37,7 +37,7 @@
+   XRRigidTransform(const XRRigidTransform&) = delete;
+   XRRigidTransform& operator=(const XRRigidTransform&) = delete;
+ 
+-  ~XRRigidTransform() override = default;
++  ~XRRigidTransform() override;
+ 
+   DOMPointReadOnly* position() const { return position_.Get(); }
+   DOMPointReadOnly* orientation() const { return orientation_.Get(); }
+--- a/third_party/blink/renderer/modules/xr/xr_rigid_transform.cc
++++ b/third_party/blink/renderer/modules/xr/xr_rigid_transform.cc
+@@ -25,6 +25,8 @@
+ }
+ }  // anonymous namespace
+ 
++XRRigidTransform::~XRRigidTransform() = default;
++
+ // makes a deep copy of transformationMatrix
+ XRRigidTransform::XRRigidTransform(const gfx::Transform& transformationMatrix)
+     : matrix_(std::make_unique<gfx::Transform>(transformationMatrix)) {
