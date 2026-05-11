@@ -71,7 +71,7 @@ DEPENDS += " \
     expat \
     flac \
     glib-2.0 \
-    gn-native \
+    chromium-gn-native \
     gperf-native \
     gtk+3 \
     jpeg \
