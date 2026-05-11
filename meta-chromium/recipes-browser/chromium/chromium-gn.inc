@@ -33,8 +33,8 @@ SRC_URI += "\
     file://0001-Fix-building-gpu_host_impl.cc-on-Linux.patch \
     ${@ '' if rust_is_newer_than_190(d) else 'file://chromium-142-crabbyavif-rust18x.patch'} \
     file://fix-SYS_SECCOMP-redefinition.patch \
-    file://use-adler2.patch \
     file://chromium-145-zip_ffi_glue-use-edition2024.patch \
+    file://disable-sanitizer.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -128,11 +128,6 @@ PACKAGECONFIG[use-egl] = ",,virtual/egl virtual/libgles2"
 # be necessary but are OK to add).
 PACKAGECONFIG[component-build] = ""
 
-#  As of Chromium 138, libc++ is required unconditionally.
-# https://docs.google.com/document/d/193ig0qeM23rK1yH6bW14O3zIgVztyKaY4R1XRwgmUFk/edit?usp=sharing
-# Force use_custom_libcxx=true as Chromium 138+ requires libc++
-GN_ARGS += "use_custom_libcxx=true"
-
 PACKAGECONFIG[cups] = "use_cups=true,use_cups=false,cups"
 PACKAGECONFIG[gtk4] = ""
 PACKAGECONFIG[kiosk-mode] = ""
@@ -165,6 +160,12 @@ GN_ARGS = " \
         use_pulseaudio=${@bb.utils.contains('DISTRO_FEATURES', 'pulseaudio', 'true', 'false', d)} \
         use_system_libjpeg=true \
 "
+
+#  As of Chromium 138, libc++ is required unconditionally.
+# https://docs.google.com/document/d/193ig0qeM23rK1yH6bW14O3zIgVztyKaY4R1XRwgmUFk/edit?usp=sharing
+# Force use_custom_libcxx=true as Chromium 138+ requires libc++
+GN_ARGS += "use_custom_libcxx=true"
+
 # Not enabled by default, because the freetype version from oe-core
 # often isn't compatible, e.g. freetype-2.11 isn't compatible with
 # chromium-94

@@ -1,0 +1,58 @@
+Disable sanitizers
+
+v8/src/sandbox/testing.cc fails to build, due to the included header missing:
+
+| ../../v8/src/sandbox/testing.cc:43:10: fatal error: 'sanitizer/common_interface_defs.h' file not found
+|    43 | #include <sanitizer/common_interface_defs.h>
+|       |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+| 1 error generated.
+
+Better disable defining V8_USE_ANY_SANITIZER to make this
+file compile.
+
+Regardless if this is an internally generated header or a system-wide one,
+the whole sanitizer build is not necessary.
+
+Disable it at the core, remove defining the macros in v8/src/base/macros.h
+that surround the include statement in v8/src/sandbox/testing.cc
+
+Signed-off-by: Zoltán Böszörményi <zboszor@gmail.com>
+Upstream-Status: Inappropriate [oe specific]
+
+--- chromium-148.0.7778.167/v8/src/base/macros.h.old	2026-05-12 01:14:03.000000000 +0200
++++ chromium-148.0.7778.167/v8/src/base/macros.h	2026-05-16 06:40:45.342853796 +0200
+@@ -201,34 +201,6 @@
+   void operator delete(void*, size_t) { v8::base::OS::Abort(); } \
+   void operator delete[](void*, size_t) { v8::base::OS::Abort(); }
+ 
+-// Define V8_USE_ADDRESS_SANITIZER macro.
+-#if defined(__has_feature)
+-#if __has_feature(address_sanitizer)
+-#define V8_USE_ADDRESS_SANITIZER 1
+-#endif
+-#endif
+-
+-// Define V8_USE_HWADDRESS_SANITIZER macro.
+-#if defined(__has_feature)
+-#if __has_feature(hwaddress_sanitizer)
+-#define V8_USE_HWADDRESS_SANITIZER 1
+-#endif
+-#endif
+-
+-// Define V8_USE_MEMORY_SANITIZER macro.
+-#if defined(__has_feature)
+-#if __has_feature(memory_sanitizer)
+-#define V8_USE_MEMORY_SANITIZER 1
+-#endif
+-#endif
+-
+-// Define V8_USE_UNDEFINED_BEHAVIOR_SANITIZER macro.
+-#if defined(__has_feature)
+-#if __has_feature(undefined_behavior_sanitizer)
+-#define V8_USE_UNDEFINED_BEHAVIOR_SANITIZER 1
+-#endif
+-#endif
+-
+ // Define V8_USE_SAFE_STACK macro.
+ #if defined(__has_feature)
+ #if __has_feature(safe_stack)
