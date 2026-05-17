@@ -373,7 +373,7 @@ CHROMIUM_EXTRA_ARGS ?= " \
         ${@bb.utils.contains('PACKAGECONFIG', 'use-egl', '--use-angle=gles-egl', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'kiosk-mode', '--kiosk --no-first-run --incognito', '', d)} \
         ${@bb.utils.contains('PACKAGECONFIG', 'gtk4', '--gtk-version=4', '', d)} \
-        ${@bb.utils.contains('PACKAGECONFIG', 'use-v4l2', '--ozone-platform-hint=wayland --enable-features=AcceleratedVideoDecoder,AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL', '', d)} \
+        ${@bb.utils.contains('PACKAGECONFIG', 'use-v4l2', '--ozone-platform-hint=wayland --enable-features=AcceleratedVideoDecoder', '', d)} \
 "
 
 # V8's JIT infrastructure requires binaries such as mksnapshot and
