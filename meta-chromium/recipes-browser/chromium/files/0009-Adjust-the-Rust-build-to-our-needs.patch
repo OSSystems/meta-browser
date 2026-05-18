@@ -108,7 +108,7 @@ diff --git a/build/rust/filter_clang_args.py b/build/rust/filter_clang_args.py
 index 5a1843c..7fb4b49 100644
 --- a/build/rust/gni_impl/filter_clang_args.py
 +++ b/build/rust/gni_impl/filter_clang_args.py
-@@ -25,6 +25,11 @@ def filter_clang_args(clangargs):
+@@ -25,6 +25,11 @@
            pass
          elif args[i].startswith('-plugin-arg'):
            i += 2
@@ -117,9 +117,9 @@ index 5a1843c..7fb4b49 100644
 +        pass  # Skip this argument
 +      elif args[i].startswith('-mfpu='):
 +        pass
+       elif args[i] == '-ftime-trace':
+         pass
        else:
-         yield args[i]
-       i += 1
 diff --git a/build/rust/gni_impl/rustc_wrapper.py b/build/rust/gni_impl/rustc_wrapper.py
 index 8f2096d..de43d44 100755
 --- a/build/rust/gni_impl/rustc_wrapper.py
