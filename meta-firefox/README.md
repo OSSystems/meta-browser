@@ -5,12 +5,8 @@
 
 | x | aarch64 | arm | riscv64 | x86-64 |
 | ---- | ---- | ---- | ---- | ---- |
-| Kirkstone - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/140.10.2esr/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/140.10.2esr/test) |
-| Kirkstone - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/glibc/150.0.3/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/glibc/150.0.3/test) |
 | Scarthgap - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/140.10.2esr/test) |
 | Scarthgap - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/glibc/150.0.3/test) |
-| Whinlatter - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/glibc/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/glibc/140.10.2esr/test) |
-| Whinlatter - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/glibc/150.0.3/test) |
 | Master - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/master/aarch64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/aarch64/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/master/arm/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/arm/glibc/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/master/riscv/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/riscv/glibc/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/master/x86-64/glibc/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/x86-64/glibc/140.10.2esr/test) |
 | Master - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/master/aarch64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/aarch64/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/arm/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/arm/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/riscv/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/riscv/glibc/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/x86-64/glibc/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/x86-64/glibc/150.0.3/test) |
 
@@ -19,12 +15,8 @@
 
 | x | aarch64 | arm | riscv64 | x86-64 |
 | ---- | ---- | ---- | ---- | ---- |
-| Kirkstone - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/140.10.2esr/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/140.10.2esr/test) |
-| Kirkstone - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/aarch64/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/arm/musl/150.0.3/test) | N/A | ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/kirkstone/x86-64/musl/150.0.3/test) |
 | Scarthgap - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/140.10.2esr/test) |
 | Scarthgap - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/aarch64/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/arm/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/riscv/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/scarthgap/x86-64/musl/150.0.3/test) |
-| Whinlatter - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/musl/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/musl/140.10.2esr/test) |
-| Whinlatter - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/aarch64/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/arm/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/riscv/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/whinlatter/x86-64/musl/150.0.3/test) |
 | Master - 140.10.2esr | ![](https://sarvari.me/meta-browser/badges/master/aarch64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/aarch64/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/master/arm/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/arm/musl/140.10.2esr/test) |![](https://sarvari.me/meta-browser/badges/master/riscv/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/riscv/musl/140.10.2esr/test) | ![](https://sarvari.me/meta-browser/badges/master/x86-64/musl/140.10.2esr/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/x86-64/musl/140.10.2esr/test) |
 | Master - 150.0.3 | ![](https://sarvari.me/meta-browser/badges/master/aarch64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/aarch64/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/arm/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/arm/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/riscv/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/riscv/musl/150.0.3/test) | ![](https://sarvari.me/meta-browser/badges/master/x86-64/musl/150.0.3/build) <br/> ![](https://sarvari.me/meta-browser/badges/master/x86-64/musl/150.0.3/test) |
 
@@ -40,13 +32,13 @@ and/or Yocto.
 This layer depends on oe-core, meta-oe and meta-clang (only pre-Whinlatter). This layer supports 
 multiple Yocto releases, the branches should match each other.
 
-Starting version 144 Firefox requires at least Clang 17 to compile. (For Kirkstone current testing is
-performed using Clang 14 for the ESR version and Clang 18 for the latest version).
+Each compatible Yocto versions are supported by the master branch of this layer.
 
-Additionally, the Rust version shipped with Kirkstone and Scarthgap oe-core is out of date, 
-which can be remediated by other third-party layers: for Kirkstone and Scarthgap version the 
-corresponding branch of meta-lts-mixins is required for up to date Rust compiler. Additionally, 
-for Kirkstone, meta-rust layer can be used also to get an up-to-date Rust compiler.
+Starting version 144 Firefox requires at least Clang 17 to compile. 
+
+Additionally, the Rust version shipped with Scarthgap oe-core is out of date, 
+which can be remediated by other third-party layers: for Scarthgap version the 
+corresponding branch of meta-lts-mixins is required for up to date Rust compiler. 
 
 For the tested revision/release combinations, see meta-firefox-test repository, especially
 the kas folder - that contains all the branch/revision information used for testing.
@@ -56,33 +48,16 @@ install it, in case it is missing  (e.g. on Debian based systems install `libstd
 on Fedora install `libstdc++-devel`)
 
 By default `disable-sandboxed-libraries` PACKAGECONFIG is *disabled*. Which means that wasi-sdk
-is a build dependency. Starting Firefox 145, wasi-sdk requires at least Clang 18 to be built:
-make sure to use kirkstone-clang18 branch of meta-clang. Without wasi-sdk (when `disable-sanboxed-libraries`
-PACKAGECONFIG is enabled), Firefox should still build with Clang 14. With ther branches
-this restriction is meaningless, since they all use at least Clang 18.
+is a build dependency. Starting Firefox 145, wasi-sdk requires at least Clang 18 to be built.
 
 Firefox requires at least Rust 1.82 from version 137. 
-
-When using meta-rust, make sure to add the following to a bbappend or local.conf:
-
-```
-# when using a bbappend
-RUST_HOST = "${BUILD_SYS}"
-RUST_TARGET = "${TARGET_SYS}"
-
-# when using local.conf
-RUST_HOST:pn-firefox = "${BUILD_SYS}"
-RUST_TARGET:pn-firefox = "${TARGET_SYS}"
-```
 
 Due to this, the selection of Rust provider needs some caution.
 Testing is performed using the following combinations (the "latest" version should also be able to compile "ESR"):
 
 | Yocto version | Rust version ESR | Rust version latest |
 | ---------------- | ----- | ---- |
-| Kirkstone | Rust 1.92.0 from meta-lts-mixins (kirkstone/rust branch) | Rust 1.92.0 from meta-lts-mixins (kirkstone/rust branch) |
 | Scarthgap | Rust 1.92.0 from meta-lts-mixins (scarthgap/rust branch) | Rust 1.92.0 from meta-lts-mixins (scarthgap/rust branch) |
-| Whinlatter | Rust 1.90.0 from oe-core | Rust 1.90.0 from oe-core |
 | Master | Rust 1.94.0 from oe-core | Rust 1.94.0 from oe-core |
 
 Contributing

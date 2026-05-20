@@ -27,13 +27,10 @@ jobs:
     if: ${{ github.repository_owner == 'OSSystems' }}
     strategy:
       matrix:
-        yocto_version: [kirkstone, scarthgap, whinlatter, master]
+        yocto_version: [scarthgap, wrynose, master]
         ff_version: [esr, latest]
         libc_flavour: [glibc, musl]
         arch: [arm, aarch64, riscv, x86-64]
-        exclude:
-          - yocto_version: kirkstone
-            arch: riscv
     runs-on: [self-hosted, firefox]
     container:
       image: skandigraun/yocto:latest
@@ -62,13 +59,10 @@ jobs:
     needs: build
     strategy:
       matrix:
-        yocto_version: [kirkstone, scarthgap, whinlatter, master]
+        yocto_version: [scarthgap, wrynose, master]
         ff_version: [esr, latest]
         libc_flavour: [glibc, musl]
         arch: [arm, aarch64, riscv, x86-64]
-        exclude:
-          - yocto_version: kirkstone
-            arch: riscv
     steps:
       - run: |
          cd /yocto/${{ matrix.yocto_version }}
