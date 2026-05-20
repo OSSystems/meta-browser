@@ -54,13 +54,11 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0001-Add-option-to-disable-arm-hw-crypto-engine.patch \
            file://0001-Fix-conflicting-types-for-once_flag-and-call_once-wi.patch \
            file://fix-glibc-2.43-compilation.patch \
-           file://fix-crash-with-glibc-2.43-on-23-bit-systems.patch \
            file://freebl-ignore-unused-arguments-during-configure.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
            file://debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch \
            file://debian-hacks/Don-t-build-image-gtests.patch \
-           file://debian-hacks/Fix-math_private.h-for-i386-FTBFS.patch \
            file://debian-hacks/Remove-workaround-for-old-libstdc-problem-which-now-.patch \
            file://debian-hacks/Use-build-id-as-langpack-version-for-reproducibility.patch \
            file://debian-hacks/Use-the-Mozilla-Location-Service-key-when-the-Google.patch \
