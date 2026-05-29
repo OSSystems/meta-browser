@@ -54,7 +54,6 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://0001-Add-option-to-disable-arm-hw-crypto-engine.patch \
            file://0001-Fix-conflicting-types-for-once_flag-and-call_once-wi.patch \
            file://fix-glibc-2.43-compilation.patch \
-           file://freebl-ignore-unused-arguments-during-configure.patch \
            file://debian-hacks/Add-another-preferences-directory-for-applications-p.patch \
            file://debian-hacks/Avoid-using-vmrs-vmsr-on-armel.patch \
            file://debian-hacks/Avoid-wrong-sessionstore-data-to-keep-windows-out-of.patch \
@@ -72,6 +71,10 @@ SRC_URI += "https://ftp.mozilla.org/pub/firefox/releases/${PV}/source/firefox-${
            file://prefs/Don-t-auto-disable-extensions-in-system-directories.patch \
            file://prefs/Set-DPI-to-system-settings.patch \
            "
+
+SRC_URI:append:toolchain-gcc = " file://fix-gcc-compilation.patch"
+SRC_URI:append:toolchain-clang = " file://freebl-ignore-unused-arguments-during-configure.patch"
+SRC_URI:append:riscv64:toolchain-gcc = " file://msgpack-enforce-endian-functionality.patch"
 
 SRCREV_FORMAT = "default"
 
@@ -91,8 +94,6 @@ SRC_URI += "${@bb.utils.contains('PACKAGECONFIG', 'forbid-multiple-compositors',
            'file://prefs/single-compositor.js \
             file://fixes/0001-Enable-to-suppress-multiple-compositors.patch \
            ', '', d)}"
-
-TOOLCHAIN:pn-firefox = "clang"
 
 DISABLE_STATIC = ""
 

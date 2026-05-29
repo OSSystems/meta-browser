@@ -1,0 +1,21 @@
+By default, OE sets "-Wformat-security" in the CFLAGS variable.
+One particular module in the Firefox tree is trying to disable all
+such warnings, however it doesn't disable the -Wformat-security
+flag in particular, and due to this, compilation fails with the
+following error:
+
+cc1plus: error: '-Wformat-security' ignored without '-Wformat' [-Werror=format-security]
+
+Add this missing warning removal to the list of ignored warnings.
+
+Upstream-Status: Inappropriate [oe-specific]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+--- ./js/src/xsum/moz.build.orig	2026-05-29 10:18:14.888226193 +0200
++++ ./js/src/xsum/moz.build	2026-05-29 10:18:29.490810894 +0200
+@@ -17,4 +17,4 @@
+ ]
+ 
+ # Suppress warnings in third-party code.
+-SOURCES['xsum.cpp'].flags += ['-Wno-implicit-fallthrough', '-Wno-format', '-Wno-unused-value']
++SOURCES['xsum.cpp'].flags += ['-Wno-implicit-fallthrough', '-Wno-format', '-Wno-unused-value', '-Wno-format-security']
