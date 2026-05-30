@@ -36,6 +36,8 @@ export WASM_CXX = "${WASI_SYSROOT}/bin/clang++ -target wasm32-wasip1 "
 
 export BUILD_VERBOSE_LOG = "1"
 
+export MOZ_MAKE_FLAGS = "${PARALLEL_MAKE}"
+
 RUST_HOST ?= "${RUST_BUILD_SYS}"
 RUST_TARGET ?= "${RUST_HOST_SYS}"
 
