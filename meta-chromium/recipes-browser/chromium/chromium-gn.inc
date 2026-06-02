@@ -35,6 +35,7 @@ SRC_URI += "\
     file://fix-SYS_SECCOMP-redefinition.patch \
     file://chromium-145-zip_ffi_glue-use-edition2024.patch \
     file://disable-sanitizer.patch \
+    file://chromium148-bytemuck-v1-remove-simd-LaneCount-usage.patch \
 "
 
 # ARM/AArch64-specific patches.

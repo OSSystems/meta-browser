@@ -1,0 +1,32 @@
+Original patch taken from
+http://www.slackware.com/~alien/slackbuilds/chromium/build/patches/chromium146_backport-Remove-now-obsolete-invalid-patch-on-bytemuck-v1.patch
+
+The bytemuck-v1 changes need to be reverse-applied for
+Chromium 148 and Rust 1.95.0 as in Yocto master (future 6.1)
+
+Upstream-Status: Inappropriate [rust version specific]
+
+diff --git a/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/pod.rs b/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/pod.rs
+index b039792..330f722 100644
+--- a/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/pod.rs
++++ b/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/pod.rs
+@@ -152,7 +152,6 @@
+ unsafe impl<T, const N: usize> Pod for core::simd::Simd<T, N>
+ where
+   T: core::simd::SimdElement + Pod,
+-  core::simd::LaneCount<N>: core::simd::SupportedLaneCount,
+ {
+ }
+ 
+diff --git a/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/zeroable.rs b/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/zeroable.rs
+index 397ddde..186c567 100644
+--- a/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/zeroable.rs
++++ b/third_party/rust/chromium_crates_io/vendor/bytemuck-v1/src/zeroable.rs
+@@ -231,7 +231,6 @@
+ unsafe impl<T, const N: usize> Zeroable for core::simd::Simd<T, N>
+ where
+   T: core::simd::SimdElement + Zeroable,
+-  core::simd::LaneCount<N>: core::simd::SupportedLaneCount,
+ {
+ }
+ 
