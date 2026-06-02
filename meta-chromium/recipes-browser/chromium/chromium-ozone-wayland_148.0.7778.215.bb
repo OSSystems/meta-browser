@@ -5,6 +5,7 @@ REQUIRED_DISTRO_FEATURES = "wayland"
 DEPENDS += "\
         at-spi2-atk \
         virtual/egl \
+        virtual/libgbm \
         wayland \
         wayland-native \
 "
