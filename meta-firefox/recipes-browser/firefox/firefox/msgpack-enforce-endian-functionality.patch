@@ -1,0 +1,39 @@
+From f6ddc9b85adaa58f6426544e2bd1bd16e0aecd70 Mon Sep 17 00:00:00 2001
+From: Takatoshi Kondo <redboltz@gmail.com>
+Date: Sat, 8 Sep 2018 20:06:00 +0900
+Subject: [PATCH] Added enforcing endian functionality.
+
+Fixes error with gcc@riscv:
+third_party/msgpack/include/msgpack/sysdep.h:146:5: error: #error msgpack-c supports only big endian and little endian
+
+Upstream-Status: Backport [https://github.com/msgpack/msgpack-c/commit/f6ddc9b85adaa58f6426544e2bd1bd16e0aecd70]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+---
+ include/msgpack/sysdep.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/include/msgpack/sysdep.h b/include/msgpack/sysdep.h
+index 569ae4cdf..b430956b4 100644
+--- a/third_party/msgpack/include/msgpack/sysdep.h
++++ b/third_party/msgpack/include/msgpack/sysdep.h
+@@ -10,8 +10,6 @@
+ #ifndef MSGPACK_SYSDEP_H
+ #define MSGPACK_SYSDEP_H
+ 
+-#include <msgpack/predef.h>
+-
+ #include <stdlib.h>
+ #include <stddef.h>
+ 
+@@ -86,6 +84,10 @@
+ 
+ #endif
+ 
++#if !defined(MSGPACK_ENDIAN_LITTLE_BYTE) && !defined(MSGPACK_ENDIAN_BIG_BYTE)
++#include <msgpack/predef/other/endian.h>
++#endif // !defined(MSGPACK_ENDIAN_LITTLE_BYTE) && !defined(MSGPACK_ENDIAN_BIG_BYTE)
++
+ #if MSGPACK_ENDIAN_LITTLE_BYTE
+ 
+ #   if defined(unix) || defined(__unix) || defined(__APPLE__) || defined(__OpenBSD__)

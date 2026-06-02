@@ -1,4 +1,4 @@
-Clang sends warnings about unsued command line arguments to stderr during configuring
+Clang sends warnings about unused command line arguments to stderr during configuring
 freebl (which is enabled for targets without hw crypto support). Gyp only checks
 if there is anything on stderr, but not the content - it throws an error like this:
 

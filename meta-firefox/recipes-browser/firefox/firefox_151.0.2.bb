@@ -13,6 +13,8 @@ SRC_URI:append:libc-musl = " \
     file://fix-undeclared-identifier__NR_riscv_hwprobe.patch \
     "
 
+SRC_URI:append:toolchain-gcc:arm = " file://llama.cpp-unknown-type-name-__fp16.patch"
+
 SRC_URI[sha256sum] = "63c4267799f2618dd7ac5997d0306bbcf2a5306caaca0056795bc6c61d00f8c8"
 
 PACKAGECONFIG[legacy-appdir] = ""

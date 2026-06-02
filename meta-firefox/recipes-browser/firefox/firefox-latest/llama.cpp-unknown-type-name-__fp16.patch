@@ -1,0 +1,21 @@
+Fixes error on 32-bit arm:
+
+E [...]/third_party/llama.cpp/ggml/src/ggml-cpu/simd-mappings.h:45:9: error: unknown type name '__fp16'; did you mean '__bf16'?
+
+Solution taken from
+https://stackoverflow.com/questions/31242106/fp16-type-undefined-in-gnu-arm-c
+
+Upstream-Status: Pending
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+--- ./third_party/llama.cpp/moz.build.orig	2026-05-30 08:47:27.294716362 +0200
++++ ./third_party/llama.cpp/moz.build	2026-05-30 08:20:07.478595605 +0200
+@@ -45,6 +45,8 @@
+ elif CONFIG['TARGET_CPU'] == 'aarch64':
+     SOURCES += files['ARM64_SOURCES']
+ elif CONFIG['TARGET_CPU'] == 'arm':
++    CXXFLAGS += ["-mfp16-format=ieee"]
++    CFLAGS += ["-mfp16-format=ieee"]
+     SOURCES += files['ARM_SOURCES']
+ else:
+     DEFINES["GGML_CPU_GENERIC"] = 1
