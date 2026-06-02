@@ -62,7 +62,7 @@ jobs:
     steps:
       # Configure AWS credentials for accessing S3 cache buckets
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ inputs.aws_region }}
           role-to-assume: ${{ inputs.aws_arn_role }}
@@ -447,7 +447,7 @@ jobs:
       # Refresh AWS credentials before upload (they may have expired during long build)
       - name: Refresh AWS credentials for artifact upload
         if: success()
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ env.AWS_REGION }}
           role-to-assume: ${{ inputs.aws_arn_role }}
