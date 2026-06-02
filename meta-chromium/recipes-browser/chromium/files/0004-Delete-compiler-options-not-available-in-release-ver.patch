@@ -18,6 +18,12 @@ Subject: [PATCH] Delete compiler options not available in release versions of
 
 | clang++: error: unknown argument: '-fno-lifetime-dse'
 
+* -fsanitize-ignore-for-ubsan-feature=return is not support on
+  the current clang toolchain version, which causes build to fail with
+  the following error:
+
+| clang++: error: unknown argument: '-fsanitize-ignore-for-ubsan-feature=return'
+
 Upstream-Status: Inappropriate [ clang/master already supports them ]
 Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
@@ -30,7 +36,7 @@ diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index c092446fa0..ce6d73d30c 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -613,13 +613,6 @@ config("compiler") {
+@@ -625,13 +625,6 @@
        ]
      }
  
@@ -44,7 +50,7 @@ index c092446fa0..ce6d73d30c 100644
      # TODO(hans): Remove this once Clang generates better optimized debug info
      # by default. https://crbug.com/765793
      cflags += [
-@@ -657,13 +650,6 @@ config("compiler") {
+@@ -669,13 +662,6 @@
        cflags += [ "-ffp-contract=off" ]
      }
  
@@ -58,7 +64,20 @@ index c092446fa0..ce6d73d30c 100644
    }
  
    # C11/C++11 compiler flags setup.
-@@ -2209,6 +2195,11 @@ config("default_warnings") {
+@@ -1878,12 +1864,6 @@
+     cflags = [
+       "-fsanitize=return",
+       "-fsanitize-trap=return",
+-
+-      # Some code users feature detection to determine if UBSAN (or any
+-      # sanitizer) is enabled, they then do expensive debug like operations. We
+-      # want to suppress this behaviour since we want to keep performance costs
+-      # as low as possible while having these checks.
+-      "-fsanitize-ignore-for-ubsan-feature=return",
+     ]
+   }
+ }
+@@ -2205,6 +2185,11 @@
  
    if (is_clang) {
      cflags += [
