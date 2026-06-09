@@ -1,37 +1,47 @@
 Author: Andres Salomon <dilinger@debian.org>
 
 error[E0599]: no method named `file_as_c_str` found for reference `&Location<'_>` in the current scope
-   --> ../../base/logging/logger.rs:133:39
-    |
-133 |         info.location().map(|loc| loc.file_as_c_str()).unwrap_or(c"<unknown file>"),
-    |                                       ^^^^^^^^^^^^^ method not found in `&Location<'_>`
+  --> ../../base/logging/rust_logger/custom_panic_hook.rs:20:39
+   |
+20 |         info.location().map(|loc| loc.file_as_c_str()).unwrap_or(c"<unknown file>"),
+   |                                       ^^^^^^^^^^^^^ method not found in `&Location<'_>`
 
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0599`.
 
 Upstream-Status: Inappropriate [old rust specific]
 
---- a/base/logging/logger.rs
-+++ b/base/logging/logger.rs
-@@ -127,10 +128,22 @@ mod ffi {
-     }
+--- a/base/logging/rust_logger/custom_panic_hook.rs	2026-06-08 15:10:08.241783216 +0200
++++ b/base/logging/rust_logger/custom_panic_hook.rs	2026-06-08 15:19:12.704024668 +0200
+@@ -2,6 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++use std::ffi::CStr;
+ use crate::print_rust_log;
+ use std::panic::PanicHookInfo;
+ 
+@@ -14,10 +15,21 @@
+     std::panic::set_hook(Box::new(panic_hook));
  }
  
 +#[cfg(any(target_arch="x86", target_arch="x86_64", target_arch="loongarch64"))]
  fn panic_hook(info: &PanicHookInfo<'_>) {
-     print_rust_log(
+     print_rust_log::print_rust_log(
          &format_args!("{info}"),
 -        info.location().map(|loc| loc.file_as_c_str()).unwrap_or(c"<unknown file>"),
 +        info.location().map(|loc| unsafe { CStr::from_ptr(loc.file().as_ptr() as *const i8) } ).unwrap_or(c"<unknown file>"),
 +        info.location().map(|loc| loc.line()),
-+        LOGGING_FATAL,
-+        false,
++        print_rust_log::LogSeverity::Fatal,
 +    )
 +}
 +
 +#[cfg(any(target_arch="powerpc64", target_arch="arm", target_arch="aarch64"))]
 +fn panic_hook(info: &PanicHookInfo<'_>) {
-+    print_rust_log(
++    print_rust_log::print_rust_log(
 +        &format_args!("{info}"),
 +        info.location().map(|loc| unsafe { CStr::from_ptr(loc.file().as_ptr() as *const u8) } ).unwrap_or(c"<unknown file>"),
          info.location().map(|loc| loc.line()),
-         LOGGING_FATAL,
-         false,
+         print_rust_log::LogSeverity::Fatal,
+     )
