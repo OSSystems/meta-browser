@@ -29,14 +29,28 @@ Signed-off-by: Khem Raj <raj.khem@gmail.com>
 Signed-off-by: Randy MacLeod <Randy.MacLeod@windriver.com>
 Signed-off-by: Ariel D'Alessandro <ariel.dalessandro@collabora.com>
 ---
- build/config/compiler/BUILD.gn | 19 +++++--------------
- 1 file changed, 5 insertions(+), 14 deletions(-)
+ build/config/compiler/BUILD.gn         | 25 +++++--------------
+ build/config/sanitizers/sanitizers.gni | 7 -------
+ 2 files changed, 5 insertions(+), 27 deletions(-)
 
 diff --git a/build/config/compiler/BUILD.gn b/build/config/compiler/BUILD.gn
 index c092446fa0..ce6d73d30c 100644
 --- a/build/config/compiler/BUILD.gn
 +++ b/build/config/compiler/BUILD.gn
-@@ -625,13 +625,6 @@
+@@ -588,12 +588,6 @@
+   if (is_clang) {
+     # Flags for diagnostics.
+     cflags += [ "-fcolor-diagnostics" ]
+-    if (!is_win) {
+-      cflags += [ "-fdiagnostics-show-inlining-chain" ]
+-    } else {
+-      # Combine after https://github.com/llvm/llvm-project/pull/192241
+-      cflags += [ "/clang:-fdiagnostics-show-inlining-chain" ]
+-    }
+     if (diagnostics_print_source_range_info && !is_win) {
+       cflags += [ "-fdiagnostics-print-source-range-info" ]
+     }
+@@ -624,13 +624,6 @@
        ]
      }
  
@@ -50,7 +64,7 @@ index c092446fa0..ce6d73d30c 100644
      # TODO(hans): Remove this once Clang generates better optimized debug info
      # by default. https://crbug.com/765793
      cflags += [
-@@ -669,13 +662,6 @@
+@@ -668,13 +661,6 @@
        cflags += [ "-ffp-contract=off" ]
      }
  
@@ -64,20 +78,7 @@ index c092446fa0..ce6d73d30c 100644
    }
  
    # C11/C++11 compiler flags setup.
-@@ -1878,12 +1864,6 @@
-     cflags = [
-       "-fsanitize=return",
-       "-fsanitize-trap=return",
--
--      # Some code users feature detection to determine if UBSAN (or any
--      # sanitizer) is enabled, they then do expensive debug like operations. We
--      # want to suppress this behaviour since we want to keep performance costs
--      # as low as possible while having these checks.
--      "-fsanitize-ignore-for-ubsan-feature=return",
-     ]
-   }
- }
-@@ -2205,6 +2185,11 @@
+@@ -2196,6 +2182,11 @@
  
    if (is_clang) {
      cflags += [
@@ -89,6 +90,24 @@ index c092446fa0..ce6d73d30c 100644
        "-Wloop-analysis",
  
        # TODO(thakis): This used to be implied by -Wno-unused-function,
+diff --git a/build/config/sanitizers/sanitizers.gni b/build/config/sanitizers/sanitizers.gni
+index 59942a3..cf5e62e 100644
+--- a/build/config/sanitizers/sanitizers.gni	2026-06-08 14:47:46.242703945 +0200
++++ b/build/config/sanitizers/sanitizers.gni	2026-06-08 14:48:54.064051930 +0200
+@@ -534,13 +534,6 @@
+       cflags = [
+         "-fsanitize=${invoker.sanitizer}",
+         "-fsanitize-trap=${invoker.sanitizer}",
+-
+-        # Prevents `__has_feature(undefined_behavior_sanitizer)`
+-        # from evaluating true. Configs defined here are intended to
+-        # be usable even in release builds, i.e. as widely as possible.
+-        # It's important not to have full-on UBSan workarounds activate
+-        # just because we built support for a specific sanitizer.
+-        "-fsanitize-ignore-for-ubsan-feature=${invoker.sanitizer}",
+       ]
+       if (defined(invoker.cflags)) {
+         cflags += invoker.cflags
 -- 
 2.53.0
 
