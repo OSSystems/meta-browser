@@ -1,5 +1,7 @@
 require wasi-sdk.inc
 
+RDEPENDS:${PN} = "ncurses-native libedit-native"
+
 # wasi-sdk builds its own sysroot within the oe-sysroot,
 # this is where both the toolchain and the sysroot needs to
 # be installed. sysroot is installed automatically here, but

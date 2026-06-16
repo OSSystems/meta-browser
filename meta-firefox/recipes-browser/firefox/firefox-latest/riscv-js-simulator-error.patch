@@ -1,0 +1,27 @@
+Fix compilation error with riscv arch:
+
+|  8:42.65 E [...]/js/src/jit/riscv64/Simulator-riscv64.h:32:4: error: "simulator disabled"
+|  8:42.65 E    32 | #  error "simulator disabled"
+
+
+These files have been heavily refactored by upstream since this release,
+and it doesn't apply anymore to the development version, so it cannot be upstreamed.
+
+The latest revision is untested for this bug, but in theory this patch
+can be dropped with the next major upgrade.
+
+Upstream-Status: Inappropriate [see above]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+--- ./js/src/jit/riscv64/constant/Base-constant-riscv.cpp.orig	2026-06-21 13:54:50.144081445 +0000
++++ ./js/src/jit/riscv64/constant/Base-constant-riscv.cpp	2026-06-21 13:55:02.437793365 +0000
+@@ -13,7 +13,9 @@
+ #include "jit/riscv64/constant/Constant-riscv-v.h"
+ #include "jit/riscv64/constant/Constant-riscv-zicsr.h"
+ #include "jit/riscv64/constant/Constant-riscv-zifencei.h"
++#ifdef JS_SIMULATOR_RISCV64
+ #include "jit/riscv64/Simulator-riscv64.h"
++#endif
+ namespace js {
+ namespace jit {
+ 

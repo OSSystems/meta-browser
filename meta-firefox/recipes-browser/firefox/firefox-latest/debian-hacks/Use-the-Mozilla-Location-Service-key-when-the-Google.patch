@@ -13,10 +13,10 @@ diff --git a/modules/libpref/init/all.js b/modules/libpref/init/all.js
 index 86bfe71247..b9674823de 100644
 --- a/modules/libpref/init/all.js
 +++ b/modules/libpref/init/all.js
-@@ -3088,8 +3088,11 @@
+@@ -3073,8 +3073,11 @@
  // All the Geolocation preferences are here.
  //
- #ifndef ANDROID
+ #if !defined(ANDROID) && !defined(XP_WIN)
 +#ifdef GOOGLE_LOCATION_SERVICE_API_KEY
    pref("geo.provider.network.url", "https://www.googleapis.com/geolocation/v1/geolocate?key=%GOOGLE_LOCATION_SERVICE_API_KEY%&solution_channel=%OS%");
 -

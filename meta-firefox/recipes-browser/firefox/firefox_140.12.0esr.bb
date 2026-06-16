@@ -16,4 +16,5 @@ SRC_URI += "file://0001-Bug-1993797-Fix-AST-parsing-in-DecoratorVisitor-for-.pat
             file://fix-musl-with-arm.patch \
             file://fix-crash-with-glibc-2.43-on-23-bit-systems.patch \
             file://debian-hacks/Fix-math_private.h-for-i386-FTBFS.patch \
+            file://0001-Fix-conflicting-types-for-once_flag-and-call_once-wi.patch \
 "
