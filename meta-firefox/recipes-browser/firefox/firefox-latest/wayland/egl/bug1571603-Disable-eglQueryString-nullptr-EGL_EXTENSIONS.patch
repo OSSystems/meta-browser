@@ -1,0 +1,55 @@
+From 6054fb81375d29e189f280d3c37e6e9b927397c7 Mon Sep 17 00:00:00 2001
+From: Takuro Ashie <ashie@homa.ne.jp>
+Date: Wed, 8 May 2019 14:42:24 +0900
+Subject: [PATCH] Disable eglQueryString(nullptr, EGL_EXTENSIONS)
+
+Because it causes crash on certain environments such as PowerVR drivers,
+and such extensions aren't used on Linux in fact.
+
+Upstream-Status: Inappropriate [OE-specific: https://bugzilla.mozilla.org/show_bug.cgi?id=1571603]
+
+Signed-off-by: Hiroshi Hatake <hatake@clear-code.com>
+Signed-off-by: Takuro Ashie <ashie@clear-code.com>
+
+---
+ gfx/gl/GLContextProviderEGL.cpp | 7 ++++++-
+ gfx/gl/GLLibraryEGL.cpp         | 2 ++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+--- ./gfx/gl/GLContextProviderEGL.cpp	2026-06-16 13:18:56.871894241 +0200
++++ ./gfx/gl/GLContextProviderEGL.cpp	2026-06-16 13:25:40.397159449 +0200
+@@ -555,10 +555,16 @@
+   out->AppendLiteral("\nEGL_EXTENSIONS: ");
+   out->Append(mEgl->mLib->fQueryString(mEgl->mDisplay, LOCAL_EGL_EXTENSIONS));
+ 
++#if 0
++  // Bug 1209612: Crashes on a number of android drivers.
++  // Ideally we would only blocklist this there, but for now we don't need the
++  // client extension list on ANDROID or embedded linux (we mostly need it on
++  // ANGLE), and we'd rather not crash.
+ #ifndef ANDROID  // This query will crash some old android.
+   out->AppendLiteral("\nEGL_EXTENSIONS(nullptr): ");
+   out->Append(mEgl->mLib->fQueryString(nullptr, LOCAL_EGL_EXTENSIONS));
+ #endif
++#endif
+ }
+ 
+ bool GLContextEGL::HasExtBufferAge() const {
+--- ./gfx/gl/GLLibraryEGL.cpp	2026-06-16 13:26:45.956385220 +0200
++++ ./gfx/gl/GLLibraryEGL.cpp	2026-06-16 13:27:24.946417051 +0200
+@@ -990,6 +990,7 @@
+ 
+   const char* rawExtString = nullptr;
+ 
++#if 0
+ #ifndef ANDROID
+   // Bug 1209612: Crashes on a number of android drivers.
+   // Ideally we would only blocklist this there, but for now we don't need the
+@@ -997,6 +998,7 @@
+   // rather not crash.
+   rawExtString = fQueryString(nullptr, LOCAL_EGL_EXTENSIONS);
+ #endif
++#endif
+ 
+   if (!rawExtString) {
+     if (shouldDumpExts) {

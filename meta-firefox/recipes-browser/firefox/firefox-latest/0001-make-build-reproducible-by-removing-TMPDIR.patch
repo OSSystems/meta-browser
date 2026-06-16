@@ -69,20 +69,6 @@ Upstream-Status: Inappropriate [OE-specific]
          LOCAL_INCLUDES += [ '/media/libvpx/config/linux/ia32/' ]
  elif CONFIG['TARGET_CPU'] == 'arm':
      EXPORTS.vpx += files['LINUX_ARM_EXPORTS']
---- ./media/libjpeg/moz.build	2024-08-07 09:32:21.776008707 +0200
-+++ ./media/libjpeg/moz.build	2024-08-07 09:32:57.707525237 +0200
-@@ -331,9 +331,11 @@
- if CONFIG['TARGET_CPU'] == 'x86':
-     ASFLAGS += ['-I%s/media/libjpeg/simd/nasm/' % TOPSRCDIR]
-     ASFLAGS += ['-I%s/media/libjpeg/simd/i386/' % TOPSRCDIR]
-+    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
- if CONFIG['TARGET_CPU'] == 'x86_64':
-     ASFLAGS += ['-I%s/media/libjpeg/simd/nasm/' % TOPSRCDIR]
-     ASFLAGS += ['-I%s/media/libjpeg/simd/x86_64/' % TOPSRCDIR]
-+    ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
- 
- # We allow warnings for third-party code that can be updated from upstream.
- AllowCompilerWarnings()
 --- ./media/libdav1d/asm/moz.build	2024-10-28 20:31:55.074740088 +0100
 +++ ./media/libdav1d/asm/moz.build	2024-10-28 20:33:04.748566455 +0100
 @@ -35,6 +35,7 @@
@@ -147,3 +133,21 @@ Upstream-Status: Inappropriate [OE-specific]
      </div>
    </body>
  </html>
+--- ./media/libjpeg/moz.build	2026-06-16 14:17:24.499275053 +0200
++++ ./media/libjpeg/moz.build	2026-06-16 14:18:21.319963310 +0200
+@@ -169,6 +169,7 @@
+         for srcfile in simd_sources:
+             SOURCES[srcfile].flags += CONFIG['LIBJPEG_TURBO_SIMD_FLAGS']
+     elif CONFIG['TARGET_CPU'] == 'x86_64':
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+         SOURCES += [
+             'simd/x86_64/jccolor-avx2.asm',
+             'simd/x86_64/jccolor-sse2.asm',
+@@ -200,6 +201,7 @@
+             'simd/x86_64/jsimdcpu.asm',
+         ]
+     elif CONFIG['TARGET_CPU'] == 'x86':
++        ASFLAGS += ['--debug-prefix-map', '%s/=/' % TOPSRCDIR]
+         SOURCES += [
+             'simd/i386/jccolor-avx2.asm',
+             'simd/i386/jccolor-mmx.asm',
