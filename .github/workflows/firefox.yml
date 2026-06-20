@@ -29,15 +29,28 @@ jobs:
       matrix:
         yocto_version: [scarthgap, wrynose, master]
         ff_version: [esr, latest]
-        libc_flavour: [glibc, musl]
         arch: [arm, aarch64, riscv, x86-64]
     runs-on: [self-hosted, firefox]
     container:
       image: skandigraun/yocto:latest
       volumes:
         - yocto:/yocto
+        - cocto:/cocto
     steps:
       - run: |
+         libc_list="glibc musl"
+         display_list="x11 wayland"
+         libc=$(echo $libc_list | tr ' ' '\n' | shuf -n1)
+         display_system=$(echo $display_list | tr ' ' '\n' | shuf -n1)
+         # avoid arm32+musl+wayland combo, because core-image-weston is broken:
+         # https://bugzilla.yoctoproject.org/show_bug.cgi?id=16334
+         # (It works on Scarthgap though)
+         if [ "${{ matrix.yocto_version }}" = "master" -o "${{ matrix.yocto_version }}" = "wrynose" ]; then
+             while [ "${{ matrix.arch }}" = "arm" -a "${libc}" = "musl" -a "${display_system}" = "wayland" ]; do
+                 libc=$(echo $libc_list | tr ' ' '\n' | shuf -n1)
+                 display_system=$(echo $display_list | tr ' ' '\n' | shuf -n1)
+             done
+         fi
          mkdir -p /yocto/${{ matrix.yocto_version }}
          cd /yocto/${{ matrix.yocto_version }}
          rm -rf meta-browser meta-firefox-test
@@ -52,7 +65,7 @@ jobs:
          git -C meta-browser checkout $GH_REV
          # clone the test repo
          git clone https://github.com/OldManYellsAtCloud/meta-firefox-test.git
-         ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+         ./meta-firefox-test/scripts/build.sh ${{ matrix.yocto_version }} ${{ matrix.arch }} ${{ matrix.ff_version }} ${libc} ${display_system}
   test:
     if: ${{ github.repository_owner == 'OSSystems' }}
     runs-on: [self-hosted, firefox]
@@ -61,9 +74,8 @@ jobs:
       matrix:
         yocto_version: [scarthgap, wrynose, master]
         ff_version: [esr, latest]
-        libc_flavour: [glibc, musl]
         arch: [arm, aarch64, riscv, x86-64]
     steps:
       - run: |
          cd /yocto/${{ matrix.yocto_version }}
-         ./meta-firefox-test/scripts/test.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }} ${{ matrix.libc_flavour}}
+         ./meta-firefox-test/scripts/test.sh ${{ matrix.yocto_version}} ${{ matrix.arch }} ${{ matrix.ff_version }}
