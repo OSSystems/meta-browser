@@ -1,0 +1,52 @@
+From 60f987d8d5f7272793a40290d060b8f50933f825 Mon Sep 17 00:00:00 2001
+From: Takuto Ikuta <tikuta@chromium.org>
+Date: Mon, 8 Jun 2026 19:43:20 -0700
+Subject: [PATCH] build: Omit ar from inputs when resolved via $PATH
+
+The GN build configuration previously added the `ar` tool to the inputs
+list unconditionally. However, if the `ar` tool is specified simply by
+its filename and is resolved via the system `$PATH`, it should not be
+tracked as a direct input dependency.
+
+This change adds a condition to verify if `ar` is an explicit path
+rather than just a filename. It only includes `ar` in the action's
+inputs list when it is not resolved from `$PATH`.
+
+This is to address
+https://crrev.com/c/7835150/8/build/toolchain/gcc_toolchain.gni#406
+
+Bug: 358521078
+Change-Id: I096ac4aa7f3b697c58c94af1349159b9c87f4201
+Reviewed-on: https://chromium-review.googlesource.com/c/chromium/src/+/7904982
+Commit-Queue: Takuto Ikuta <tikuta@chromium.org>
+Reviewed-by: Matt Stark <msta@google.com>
+Auto-Submit: Takuto Ikuta <tikuta@chromium.org>
+Cr-Commit-Position: refs/heads/main@{#1643634}
+
+Upstream-Status: Backport
+---
+ build/toolchain/gcc_toolchain.gni | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/build/toolchain/gcc_toolchain.gni b/build/toolchain/gcc_toolchain.gni
+index 51433d488da07..ec66ab3f948b1 100644
+--- a/build/toolchain/gcc_toolchain.gni
++++ b/build/toolchain/gcc_toolchain.gni
+@@ -408,8 +408,12 @@ template("single_gcc_toolchain") {
+         command = "cmd /s /c \"\"$python_path\" $tool_wrapper_path delete-file {{output}} && $command\""
+       } else {
+         command = "rm -f {{output}} && $command"
+-        inputs =
+-            [ get_path_info(rebase_path(ar, ".", root_out_dir), "abspath") ]
++
++        # Add ar to inputs if it's not from $PATH.
++        if (get_path_info(ar, "file") != ar) {
++          inputs =
++              [ get_path_info(rebase_path(ar, ".", root_out_dir), "abspath") ]
++        }
+       }
+ 
+       # Almost all targets build with //build/config/compiler:thin_archive which
+-- 
+2.55.0
+
