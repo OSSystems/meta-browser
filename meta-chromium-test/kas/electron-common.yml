@@ -1,0 +1,6 @@
+header:
+  version: 11
+  includes:
+    - meta-chromium-test/kas/common.yml
+
+target: electron-test-image
