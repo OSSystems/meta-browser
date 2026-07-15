@@ -4,7 +4,7 @@ HOMEPAGE = "https://www.chromium.org/Home"
 CVE_PRODUCT = "chromium:chromium google:chrome"
 
 SRC_URI = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-${PV}.tar.xz"
-SRC_URI[sha256sum] = "b2332eb0f96b84e56b29959630a61d6e2c38bec54e6e4026ce20f12b3454ddda"
+SRC_URI[sha256sum] = "aea4fe88390bc7296c1be9db958cdcacd8ab7bc5a1f69eb691cc9e34a1444790"
 S = "${UNPACKDIR}/chromium-${PV}"
 
 # GCC is not tested or officially supported upstream, and supporting it here
@@ -55,7 +55,7 @@ DEPENDS += "python3-setuptools-native"
 # LICENSE does not cover all the licenses in LIC_FILES_CHKSUM; instead, it
 # currently contains Chromium's license (BSD-3-Clause) as well as Blink's
 # (LGPL2.0, LGPL2.1 and BSD-2-Clause).
-LICENSE = "BSD-3-Clause & LGPL-2.0-or-later & LGPL-2.1-or-later"
+LICENSE = "BSD-3-Clause AND LGPL-2.0-or-later AND LGPL-2.1-or-later"
 
 # The generate_license_list.py script can help generate and update this list.
 LIC_FILES_CHKSUM = "\
