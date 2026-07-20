@@ -6,7 +6,7 @@ All compatible Yocto releases are tested explicitly for each PR, along
 with multiple libc implementations (glibc/musl) and display systems (x11/wayland),
 for multiple CPU platforms.
 
-OpenEmbedded/Yocto BSP layer for Firefox Browser
+OpenEmbedded/Yocto layer for Firefox Browser
 ================================================
 
 This layer provides web browser recipes for use with OpenEmbedded
@@ -19,7 +19,8 @@ multiple Yocto releases, the branches should match each other.
 
 Each compatible Yocto versions are supported by the master branch of this layer.
 
-Starting version 144 Firefox requires at least Clang 17 to compile. 
+Starting version 144 Firefox requires at least Clang 17 to compile, and starting version 153 at least
+Clang 19 is needed. 
 
 Additionally, the Rust version shipped with Scarthgap oe-core is out of date, 
 which can be remediated by other third-party layers: for Scarthgap version the 
@@ -44,7 +45,7 @@ Testing is performed using the following combinations (the "latest" version shou
 | ---------------- | ----- | ---- |
 | Scarthgap | Rust 1.92.0 from meta-lts-mixins (scarthgap/rust branch) | Rust 1.92.0 from meta-lts-mixins (scarthgap/rust branch) |
 | Wrynose | Rust 1.94.1 from oe-core | Rust 1.94.1 from oe-core |
-| Master | Rust 1.96.0 from oe-core | Rust 1.96.0 from oe-core |
+| Master | Rust 1.96.1 from oe-core | Rust 1.96.1 from oe-core |
 
 Contributing
 ------------
