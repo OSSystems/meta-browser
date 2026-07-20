@@ -16,7 +16,7 @@ diff --git a/cmake/wasi-sdk-toolchain.cmake b/cmake/wasi-sdk-toolchain.cmake
 index 1d023c8..dbe64e9 100644
 --- a/cmake/wasi-sdk-toolchain.cmake
 +++ b/cmake/wasi-sdk-toolchain.cmake
-@@ -193,26 +193,6 @@ install(DIRECTORY ${wasi_tmp_install}/bin ${wasi_tmp_install}/lib ${wasi_tmp_ins
+@@ -262,26 +262,6 @@ install(DIRECTORY ${wasi_tmp_install}/bin ${wasi_tmp_install}/lib ${wasi_tmp_ins
          USE_SOURCE_PERMISSIONS
          DESTINATION ${CMAKE_INSTALL_PREFIX})
  

@@ -12,11 +12,10 @@ inherit cmake native
 DEPENDS = "clang-native cmake-native ninja-native"
 
 SRC_URI = "gitsm://github.com/WebAssembly/wasi-sdk.git;protocol=https;branch=main \
-           file://0001-lower-cmake-requirement.patch \
            file://0001-don-t-build-wasm-component-ld.patch \
            file://0001-don-t-strip-symbols-from-binaries.patch"
 
-SRCREV = "2e6b578a6986005e29e01c10b94843fdb2a76f0a"
+SRCREV = "c10c0507deb3e5aad506f1f9f32084e49a21834b"
 
 TOOLCHAIN = "clang"
 TOOLCHAIN:class-native = "clang"
