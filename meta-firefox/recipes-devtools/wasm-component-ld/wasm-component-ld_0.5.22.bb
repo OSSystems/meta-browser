@@ -4,13 +4,10 @@ LIC_FILES_CHKSUM = "file://LICENSE-APACHE;md5=1836efb2eb779966696f473ee8540542 \
                     file://LICENSE-MIT;md5=b377b220f43d747efdec40d69fcaa69d"
 
 SRC_URI += "git://github.com/bytecodealliance/wasm-component-ld.git;protocol=https;branch=main"
-SRCREV = "0a5f2513f6157e2c01c0485aa68365d8e4622ccb"
+SRCREV = "c9e38b9bc181ce7a4f8b3d21edb48c47ddf197de"
 
 require wasm-component-ld-crates.inc
 
-inherit cargo
-# Kirkstone has no cargo-update-recipe-crates class, so just comment
-# it to avoid the parsing error
-# cargo-update-recipe-crates
+inherit cargo cargo-update-recipe-crates
 
 BBCLASSEXTEND = "native"
