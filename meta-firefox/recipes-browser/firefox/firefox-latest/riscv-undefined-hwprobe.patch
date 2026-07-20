@@ -1,0 +1,54 @@
+RISCV_HWPROBE_EXT_ZFHMIN, RISCV_HWPROBE_EXT_ZFA and RISCV_HWPROBE_EXT_ZICOND
+are only supported since Linux 6.8[1], however Scarthgap ships with kernel
+version 6.6. Due to this, compilation fails on risc-v:
+
+ 8:43.20 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:319:26: error: use of undeclared identifier 'RIS
+CV_HWPROBE_EXT_ZFHMIN'cd 
+ 8:43.20 E   319 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZFHMIN) {
+ 8:43.20 E       |                          ^
+ 8:43.20 js/xpconnect/wrappers/XrayWrapper.o
+ 8:43.20 js/xpconnect/wrappers/Unified_cpp_xpconnect_wrappers0.o
+ 8:43.28 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:322:26: error: use of undeclared identifier 'RIS
+CV_HWPROBE_EXT_ZFA'
+ 8:43.28 E   322 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZFA) {
+ 8:43.28 E       |                          ^
+ 8:43.37 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:325:26: error: use of undeclared identifier 'RIS
+CV_HWPROBE_EXT_ZICOND'
+ 8:43.37 E   325 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZICOND) {
+ 8:43.37 E    
+
+Make these probes optional, guard them with an ifdef.
+
+[1]: https://github.com/torvalds/linux/commit/bf4cd84111c61 and
+     https://github.com/torvalds/linux/commit/dc6ccb21f42ce and
+     https://github.com/torvalds/linux/commit/3359866b40a97
+
+Upstream-Status: Inappropriate [oe-specific]
+Signed-off-by: Gyorgy Sarvari <skandigraun@gmail.com>
+
+diff --git a/./js/src/jit/riscv64/Architecture-riscv64.cpp.orig b/./js/src/jit/riscv64/Architecture-riscv64.cpp
+index 06c73e3..3ac9804 100644
+--- a/./js/src/jit/riscv64/Architecture-riscv64.cpp.orig
++++ b/./js/src/jit/riscv64/Architecture-riscv64.cpp
+@@ -316,15 +316,21 @@ static RVExtensions ComputeRVExtensions() {
+     if (probe[0].value & RISCV_HWPROBE_EXT_ZBS) {
+       extensions += RVExtension::Zbs;
+     }
++#ifdef RISCV_HWPROBE_EXT_ZFHMIN
+     if (probe[0].value & RISCV_HWPROBE_EXT_ZFHMIN) {
+       extensions += RVExtension::Zfhmin;
+     }
++#endif
++#ifdef RISCV_HWPROBE_EXT_ZFA
+     if (probe[0].value & RISCV_HWPROBE_EXT_ZFA) {
+       extensions += RVExtension::Zfa;
+     }
++#endif
++#ifdef RISCV_HWPROBE_EXT_ZICOND
+     if (probe[0].value & RISCV_HWPROBE_EXT_ZICOND) {
+       extensions += RVExtension::Zicond;
+     }
++#endif
+   }
+ #endif
+ 
