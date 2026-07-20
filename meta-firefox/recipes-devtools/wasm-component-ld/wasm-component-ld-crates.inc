@@ -24,7 +24,7 @@ SRC_URI += " \
     crate://crates.io/hashbrown/0.16.1 \
     crate://crates.io/heck/0.5.0 \
     crate://crates.io/id-arena/2.3.0 \
-    crate://crates.io/indexmap/2.13.0 \
+    crate://crates.io/indexmap/2.13.1 \
     crate://crates.io/is_terminal_polyfill/1.70.2 \
     crate://crates.io/itoa/1.0.17 \
     crate://crates.io/leb128fmt/0.1.0 \
@@ -51,19 +51,19 @@ SRC_URI += " \
     crate://crates.io/unicode-width/0.2.2 \
     crate://crates.io/unicode-xid/0.2.6 \
     crate://crates.io/utf8parse/0.2.2 \
-    crate://crates.io/wasi-preview1-component-adapter-provider/40.0.1 \
+    crate://crates.io/wasi-preview1-component-adapter-provider/43.0.0 \
     crate://crates.io/wasip2/1.0.1+wasi-0.2.4 \
-    crate://crates.io/wasm-encoder/0.245.1 \
-    crate://crates.io/wasm-metadata/0.245.1 \
-    crate://crates.io/wasmparser/0.245.1 \
-    crate://crates.io/wast/245.0.1 \
-    crate://crates.io/wat/1.245.1 \
+    crate://crates.io/wasm-encoder/0.246.2 \
+    crate://crates.io/wasm-metadata/0.246.2 \
+    crate://crates.io/wasmparser/0.246.2 \
+    crate://crates.io/wast/246.0.2 \
+    crate://crates.io/wat/1.246.2 \
     crate://crates.io/windows-link/0.2.1 \
     crate://crates.io/windows-sys/0.61.2 \
     crate://crates.io/winsplit/0.1.0 \
     crate://crates.io/wit-bindgen/0.46.0 \
-    crate://crates.io/wit-component/0.245.1 \
-    crate://crates.io/wit-parser/0.245.1 \
+    crate://crates.io/wit-component/0.246.2 \
+    crate://crates.io/wit-parser/0.246.2 \
     crate://crates.io/zmij/1.0.12 \
 "
 
@@ -89,7 +89,7 @@ SRC_URI[getrandom-0.3.4.sha256sum] = "899def5c37c4fd7b2664648c28120ecec138e4d395
 SRC_URI[hashbrown-0.16.1.sha256sum] = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 SRC_URI[heck-0.5.0.sha256sum] = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 SRC_URI[id-arena-2.3.0.sha256sum] = "3d3067d79b975e8844ca9eb072e16b31c3c1c36928edf9c6789548c524d0d954"
-SRC_URI[indexmap-2.13.0.sha256sum] = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
+SRC_URI[indexmap-2.13.1.sha256sum] = "45a8a2b9cb3e0b0c1803dbb0758ffac5de2f425b23c28f518faabd9d805342ff"
 SRC_URI[is_terminal_polyfill-1.70.2.sha256sum] = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 SRC_URI[itoa-1.0.17.sha256sum] = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 SRC_URI[leb128fmt-0.1.0.sha256sum] = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
@@ -116,17 +116,17 @@ SRC_URI[unicode-ident-1.0.22.sha256sum] = "9312f7c4f6ff9069b165498234ce8be658059
 SRC_URI[unicode-width-0.2.2.sha256sum] = "b4ac048d71ede7ee76d585517add45da530660ef4390e49b098733c6e897f254"
 SRC_URI[unicode-xid-0.2.6.sha256sum] = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 SRC_URI[utf8parse-0.2.2.sha256sum] = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
-SRC_URI[wasi-preview1-component-adapter-provider-40.0.1.sha256sum] = "eb5f1e453418481d19765654239c515f9c6095957d5d7cc0c774f5f33947ab1c"
+SRC_URI[wasi-preview1-component-adapter-provider-43.0.0.sha256sum] = "93759d6fd0db242718bdcc6e4626eff8b0f3124ee7e58e47177a59f561baf164"
 SRC_URI[wasip2-1.0.1+wasi-0.2.4.sha256sum] = "0562428422c63773dad2c345a1882263bbf4d65cf3f42e90921f787ef5ad58e7"
-SRC_URI[wasm-encoder-0.245.1.sha256sum] = "3f9dca005e69bf015e45577e415b9af8c67e8ee3c0e38b5b0add5aa92581ed5c"
-SRC_URI[wasm-metadata-0.245.1.sha256sum] = "da55e60097e8b37b475a0fa35c3420dd71d9eb7bd66109978ab55faf56a57efb"
-SRC_URI[wasmparser-0.245.1.sha256sum] = "4f08c9adee0428b7bddf3890fc27e015ac4b761cc608c822667102b8bfd6995e"
-SRC_URI[wast-245.0.1.sha256sum] = "28cf1149285569120b8ce39db8b465e8a2b55c34cbb586bd977e43e2bc7300bf"
-SRC_URI[wat-1.245.1.sha256sum] = "cd48d1679b6858988cb96b154dda0ec5bbb09275b71db46057be37332d5477be"
+SRC_URI[wasm-encoder-0.246.2.sha256sum] = "61fb705ce81adde29d2a8e99d87995e39a6e927358c91398f374474746070ef7"
+SRC_URI[wasm-metadata-0.246.2.sha256sum] = "e3e4c2aa916c425dcca61a6887d3e135acdee2c6d0ed51fd61c08d41ddaf62b1"
+SRC_URI[wasmparser-0.246.2.sha256sum] = "71cde4757396defafd25417cfb36aa3161027d06d865b0c24baaae229aac005d"
+SRC_URI[wast-246.0.2.sha256sum] = "fe3fe8e3bf88ad96d031b4181ddbd64634b17cb0d06dfc3de589ef43591a9a62"
+SRC_URI[wat-1.246.2.sha256sum] = "4bd7fda1199b94fff395c2d19a153f05dbe7807630316fa9673367666fd2ad8c"
 SRC_URI[windows-link-0.2.1.sha256sum] = "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5"
 SRC_URI[windows-sys-0.61.2.sha256sum] = "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc"
 SRC_URI[winsplit-0.1.0.sha256sum] = "3ab703352da6a72f35c39a533526393725640575bb211f61987a2748323ad956"
 SRC_URI[wit-bindgen-0.46.0.sha256sum] = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
-SRC_URI[wit-component-0.245.1.sha256sum] = "4894f10d2d5cbc17c77e91f86a1e48e191a788da4425293b55c98b44ba3fcac9"
-SRC_URI[wit-parser-0.245.1.sha256sum] = "330698718e82983499419494dd1e3d7811a457a9bf9f69734e8c5f07a2547929"
+SRC_URI[wit-component-0.246.2.sha256sum] = "1936c26cb24b93dc36bf78fb5dc35c55cd37f66ecdc2d2663a717d9fb3ee951e"
+SRC_URI[wit-parser-0.246.2.sha256sum] = "fd979042b5ff288607ccf3b314145435453f20fc67173195f91062d2289b204d"
 SRC_URI[zmij-1.0.12.sha256sum] = "2fc5a66a20078bf1251bde995aa2fdcc4b800c70b5d92dd2c62abc5c60f679f8"
