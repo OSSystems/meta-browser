@@ -38,6 +38,7 @@ SRC_URI += "\
     file://Backport-151-Only-pass-sysroot-if-use_sysroot.patch \
     file://Backport-151-build-Omit-ar-from-inputs-when-resolved-via-PATH.patch \
     file://Backport-151-build-Fix-get_path_info-on-empty-ar-in-unbundle-tool.patch \
+    file://0014-add-missing-logging-header.patch \
 "
 
 # ARM/AArch64-specific patches.
