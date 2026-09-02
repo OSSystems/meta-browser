@@ -36,8 +36,7 @@ SRC_URI += "\
     file://chromium-145-zip_ffi_glue-use-edition2024.patch \
     file://disable-sanitizer.patch \
     file://chromium148-bytemuck-v1-remove-simd-LaneCount-usage.patch \
-    file://0014-add-missing-logging-header.patch \
-    file://Backport-152-don-t-depends-on-histograms.xml-if-it-is-not-git-che.patch \
+    file://rust-cbor.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -119,7 +118,7 @@ BUILD_CC:toolchain-clang = "clang"
 BUILD_CXX:toolchain-clang = "clang++"
 BUILD_LD:toolchain-clang = "clang"
 
-PACKAGECONFIG ??= "upower use-egl use-v4l2"
+PACKAGECONFIG ??= "upower use-egl use-vaapi use-v4l2"
 
 # this makes sure the dependencies for the EGL mode are present; otherwise, the configure scripts
 # automatically and silently fall back to GLX
