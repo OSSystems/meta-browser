@@ -1,0 +1,26 @@
+From ad9541cd3c88b39efa47912af2dd939e955b1841 Mon Sep 17 00:00:00 2001
+From: "Issam E. Maghni" <issam.e.maghni@mailbox.org>
+Date: Sat, 30 Oct 2021 19:19:44 -0400
+Subject: [PATCH] musl does not have canonicalize_file_name
+
+Signed-off-by: Issam E. Maghni <issam.e.maghni@mailbox.org>
+---
+ third_party/nasm/config/config-linux.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/third_party/nasm/config/config-linux.h b/third_party/nasm/config/config-linux.h
+index 9e59df4f..b96673ac 100644
+--- a/third_party/nasm/config/config-linux.h
++++ b/third_party/nasm/config/config-linux.h
+@@ -139,7 +139,7 @@
+ #define HAVE_ACCESS 1
+ 
+ /* Define to 1 if you have the `canonicalize_file_name' function. */
+-#define HAVE_CANONICALIZE_FILE_NAME 1
++/* #undef HAVE_CANONICALIZE_FILE_NAME */
+ 
+ /* Define to 1 if you have the `cpu_to_le16' intrinsic function. */
+ /* #undef HAVE_CPU_TO_LE16 */
+-- 
+2.31.1
+
