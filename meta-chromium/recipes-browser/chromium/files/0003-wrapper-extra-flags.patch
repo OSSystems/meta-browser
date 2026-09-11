@@ -21,8 +21,9 @@ index aaa46bf..7d8c8dd 100755
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
  
++# Modified in do_install() in chromium-gn.inc.
 +CHROME_EXTRA_ARGS=""
 +
  # Note: exec -a below is a bashism.
 -exec -a "$0" "$HERE/@@PROGNAME" "$@"
-+exec -a "$0" "$HERE/@@PROGNAME@@" ${CHROME_EXTRA_ARGS} "$@"
++exec -a "$0" "$HERE/@@PROGNAME" ${CHROME_EXTRA_ARGS} "$@"
