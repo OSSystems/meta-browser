@@ -579,8 +579,8 @@ do_install() {
 	# A wrapper for the proprietary Google Chrome version already exists.
 	# We can just use that one instead of reinventing the wheel.
 	WRAPPER_FILE=${S}/chrome/installer/linux/common/wrapper
-	sed -e "s,@@CHANNEL@@,stable,g" \
-		-e "s,@@PROGNAME@@,chromium-bin,g" \
+	sed -e "s,@@channel,stable,g" \
+		-e "s,@@PROGNAME,chromium-bin,g" \
 		${WRAPPER_FILE} > chromium-wrapper
 	install -m 0755 chromium-wrapper ${D}${libdir}/chromium/chromium-wrapper
 	ln -s ${libdir}/chromium/chromium-wrapper ${D}${bindir}/chromium
