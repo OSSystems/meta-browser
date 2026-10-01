@@ -17,7 +17,7 @@ diff --git a/chrome/installer/linux/common/wrapper b/chrome/installer/linux/comm
 index aaa46bf..7d8c8dd 100755
 --- a/chrome/installer/linux/common/wrapper
 +++ b/chrome/installer/linux/common/wrapper
-@@ -36,5 +36,7 @@
+@@ -36,5 +36,8 @@
  exec > >(exec cat)
  exec 2> >(exec cat >&2)
  
