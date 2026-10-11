@@ -1,0 +1,19 @@
+header:
+  version: 11
+
+local_conf_header:
+  meta-common: |
+    LICENSE_FLAGS_ACCEPTED += "commercial"
+    INHERIT += "rm_work"
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+    PACKAGECONFIG:append:pn-qemu = " sdl "
+    PACKAGECONFIG:append:pn-qemu:class-nativesdk = " sdl "
+    PACKAGECONFIG:append:pn-qemu-system-native = " sdl "
+    DL_DIR = "/yocto/yocto_dl"
+    SSTATE_DIR = "/yocto/yocto_sstate_chromium"
+    SOURCE_MIRROR_URL = ""
+    EXTRA_IMAGE_FEATURES:append = " allow-empty-password allow-root-login ssh-server-openssh tools-debug "
+    IMAGE_FSTYPES:remove = "wic.qcow2"
+    INHERIT:remove = "create-spdx"
+    # ccache disabled for cloud builds - sstate cache provides better acceleration
+    CCACHE_DISABLE = "1"

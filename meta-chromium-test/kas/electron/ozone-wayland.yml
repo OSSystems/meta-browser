@@ -1,0 +1,10 @@
+header:
+  version: 11
+
+local_conf_header:
+  electron-ozone-wayland: |
+    PREFERRED_PROVIDER_electron = "electron-ozone-wayland"
+    PACKAGECONFIG:append:pn-electron-ozone-wayland = " proprietary-codecs"
+    # Enable Wayland as a distribution feature
+    DISTRO_FEATURES:append = " wayland"
+    IMAGE_FEATURES:append = " splash package-management ssh-server-dropbear hwcodecs weston"
