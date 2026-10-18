@@ -37,6 +37,7 @@ SRC_URI += "\
     file://disable-sanitizer.patch \
     file://chromium148-bytemuck-v1-remove-simd-LaneCount-usage.patch \
     file://rust-cbor.patch \
+    file://0001-Replace-deprecated-max_value-with-MAX.patch;patchdir=third_party/rust/chromium_crates_io/vendor/qr_code-v2 \
 "
 
 # ARM/AArch64-specific patches.

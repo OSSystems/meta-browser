@@ -1,0 +1,47 @@
+From 7c2d4ccc4ce8a5aa33319f8927c84e5400b41684 Mon Sep 17 00:00:00 2001
+From: Martin Jansa <martin.jansa@gmail.com>
+Date: Sun, 18 Oct 2026 12:47:13 +0000
+Subject: [PATCH] Replace deprecated max_value() with MAX
+
+Replace deprecated u8::max_value() with u8::MAX constant to fix compiler
+warnings/errors introduced in Rust 1.99.0.
+
+Avoids:
+FAILED: [code=1] obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rlib obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rmeta obj/third_party/rust/qr_code/v2/lib.rustflags.json obj/third_party/rust/qr_code/v2/lib.rsp.rust
+"python3" "../../build/rust/gni_impl/rustc_wrapper.py" --dump-rustc-env-and-flags=obj/third_party/rust/qr_code/v2/lib.rustflags.json --rsp=obj/third_party/rust/qr_code/v2/lib.rsp --rustc=../../../../recipe-sysroot-native/usr/bin/rustc --depfile=obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rlib.d --emit=dep-info=obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rlib.d,link,metadata=obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rmeta -o obj/third_party/rust/qr_code/v2/lib/libqr_code_lib.rlib -- -Clinker="x86_64-oe-linux-clang++  -m64 -march=x86-64-v3  --dyld-prefix=/usr -fstack-protector-strong  -O2 -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security --sysroot=/OE/build/oe-core/tmp/work/x86-64-v3-oe-linux/chromium-x11/152.0.7977.82/recipe-sysroot" ../../third_party/rust/chromium_crates_io/vendor/qr_code-v2/src/lib.rs LDFLAGS RUSTENV OUT_DIR=gen/third_party/rust/qr_code/v2/lib CLIPPY_CONF_DIR=../../build/config CARGO_PKG_AUTHORS=kennytm\ \<kennytm@gmail.com\>,\ Riccardo\ Casatta\ \<riccardo.casatta@gmail.com\> CARGO_PKG_VERSION=2.0.0 CARGO_PKG_VERSION_MAJOR=2 CARGO_PKG_VERSION_MINOR=0 CARGO_PKG_VERSION_PATCH=0 CARGO_PKG_VERSION_PRE= CARGO_PKG_NAME=qr_code CARGO_PKG_DESCRIPTION=QR\ code\ encoder\ in\ Rust,\ support\ structured\ append\ \(data\ in\ multiple\ qrcodes\) CARGO_PKG_REPOSITORY=https://github.com/RCasatta/qr_code CARGO_MANIFEST_DIR=../../third_party/rust/qr_code/v2/lib/crate
+error: use of deprecated associated function `core::num::<impl u8>::max_value`: replaced by the `MAX` associated constant on this type
+   --> ../../third_party/rust/chromium_crates_io/vendor/qr_code-v2/src/structured.rs:133:51
+    |
+133 |         let (length, from) = if value.len() < u8::max_value() as usize + 4 {
+    |                                                   ^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> ../../third_party/rust/chromium_crates_io/vendor/qr_code-v2/src/lib.rs:8:9
+    |
+  8 | #![deny(warnings)]
+    |         ^^^^^^^^
+    = note: `#[deny(deprecated)]` implied by `#[deny(warnings)]`
+
+error: aborting due to 1 previous error
+
+ERROR: `rustc` exited with a non-zero exit code: 1
+
+Upstream-Stauts: Backport [https://github.com/RCasatta/qr_code/commit/7c2d4ccc4ce8a5aa33319f8927c84e5400b41684]
+Signed-off-by: Martin Jansa <martin.jansa@gmail.com>
+---
+ src/structured.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/structured.rs b/src/structured.rs
+index aa69208..926f206 100644
+--- a/src/structured.rs
++++ b/src/structured.rs
+@@ -130,7 +130,7 @@ impl TryFrom<Vec<u8>> for StructuredQr {
+             return Err(Structured(StructuredWrongEnc));
+         }
+ 
+-        let (length, from) = if value.len() < u8::max_value() as usize + 4 {
++        let (length, from) = if value.len() < u8::MAX as usize + 4 {
+             // 4 is header size, TODO recheck boundary
+             (value[3] as u16, 4usize)
+         } else {
