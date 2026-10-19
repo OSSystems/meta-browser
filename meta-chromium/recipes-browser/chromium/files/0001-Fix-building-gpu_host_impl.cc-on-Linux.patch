@@ -1,4 +1,4 @@
-From 331c2c8d6bd4ea08e6d3813eefda328c8707b207 Mon Sep 17 00:00:00 2001
+From fcc344fc90ac6797279f1518d1eeb04728fc223a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Zolt=C3=A1n=20B=C3=B6sz=C3=B6rm=C3=A9nyi?=
  <zboszor@gmail.com>
 Date: Fri, 31 Oct 2025 07:59:25 +0100
@@ -14,16 +14,15 @@ Upstream-Status: Inappropriate [oe specific]
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/components/viz/host/gpu_host_impl.cc b/components/viz/host/gpu_host_impl.cc
-index e37dd6bb11..27bf4bc8e7 100644
+index bd24be84a7..670fba7dd5 100644
 --- a/components/viz/host/gpu_host_impl.cc
 +++ b/components/viz/host/gpu_host_impl.cc
-@@ -28,11 +28,13 @@
+@@ -27,10 +27,12 @@
  #include "gpu/config/gpu_info.h"
  #include "gpu/ipc/common/gpu_client_ids.h"
  #include "gpu/ipc/host/gpu_disk_cache.h"
 -#include "gpu/webgpu/dawn_commit_hash.h"
  #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
- #include "services/webnn/host/weights_file_provider.h"
  #include "skia/buildflags.h"
  #include "skia/ext/skia_commit_hash.h"
 +#if BUILDFLAG(SKIA_USE_DAWN)
@@ -33,5 +32,5 @@ index e37dd6bb11..27bf4bc8e7 100644
  
  #if BUILDFLAG(IS_ANDROID)
 -- 
-2.51.0
+2.56.0
 
