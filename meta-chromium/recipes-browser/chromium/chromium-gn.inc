@@ -35,7 +35,8 @@ SRC_URI += "\
     file://fix-SYS_SECCOMP-redefinition.patch \
     file://chromium-145-zip_ffi_glue-use-edition2024.patch \
     file://disable-sanitizer.patch \
-    file://rust-cbor.patch \
+    file://crubit.patch \
+    file://verification-tokens.patch \
 "
 
 # ARM/AArch64-specific patches.
@@ -66,6 +67,7 @@ DEPENDS += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'alsa', 'alsa-lib', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'at-spi2-core', '', d)} \
     atk \
+    bindgen-cli-native \
     bison-native \
     cairo \
     curl \
@@ -73,6 +75,7 @@ DEPENDS += " \
     flac \
     glib-2.0 \
     chromium-gn-native \
+    go-cross-${TUNE_PKGARCH} \
     gperf-native \
     gtk+3 \
     jpeg \
