@@ -1,0 +1,94 @@
+From 7b67f3b9056632311ad8958d0b939796090987bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andr=C3=A9=20Bargull?= <andre.bargull@gmail.com>
+Date: Thu, 23 Jul 2026 13:53:13 +0000
+Subject: [PATCH] Bug 2056501: Allow detecting newer riscv64 extensions on
+ older kernels. r=spidermonkey-reviewers,jandem
+
+Differential Revision: https://phabricator.services.mozilla.com/D313476
+
+Fixes error on Scarthgap:
+ 8:43.20 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:319:26: error: use of >
+CV_HWPROBE_EXT_ZFHMIN'cd
+ 8:43.20 E   319 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZFHMIN) {
+ 8:43.20 E       |                          ^
+ 8:43.20 js/xpconnect/wrappers/XrayWrapper.o
+ 8:43.20 js/xpconnect/wrappers/Unified_cpp_xpconnect_wrappers0.o
+ 8:43.28 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:322:26: error: use of >
+CV_HWPROBE_EXT_ZFA'
+ 8:43.28 E   322 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZFA) {
+ 8:43.28 E       |                          ^
+ 8:43.37 E /yocto/scarthgap/build/tmp/work/riscv64-poky-linux/firefox/153.0/firefox-153.0/js/src/jit/riscv64/Architecture-riscv64.cpp:325:26: error: use of >
+CV_HWPROBE_EXT_ZICOND'
+ 8:43.37 E   325 |     if (probe[0].value & RISCV_HWPROBE_EXT_ZICOND) {
+
+Upstream-Status: Backport [https://github.com/mozilla-firefox/firefox/commit/7b67f3b90566]
+---
+ js/src/jit/riscv64/Architecture-riscv64.cpp | 43 ++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 6 deletions(-)
+
+diff --git a/js/src/jit/riscv64/Architecture-riscv64.cpp b/js/src/jit/riscv64/Architecture-riscv64.cpp
+index 06c73e38a3cb8..7d53314ae73a0 100644
+--- a/js/src/jit/riscv64/Architecture-riscv64.cpp
++++ b/js/src/jit/riscv64/Architecture-riscv64.cpp
+@@ -305,24 +305,55 @@ static RVExtensions ComputeRVExtensions() {
+   // Simulator supports all RVA23U64 extensions.
+   extensions += ExtensionsFromProfile(RVProfile::RVA23U64);
+ #elif defined(USE_HWPROBE)
++  // Copies the RISCV_HWPROBE_* bits to allow detecting newer features even if
++  // the toolchain doesn't yet know about them.
++  enum RV_HWProbe : uint64_t {
++    RV_HWPROBE_EXT_ZBA = (1 << 3),
++    RV_HWPROBE_EXT_ZBB = (1 << 4),
++    RV_HWPROBE_EXT_ZBS = (1 << 5),
++    RV_HWPROBE_EXT_ZFHMIN = (1 << 28),
++    RV_HWPROBE_EXT_ZFA = (1ULL << 32),
++    RV_HWPROBE_EXT_ZICOND = (1ULL << 35),
++  };
++
++  // Assert the hardcoded features bits match RISCV_HWPROBE_*.
++#  ifdef RISCV_HWPROBE_EXT_ZBA
++  static_assert(RISCV_HWPROBE_EXT_ZBA == RV_HWPROBE_EXT_ZBA);
++#  endif
++#  ifdef RISCV_HWPROBE_EXT_ZBB
++  static_assert(RISCV_HWPROBE_EXT_ZBB == RV_HWPROBE_EXT_ZBB);
++#  endif
++#  ifdef RISCV_HWPROBE_EXT_ZBS
++  static_assert(RISCV_HWPROBE_EXT_ZBS == RV_HWPROBE_EXT_ZBS);
++#  endif
++#  ifdef RISCV_HWPROBE_EXT_ZFHMIN
++  static_assert(RISCV_HWPROBE_EXT_ZFHMIN == RV_HWPROBE_EXT_ZFHMIN);
++#  endif
++#  ifdef RISCV_HWPROBE_EXT_ZFA
++  static_assert(RISCV_HWPROBE_EXT_ZFA == RV_HWPROBE_EXT_ZFA);
++#  endif
++#  ifdef RISCV_HWPROBE_EXT_ZICOND
++  static_assert(RISCV_HWPROBE_EXT_ZICOND == RV_HWPROBE_EXT_ZICOND);
++#  endif
++
+   riscv_hwprobe probe[1] = {{RISCV_HWPROBE_KEY_IMA_EXT_0, 0}};
+   if (syscall(__NR_riscv_hwprobe, probe, 1, 0, nullptr, 0) == 0) {
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZBA) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZBA) {
+       extensions += RVExtension::Zba;
+     }
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZBB) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZBB) {
+       extensions += RVExtension::Zbb;
+     }
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZBS) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZBS) {
+       extensions += RVExtension::Zbs;
+     }
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZFHMIN) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZFHMIN) {
+       extensions += RVExtension::Zfhmin;
+     }
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZFA) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZFA) {
+       extensions += RVExtension::Zfa;
+     }
+-    if (probe[0].value & RISCV_HWPROBE_EXT_ZICOND) {
++    if (probe[0].value & RV_HWPROBE_EXT_ZICOND) {
+       extensions += RVExtension::Zicond;
+     }
+   }
