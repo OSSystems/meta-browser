@@ -26,7 +26,7 @@ error: aborting due to 1 previous error
 
 ERROR: `rustc` exited with a non-zero exit code: 1
 
-Upstream-Stauts: Backport [https://github.com/RCasatta/qr_code/commit/7c2d4ccc4ce8a5aa33319f8927c84e5400b41684]
+Upstream-Status: Backport [https://github.com/RCasatta/qr_code/commit/7c2d4ccc4ce8a5aa33319f8927c84e5400b41684]
 Signed-off-by: Martin Jansa <martin.jansa@gmail.com>
 ---
  src/structured.rs | 2 +-
