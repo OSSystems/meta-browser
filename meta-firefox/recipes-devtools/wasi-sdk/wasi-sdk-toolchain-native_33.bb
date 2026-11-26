@@ -6,11 +6,12 @@ RDEPENDS:${PN} = "ncurses-native libedit-native"
 # this is where both the toolchain and the sysroot needs to
 # be installed. sysroot is installed automatically here, but
 # this needs to be specified for the toolchain.
-EXTRA_OECMAKE += "-DWASI_SDK_BUILD_TOOLCHAIN=ON -DCMAKE_INSTALL_PREFIX:PATH=${datadir}/wasi-sysroot -DWASI_SDK_LIBEDIT=OFF"
+EXTRA_OECMAKE += "-DWASI_SDK_BUILD_TOOLCHAIN=ON -DCMAKE_INSTALL_PREFIX:PATH=${datadir}/wasi-sysroot -DWASI_SDK_LIBEDIT=OFF -DWASI_SDK_LIBXML2=OFF"
 
 do_install:append(){
     ln -s ../../../lib/libedit.so.0 ${D}${datadir}/wasi-sysroot/lib/libedit.so.0
     ln -s ../../../lib/libtinfo.so.5 ${D}${datadir}/wasi-sysroot/lib/libtinfo.so.5
-    # contains TMPDIR absolute path
-    sed -i 's,^prefix=.*,prefix=$\{pcfiledir}/../../../..,' ${D}${datadir}/wasi-sysroot/lib/pkgconfig/libxml-2.0.pc
+    # contains TMPDIR absolute path, only if it exists
+    [ -e ${D}${datadir}/wasi-sysroot/lib/pkgconfig/libxml-2.0.pc ] && \
+        sed -i 's,^prefix=.*,prefix=$\{pcfiledir}/../../../..,' ${D}${datadir}/wasi-sysroot/lib/pkgconfig/libxml-2.0.pc || true
 }
